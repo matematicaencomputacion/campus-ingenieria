@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 9 Función racional</title>
+<style>
+
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --line: #ff5c5c; --point: #c084fc; --mast: #60a5fa; --ok: #34d399;
+  --btn: #3b82f6; --border: #243044; --accent: #f97316;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px; min-height: 100dvh;
+}
+.wrap { max-width: min(1400px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; margin-bottom: 2px; }
+h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; display: inline; }
+.sub {
+  display: inline; margin: 0 0 0 0.55rem; color: var(--muted);
+  font-size: 0.88rem; font-weight: 400;
+}
+.sub::before { content: "·"; margin-right: 0.55rem; opacity: 0.7; }
+header > div:first-child { line-height: 1.35; }
+.stage {
+  display: grid; grid-template-columns: 1.55fr 0.85fr; gap: 12px;
+  align-items: stretch;
+}
+@media (max-width: 860px) { .stage { grid-template-columns: 1fr; } }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px; min-height: 0;
+}
+.expr {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.expr .box { margin-right: 2px; }
+.expr .toolbar {
+  display: flex; flex-wrap: nowrap; gap: 6px; align-items: center;
+}
+.expr .toolbar button { white-space: nowrap; padding: 8px 12px; }
+@media (max-width: 720px) {
+  .expr .toolbar { flex-wrap: wrap; }
+}
+.expr .box {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 12px; font-family: ui-monospace, Menlo, monospace; font-size: 1rem;
+  min-width: 160px;
+}
+.expr .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.play {
+  background: var(--btn); color: white; border: 0; border-radius: 10px;
+  padding: 9px 14px; font: inherit; font-weight: 650; cursor: pointer;
+}
+button.ghost {
+  background: transparent; color: var(--ink); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; font: inherit; cursor: pointer;
+}
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.graph-wrap { position: relative; }
+.stage > .card:first-child { display: flex; flex-direction: column; }
+.graph-wrap { flex: 1; display: flex; flex-direction: column; }
+.graph-wrap canvas { flex: 1; min-height: 520px; max-height: min(78vh, 760px); width: 100%; object-fit: contain; }
+canvas { width: 100%; height: auto; display: block; border-radius: 10px; background: #0a0f18; }
+.slider-rail {
+  position: relative; height: 28px; margin-top: 6px;
+  background: #0a0f18; border-radius: 8px; border: 1px solid var(--border);
+}
+.tri {
+  position: absolute; top: 4px; width: 0; height: 0;
+  border-left: 8px solid transparent; border-right: 8px solid transparent;
+  border-top: 14px solid var(--mast); transform: translateX(-50%);
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.5));
+  pointer-events: none;
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 10px; }
+.lesson-nav.next { right: 10px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.table-card h2, .calc-card h2 {
+  margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+table {
+  width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.9rem;
+}
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #22304a; }
+th { color: var(--muted); font-weight: 600; }
+tr.new td { animation: flash 0.7s ease; }
+.x-red { color: #ff5c5c; font-weight: 700; }
+td.x-red { color: #ff5c5c; }
+.calc-line .eq .x-red { color: #ff5c5c; font-weight: 700; }
+@keyframes flash { from { background: rgba(192,132,252,.25); } to { background: transparent; } }
+.calc-log {
+  height: min(320px, 36vh); overflow: hidden; display: flex; flex-direction: column-reverse;
+  gap: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 0.92rem;
+  background: #0a0f18; border-radius: 10px; padding: 10px; border: 1px solid var(--border);
+}
+.calc-line {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 6px 8px; border-radius: 8px; background: #121a28;
+  animation: rise 0.45s ease;
+}
+.calc-line .eq { color: var(--muted); }
+.calc-line .res { color: #93c5fd; font-weight: 650; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.narration {
+  flex: 1 1 220px; margin: 0; min-width: 180px;
+  color: var(--muted); font-size: 0.86rem; line-height: 1.35;
+  padding: 0;
+}
+.narration strong { color: var(--ink); }
+.right-col { display: grid; gap: 12px; align-content: start; }
+.params {
+  display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; margin: 0 0 8px;
+}
+@media (max-width: 900px) { .params { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .params { grid-template-columns: 1fr; } }
+.param.domain .dual {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center;
+}
+.dual-track {
+  position: relative; height: 28px; touch-action: none; user-select: none;
+}
+.dual-track .rail {
+  position: absolute; left: 0; right: 0; top: 50%; height: 6px;
+  transform: translateY(-50%); border-radius: 999px; background: #243044;
+}
+.dual-track .fill {
+  position: absolute; top: 50%; height: 6px; transform: translateY(-50%);
+  border-radius: 999px; background: rgba(255,92,92,0.75); pointer-events: none;
+}
+.dual-track .fill.fill-invalid {
+  background: #6b7280; opacity: 0.85;
+}
+.dual-track .fill.fill-valid {
+  background: #f5c542;
+  box-shadow: 0 0 0 1px rgba(245,197,66,0.35);
+  z-index: 1;
+}
+.dual-track.resolved .fill.fill-attempt { display: none; }
+.dual-track .handle {
+  position: absolute; top: 50%; width: 16px; height: 16px;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: #ff5c5c; border: 2px solid #fff; cursor: ew-resize;
+  box-shadow: 0 0 0 3px rgba(255,92,92,0.25);
+  z-index: 2;
+}
+.dual-track .handle:focus { outline: none; box-shadow: 0 0 0 4px rgba(96,165,250,0.45); }
+.dual-track .true-mark {
+  position: absolute; top: 50%; width: 12px; height: 12px;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: #f5c542; border: 2px solid #fff;
+  box-shadow: 0 0 0 2px rgba(245,197,66,0.35);
+  pointer-events: none; z-index: 3;
+}
+.dual-track .true-mark-label {
+  position: absolute; top: -2px; transform: translate(-50%, -100%);
+  font: 700 11px ui-monospace, Menlo, sans-serif;
+  color: #f5c542; white-space: nowrap;
+  pointer-events: none; z-index: 3;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+.param {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px;
+}
+.param label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+.param .row { display: flex; align-items: center; gap: 10px; }
+.param select, .param input[type=range] { flex: 1; accent-color: var(--btn); }
+.param .val {
+  font-family: ui-monospace, Menlo, monospace; min-width: 2.5rem; text-align: right; color: #93c5fd;
+}
+.badge-row {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px;
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem;
+  padding: 4px 10px; border-radius: 999px; background: #1e293b; color: #cbd5e1;
+  font-family: ui-monospace, Menlo, monospace;
+}
+.badge .k { color: var(--muted); font-family: "Segoe UI", system-ui, sans-serif; font-weight: 600; }
+.badge .v { color: #fcd34d; font-weight: 650; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 9</span> Función racional</h1>
+      <p class="sub">f(x)=(ax²+bx+c)/(dx+e) · asíntotas · salta el polo</p>
+    </div>
+  </header>
+  <div class="card">
+    <div class="params">
+
+      <div class="param">
+        <label for="coefA">Num. <em>a</em> (x²)</label>
+        <div class="row">
+          <input id="coefA" type="range" min="-3" max="3" step="0.5" value="1" />
+          <span class="val" id="coefAVal">1</span>
+        </div>
+      </div>
+      <div class="param">
+        <label for="coefB">Num. <em>b</em> (x)</label>
+        <div class="row">
+          <input id="coefB" type="range" min="-4" max="4" step="0.5" value="0" />
+          <span class="val" id="coefBVal">0</span>
+        </div>
+      </div>
+      <div class="param">
+        <label for="coefC">Num. <em>c</em></label>
+        <div class="row">
+          <input id="coefC" type="range" min="-4" max="4" step="0.5" value="-1" />
+          <span class="val" id="coefCVal">−1</span>
+        </div>
+      </div>
+      <div class="param">
+        <label for="coefD">Den. <em>d</em> (x)</label>
+        <div class="row">
+          <input id="coefD" type="range" min="-3" max="3" step="0.5" value="1" />
+          <span class="val" id="coefDVal">1</span>
+        </div>
+      </div>
+      <div class="param">
+        <label for="coefE">Den. <em>e</em></label>
+        <div class="row">
+          <input id="coefE" type="range" min="-4" max="4" step="0.5" value="-2" />
+          <span class="val" id="coefEVal">−2</span>
+        </div>
+      </div>
+      
+      <div class="param domain">
+        <label>Restricción del dominio <em>[x₁, x₂]</em></label>
+        <div class="dual">
+          <span class="val" id="domLoVal">−4</span>
+          <div class="dual-track" id="domTrack" role="group" aria-label="Dominio continuo">
+            <div class="rail"></div>
+            <div class="fill" id="domFill"></div>
+            
+            <button type="button" class="handle" id="domLoHandle" aria-label="Inicio del dominio"></button>
+            <button type="button" class="handle" id="domHiHandle" aria-label="Fin del dominio"></button>
+          </div>
+          <span class="val" id="domHiVal">5</span>
+        </div>
+        <input id="domLo" type="hidden" value="-4" />
+        <input id="domHi" type="hidden" value="5" />
+      </div>
+    </div>
+    <div class="badge-row">
+      <span class="badge" id="badgeVert"><span class="k">asínt. vertical</span> <span class="v">—</span></span>
+      <span class="badge" id="badgeObl"><span class="k">asínt. oblicua/horiz.</span> <span class="v">—</span></span>
+    </div>
+    <div class="expr">
+      <span class="dot" aria-hidden="true"></span>
+      <div class="box" id="fnBox"><span style="color:var(--muted)">Cargar f</span></div>
+      <div class="toolbar">
+        <button class="ghost" id="loadBtn" type="button">Cargar f</button>
+        <button class="play" id="playBtn" type="button" disabled>▶ Play tabla</button>
+        <button class="ghost" id="resetBtn" type="button">Reset</button>
+      </div>
+      <p class="narration" id="narration">Default estilo <strong>(x²−1)/(x−2)</strong>. Cargá f y dale Play (salta el polo).</p>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="card">
+      <div class="graph-wrap">
+        <a class="lesson-nav prev" href="leccion-cubica.html" title="Lección 8: Función cúbica" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="1000" height="680" aria-label="Gráfica"></canvas>
+        <div class="slider-rail" aria-hidden="true"><div class="tri" id="tri"></div></div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="card table-card">
+        <h2>Tabla de valores</h2>
+        <table>
+          <thead><tr><th>x</th><th>f(x)</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="card calc-card">
+        <h2>Calculadora</h2>
+        <div class="calc-log" id="calcLog" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+
+  const DOM_DEFAULT_LO = -4, DOM_DEFAULT_HI = 5;
+  const EPS = 1e-9, POLE_SKIP = 0.35;
+  let lesson = { latex: "f(x) = (x² − 1)/(x − 2)", a: 1, b: 0, c: -1, d: 1, e: -2, sayLoad: "", sayPlay: "" };
+  const coefAEl = document.getElementById("coefA");
+  const coefBEl = document.getElementById("coefB");
+  const coefCEl = document.getElementById("coefC");
+  const coefDEl = document.getElementById("coefD");
+  const coefEEl = document.getElementById("coefE");
+  const coefAVal = document.getElementById("coefAVal");
+  const coefBVal = document.getElementById("coefBVal");
+  const coefCVal = document.getElementById("coefCVal");
+  const coefDVal = document.getElementById("coefDVal");
+  const coefEVal = document.getElementById("coefEVal");
+  const domLoEl = document.getElementById("domLo");
+  const domHiEl = document.getElementById("domHi");
+  const domLoVal = document.getElementById("domLoVal");
+  const domHiVal = document.getElementById("domHiVal");
+  const badgeVert = document.getElementById("badgeVert");
+  const badgeObl = document.getElementById("badgeObl");
+  
+  function numLabel(n) {
+    if (!Number.isFinite(n)) return String(n);
+    if (Number.isInteger(n)) return String(n);
+    return String(Number(n.toFixed(4)));
+  }
+  function prettyNum(n) { return numLabel(n).replace(/-/g, "−"); }
+  function domainBounds() {
+    let lo = Number(domLoEl.value);
+    let hi = Number(domHiEl.value);
+    if (Number.isNaN(lo)) lo = DOM_DEFAULT_LO;
+    if (Number.isNaN(hi)) hi = DOM_DEFAULT_HI;
+    if (lo > hi) { const t = lo; lo = hi; hi = t; }
+    return { lo, hi };
+  }
+  function syncWorldToCanvas() {
+    const w = canvas.width, h = canvas.height;
+    const scale = Math.min(w / (2 * VIEW), h / (2 * VIEW));
+    XMIN = -(w / scale) / 2; XMAX = (w / scale) / 2;
+    YMIN = -(h / scale) / 2; YMAX = (h / scale) / 2;
+    return scale;
+  }
+  function toCanvas(x, y) {
+    const w = canvas.width, h = canvas.height;
+    const scale = Math.min(w / (2 * VIEW), h / (2 * VIEW));
+    return [w / 2 + x * scale, h / 2 - y * scale];
+  }
+  function xToRail(x) {
+    const w = canvas.width;
+    const scale = Math.min(w / (2 * VIEW), canvas.height / (2 * VIEW));
+    return ((w / 2 + x * scale) / w) * 100;
+  }
+  function drawYArrow(zx, zyFrom, zyTo, color) {
+    ctx.save();
+    ctx.strokeStyle = color; ctx.fillStyle = color;
+    ctx.lineWidth = 7; ctx.lineCap = "butt";
+    ctx.beginPath(); ctx.moveTo(zx, zyFrom); ctx.lineTo(zx, zyTo); ctx.stroke();
+    const dir = zyTo < zyFrom ? -1 : 1;
+    const tip = zyTo, base = tip - dir * 14;
+    ctx.beginPath(); ctx.moveTo(zx, tip); ctx.lineTo(zx - 8, base); ctx.lineTo(zx + 8, base);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  function drawPill(cx, cy, label, stroke, fillBg, textCol, pointer) {
+    ctx.save();
+    ctx.font = "700 12px ui-sans-serif, system-ui, sans-serif";
+    const tw = ctx.measureText(label).width, padX = 8, bh = 22;
+    const bx0 = cx - tw / 2 - padX, by0 = cy - bh / 2, ww = tw + 2 * padX, r = 6;
+    ctx.fillStyle = fillBg; ctx.strokeStyle = stroke; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bx0 + r, by0);
+    ctx.arcTo(bx0 + ww, by0, bx0 + ww, by0 + bh, r);
+    ctx.arcTo(bx0 + ww, by0 + bh, bx0, by0 + bh, r);
+    ctx.arcTo(bx0, by0 + bh, bx0, by0, r);
+    ctx.arcTo(bx0, by0, bx0 + ww, by0, r);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    if (pointer === "down") {
+      ctx.fillStyle = fillBg;
+      ctx.beginPath(); ctx.moveTo(cx - 5, by0 + bh); ctx.lineTo(cx + 5, by0 + bh); ctx.lineTo(cx, by0 + bh + 6); ctx.closePath(); ctx.fill();
+    } else if (pointer === "right") {
+      ctx.fillStyle = fillBg;
+      ctx.beginPath(); ctx.moveTo(bx0 + ww, cy - 5); ctx.lineTo(bx0 + ww, cy + 5); ctx.lineTo(bx0 + ww + 6, cy); ctx.closePath(); ctx.fill();
+    } else if (pointer === "left") {
+      ctx.fillStyle = fillBg;
+      ctx.beginPath(); ctx.moveTo(bx0, cy - 5); ctx.lineTo(bx0, cy + 5); ctx.lineTo(bx0 - 6, cy); ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = textCol; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(label, cx, by0 + bh / 2); ctx.restore();
+  }
+  function strokePoly(pts, style) {
+    if (pts.length < 2) return;
+    ctx.save();
+    if (style) {
+      if (style.strokeStyle != null) ctx.strokeStyle = style.strokeStyle;
+      if (style.lineWidth != null) ctx.lineWidth = style.lineWidth;
+      if (style.lineCap != null) ctx.lineCap = style.lineCap;
+      if (style.lineJoin != null) ctx.lineJoin = style.lineJoin;
+      if (style.globalAlpha != null) ctx.globalAlpha = style.globalAlpha;
+      if (Array.isArray(style.dash)) ctx.setLineDash(style.dash);
+      if (typeof style.setLineDash === "function") { /* never overwrite method */ }
+    }
+    if (style.dash) ctx.setLineDash(style.dash);
+    ctx.beginPath();
+    let started = false, prevY = null;
+    for (const p of pts) {
+      if (!Number.isFinite(p.y)) { started = false; prevY = null; continue; }
+      if (prevY != null && Math.abs(p.y - prevY) > 40) started = false;
+      const [px, py] = toCanvas(p.x, p.y);
+      if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+      prevY = p.y;
+    }
+    ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+  }
+  function sampleCurve(x0, x1, n, fn) {
+    const pts = [];
+    if (!(x1 > x0)) return pts;
+    for (let i = 0; i <= n; i++) {
+      const x = x0 + (x1 - x0) * (i / n);
+      const y = fn(x);
+      if (Number.isFinite(y)) pts.push({ x, y });
+    }
+    return pts;
+  }
+  function setNarration(html) { narration.innerHTML = html; }
+  function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+  function animateTo(from, to, ms) {
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const step = (now) => {
+        if (!playing) return resolve(false);
+        const u = Math.min(1, (now - t0) / ms);
+        mastX = from + (to - from) * easeInOut(u);
+        draw();
+        if (u < 1) anim = requestAnimationFrame(step); else resolve(true);
+      };
+      anim = requestAnimationFrame(step);
+    });
+  }
+  function wait(ms) { return new Promise((r) => setTimeout(() => r(playing), ms)); }
+  function cancelAnim() { playing = false; if (anim) cancelAnimationFrame(anim); anim = null; }
+  function addRow(x, y) {
+    const tr = document.createElement("tr"); tr.className = "new";
+    const ys = Number.isInteger(y) ? y : Number(Number(y).toFixed(4));
+    tr.innerHTML = '<td class="x-red">' + x + '</td><td>' + ys + '</td>';
+    tbody.appendChild(tr);
+  }
+  const DOM_MIN = -7, DOM_MAX = 7;
+  function domainToPct(v) { return ((v - DOM_MIN) / (DOM_MAX - DOM_MIN)) * 100; }
+  function pctToDomain(pct) {
+    return Math.round((DOM_MIN + (pct / 100) * (DOM_MAX - DOM_MIN)) * 2) / 2;
+  }
+  function drawGridAxes() {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = "#1c2738"; ctx.lineWidth = 1;
+    for (let x = Math.ceil(XMIN); x <= XMAX; x++) {
+      const [px] = toCanvas(x, 0); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+    }
+    for (let y = Math.ceil(YMIN); y <= YMAX; y++) {
+      const [, py] = toCanvas(0, y); ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+    }
+    ctx.strokeStyle = "#4b5d7a"; ctx.lineWidth = 1.5;
+    const [ox, oy] = toCanvas(0, 0);
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+  }
+  function drawMastAndGuides() {
+    const w = canvas.width, h = canvas.height;
+    if (mastX != null && loaded) {
+      const y = f(mastX);
+      const [mx] = toCanvas(mastX, 0);
+      ctx.save();
+      ctx.strokeStyle = "rgba(96,165,250,0.85)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(mx, 0); ctx.lineTo(mx, h); ctx.stroke();
+      if (Number.isFinite(y)) {
+        const [px, py] = toCanvas(mastX, y);
+        ctx.fillStyle = "#c084fc";
+        ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+    if (guide && guide.phase === "x") {
+      const [px, py0] = toCanvas(guide.x, 0);
+      ctx.fillStyle = "#ff5c5c";
+      ctx.beginPath(); ctx.arc(px, py0, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.font = "700 12px ui-monospace, Menlo, sans-serif";
+      ctx.fillText(String(guide.x).replace("-", "−"), px, py0 + 16);
+    }
+    if (guide && guide.phase === "xy") {
+      const [px, py] = toCanvas(guide.x, guide.y);
+      const [zx, zy] = toCanvas(0, guide.y);
+      const [ax, ay] = toCanvas(guide.x, 0);
+      ctx.save();
+      ctx.strokeStyle = "rgba(192,132,252,0.7)"; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(px, py); ctx.lineTo(zx, zy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#c084fc";
+      ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    // Construction scaffolds: keep soft guides for every revealed point while !finalClean
+    if (!finalClean) {
+      for (const p of axisMarks) {
+        const [px, py] = toCanvas(p.x, p.y);
+        const [ax, ay] = toCanvas(p.x, 0);
+        const [zx, zy] = toCanvas(0, p.y);
+        ctx.save();
+        ctx.strokeStyle = "rgba(192,132,252,0.45)";
+        ctx.lineWidth = 1.4;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(px, py); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(zx, zy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#ff5c5c";
+        ctx.font = "700 12px ui-monospace, Menlo, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(String(p.x).replace("-", "−"), ax, ay + 8);
+        ctx.fillStyle = "#c4b5fd";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        const yLab = Number.isInteger(p.y) ? String(p.y) : Number(p.y.toFixed(2));
+        ctx.fillText(String(yLab).replace("-", "−"), zx - 8, zy);
+        ctx.restore();
+      }
+    }
+    for (const p of points) {
+      const [px, py] = toCanvas(p.x, p.y);
+      ctx.fillStyle = "#ff5c5c";
+      ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+  }
+  function drawYellowDomain(xA, xB) {
+    const [ax, ay] = toCanvas(xA, 0), [bx] = toCanvas(xB, 0);
+    ctx.save();
+    ctx.strokeStyle = "#f5c542"; ctx.lineWidth = 8; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, ay); ctx.stroke();
+    ctx.fillStyle = "#f5c542";
+    ctx.beginPath(); ctx.arc(ax, ay, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx, ay, 5, 0, Math.PI * 2); ctx.fill();
+    drawPill((ax + bx) / 2, ay - 28, "dominio", "#f5c542", "rgba(20,16,8,0.92)", "#f5c542", "down");
+    ctx.restore();
+  }
+  function drawGreenImageSegment(yLo, yHi) {
+    const [zx, zy0] = toCanvas(0, yLo), [, zy1] = toCanvas(0, yHi);
+    ctx.save();
+    ctx.strokeStyle = "#34d399"; ctx.lineWidth = 8; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(zx, zy0); ctx.lineTo(zx, zy1); ctx.stroke();
+    ctx.fillStyle = "#34d399";
+    ctx.beginPath(); ctx.arc(zx, zy0, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(zx, zy1, 5, 0, Math.PI * 2); ctx.fill();
+    drawPill(zx - 48, (zy0 + zy1) / 2, "imagen", "#34d399", "rgba(8,20,16,0.92)", "#34d399", "right");
+    ctx.restore();
+  }
+  function drawGreenImageRayUp() {
+    const [zx] = toCanvas(0, 0);
+    const [, zyTop] = toCanvas(0, YMAX);
+    const [, zy0] = toCanvas(0, 0.15);
+    drawYArrow(zx, zy0, zyTop + 8, "#34d399");
+    drawPill(zx - 55, (zy0 + zyTop) / 2, "imagen (0,+∞)", "#34d399", "rgba(8,20,16,0.92)", "#34d399", "right");
+  }
+  function drawGreenImageBothWays() {
+    const [zx] = toCanvas(0, 0);
+    const [, zyTop] = toCanvas(0, YMAX);
+    const [, zyBot] = toCanvas(0, YMIN);
+    drawYArrow(zx, (zyTop + zyBot) / 2, zyTop + 8, "#34d399");
+    drawYArrow(zx, (zyTop + zyBot) / 2, zyBot - 8, "#34d399");
+    drawPill(zx - 50, (zyTop + zyBot) / 2, "imagen ℝ", "#34d399", "rgba(8,20,16,0.92)", "#34d399", "right");
+  }
+
+
+  function termLin(coef, varName) {
+    const c = Number(coef);
+    if (Math.abs(c) < EPS) return "";
+    if (c === 1) return varName;
+    if (c === -1) return "−" + varName;
+    return prettyNum(c) + varName;
+  }
+  function poly2(a, b, c) {
+    const parts = [];
+    if (Math.abs(a) >= EPS) parts.push(termLin(a, "x²") || (a === 1 ? "x²" : prettyNum(a) + "x²"));
+    // fix termLin for x²
+    const t2 = Math.abs(a) < EPS ? "" : (a === 1 ? "x²" : a === -1 ? "−x²" : prettyNum(a) + "x²");
+    const t1 = termLin(b, "x");
+    const t0 = Math.abs(c) < EPS ? "" : prettyNum(c);
+    const arr = [t2, t1, t0].filter(Boolean);
+    if (!arr.length) return "0";
+    let s = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+      if (arr[i].startsWith("−")) s += " − " + arr[i].slice(1);
+      else s += " + " + arr[i];
+    }
+    return s;
+  }
+  function poly1(d, e) {
+    const t1 = termLin(d, "x");
+    if (Math.abs(e) < EPS) return t1 || "0";
+    if (!t1) return prettyNum(e);
+    return t1 + (e > 0 ? " + " : " − ") + prettyNum(Math.abs(e));
+  }
+  function latexFrom(a, b, c, d, e) {
+    return "f(x) = (" + poly2(a, b, c) + ")/(" + poly1(d, e) + ")";
+  }
+  function poleX() {
+    if (Math.abs(lesson.d) < EPS) return null;
+    return -lesson.e / lesson.d;
+  }
+  function asymptotes() {
+    const a = lesson.a, b = lesson.b, c = lesson.c, d = lesson.d, e = lesson.e;
+    let vert = null, obl = null, horiz = null;
+    if (Math.abs(d) >= EPS) vert = -e / d;
+    // degree 2 / 1 => oblique: divide ax^2+bx+c by dx+e
+    // quotient = (a/d)x + (b - a*e/d)/d , remainder constant
+    if (Math.abs(d) >= EPS && Math.abs(a) >= EPS) {
+      const m = a / d;
+      const k = (b - a * e / d) / d;
+      obl = { m, k };
+    } else if (Math.abs(d) >= EPS && Math.abs(a) < EPS) {
+      // linear / linear => horizontal
+      horiz = b / d; // leading of num degree 1 is b if a=0... actually if a=0, num is bx+c
+      if (Math.abs(b) >= EPS) horiz = b / d;
+      else horiz = 0; // constant / linear -> 0
+    }
+    return { vert, obl, horiz };
+  }
+  function f(x) {
+    const den = lesson.d * x + lesson.e;
+    if (Math.abs(den) < EPS) return NaN;
+    return (lesson.a * x * x + lesson.b * x + lesson.c) / den;
+  }
+  function fmtExpr(x) {
+    const xs = x < 0 ? "(" + x + ")" : String(x);
+    return "(" + lesson.a + "·" + xs + "²+" + lesson.b + "·" + xs + "+" + lesson.c + ")/(" + lesson.d + "·" + xs + "+" + lesson.e + ")";
+  }
+  function fmtExprHtml(x) {
+    const xs = '<span class="x-red">' + (x < 0 ? "(" + x + ")" : x) + "</span>";
+    return "(" + prettyNum(lesson.a) + "·" + xs + "² + " + prettyNum(lesson.b) + "·" + xs + " + " + prettyNum(lesson.c) + ")/(" + prettyNum(lesson.d) + "·" + xs + " + " + prettyNum(lesson.e) + ")";
+  }
+  function branchRanges(xLo, xHi) {
+    const pole = poleX();
+    if (pole == null || pole <= xLo + EPS || pole >= xHi - EPS) return [[xLo, xHi]];
+    const gap = Math.max(POLE_SKIP * 0.4, 0.08);
+    return [[xLo, pole - gap], [pole + gap, xHi]].filter(([u, v]) => v > u + 1e-6);
+  }
+  function asymptoteInsideDomain(lo, hi) {
+    const pole = poleX();
+    return pole != null && pole > lo + EPS && pole < hi - EPS;
+  }
+  function updateBadges() {
+    const asy = asymptotes();
+    badgeVert.querySelector(".v").textContent = asy.vert == null ? "—" : "x = " + prettyNum(Number(asy.vert.toFixed(3)));
+    if (asy.obl) {
+      badgeObl.querySelector(".v").textContent = "y = " + prettyNum(Number(asy.obl.m.toFixed(2))) + "x + " + prettyNum(Number(asy.obl.k.toFixed(2)));
+    } else if (asy.horiz != null) {
+      badgeObl.querySelector(".v").textContent = "y = " + prettyNum(Number(asy.horiz.toFixed(3)));
+    } else {
+      badgeObl.querySelector(".v").textContent = "—";
+    }
+  }
+  function applyParamsToLesson() {
+    const a = Number(coefAEl.value), b = Number(coefBEl.value), c = Number(coefCEl.value);
+    const d = Number(coefDEl.value), e = Number(coefEEl.value);
+    const { lo, hi } = domainBounds();
+    coefAVal.textContent = prettyNum(a); coefBVal.textContent = prettyNum(b);
+    coefCVal.textContent = prettyNum(c); coefDVal.textContent = prettyNum(d);
+    coefEVal.textContent = prettyNum(e);
+    if (typeof syncDomainUI === "function") syncDomainUI();
+    lesson = { ...lesson, a, b, c, d, e, latex: latexFrom(a, b, c, d, e) };
+    updateBadges();
+    const asy = asymptotes();
+    let say = "Armamos <strong>" + lesson.latex + "</strong> (ramas). Dominio previsto <strong>[" + prettyNum(lo) + ", " + prettyNum(hi) + "]</strong>.";
+    if (asy.vert != null) say += " Asíntota vertical <strong>x = " + prettyNum(Number(asy.vert.toFixed(2))) + "</strong>.";
+    if (asy.obl) say += " Asíntota oblicua <strong>y = " + prettyNum(Number(asy.obl.m.toFixed(2))) + "x + " + prettyNum(Number(asy.obl.k.toFixed(2))) + "</strong>.";
+    lesson.sayLoad = say;
+    lesson.sayPlay = "El mástil barre cada rama y salta el polo. Imagen no acotada → rayos verdes.";
+  }
+
+  let loaded = false, playing = false, points = [], mastX = null, anim = null, guide = null;
+  let axisMarks = [], showDomainStroke = false, finalClean = false;
+  let showDomainAxis = false, showImageAxis = false, showImageProj = false, showAsymp = false, imageUnbounded = false;
+  let cleanTimer = null, domainAxisTimer = null, imageTimer = null, asympTimer = null;
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const fnBox = document.getElementById("fnBox");
+  const loadBtn = document.getElementById("loadBtn");
+  const playBtn = document.getElementById("playBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const tbody = document.getElementById("tbody");
+  const calcLog = document.getElementById("calcLog");
+  const narration = document.getElementById("narration");
+  const tri = document.getElementById("tri");
+  const VIEW = 7;
+  let XMIN = -VIEW, XMAX = VIEW, YMIN = -VIEW, YMAX = VIEW;
+
+  function clearOutputs() {
+    points = []; tbody.innerHTML = ""; calcLog.innerHTML = "";
+    mastX = null; guide = null; axisMarks = [];
+    showDomainStroke = false; finalClean = false;
+    showDomainAxis = false; showImageAxis = false; showImageProj = false; showAsymp = false; imageUnbounded = false;
+    [cleanTimer, domainAxisTimer, imageTimer, asympTimer].forEach(t => { if (t) clearTimeout(t); });
+  }
+  function addCalc(x, y) {
+    const line = document.createElement("div"); line.className = "calc-line";
+    const ys = Number.isInteger(y) ? y : Number(y.toFixed(4));
+    line.innerHTML = '<span class="eq">' + fmtExprHtml(x) + '</span><span class="res">= ' + ys + "</span>";
+    calcLog.prepend(line);
+    while (calcLog.children.length > 8) calcLog.removeChild(calcLog.lastChild);
+  }
+  function visibleXs() {
+    syncWorldToCanvas();
+    const pole = poleX();
+    const out = [];
+    const x0 = Math.ceil(XMIN + 1e-9), x1 = Math.floor(XMAX - 1e-9);
+    for (let x = x0; x <= x1; x++) {
+      if (pole != null && Math.abs(x - pole) < POLE_SKIP) continue;
+      const y = f(x);
+      if (Number.isFinite(y) && Math.abs(y) < 1e5 && y >= YMIN && y <= YMAX) out.push(x);
+    }
+    if (out.length <= 11) return out;
+    const step = Math.ceil(out.length / 11);
+    return out.filter((_, i) => i % step === 0);
+  }
+  function draw() {
+    syncWorldToCanvas();
+    drawGridAxes();
+    const w = canvas.width, h = canvas.height;
+    const asy = asymptotes();
+    if (loaded) {
+      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+      if (asy.vert != null && asy.vert >= XMIN && asy.vert <= XMAX) {
+        const [vx] = toCanvas(asy.vert, 0);
+        ctx.save();
+        ctx.strokeStyle = showAsymp ? "rgba(249,115,22,0.95)" : "rgba(249,115,22,0.55)";
+        ctx.lineWidth = showAsymp ? 2.5 : 1.5;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath(); ctx.moveTo(vx, 0); ctx.lineTo(vx, h); ctx.stroke();
+        ctx.setLineDash([]); ctx.restore();
+      }
+      if (asy.obl) {
+        const y0 = asy.obl.m * XMIN + asy.obl.k;
+        const y1 = asy.obl.m * XMAX + asy.obl.k;
+        ctx.save();
+        ctx.strokeStyle = showAsymp ? "rgba(251,191,36,0.9)" : "rgba(251,191,36,0.4)";
+        ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]);
+        const [p0x, p0y] = toCanvas(XMIN, y0), [p1x, p1y] = toCanvas(XMAX, y1);
+        ctx.beginPath(); ctx.moveTo(p0x, p0y); ctx.lineTo(p1x, p1y); ctx.stroke();
+        ctx.setLineDash([]); ctx.restore();
+      }
+      if (!finalClean) {
+        for (const [u, v] of branchRanges(XMIN, XMAX)) {
+          strokePoly(sampleCurve(u, v, 140, f), { strokeStyle: "rgba(255,92,92,0.85)", lineWidth: 2, dash: [7, 6] });
+        }
+      }
+      if (showDomainStroke) {
+        const { lo, hi } = domainBounds();
+        for (const [u, v] of branchRanges(Math.max(lo, XMIN), Math.min(hi, XMAX))) {
+          strokePoly(sampleCurve(u, v, 120, f), { strokeStyle: "#ff5c5c", lineWidth: 4.5, lineCap: "round" });
+        }
+        const [ax] = toCanvas(Math.max(lo, XMIN), 0), [bx] = toCanvas(Math.min(hi, XMAX), 0);
+        ctx.fillStyle = "rgba(255,92,92,0.07)";
+        ctx.fillRect(Math.min(ax, bx), 0, Math.abs(bx - ax), h);
+      }
+      ctx.restore();
+    }
+    drawMastAndGuides();
+    if (showDomainAxis && showDomainStroke) {
+      const { lo, hi } = domainBounds();
+      const pole = poleX();
+      if (pole != null && asymptoteInsideDomain(lo, hi)) {
+        drawYellowDomain(Math.max(lo, XMIN), Math.min(pole - 0.05, XMAX));
+        drawYellowDomain(Math.max(pole + 0.05, XMIN), Math.min(hi, XMAX));
+      } else {
+        drawYellowDomain(Math.max(lo, XMIN), Math.min(hi, XMAX));
+      }
+    }
+    // Green projections from thick-branch endpoints to Y
+    if ((showImageProj || showImageAxis) && showDomainStroke) {
+      const { lo, hi } = domainBounds();
+      const ends = [];
+      for (const [u, v] of branchRanges(Math.max(lo, XMIN), Math.min(hi, XMAX))) {
+        ends.push({ x: u, y: f(u) }, { x: v, y: f(v) });
+      }
+      for (const e of ends) {
+        if (!Number.isFinite(e.y)) continue;
+        if (e.y < YMIN - 2 || e.y > YMAX + 2) continue;
+        const [px, py] = toCanvas(e.x, e.y);
+        const [zx, zy] = toCanvas(0, e.y);
+        const [ax, ay] = toCanvas(e.x, 0);
+        ctx.save();
+        ctx.strokeStyle = "rgba(52, 211, 153, 0.95)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 5]);
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(px, py); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(zx, zy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#34d399";
+        ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(zx, zy, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.font = "700 12px ui-monospace, Menlo, sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        const yTxt = prettyNum(Number(e.y.toFixed(2)));
+        ctx.fillText(yTxt, zx + 10, zy);
+        ctx.restore();
+      }
+    }
+    if (showImageAxis && showDomainStroke && imageUnbounded) {
+      const [zx] = toCanvas(0, 0);
+      const [, zyTop] = toCanvas(0, YMAX);
+      const [, zyBot] = toCanvas(0, YMIN);
+      drawYArrow(zx, (zyTop + zyBot) / 2, zyTop + 8, "#34d399");
+      drawYArrow(zx, (zyTop + zyBot) / 2, zyBot - 8, "#34d399");
+      drawPill(zx - 58, (zyTop + zyBot) / 2, "imagen no acotada", "#34d399", "rgba(8,20,16,0.92)", "#34d399", "right");
+    }
+    if (showAsymp && asy.vert != null) {
+      const [vx] = toCanvas(asy.vert, 0);
+      drawPill(vx, 36, "x = " + prettyNum(Number(asy.vert.toFixed(2))), "#f97316", "rgba(28,12,8,0.92)", "#f97316", "down");
+    }
+    const xs0 = visibleXs();
+    tri.style.left = (mastX === null ? xToRail(xs0[0] ?? 0) : xToRail(mastX)) + "%";
+  }
+  function loadFn() {
+    cancelAnim(); applyParamsToLesson(); loaded = true; clearOutputs();
+    fnBox.textContent = lesson.latex; playBtn.disabled = false;
+    setNarration(lesson.sayLoad);
+    const xs = visibleXs(); mastX = xs.length ? xs[0] : null; draw();
+  }
+  async function playTable() {
+    if (!loaded || playing) return;
+    playing = true; playBtn.disabled = true; loadBtn.disabled = true;
+    clearOutputs(); setNarration(lesson.sayPlay);
+    const xs = visibleXs();
+    if (!xs.length) {
+      setNarration("No hay enteros lejos del polo con f(x) visible.");
+      playing = false; playBtn.disabled = false; loadBtn.disabled = false; return;
+    }
+    mastX = xs[0]; draw();
+    const pole = poleX();
+    for (let i = 0; i < xs.length; i++) {
+      if (!playing) break;
+      const x = xs[i];
+      if (i > 0) {
+        guide = null;
+        const prev = xs[i - 1];
+        const crosses = pole != null && ((prev < pole && x > pole) || (prev > pole && x < pole));
+        if (crosses) {
+          setNarration("Saltamos la <strong>asíntota vertical</strong> (polo).");
+          await wait(600); if (!playing) break;
+          mastX = x; draw();
+        } else {
+          const ok = await animateTo(prev, x, 800); if (!ok) break;
+        }
+      }
+      const y = f(x); if (!Number.isFinite(y)) continue;
+      mastX = x; guide = { x, phase: "x" }; draw();
+      setNarration("Tomamos <strong>x = " + x + "</strong>.");
+      await wait(450); if (!playing) break;
+      addCalc(x, y);
+      const yShow = Number.isInteger(y) ? y : Number(y.toFixed(4));
+      setNarration("Calculamos <strong>f(" + x + ") = " + yShow + "</strong>.");
+      await wait(350); if (!playing) break;
+      guide = { x, y, phase: "xy" }; addRow(x, y); points.push({ x, y }); axisMarks.push({ x, y }); draw();
+      setNarration("Marcamos <strong>(" + x + ", " + yShow + ")</strong>.");
+      await wait(550);
+    }
+    guide = null;
+    if (playing) {
+      showDomainStroke = true; finalClean = false; draw();
+      const { lo, hi } = domainBounds();
+      const split = asymptoteInsideDomain(lo, hi);
+      setNarration(split
+        ? "Tabla completa. Seguimos viendo la construcción (dos ramas + guías). Luego el dominio."
+        : "Tabla completa. Seguimos viendo la construcción (puntos + guías). Luego el dominio.");
+      cleanTimer = setTimeout(() => {
+        finalClean = true; mastX = null; guide = null; showDomainAxis = true; draw();
+        setNarration(split
+          ? "Dominio (amarillo) partido por la asíntota vertical."
+          : "Dominio (amarillo) sobre X.");
+        domainAxisTimer = setTimeout(() => {
+          showDomainAxis = false;
+          showImageProj = true;
+          showImageAxis = false;
+          imageUnbounded = false;
+          draw();
+          setNarration("Proyectamos en verde <strong>f</strong> en los extremos del trazo grueso hasta el eje Y.");
+          imageTimer = setTimeout(() => {
+            imageUnbounded = true;
+            showImageAxis = true;
+            draw();
+            setNarration("Imagen <strong>no acotada</strong>: rayos verdes ±∞.");
+            imageTimer = setTimeout(() => {
+              showImageProj = false;
+              showImageAxis = false;
+              showAsymp = true;
+              draw();
+              setNarration("★ Asíntotas resaltadas (vertical y oblicua/horizontal).");
+              asympTimer = setTimeout(() => {
+                showAsymp = false; draw();
+                setNarration("Construcción final: " + lesson.latex + ".");
+              }, 4000);
+            }, 4000);
+          }, 2500);
+        }, 3500);
+      }, 3500);
+    } else draw();
+    playing = false; playBtn.disabled = false; loadBtn.disabled = false;
+  }
+  function resetAll() {
+    cancelAnim(); loaded = false; clearOutputs();
+    fnBox.innerHTML = '<span style="color:var(--muted)">Cargar f</span>';
+    playBtn.disabled = true; loadBtn.disabled = false;
+    setNarration("Reset. Ajustá coeficientes, cargá la racional y dale Play.");
+    draw();
+  }
+  function onParamInput() {
+    applyParamsToLesson();
+    if (loaded && !playing) {
+      fnBox.textContent = lesson.latex; clearOutputs();
+      const xs = visibleXs(); mastX = xs.length ? xs[0] : null;
+      setNarration(lesson.sayLoad + " Tocá <strong>Play tabla</strong>.");
+      draw();
+    } else if (!loaded) {
+      fnBox.innerHTML = '<span style="color:var(--muted)">' + lesson.latex + "</span>";
+    }
+  }
+  
+  const domTrack = document.getElementById("domTrack");
+  const domFill = document.getElementById("domFill");
+  const domLoHandle = document.getElementById("domLoHandle");
+  const domHiHandle = document.getElementById("domHiHandle");
+  function syncDomainUI() {
+    let lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+    if (lo > hi) { const t = lo; lo = hi; hi = t; }
+    domLoEl.value = String(lo); domHiEl.value = String(hi);
+    domLoHandle.style.left = domainToPct(lo) + "%";
+    domHiHandle.style.left = domainToPct(hi) + "%";
+    domLoVal.textContent = prettyNum(lo);
+    domHiVal.textContent = prettyNum(hi);
+    domFill.style.left = domainToPct(lo) + "%";
+    domFill.style.width = Math.max(0, domainToPct(hi) - domainToPct(lo)) + "%";
+  }
+  function bindHandle(handle, which) {
+    const onMove = (clientX) => {
+      const rect = domTrack.getBoundingClientRect();
+      let pct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+      let v = pctToDomain(pct);
+      let lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+      if (which === "lo") { lo = Math.min(v, hi); domLoEl.value = String(lo); }
+      else { hi = Math.max(v, lo); domHiEl.value = String(hi); }
+      syncDomainUI(); onParamInput();
+    };
+    handle.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); handle.setPointerCapture(e.pointerId); onMove(e.clientX);
+      const move = (ev) => onMove(ev.clientX);
+      const up = () => { handle.releasePointerCapture(e.pointerId); handle.removeEventListener("pointermove", move); handle.removeEventListener("pointerup", up); };
+      handle.addEventListener("pointermove", move); handle.addEventListener("pointerup", up);
+    });
+  }
+  bindHandle(domLoHandle, "lo"); bindHandle(domHiHandle, "hi");
+  domTrack.addEventListener("pointerdown", (e) => {
+    if (e.target.classList.contains("handle")) return;
+    const rect = domTrack.getBoundingClientRect();
+    const v = pctToDomain(((e.clientX - rect.left) / rect.width) * 100);
+    const lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+    if (Math.abs(v - lo) <= Math.abs(v - hi)) domLoEl.value = String(Math.min(v, hi));
+    else domHiEl.value = String(Math.max(v, lo));
+    syncDomainUI(); onParamInput();
+  });
+
+  [coefAEl, coefBEl, coefCEl, coefDEl, coefEEl].forEach(el => el.addEventListener("input", onParamInput));
+  loadBtn.addEventListener("click", loadFn);
+  playBtn.addEventListener("click", playTable);
+  resetBtn.addEventListener("click", resetAll);
+  applyParamsToLesson(); syncDomainUI(); draw();
+
+})();
+</script>
+</body>
+</html>

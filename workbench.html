@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" sizes="32x32" href="resources/favicon-32.png?v=20260905ak" />
+  <link rel="icon" type="image/png" sizes="256x256" href="resources/favicon.png?v=20260905ak" />
+  <link rel="apple-touch-icon" href="resources/apple-touch-icon.png?v=20260905ak" />
+  <title>Esqueleto · Workbench</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root { --wb-accent: #0f3d8c; }
+    body { background: #e9eef8; }
+    .wb-shell { min-height: 100vh; display: grid; grid-template-rows: 52px 1fr; position: relative; }
+    .wb-top {
+      background: #0f172a; color: #e2e8f0; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 14px 0 18px; gap: 12px;
+    }
+    .wb-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .wb-brand span { font-size: 0.7rem; font-weight: 500; opacity: 0.7; display: block; }
+    .wb-badge { background: #1d4ed8; color: white; font-size: 0.7rem; padding: 3px 8px; border-radius: 999px; }
+    .wb-body {
+      display: grid; min-height: 0;
+      --l: 280px; --r: 300px;
+      grid-template-columns: var(--l) 1fr var(--r);
+      transition: grid-template-columns 0.2s ease;
+    }
+    .wb-body.left-collapsed { --l: 0px; }
+    .wb-body.left-wide { --l: min(440px, 44vw); }
+    .wb-body.right-collapsed { --r: 0px; }
+    .wb-body.right-wide { --r: min(420px, 40vw); }
+    .wb-panel { background: #fff; overflow: auto; min-width: 0; }
+    .wb-left { border-right: 1px solid #dbe2f0; padding: 14px; }
+    .wb-center { padding: 20px 24px; background: #f5f7fb; }
+    .wb-right { border-left: 1px solid #dbe2f0; padding: 14px; }
+    .wb-rail {
+      position: absolute; top: 52px; bottom: 0; width: 20px; z-index: 30;
+      border: none; padding: 0; cursor: pointer; background: #c9d6ef;
+    }
+    .wb-rail.left { left: 0; border-radius: 0 6px 6px 0; }
+    .wb-rail.right { right: 0; border-radius: 6px 0 0 6px; }
+    .wb-rail:hover, .wb-rail.open { background: #9bb4e6; }
+    .wb-rail.wide { background: #7f9fdc; }
+    .cycle { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .cycle button {
+      border: 1px solid #d0d8ea; background: #fff; border-radius: 8px; padding: 8px 10px;
+      font-size: 0.8rem; color: #334155;
+    }
+    .cycle button.active { background: #dbeafe; border-color: #93c5fd; color: #1e3a8a; font-weight: 700; }
+    .tree h3, .inspector h3, .canvas h2 { margin: 0 0 10px; font-size: 0.95rem; }
+    .tree a, .task {
+      display: block; padding: 8px 10px; border-radius: 8px; color: #334155; font-size: 0.88rem;
+      border: 1px solid transparent; margin-bottom: 4px; text-decoration: none; width: 100%;
+      text-align: left; background: transparent; cursor: pointer;
+    }
+    .tree a:hover, .task:hover, .task.active { background: #eff6ff; border-color: #bfdbfe; }
+    .status { font-size: 0.72rem; padding: 2px 7px; border-radius: 999px; display: inline-block; }
+    .st-done { background: #dcfce7; color: #166534; }
+    .st-prog { background: #dbeafe; color: #1e40af; }
+    .st-block { background: #fee2e2; color: #991b1b; }
+    .st-todo { background: #f1f5f9; color: #475569; }
+    .field { margin-bottom: 12px; font-size: 0.88rem; }
+    .field label { display: block; color: #64748b; font-size: 0.75rem; margin-bottom: 3px; }
+    .note-box { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px; font-size: 0.85rem; }
+    .canvas-card { background: #fff; border: 1px solid #dbe2f0; border-radius: 12px; padding: 16px; }
+    .hint { color: #64748b; font-size: 0.85rem; margin: 0 0 12px; }
+    .link-row a { font-size: 0.85rem; margin-right: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wb-shell" id="shell">
+    <header class="wb-top">
+      <div class="wb-brand">
+        <div class="brand-mark" style="width:28px;height:28px;border-radius:6px;background:#2563eb;display:grid;place-items:center;font-size:0.7rem">WB</div>
+        <div>Esqueleto Workbench<span>OPERADOR · BOTS · NO MODALES</span></div>
+      </div>
+      <div class="wb-badge">Shell A</div>
+      <div class="link-row"><a href="index.html" style="color:#93c5fd">Abrir Campus (estudiante)</a></div>
+    </header>
+    <button class="wb-rail left open" id="rail-left" title="Clic: abrir/cerrar · Doble clic: ensanchar"></button>
+    <button class="wb-rail right open" id="rail-right" title="Clic: abrir/cerrar · Doble clic: ensanchar"></button>
+    <div class="wb-body" id="body">
+      <aside class="wb-panel wb-left">
+        <div class="cycle">
+          <button class="active" data-phase="understand">Understand</button>
+          <button data-phase="explore">Explore</button>
+          <button data-phase="deliver">Deliver</button>
+        </div>
+        <div class="tree">
+          <h3>Proyecto Esqueleto</h3>
+          <a href="#">🔎 Research JTBD <span class="status st-done">Done</span></a>
+          <a href="#">❤️ Fricciones <span class="status st-done">Done</span></a>
+          <a href="#">💡 Brief ventanas <span class="status st-done">Done</span></a>
+          <button class="task active" data-task="shell">🪟 Prototipo shell <span class="status st-prog">In progress</span></button>
+          <a href="#">✅ Checklist calidad <span class="status st-todo">Not started</span></a>
+        </div>
+      </aside>
+      <main class="wb-panel wb-center">
+        <div class="canvas">
+          <h2>Lienzo · Prototipo shell</h2>
+          <p class="hint">Barras de borde: clic abre/cierra · doble clic ensancha. Centro siempre visible (sin modales).</p>
+          <div class="canvas-card">
+            <p><strong>Contrato activo:</strong> Workbench ≠ Campus. Notion = verdad.</p>
+            <ul>
+              <li>Izquierda: ciclo EDT + árbol de tasks</li>
+              <li>Centro: deliverable / brief / prototipo</li>
+              <li>Derecha: inspector (Status, Bot, Note) — Blocked sin modal</li>
+            </ul>
+            <p class="hint" style="margin:0">Campus migra toggles topbar → mismas barras de borde. <a href="index.html#/home/informatica">Probar Campus</a></p>
+          </div>
+        </div>
+      </main>
+      <aside class="wb-panel wb-right">
+        <div class="inspector">
+          <h3>Task inspector</h3>
+          <div class="field"><label>Task</label><div>Prototipo shell: navegación y ventanas</div></div>
+          <div class="field"><label>Bot</label><div>Prototipador</div></div>
+          <div class="field"><label>Status</label><div><span class="status st-prog">In progress</span></div></div>
+          <div class="field"><label>Note</label>
+            <div class="note-box">Barras de borde (clic / doble clic). Sin modales. Workbench + Campus.</div>
+          </div>
+          <div class="field"><label>Notion</label>
+            <a href="https://app.notion.com/p/3d203bb3d58881e08de3fff831033f08" target="_blank" rel="noopener">Abrir task</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <script>
+    const state = { left: "open", right: "open" };
+    const body = document.getElementById("body");
+    function apply() {
+      body.className = "wb-body"
+        + (state.left === "collapsed" ? " left-collapsed" : "")
+        + (state.left === "wide" ? " left-wide" : "")
+        + (state.right === "collapsed" ? " right-collapsed" : "")
+        + (state.right === "wide" ? " right-wide" : "");
+      ["left","right"].forEach((side) => {
+        const el = document.getElementById("rail-" + side);
+        el.className = "wb-rail " + side + " " + (state[side] === "collapsed" ? "" : "open") + (state[side] === "wide" ? " wide" : "");
+      });
+    }
+    function cycle(side, widen) {
+      const cur = state[side];
+      if (widen) state[side] = cur === "collapsed" ? "wide" : (cur === "wide" ? "open" : "wide");
+      else state[side] = cur === "collapsed" ? "open" : "collapsed";
+      apply();
+    }
+    function bind(id, side) {
+      const el = document.getElementById(id);
+      let n = 0, t;
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        n++;
+        if (n === 1) t = setTimeout(() => { n = 0; cycle(side, false); }, 220);
+        else { clearTimeout(t); n = 0; cycle(side, true); }
+      });
+    }
+    bind("rail-left", "left");
+    bind("rail-right", "right");
+    document.querySelectorAll(".cycle button").forEach((b) => {
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".cycle button").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+      });
+    });
+    apply();
+  </script>
+</body>
+</html>

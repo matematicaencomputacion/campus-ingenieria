@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Círculo unitario · Play · Predicción · Dibujar</title>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #1a2332; --ink: #e8eef7; --muted: #8b9bb4;
+      --accent: #6ea8fe; --point: #c084fc; --ok: #5ad4a8; --bad: #ff7b7b;
+      --cos: #ff5c5c; --sin: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: system-ui, ui-sans-serif, sans-serif;
+      background: var(--bg); color: var(--ink); padding: 16px;
+    }
+    .wrap { max-width: 980px; width: 100%; margin: 0 auto; display: grid; gap: 12px; }
+    h1 { font-size: 1.2rem; margin: 0; font-weight: 700; }
+    .sub { color: var(--muted); font-size: 0.86rem; margin: 4px 0 0; line-height: 1.4; }
+    .card {
+      background: var(--panel); border: 1px solid #2a3548; border-radius: 12px; padding: 12px;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+    .seg {
+      display: inline-flex; flex-wrap: wrap; background: #101826; border: 1px solid #2a3548; border-radius: 999px; padding: 3px; gap: 2px;
+    }
+    canvas.draw-mode { cursor: grab; }
+    canvas.draw-mode.dragging { cursor: grabbing; }
+    .seg button, .chip {
+      border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 650;
+      padding: 8px 12px; border-radius: 999px; cursor: pointer;
+    }
+    .seg button.active { background: var(--accent); color: #0b1018; }
+    .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { background: #243044; color: var(--ink); border: 1px solid #334155; }
+    .chip.picked { outline: 2px solid var(--accent); color: #fff; }
+    .chip:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.btn {
+      border: 0; border-radius: 8px; padding: 9px 14px; font: inherit; font-weight: 650;
+      cursor: pointer; background: #2a3c58; color: var(--ink);
+    }
+    button.btn.primary { background: var(--accent); color: #0b1018; }
+    button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .hint { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+    .narration { font-size: 0.9rem; color: var(--muted); line-height: 1.45; margin: 0; min-height: 1.4em; }
+    .narration strong { color: var(--ink); }
+    .narration.ok { color: var(--ok); }
+    .narration.bad { color: var(--bad); }
+    .stage { display: grid; grid-template-columns: 1fr minmax(240px, 320px); gap: 12px; }
+    @media (max-width: 800px) { .stage { grid-template-columns: 1fr; } }
+    canvas { width: 100%; height: auto; display: block; border-radius: 10px; background: #0b1018; touch-action: none; }
+    .panel h2 { margin: 0 0 8px; font-size: 0.95rem; }
+    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .field label { font-size: 0.78rem; color: var(--muted); }
+    .theta {
+      font-size: 1.6rem; font-weight: 700; color: #fde68a; font-variant-numeric: tabular-nums;
+    }
+    .locked {
+      padding: 8px 10px; border-radius: 8px; background: #101826; border: 1px solid #2a3548;
+      font-size: 0.82rem; color: var(--muted);
+    }
+    a.back { color: var(--accent); font-size: 0.82rem; text-decoration: none; }
+    .score { font-size: 0.8rem; color: var(--muted); }
+    .score strong { color: var(--ink); }
+    .hidden { display: none !important; }
+    .legend table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .legend th, .legend td {
+      text-align: left; padding: 5px 4px; border-bottom: 1px solid #243044; font-size: 0.8rem;
+    }
+    .legend th { color: var(--muted); font-weight: 600; }
+    .legend td.pair { font-family: ui-monospace, Menlo, Consolas, monospace; }
+    .legend td.pair .x { color: #ff5c5c; }
+    .legend td.pair .y { color: #34d399; }
+    .legend tr.sel td { background: rgba(192,132,252,0.12); }
+    .legend tr.pending td { opacity: 0.35; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <a class="back" href="index.html">← Tools Campus</a>
+      <h1>Círculo unitario · Play · Predicción · Dibujar</h1>
+      <p class="sub"><strong>Educar</strong> · Play · <strong>Predecir</strong> · <strong>Dibujar ángulo</strong> (snap 15°) · <strong>Dibujar coordenada</strong> (snap en ejes).</p>
+    </div>
+
+    <div class="card row">
+      <div>
+        <div class="hint" style="margin-bottom:6px">Modo</div>
+        <div class="seg" role="group" aria-label="Modo">
+          <button type="button" data-mode="educate" class="active" id="modeEducate">Educar · Play</button>
+          <button type="button" data-mode="predict" id="modePredict">Predecir</button>
+          <button type="button" data-mode="drawAngle" id="modeDrawAngle">Dibujar ángulo</button>
+          <button type="button" data-mode="drawCoord" id="modeDrawCoord">Dibujar coordenada</button>
+        </div>
+      </div>
+      <div id="stepSelectorWrap">
+        <div class="hint" style="margin-bottom:6px">Paso angular</div>
+        <div class="seg" role="group" aria-label="Paso angular">
+          <button type="button" data-step="30" class="active">30°</button>
+          <button type="button" data-step="45">45°</button>
+          <button type="button" data-step="90">90°</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="narration" id="narration">Modo Educar: tocá <strong>▶ Play</strong> o <strong>Siguiente</strong> para construir el círculo.</p>
+    </div>
+
+    <div class="stage">
+      <div class="card">
+        <canvas id="c" width="720" height="720" aria-label="Círculo unitario"></canvas>
+      </div>
+
+      <!-- Educate panel -->
+      <div class="card panel" id="panelEducate">
+        <h2>Construcción · paso <span id="stepLabel">30°</span></h2>
+        <div class="toolbar" style="margin-bottom:12px;">
+          <button class="btn primary" id="playBtn">▶ Play</button>
+          <button class="btn" id="nextBtn">Siguiente</button>
+          <button class="btn" id="resetEducateBtn">Reset</button>
+        </div>
+        <p class="hint" style="margin-bottom:10px;">Cada punto deja línea + label <span style="color:#ff5c5c">rojo en X</span> y <span style="color:#34d399">verde en Y</span>; quedan permanentes.</p>
+        <div class="legend" style="overflow:auto; max-height:420px;">
+          <table>
+            <thead><tr><th>θ</th><th>(cos θ, sen θ)</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Predict panel -->
+      <div class="card panel hidden" id="panelPredict">
+        <h2>Desafío</h2>
+        <div class="score" style="margin-bottom:8px;">Aciertos: <strong id="scoreOk">0</strong> · Intentos: <strong id="scoreN">0</strong></div>
+        <div class="field">
+          <label>Ángulo θ (aún sin punto)</label>
+          <div class="theta" id="thetaView">—</div>
+        </div>
+        <div class="field">
+          <label>¿cos θ?</label>
+          <div class="chips" id="cosChips"></div>
+        </div>
+        <div class="field">
+          <label>¿sen θ?</label>
+          <div class="chips" id="sinChips"></div>
+        </div>
+        <div class="toolbar" style="margin-bottom:10px;">
+          <button class="btn primary" id="verifyBtn" disabled>Verificar</button>
+          <button class="btn" id="nextChallengeBtn">Otro ángulo</button>
+          <button class="btn" id="resetPredictBtn">Reset</button>
+        </div>
+        <div class="locked">Probe bloqueado: no se filtra el par hasta Verificar.</div>
+      </div>
+
+      <!-- Draw angle panel -->
+      <div class="card panel hidden" id="panelDrawAngle">
+        <h2>Dibujar ángulo</h2>
+        <p class="hint" style="margin-bottom:10px;">Arrastrá el marcador sobre la circunferencia. Snap magnético cada 15° (umbral 8°).</p>
+        <div class="field">
+          <label>θ</label>
+          <div class="theta" id="drawAngleTheta">0°</div>
+        </div>
+        <div class="field">
+          <label>Snap</label>
+          <div class="locked" id="drawAngleSnap">sí · 0°</div>
+        </div>
+        <div class="field">
+          <label>(cos θ, sen θ)</label>
+          <div class="locked" id="drawAnglePair">(<span style="color:#ff5c5c">1</span>, <span style="color:#34d399">0</span>)</div>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="resetDrawAngleBtn">Reset</button>
+        </div>
+      </div>
+
+      <!-- Draw coord panel -->
+      <div class="card panel hidden" id="panelDrawCoord">
+        <h2>Dibujar coordenada</h2>
+        <p class="hint" style="margin-bottom:10px;">Arrastrá libremente; snap a valores exactos sobre los ejes (umbral 0.12).</p>
+        <div class="field">
+          <label>x</label>
+          <div class="locked" id="drawCoordX"><span style="color:#ff5c5c">1</span></div>
+        </div>
+        <div class="field">
+          <label>y</label>
+          <div class="locked" id="drawCoordY"><span style="color:#34d399">0</span></div>
+        </div>
+        <div class="field">
+          <label>Eje</label>
+          <div class="locked" id="drawCoordAxis">X</div>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="resetDrawCoordBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const narration = document.getElementById("narration");
+  const panelEducate = document.getElementById("panelEducate");
+  const panelPredict = document.getElementById("panelPredict");
+  const panelDrawAngle = document.getElementById("panelDrawAngle");
+  const panelDrawCoord = document.getElementById("panelDrawCoord");
+  const stepSelectorWrap = document.getElementById("stepSelectorWrap");
+  const tbody = document.getElementById("tbody");
+  const stepLabel = document.getElementById("stepLabel");
+  const playBtn = document.getElementById("playBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const resetEducateBtn = document.getElementById("resetEducateBtn");
+  const thetaView = document.getElementById("thetaView");
+  const cosChips = document.getElementById("cosChips");
+  const sinChips = document.getElementById("sinChips");
+  const verifyBtn = document.getElementById("verifyBtn");
+  const nextChallengeBtn = document.getElementById("nextChallengeBtn");
+  const resetPredictBtn = document.getElementById("resetPredictBtn");
+  const scoreOk = document.getElementById("scoreOk");
+  const scoreN = document.getElementById("scoreN");
+  const drawAngleTheta = document.getElementById("drawAngleTheta");
+  const drawAngleSnap = document.getElementById("drawAngleSnap");
+  const drawAnglePair = document.getElementById("drawAnglePair");
+  const resetDrawAngleBtn = document.getElementById("resetDrawAngleBtn");
+  const drawCoordX = document.getElementById("drawCoordX");
+  const drawCoordY = document.getElementById("drawCoordY");
+  const drawCoordAxis = document.getElementById("drawCoordAxis");
+  const resetDrawCoordBtn = document.getElementById("resetDrawCoordBtn");
+  const stepButtons = [...document.querySelectorAll("[data-step]")];
+  const modeButtons = [...document.querySelectorAll("[data-mode]")];
+
+  const EXACT = {
+    0:   { x: "1", y: "0" },
+    30:  { x: "√3/2", y: "1/2" },
+    45:  { x: "√2/2", y: "√2/2" },
+    60:  { x: "1/2", y: "√3/2" },
+    90:  { x: "0", y: "1" },
+    120: { x: "−1/2", y: "√3/2" },
+    135: { x: "−√2/2", y: "√2/2" },
+    150: { x: "−√3/2", y: "1/2" },
+    180: { x: "−1", y: "0" },
+    210: { x: "−√3/2", y: "−1/2" },
+    225: { x: "−√2/2", y: "−√2/2" },
+    240: { x: "−1/2", y: "−√3/2" },
+    270: { x: "0", y: "−1" },
+    300: { x: "1/2", y: "−√3/2" },
+    315: { x: "√2/2", y: "−√2/2" },
+    330: { x: "√3/2", y: "−1/2" },
+  };
+  const CHOICES = ["1", "0", "−1", "1/2", "−1/2", "√2/2", "−√2/2", "√3/2", "−√3/2"];
+
+  let mode = "educate"; // educate | predict | drawAngle | drawCoord
+  let step = 30;
+  let revealed = [];
+  let selected = null;
+  let playing = false;
+  let playAbort = false;
+
+  // predict state
+  let challengeDeg = null;
+  let pickCos = null, pickSin = null, verified = false;
+  let okCount = 0, nCount = 0;
+
+  // drawAngle state
+  const ANGLE_SNAP_DEG = 15;
+  const ANGLE_SNAP_THRESH = 8; // degrees while dragging
+  let drawAngleDeg = 0;       // current marker angle [0,360)
+  let drawAngleSnapped = true;
+  let drawAngleDragging = false;
+
+  // drawCoord state (magnetic labels; numeric map filled after SYM_NUM)
+  const MAG_LABELS = ["−1", "−√3/2", "−√2/2", "−1/2", "0", "1/2", "√2/2", "√3/2", "1"];
+  const COORD_SNAP_THRESH = 0.12;
+  let drawCoordXval = 1, drawCoordYval = 0;
+  let drawCoordSnapped = true;
+  let drawCoordAxisHit = "X"; // X | Y
+  let drawCoordXLab = "1", drawCoordYLab = "0";
+  let drawCoordDragging = false;
+  let pointerDragging = false;
+  // wrong guess marker: amber blink ×4 then muted stay
+  let userGuess = null; // { x, y, xLab, yLab, visible, muted }
+  let blinkTimer = null;
+  const AMBER = "#FFBF00";
+  const AMBER_MUTED = "rgba(255,191,0,0.35)";
+  const AMBER_LINE = "rgba(255,191,0,0.85)";
+  const AMBER_LINE_MUTED = "rgba(255,191,0,0.35)";
+  const SYM_NUM = {
+    "1": 1, "0": 0, "−1": -1,
+    "1/2": 0.5, "−1/2": -0.5,
+    "√2/2": Math.SQRT1_2, "−√2/2": -Math.SQRT1_2,
+    "√3/2": Math.sqrt(3) / 2, "−√3/2": -Math.sqrt(3) / 2,
+  };
+  const MAG_TARGETS = [];
+  for (const lab of MAG_LABELS) {
+    const v = SYM_NUM[lab];
+    MAG_TARGETS.push({ x: v, y: 0, xLab: lab, yLab: "0", axis: "X" });
+    MAG_TARGETS.push({ x: 0, y: v, xLab: "0", yLab: lab, axis: "Y" });
+  }
+  function fmt3(n) {
+    return (Math.round(n * 1000) / 1000).toFixed(3);
+  }
+  function normDeg(d) {
+    d = d % 360;
+    if (d < 0) d += 360;
+    return d;
+  }
+  function angDist(a, b) {
+    let d = Math.abs(normDeg(a) - normDeg(b));
+    return d > 180 ? 360 - d : d;
+  }
+  function nearestAngle15(deg) {
+    const n = Math.round(normDeg(deg) / ANGLE_SNAP_DEG) * ANGLE_SNAP_DEG;
+    return normDeg(n);
+  }
+  function nearestMagTarget(x, y) {
+    let best = MAG_TARGETS[0], bestD = Infinity;
+    for (const t of MAG_TARGETS) {
+      const d = Math.hypot(t.x - x, t.y - y);
+      if (d < bestD) { bestD = d; best = t; }
+    }
+    return { target: best, dist: bestD };
+  }
+  function clientToWorld(ev) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+    const mx = (ev.clientX - rect.left) * sx;
+    const my = (ev.clientY - rect.top) * sy;
+    const L = layout();
+    return { x: (mx - L.cx) / L.R, y: (L.cy - my) / L.R, mx, my, L };
+  }
+  function updateDrawAnglePanel() {
+    const snapDeg = nearestAngle15(drawAngleDeg);
+    const displayDeg = drawAngleSnapped ? snapDeg : (Math.round(drawAngleDeg * 10) / 10);
+    drawAngleTheta.textContent = displayDeg + "°";
+    drawAngleSnap.textContent = drawAngleSnapped
+      ? ("sí · " + snapDeg + "°")
+      : "no (libre)";
+    if (drawAngleSnapped && EXACT[snapDeg]) {
+      const ex = EXACT[snapDeg];
+      drawAnglePair.innerHTML = '(<span style="color:#ff5c5c">' + ex.x + '</span>, <span style="color:#34d399">' + ex.y + '</span>)';
+    } else {
+      const a = degToRad(drawAngleDeg);
+      drawAnglePair.innerHTML = '(<span style="color:#ff5c5c">' + fmt3(Math.cos(a)) + '</span>, <span style="color:#34d399">' + fmt3(Math.sin(a)) + '</span>)';
+    }
+  }
+  function updateDrawCoordPanel() {
+    drawCoordX.innerHTML = '<span style="color:#ff5c5c">' + drawCoordXLab + '</span>';
+    drawCoordY.innerHTML = '<span style="color:#34d399">' + drawCoordYLab + '</span>';
+    drawCoordAxis.textContent = drawCoordAxisHit;
+  }
+  function resetDrawAngle() {
+    drawAngleDeg = 0;
+    drawAngleSnapped = true;
+    drawAngleDragging = false;
+    updateDrawAnglePanel();
+    setNarration("Dibujar ángulo: arrastrá el marcador. Snap cada <strong>15°</strong> (umbral 8°).");
+    draw();
+  }
+  function resetDrawCoord() {
+    drawCoordXval = 1; drawCoordYval = 0;
+    drawCoordXLab = "1"; drawCoordYLab = "0";
+    drawCoordAxisHit = "X";
+    drawCoordSnapped = true;
+    drawCoordDragging = false;
+    updateDrawCoordPanel();
+    setNarration("Dibujar coordenada: arrastrá libremente; snap a valores exactos en los ejes (umbral 0.12).");
+    draw();
+  }
+  function syncCanvasCursor() {
+    const isDraw = mode === "drawAngle" || mode === "drawCoord";
+    canvas.classList.toggle("draw-mode", isDraw);
+    canvas.classList.toggle("dragging", isDraw && pointerDragging);
+  }
+  function clearBlink() {
+    if (blinkTimer) { clearTimeout(blinkTimer); blinkTimer = null; }
+  }
+  function clearUserGuess() {
+    clearBlink();
+    userGuess = null;
+  }
+  function startWrongBlink(xLab, yLab) {
+    clearBlink();
+    const xn = SYM_NUM[xLab], yn = SYM_NUM[yLab];
+    if (!Number.isFinite(xn) || !Number.isFinite(yn)) return;
+    userGuess = { x: xn, y: yn, xLab, yLab, visible: true, muted: false };
+    // 4 blink cycles: on→off = 1 cycle; total 4 offs after initial on
+    // Pattern: visible, hide, show, hide, show, hide, show, hide, then muted visible
+    let flashesLeft = 4;
+    function tickOff() {
+      if (!userGuess) return;
+      userGuess.visible = false;
+      draw();
+      blinkTimer = setTimeout(tickOn, 220);
+    }
+    function tickOn() {
+      if (!userGuess) return;
+      flashesLeft -= 1;
+      if (flashesLeft <= 0) {
+        userGuess.visible = true;
+        userGuess.muted = true;
+        blinkTimer = null;
+        draw();
+        return;
+      }
+      userGuess.visible = true;
+      draw();
+      blinkTimer = setTimeout(tickOff, 220);
+    }
+    draw();
+    blinkTimer = setTimeout(tickOff, 280);
+  }
+  function drawUserGuess(L) {
+    if (!userGuess || !userGuess.visible) return;
+    const muted = !!userGuess.muted;
+    const lineCol = muted ? AMBER_LINE_MUTED : AMBER_LINE;
+    const fillCol = muted ? AMBER_MUTED : AMBER;
+    const [px, py] = toCanvas(userGuess.x, userGuess.y, L);
+    const [ax, ay] = toCanvas(userGuess.x, 0, L);
+    const [zx, zy] = toCanvas(0, userGuess.y, L);
+    ctx.save();
+    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = muted ? 1.4 : 2.2;
+    // to X axis
+    ctx.strokeStyle = lineCol;
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ax, ay); ctx.stroke();
+    // to Y axis
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(zx, zy); ctx.stroke();
+    ctx.setLineDash([]);
+    // feet
+    ctx.fillStyle = fillCol;
+    ctx.beginPath(); ctx.arc(ax, ay, muted ? 3.5 : 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(zx, zy, muted ? 3.5 : 5, 0, Math.PI * 2); ctx.fill();
+    // point
+    ctx.beginPath(); ctx.arc(px, py, muted ? 6 : 9, 0, Math.PI * 2); ctx.fill();
+    if (!muted) {
+      ctx.strokeStyle = "#fff8e1";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    // axis labels (chosen values)
+    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+    ctx.fillStyle = fillCol;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(userGuess.xLab, ax, ay + 8);
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(userGuess.yLab, zx - 8, zy);
+    // pair tag near point
+    const tag = "(" + userGuess.xLab + ", " + userGuess.yLab + ")";
+    ctx.font = "700 11px ui-monospace, Menlo, Consolas, monospace";
+    const tw = ctx.measureText(tag).width;
+    const bx = px + 12, by = py - 22;
+    ctx.fillStyle = muted ? "rgba(40,30,8,0.55)" : "rgba(50,36,8,0.9)";
+    ctx.strokeStyle = fillCol;
+    ctx.lineWidth = 1;
+    roundRect(ctx, bx, by, tw + 12, 18, 5);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = muted ? "rgba(255,191,0,0.55)" : AMBER;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(tag, bx + 6, by + 9);
+    ctx.restore();
+  }
+
+  function anglesForStep(s) {
+    const out = [];
+    for (let d = 0; d < 360; d += s) out.push(d);
+    return out;
+  }
+  function pairLabel(deg) {
+    const e = EXACT[deg];
+    return e ? "(" + e.x + ", " + e.y + ")" : "(?, ?)";
+  }
+  function degToRad(d) { return d * Math.PI / 180; }
+  function setNarration(html, cls) {
+    narration.className = "narration" + (cls ? " " + cls : "");
+    narration.innerHTML = html;
+  }
+  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function layout() {
+    const w = canvas.width, h = canvas.height;
+    const R = Math.min(w, h) / 2 - 78;
+    return { w, h, R, cx: w / 2, cy: h / 2 };
+  }
+  function toCanvas(x, y, L) { return [L.cx + x * L.R, L.cy - y * L.R]; }
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function labelOffset(deg, L) {
+    const a = degToRad(deg);
+    // Pair label: slightly outside the circle (cardinals nudged off-axis to stay on-canvas)
+    let lx = Math.cos(a) * 1.18, ly = Math.sin(a) * 1.18;
+    if (deg === 0) { lx = 1.14; ly = 0.22; }
+    else if (deg === 90) { lx = 0.22; ly = 1.14; }
+    else if (deg === 180) { lx = -1.14; ly = 0.22; }
+    else if (deg === 270) { lx = 0.22; ly = -1.14; }
+    return toCanvas(lx, ly, L);
+  }
+  function angleInsidePos(deg, L) {
+    // Notable angles: put θ° INSIDE the unit circle along the ray
+    const a = degToRad(deg);
+    const r = 0.55;
+    let lx = Math.cos(a) * r, ly = Math.sin(a) * r;
+    // tiny tangential nudge so it clears the axis tick "1"/"−1"
+    if (deg === 0) { lx = 0.58; ly = 0.16; }
+    else if (deg === 90) { lx = 0.16; ly = 0.58; }
+    else if (deg === 180) { lx = -0.58; ly = 0.16; }
+    else if (deg === 270) { lx = 0.16; ly = -0.58; }
+    return toCanvas(lx, ly, L);
+  }
+  function angleLabelDelta(deg) {
+    return { dx: 0, dy: (deg > 180 && deg < 360) ? 16 : -16 };
+  }
+  function axisLabelStack(deg, axis) {
+    const truth = EXACT[deg];
+    const key = axis === "x" ? truth.x : truth.y;
+    const peers = revealed.filter(d => (axis === "x" ? EXACT[d].x : EXACT[d].y) === key);
+    const idx = peers.indexOf(deg);
+    return (idx - (peers.length - 1) / 2) * 12;
+  }
+
+  function drawGuide(deg, L, emphasis) {
+    const a = degToRad(deg);
+    const x = Math.cos(a), y = Math.sin(a);
+    const e = EXACT[deg];
+    const [px, py] = toCanvas(x, y, L);
+    const [ax, ay] = toCanvas(x, 0, L);
+    const [zx, zy] = toCanvas(0, y, L);
+    const alpha = emphasis ? 0.95 : 0.55;
+    ctx.save();
+    ctx.setLineDash([6, 5]);
+    ctx.lineWidth = emphasis ? 2.1 : 1.45;
+    ctx.strokeStyle = "rgba(255,92,92," + alpha + ")";
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ax, ay); ctx.stroke();
+    ctx.strokeStyle = "rgba(52,211,153," + alpha + ")";
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(zx, zy); ctx.stroke();
+    ctx.setLineDash([]);
+    if (emphasis) {
+      ctx.strokeStyle = "rgba(192,132,252,0.75)";
+      ctx.lineWidth = 1.7;
+      ctx.beginPath(); ctx.moveTo(L.cx, L.cy); ctx.lineTo(px, py); ctx.stroke();
+    }
+    ctx.fillStyle = "#ff5c5c";
+    ctx.beginPath(); ctx.arc(ax, ay, emphasis ? 5 : 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#34d399";
+    ctx.beginPath(); ctx.arc(zx, zy, emphasis ? 5 : 3.5, 0, Math.PI * 2); ctx.fill();
+
+    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+    ctx.fillStyle = "#ff5c5c";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(e.x, ax + axisLabelStack(deg, "x"), ay + 8);
+    ctx.fillStyle = "#34d399";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(e.y, zx - 8, zy + axisLabelStack(deg, "y"));
+    ctx.restore();
+  }
+
+  function drawColoredPair(lx, ly, deg, emphasis) {
+    const e = EXACT[deg];
+    const parts = [
+      { t: "(", c: emphasis ? "#f5e1ff" : "#cbd5e1" },
+      { t: e.x, c: "#ff5c5c" },
+      { t: ", ", c: emphasis ? "#f5e1ff" : "#cbd5e1" },
+      { t: e.y, c: "#34d399" },
+      { t: ")", c: emphasis ? "#f5e1ff" : "#cbd5e1" },
+    ];
+    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+    let tw = 0;
+    for (const p of parts) tw += ctx.measureText(p.t).width;
+    const padX = 6, bh = 20;
+    const bx = lx - tw / 2 - padX, by = ly - bh / 2;
+    ctx.fillStyle = emphasis ? "rgba(40,20,60,0.92)" : "rgba(12,18,28,0.88)";
+    ctx.strokeStyle = emphasis ? "rgba(192,132,252,0.9)" : "rgba(75,93,122,0.7)";
+    ctx.lineWidth = 1;
+    roundRect(ctx, bx, by, tw + 2 * padX, bh, 6);
+    ctx.fill(); ctx.stroke();
+    let xCursor = lx - tw / 2;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    for (const p of parts) {
+      ctx.fillStyle = p.c;
+      ctx.fillText(p.t, xCursor, ly);
+      xCursor += ctx.measureText(p.t).width;
+    }
+  }
+
+  function drawPoint(deg, L, emphasis) {
+    const a = degToRad(deg);
+    const [px, py] = toCanvas(Math.cos(a), Math.sin(a), L);
+    ctx.save();
+    ctx.fillStyle = emphasis ? "#e9d5ff" : "#c084fc";
+    ctx.beginPath(); ctx.arc(px, py, emphasis ? 8 : 6.2, 0, Math.PI * 2); ctx.fill();
+    if (emphasis) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke(); }
+    const [lx, ly] = labelOffset(deg, L);
+    drawColoredPair(lx, ly, deg, emphasis);
+    const isCardinal = (deg % 90 === 0);
+    ctx.fillStyle = emphasis ? "#fde68a" : "#fbbf24";
+    ctx.font = "700 12px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    if (isCardinal) {
+      const [ax, ay] = angleInsidePos(deg, L);
+      ctx.fillText(deg + "°", ax, ay);
+    } else {
+      const dlt = angleLabelDelta(deg);
+      ctx.fillText(deg + "°", lx + dlt.dx, ly + dlt.dy);
+    }
+    ctx.restore();
+  }
+
+  function draw() {
+    const L = layout();
+    const { w, h, R, cx, cy } = L;
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.save();
+    ctx.strokeStyle = "#152033"; ctx.lineWidth = 1;
+    for (const r of [0.5, 1]) { ctx.beginPath(); ctx.arc(cx, cy, R * r, 0, Math.PI * 2); ctx.stroke(); }
+    for (let d = 0; d < 360; d += 30) {
+      const a = degToRad(d);
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * R * 0.96, cy - Math.sin(a) * R * 0.96);
+      ctx.lineTo(cx + Math.cos(a) * R, cy - Math.sin(a) * R);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = "#4b5d7a"; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(24, cy); ctx.lineTo(w - 24, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, 24); ctx.lineTo(cx, h - 24); ctx.stroke();
+    ctx.fillStyle = "#4b5d7a";
+    ctx.beginPath(); ctx.moveTo(w - 24, cy); ctx.lineTo(w - 34, cy - 5); ctx.lineTo(w - 34, cy + 5); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, 24); ctx.lineTo(cx - 5, 34); ctx.lineTo(cx + 5, 34); ctx.fill();
+    ctx.fillStyle = "#8b9bb4";
+    ctx.font = "600 13px system-ui, sans-serif";
+    ctx.textAlign = "left"; ctx.textBaseline = "top";
+    ctx.fillText("x", w - 22, cy + 8);
+    ctx.textBaseline = "bottom"; ctx.fillText("y", cx + 8, 28);
+    ctx.font = "600 12px ui-monospace, Menlo, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText("1", cx + R, cy + 8); ctx.fillText("−1", cx - R, cy + 8);
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillText("1", cx + 8, cy - R); ctx.fillText("−1", cx + 8, cy + R);
+    ctx.fillStyle = "#64748b";
+    ctx.font = "600 11px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("radio = 1", cx + R * 0.55, cy - R * 0.55);
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = "#e8eef7"; ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+
+    for (const deg of revealed) drawGuide(deg, L, deg === selected);
+    for (const deg of revealed) drawPoint(deg, L, deg === selected);
+    drawUserGuess(L);
+
+    // faint ray in predict mode before verify
+    if (mode === "predict" && challengeDeg != null && !verified && !revealed.includes(challengeDeg)) {
+      const a = degToRad(challengeDeg);
+      ctx.save();
+      ctx.strokeStyle = "rgba(253, 230, 138, 0.35)";
+      ctx.setLineDash([4, 6]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(a) * R, cy - Math.sin(a) * R);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if (mode === "drawAngle") drawDrawAngle(L);
+    if (mode === "drawCoord") drawDrawCoord(L);
+  }
+
+  function drawArcArrowAtLilac(cx, cy, arcR, mathA) {
+    // Tip of θ-arc where it meets the lilac radius; arrow follows arc travel
+    const tipX = cx + arcR * Math.cos(mathA);
+    const tipY = cy - arcR * Math.sin(mathA);
+    // tangent for increasing math angle a: d/da (cos a, -sin a) = (-sin a, -cos a)
+    let tx = -Math.sin(mathA);
+    let ty = -Math.cos(mathA);
+    if (mathA < 0) { tx = -tx; ty = -ty; } // clockwise travel when θ below +X
+    const len = Math.hypot(tx, ty) || 1;
+    tx /= len; ty /= len;
+    const size = 11;
+    const bx = tipX - tx * size;
+    const by = tipY - ty * size;
+    const px = -ty, py = tx;
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.lineTo(bx + px * size * 0.42, by + py * size * 0.42);
+    ctx.lineTo(bx - px * size * 0.42, by - py * size * 0.42);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawDrawAngle(L) {
+    const { cx, cy, R } = L;
+    // faint magnetic ticks every 15°
+    ctx.save();
+    ctx.fillStyle = "rgba(110,168,254,0.35)";
+    ctx.strokeStyle = "rgba(110,168,254,0.25)";
+    ctx.lineWidth = 1;
+    for (let d = 0; d < 360; d += ANGLE_SNAP_DEG) {
+      const a = degToRad(d);
+      const x1 = cx + Math.cos(a) * R * 0.97;
+      const y1 = cy - Math.sin(a) * R * 0.97;
+      const x2 = cx + Math.cos(a) * R;
+      const y2 = cy - Math.sin(a) * R;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      const [dx, dy] = toCanvas(Math.cos(a), Math.sin(a), L);
+      ctx.beginPath(); ctx.arc(dx, dy, 2.2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+
+    // Positive X semi-axis: amber + thicker (θ = 0 reference)
+    ctx.save();
+    ctx.strokeStyle = "#FFBF00";
+    ctx.fillStyle = "#FFBF00";
+    ctx.lineWidth = 3.6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + R, cy);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + R + 12, cy);
+    ctx.lineTo(cx + R - 1, cy - 7);
+    ctx.lineTo(cx + R - 1, cy + 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.font = "700 12px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("0°", cx + R * 0.55, cy + 10);
+    ctx.restore();
+
+    const a = degToRad(drawAngleDeg);
+    const x = Math.cos(a), y = Math.sin(a);
+    const [px, py] = toCanvas(x, y, L);
+
+    // radius (lila)
+    ctx.save();
+    ctx.strokeStyle = "rgba(192,132,252,0.95)";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+
+    // arc from +X to lilac ray, with arrow at the tip on the lilac line
+    const arcR = R * 0.28;
+    if (Math.abs(a) > 1e-9) {
+      ctx.strokeStyle = "rgba(253,230,138,0.95)";
+      ctx.fillStyle = "#FFBF00";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, arcR, 0, -a, a > 0);
+      ctx.stroke();
+      drawArcArrowAtLilac(cx, cy, arcR, a);
+    }
+
+    // marker
+    ctx.fillStyle = drawAngleSnapped ? "#e9d5ff" : "#c084fc";
+    ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // θ label
+    const labelDeg = drawAngleSnapped ? nearestAngle15(drawAngleDeg) : Math.round(drawAngleDeg * 10) / 10;
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "700 13px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const mid = a / 2;
+    const [tx, ty] = toCanvas(Math.cos(mid) * 0.38, Math.sin(mid) * 0.38, L);
+    ctx.fillText(labelDeg + "°", tx, ty);
+
+    // pair label
+    const snapDeg = nearestAngle15(drawAngleDeg);
+    let xLab, yLab;
+    if (drawAngleSnapped && EXACT[snapDeg]) {
+      xLab = EXACT[snapDeg].x; yLab = EXACT[snapDeg].y;
+    } else {
+      xLab = fmt3(x); yLab = fmt3(y);
+    }
+    // guides when snapped with EXACT
+    if (drawAngleSnapped && EXACT[snapDeg]) {
+      const [ax, ay] = toCanvas(x, 0, L);
+      const [zx, zy] = toCanvas(0, y, L);
+      ctx.setLineDash([6, 5]);
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = "rgba(255,92,92,0.85)";
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ax, ay); ctx.stroke();
+      ctx.strokeStyle = "rgba(52,211,153,0.85)";
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(zx, zy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#ff5c5c";
+      ctx.beginPath(); ctx.arc(ax, ay, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#34d399";
+      ctx.beginPath(); ctx.arc(zx, zy, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+      ctx.fillStyle = "#ff5c5c";
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.fillText(xLab, ax, ay + 8);
+      ctx.fillStyle = "#34d399";
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillText(yLab, zx - 8, zy);
+    }
+    // pair near point
+    const parts = [
+      { t: "(", c: "#f5e1ff" },
+      { t: xLab, c: "#ff5c5c" },
+      { t: ", ", c: "#f5e1ff" },
+      { t: yLab, c: "#34d399" },
+      { t: ")", c: "#f5e1ff" },
+    ];
+    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+    let tw = 0;
+    for (const p of parts) tw += ctx.measureText(p.t).width;
+    const [lx, ly] = toCanvas(x * 1.22, y * 1.22, L);
+    const padX = 6, bh = 20;
+    const bx = lx - tw / 2 - padX, by = ly - bh / 2;
+    ctx.fillStyle = "rgba(40,20,60,0.92)";
+    ctx.strokeStyle = "rgba(192,132,252,0.9)";
+    ctx.lineWidth = 1;
+    roundRect(ctx, bx, by, tw + 2 * padX, bh, 6);
+    ctx.fill(); ctx.stroke();
+    let xCursor = lx - tw / 2;
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    for (const p of parts) {
+      ctx.fillStyle = p.c;
+      ctx.fillText(p.t, xCursor, ly);
+      xCursor += ctx.measureText(p.t).width;
+    }
+    ctx.restore();
+  }
+
+  function drawDrawCoord(L) {
+    // faint magnetic dots on axes
+    ctx.save();
+    ctx.fillStyle = "rgba(110,168,254,0.4)";
+    for (const t of MAG_TARGETS) {
+      const [dx, dy] = toCanvas(t.x, t.y, L);
+      ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+
+    const x = drawCoordXval, y = drawCoordYval;
+    const [px, py] = toCanvas(x, y, L);
+
+    ctx.save();
+    if (drawCoordSnapped) {
+      const [ax, ay] = toCanvas(x, 0, L);
+      const [zx, zy] = toCanvas(0, y, L);
+      ctx.setLineDash([6, 5]);
+      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = "rgba(255,92,92,0.9)";
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ax, ay); ctx.stroke();
+      ctx.strokeStyle = "rgba(52,211,153,0.9)";
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(zx, zy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#ff5c5c";
+      ctx.beginPath(); ctx.arc(ax, ay, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#34d399";
+      ctx.beginPath(); ctx.arc(zx, zy, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+      ctx.fillStyle = "#ff5c5c";
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.fillText(drawCoordXLab, ax, ay + 8);
+      ctx.fillStyle = "#34d399";
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillText(drawCoordYLab, zx - 8, zy);
+    }
+
+    // marker
+    ctx.fillStyle = drawCoordSnapped ? "#e9d5ff" : "#c084fc";
+    ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // pair tag
+    const tag = "(" + drawCoordXLab + ", " + drawCoordYLab + ")";
+    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+    const tw = ctx.measureText(tag).width;
+    const bx = px + 12, by = py - 22;
+    ctx.fillStyle = "rgba(40,20,60,0.92)";
+    ctx.strokeStyle = "rgba(192,132,252,0.9)";
+    ctx.lineWidth = 1;
+    roundRect(ctx, bx, by, tw + 12, 18, 5);
+    ctx.fill(); ctx.stroke();
+    // colored pair
+    const parts = [
+      { t: "(", c: "#f5e1ff" },
+      { t: drawCoordXLab, c: "#ff5c5c" },
+      { t: ", ", c: "#f5e1ff" },
+      { t: drawCoordYLab, c: "#34d399" },
+      { t: ")", c: "#f5e1ff" },
+    ];
+    let xCursor = bx + 6;
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    for (const p of parts) {
+      ctx.fillStyle = p.c;
+      ctx.fillText(p.t, xCursor, by + 9);
+      xCursor += ctx.measureText(p.t).width;
+    }
+    ctx.restore();
+  }
+
+  function rebuildEducateTable() {
+    const angs = anglesForStep(step);
+    stepLabel.textContent = step + "°";
+    tbody.innerHTML = "";
+    for (const deg of angs) {
+      const shown = revealed.includes(deg);
+      const e = EXACT[deg];
+      const tr = document.createElement("tr");
+      if (deg === selected) tr.classList.add("sel");
+      if (!shown) tr.classList.add("pending");
+      tr.dataset.deg = String(deg);
+      tr.innerHTML = shown
+        ? "<td>" + deg + "°</td><td class=\"pair\">(<span class=\"x\">" + e.x + "</span>, <span class=\"y\">" + e.y + "</span>)</td>"
+        : "<td>" + deg + "°</td><td class=\"pair\">…</td>";
+      if (shown) {
+        tr.addEventListener("click", () => { selected = deg; rebuildEducateTable(); draw(); });
+      }
+      tbody.appendChild(tr);
+    }
+  }
+
+  function syncEducateButtons() {
+    const angs = anglesForStep(step);
+    const done = revealed.length >= angs.length;
+    playBtn.disabled = playing || done || mode !== "educate";
+    nextBtn.disabled = playing || done || mode !== "educate";
+    playBtn.textContent = done ? "✓ Completo" : (playing ? "Desplegando…" : "▶ Play");
+  }
+
+  function revealOne() {
+    const angs = anglesForStep(step);
+    if (revealed.length >= angs.length) return false;
+    const deg = angs[revealed.length];
+    revealed.push(deg);
+    selected = deg;
+    const e = EXACT[deg];
+    setNarration(
+      "θ = <strong>" + deg + "°</strong> → (<span style='color:#ff5c5c'>" + e.x + "</span>, <span style='color:#34d399'>" + e.y + "</span>). " +
+      "Rojo en X = cos; verde en Y = sen. Guías permanentes."
+    );
+    rebuildEducateTable();
+    draw();
+    const row = tbody.querySelector('tr[data-deg="' + deg + '"]');
+    if (row) row.scrollIntoView({ block: "nearest" });
+    return true;
+  }
+
+  async function playAll() {
+    if (playing || mode !== "educate") return;
+    playing = true;
+    playAbort = false;
+    syncEducateButtons();
+    while (!playAbort && mode === "educate" && revealOne()) {
+      syncEducateButtons();
+      await wait(850);
+    }
+    playing = false;
+    syncEducateButtons();
+    if (revealed.length >= anglesForStep(step).length) {
+      setNarration("Play completo. Todas las construcciones quedaron permanentes. Tocá un punto o una fila para resaltar.");
+    }
+  }
+
+  function resetEducate() {
+    playAbort = true;
+    playing = false;
+    clearUserGuess();
+    revealed = [];
+    selected = null;
+    setNarration("Reset Educar. Tocá <strong>▶ Play</strong> o <strong>Siguiente</strong>.");
+    rebuildEducateTable();
+    draw();
+    syncEducateButtons();
+  }
+
+  // ---- Predict ----
+  function renderChips() {
+    const locked = verified;
+    cosChips.innerHTML = "";
+    sinChips.innerHTML = "";
+    for (const v of CHOICES) {
+      const bc = document.createElement("button");
+      bc.type = "button"; bc.className = "chip" + (pickCos === v ? " picked" : "");
+      bc.textContent = v; bc.disabled = locked;
+      bc.addEventListener("click", () => { if (locked) return; pickCos = v; syncVerify(); renderChips(); });
+      cosChips.appendChild(bc);
+      const bs = document.createElement("button");
+      bs.type = "button"; bs.className = "chip" + (pickSin === v ? " picked" : "");
+      bs.textContent = v; bs.disabled = locked;
+      bs.addEventListener("click", () => { if (locked) return; pickSin = v; syncVerify(); renderChips(); });
+      sinChips.appendChild(bs);
+    }
+  }
+  function syncVerify() {
+    verifyBtn.disabled = verified || pickCos == null || pickSin == null || challengeDeg == null;
+  }
+  function newChallenge(preferUnused) {
+    const angs = anglesForStep(step);
+    let pool = preferUnused ? angs.filter(d => !revealed.includes(d)) : angs.slice();
+    if (!pool.length) pool = angs.slice();
+    challengeDeg = pool[Math.floor(Math.random() * pool.length)];
+    pickCos = null; pickSin = null; verified = false;
+    selected = null;
+    clearUserGuess();
+    thetaView.textContent = challengeDeg + "°";
+    setNarration("θ = <strong>" + challengeDeg + "°</strong>. Predí <strong>cos</strong> y <strong>sen</strong> exactos. El punto sigue oculto.");
+    renderChips();
+    syncVerify();
+    draw();
+  }
+  function verify() {
+    if (verified || challengeDeg == null || pickCos == null || pickSin == null) return;
+    const truth = EXACT[challengeDeg];
+    nCount += 1;
+    const ok = pickCos === truth.x && pickSin === truth.y;
+    if (ok) okCount += 1;
+    scoreOk.textContent = String(okCount);
+    scoreN.textContent = String(nCount);
+    verified = true;
+    if (!revealed.includes(challengeDeg)) revealed.push(challengeDeg);
+    selected = challengeDeg;
+    renderChips();
+    syncVerify();
+    if (ok) {
+      clearUserGuess();
+      draw();
+      setNarration(
+        "✓ Correcto: <strong>" + pairLabel(challengeDeg) + "</strong>. " +
+        "Proyección <span style='color:#ff5c5c'>roja → X</span>; <span style='color:#34d399'>verde → Y</span>. Queda permanente.",
+        "ok"
+      );
+    } else {
+      // show correct + amber blink of user's chosen (X,Y) with axis guides
+      startWrongBlink(pickCos, pickSin);
+      setNarration(
+        "✗ Era <strong>" + pairLabel(challengeDeg) + "</strong>. " +
+        "Tu elección <span style='color:#FFBF00'>(" + pickCos + ", " + pickSin + ")</span> parpadea en ámbar con líneas a X e Y.",
+        "bad"
+      );
+    }
+  }
+  function resetPredict() {
+    clearUserGuess();
+    revealed = []; selected = null; okCount = 0; nCount = 0;
+    scoreOk.textContent = "0"; scoreN.textContent = "0";
+    newChallenge(false);
+    setNarration("Reset Predecir. Nuevo ángulo: predí cos y sen <strong>antes</strong> de ver el punto.");
+  }
+
+  function setMode(m) {
+    playAbort = true;
+    playing = false;
+    mode = m;
+    modeButtons.forEach(b => b.classList.toggle("active", b.dataset.mode === m));
+    panelEducate.classList.toggle("hidden", m !== "educate");
+    panelPredict.classList.toggle("hidden", m !== "predict");
+    panelDrawAngle.classList.toggle("hidden", m !== "drawAngle");
+    panelDrawCoord.classList.toggle("hidden", m !== "drawCoord");
+    const hideStep = (m === "drawAngle" || m === "drawCoord");
+    stepSelectorWrap.classList.toggle("hidden", hideStep);
+    clearUserGuess();
+    revealed = [];
+    selected = null;
+    pointerDragging = false;
+    drawAngleDragging = false;
+    drawCoordDragging = false;
+    syncCanvasCursor();
+    if (m === "educate") {
+      rebuildEducateTable();
+      syncEducateButtons();
+      draw();
+      setNarration("Modo Educar: tocá <strong>▶ Play</strong> o <strong>Siguiente</strong> para construir el círculo.");
+    } else if (m === "predict") {
+      okCount = 0; nCount = 0;
+      scoreOk.textContent = "0"; scoreN.textContent = "0";
+      newChallenge(false);
+    } else if (m === "drawAngle") {
+      drawAngleDeg = 0;
+      drawAngleSnapped = true;
+      updateDrawAnglePanel();
+      setNarration("Dibujar ángulo: arrastrá el marcador sobre la circunferencia. Snap cada <strong>15°</strong> (umbral 8°).");
+      draw();
+    } else if (m === "drawCoord") {
+      drawCoordXval = 1; drawCoordYval = 0;
+      drawCoordXLab = "1"; drawCoordYLab = "0";
+      drawCoordAxisHit = "X";
+      drawCoordSnapped = true;
+      updateDrawCoordPanel();
+      setNarration("Dibujar coordenada: arrastrá libremente; snap a valores exactos en los ejes (umbral <strong>0.12</strong>).");
+      draw();
+    }
+  }
+
+  function setStep(s) {
+    if (playing) return;
+    if (mode === "drawAngle" || mode === "drawCoord") return;
+    step = s;
+    stepButtons.forEach(b => b.classList.toggle("active", Number(b.dataset.step) === s));
+    clearUserGuess();
+    revealed = [];
+    selected = null;
+    if (mode === "educate") {
+      rebuildEducateTable();
+      syncEducateButtons();
+      draw();
+      setNarration("Paso <strong>" + s + "°</strong>. Tocá <strong>▶ Play</strong> para desplegar.");
+    } else if (mode === "predict") {
+      newChallenge(false);
+    }
+  }
+
+  modeButtons.forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+  stepButtons.forEach(b => b.addEventListener("click", () => setStep(Number(b.dataset.step))));
+  playBtn.addEventListener("click", playAll);
+  nextBtn.addEventListener("click", () => {
+    if (playing || mode !== "educate") return;
+    if (!revealOne()) setNarration("Ya están todos los puntos del paso " + step + "°.");
+    syncEducateButtons();
+  });
+  resetEducateBtn.addEventListener("click", resetEducate);
+  verifyBtn.addEventListener("click", verify);
+  nextChallengeBtn.addEventListener("click", () => newChallenge(true));
+  resetPredictBtn.addEventListener("click", resetPredict);
+  resetDrawAngleBtn.addEventListener("click", resetDrawAngle);
+  resetDrawCoordBtn.addEventListener("click", resetDrawCoord);
+
+  function applyDrawAngleFromWorld(x, y, forceSnap) {
+    let deg = normDeg(Math.atan2(y, x) * 180 / Math.PI);
+    const nearest = nearestAngle15(deg);
+    const dist = angDist(deg, nearest);
+    if (forceSnap || dist <= ANGLE_SNAP_THRESH) {
+      drawAngleDeg = nearest;
+      drawAngleSnapped = true;
+    } else {
+      drawAngleDeg = deg;
+      drawAngleSnapped = false;
+    }
+    updateDrawAnglePanel();
+  }
+
+  function applyDrawCoordFromWorld(x, y, forceSnap) {
+    x = Math.max(-1.25, Math.min(1.25, x));
+    y = Math.max(-1.25, Math.min(1.25, y));
+    const { target, dist } = nearestMagTarget(x, y);
+    if (forceSnap || dist <= COORD_SNAP_THRESH) {
+      drawCoordXval = target.x;
+      drawCoordYval = target.y;
+      drawCoordXLab = target.xLab;
+      drawCoordYLab = target.yLab;
+      drawCoordAxisHit = target.axis;
+      drawCoordSnapped = true;
+    } else {
+      drawCoordXval = x;
+      drawCoordYval = y;
+      drawCoordXLab = fmt3(x);
+      drawCoordYLab = fmt3(y);
+      drawCoordAxisHit = (Math.abs(x) >= Math.abs(y)) ? "X" : "Y";
+      drawCoordSnapped = false;
+    }
+    updateDrawCoordPanel();
+  }
+
+  canvas.addEventListener("pointerdown", (ev) => {
+    if (mode === "drawAngle" || mode === "drawCoord") {
+      pointerDragging = true;
+      drawAngleDragging = mode === "drawAngle";
+      drawCoordDragging = mode === "drawCoord";
+      try { canvas.setPointerCapture(ev.pointerId); } catch (_) {}
+      syncCanvasCursor();
+      const w = clientToWorld(ev);
+      if (mode === "drawAngle") applyDrawAngleFromWorld(w.x, w.y, false);
+      else applyDrawCoordFromWorld(w.x, w.y, false);
+      draw();
+      return;
+    }
+    // educate / predict: click-to-select revealed points
+    if (!revealed.length) return;
+    const w = clientToWorld(ev);
+    let best = null, bestD = 18;
+    for (const deg of revealed) {
+      const a = degToRad(deg);
+      const [px, py] = toCanvas(Math.cos(a), Math.sin(a), w.L);
+      const d = Math.hypot(px - w.mx, py - w.my);
+      if (d < bestD) { bestD = d; best = deg; }
+    }
+    if (best != null) {
+      selected = best;
+      if (mode === "educate") rebuildEducateTable();
+      draw();
+    }
+  });
+
+  canvas.addEventListener("pointermove", (ev) => {
+    if (!pointerDragging) return;
+    if (mode !== "drawAngle" && mode !== "drawCoord") return;
+    const w = clientToWorld(ev);
+    if (mode === "drawAngle") applyDrawAngleFromWorld(w.x, w.y, false);
+    else applyDrawCoordFromWorld(w.x, w.y, false);
+    draw();
+  });
+
+  function endPointerDrag(ev) {
+    if (!pointerDragging) return;
+    const wasAngle = mode === "drawAngle";
+    const wasCoord = mode === "drawCoord";
+    pointerDragging = false;
+    drawAngleDragging = false;
+    drawCoordDragging = false;
+    try { canvas.releasePointerCapture(ev.pointerId); } catch (_) {}
+    syncCanvasCursor();
+    if (wasAngle || wasCoord) {
+      const w = clientToWorld(ev);
+      if (wasAngle) applyDrawAngleFromWorld(w.x, w.y, true); // always land on magnetic
+      else applyDrawCoordFromWorld(w.x, w.y, true);
+      draw();
+    }
+  }
+  canvas.addEventListener("pointerup", endPointerDrag);
+  canvas.addEventListener("pointercancel", endPointerDrag);
+
+  setMode("educate");
+})();
+</script>
+</body>
+</html>

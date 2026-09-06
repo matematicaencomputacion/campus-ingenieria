@@ -1,0 +1,6 @@
+shots/
+tools/_gen/
+**/*.bak
+.DS_Store
+*.log
+.DS_Store

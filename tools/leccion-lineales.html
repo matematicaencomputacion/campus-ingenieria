@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 1 Funciones lineales</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --line: #ff5c5c; --point: #c084fc; --mast: #60a5fa; --ok: #34d399;
+  --btn: #3b82f6; --border: #243044;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px; min-height: 100dvh;
+}
+.wrap { max-width: min(1400px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; margin-bottom: 2px; }
+h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; display: inline; }
+.sub {
+  display: inline; margin: 0 0 0 0.55rem; color: var(--muted);
+  font-size: 0.88rem; font-weight: 400;
+}
+.sub::before { content: "·"; margin-right: 0.55rem; opacity: 0.7; }
+header > div:first-child { line-height: 1.35; }
+.stage {
+  display: grid; grid-template-columns: 1.55fr 0.85fr; gap: 12px;
+  align-items: stretch;
+}
+@media (max-width: 860px) { .stage { grid-template-columns: 1fr; } }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px; min-height: 0;
+}
+.expr {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.expr .box { margin-right: 2px; }
+.expr .toolbar {
+  display: flex; flex-wrap: nowrap; gap: 6px; align-items: center;
+}
+.expr .toolbar button { white-space: nowrap; padding: 8px 12px; }
+@media (max-width: 720px) {
+  .expr .toolbar { flex-wrap: wrap; }
+}
+.expr .box {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 12px; font-family: ui-monospace, Menlo, monospace; font-size: 1rem;
+  min-width: 140px;
+}
+.expr .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.play {
+  background: var(--btn); color: white; border: 0; border-radius: 10px;
+  padding: 9px 14px; font: inherit; font-weight: 650; cursor: pointer;
+}
+button.ghost {
+  background: transparent; color: var(--ink); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; font: inherit; cursor: pointer;
+}
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.graph-wrap { position: relative; }
+.stage > .card:first-child { display: flex; flex-direction: column; }
+.graph-wrap { flex: 1; display: flex; flex-direction: column; }
+.graph-wrap canvas { flex: 1; min-height: 520px; max-height: min(78vh, 760px); width: 100%; object-fit: contain; }
+canvas { width: 100%; height: auto; display: block; border-radius: 10px; background: #0a0f18; }
+.slider-rail {
+  position: relative; height: 28px; margin-top: 6px;
+  background: #0a0f18; border-radius: 8px; border: 1px solid var(--border);
+}
+.tri {
+  position: absolute; top: 4px; width: 0; height: 0;
+  border-left: 8px solid transparent; border-right: 8px solid transparent;
+  border-top: 14px solid var(--mast); transform: translateX(-50%);
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.5));
+  pointer-events: none;
+}
+.table-card h2, .calc-card h2 {
+  margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+table {
+  width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.9rem;
+}
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #22304a; }
+th { color: var(--muted); font-weight: 600; }
+tr.new td { animation: flash 0.7s ease; }
+.x-red { color: #ff5c5c; font-weight: 700; }
+td.x-red { color: #ff5c5c; }
+.calc-line .eq .x-red { color: #ff5c5c; font-weight: 700; }
+@keyframes flash { from { background: rgba(192,132,252,.25); } to { background: transparent; } }
+.calc-log {
+  height: min(320px, 36vh); overflow: hidden; display: flex; flex-direction: column-reverse;
+  gap: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 0.92rem;
+  background: #0a0f18; border-radius: 10px; padding: 10px; border: 1px solid var(--border);
+}
+.calc-line {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 6px 8px; border-radius: 8px; background: #121a28;
+  animation: rise 0.45s ease;
+}
+.calc-line .eq { color: var(--muted); }
+.calc-line .res { color: #93c5fd; font-weight: 650; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.narration {
+  flex: 1 1 220px; margin: 0; min-width: 180px;
+  color: var(--muted); font-size: 0.86rem; line-height: 1.35;
+  padding: 0;
+}
+.narration strong { color: var(--ink); }
+.right-col { display: grid; gap: 12px; align-content: start; }
+.params {
+  display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; margin: 0 0 8px;
+}
+@media (max-width: 900px) { .params { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .params { grid-template-columns: 1fr; } }
+.param.domain .dual {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center;
+}
+.dual-track {
+  position: relative; height: 28px; touch-action: none; user-select: none;
+}
+.dual-track .rail {
+  position: absolute; left: 0; right: 0; top: 50%; height: 6px;
+  transform: translateY(-50%); border-radius: 999px; background: #243044;
+}
+.dual-track .fill {
+  position: absolute; top: 50%; height: 6px; transform: translateY(-50%);
+  border-radius: 999px; background: rgba(255,92,92,0.75); pointer-events: none;
+}
+.dual-track .handle {
+  position: absolute; top: 50%; width: 16px; height: 16px;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: #ff5c5c; border: 2px solid #fff; cursor: ew-resize;
+  box-shadow: 0 0 0 3px rgba(255,92,92,0.25);
+  z-index: 2;
+}
+.dual-track .handle:focus { outline: none; box-shadow: 0 0 0 4px rgba(96,165,250,0.45); }
+
+.param {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px;
+}
+.param label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+.param .row { display: flex; align-items: center; gap: 10px; }
+.param select, .param input[type=range] { flex: 1; accent-color: var(--btn); }
+.param .val {
+  font-family: ui-monospace, Menlo, monospace; min-width: 2.5rem; text-align: right; color: #93c5fd;
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem;
+  padding: 3px 9px; border-radius: 999px; background: #1e293b; color: #cbd5e1;
+}
+
+    h1 .lesson-num { color: #60a5fa; font-weight: 800; }
+
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 10px; }
+.lesson-nav.next { right: 10px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 1</span> Funciones lineales</h1>
+      <p class="sub">Play sincroniza mástil + tabla + cálculos. Una idea, tres vistas.</p>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="params">
+      <div class="param">
+        <label for="slope">Pendiente <em>m</em></label>
+        <div class="row">
+          <input id="slope" type="range" min="-3" max="3" step="0.5" value="2" />
+          <span class="val" id="slopeVal">2</span>
+        </div>
+      </div>
+      <div class="param">
+        <label for="intercept">Ordenada al origen <em>b</em></label>
+        <div class="row">
+          <input id="intercept" type="range" min="-4" max="4" step="0.5" value="1" />
+          <span class="val" id="interceptVal">1</span>
+        </div>
+      </div>
+      <div class="param domain">
+        <label>Restricción del dominio <em>[x₁, x₂]</em></label>
+        <div class="dual">
+          <span class="val" id="domLoVal">−3</span>
+          <div class="dual-track" id="domTrack" role="group" aria-label="Dominio continuo">
+            <div class="rail"></div>
+            <div class="fill" id="domFill"></div>
+            <button type="button" class="handle" id="domLoHandle" aria-label="Inicio del dominio"></button>
+            <button type="button" class="handle" id="domHiHandle" aria-label="Fin del dominio"></button>
+          </div>
+          <span class="val" id="domHiVal">3</span>
+        </div>
+        <!-- hidden mirrors for existing domainBounds() -->
+        <input id="domLo" type="hidden" value="-3" />
+        <input id="domHi" type="hidden" value="3" />
+      </div>
+    </div>
+    <div class="expr">
+      <span class="dot" aria-hidden="true"></span>
+      <div class="box" id="fnBox"><span style="color:var(--muted)">Cargar f</span></div>
+      <div class="toolbar">
+        <button class="ghost" id="loadBtn" type="button">Cargar f</button>
+        <button class="play" id="playBtn" type="button" disabled>▶ Play tabla</button>
+        <button class="ghost" id="resetBtn" type="button">Reset</button>
+      </div>
+      <p class="narration" id="narration">Ajustá <strong>m</strong> y <strong>b</strong>, cargá f y dale Play.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="card">
+      <div class="graph-wrap">
+        <a class="lesson-nav next" href="leccion-cuadraticas.html" title="Lección 2: Funciones cuadráticas" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="1000" height="680" aria-label="Gráfica"></canvas>
+        <div class="slider-rail" aria-hidden="true"><div class="tri" id="tri"></div></div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="card table-card">
+        <h2>Tabla de valores</h2>
+        <table>
+          <thead><tr><th>x</th><th>f(x)</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="card calc-card">
+        <h2>Calculadora</h2>
+        <div class="calc-log" id="calcLog" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  let lesson = {
+    id: "custom",
+    title: "Personalizada",
+    latex: "f(x) = 2x + 1",
+    a: 2, b: 1,
+    sayLoad: "",
+    sayPlay: "El mástil barre el dominio visible. En cada parada: etiqueta en X → cálculo → guía a Y.",
+  };
+  const slopeEl = document.getElementById("slope");
+  const interceptEl = document.getElementById("intercept");
+  const slopeVal = document.getElementById("slopeVal");
+  const interceptVal = document.getElementById("interceptVal");
+  const domLoEl = document.getElementById("domLo");
+  const domHiEl = document.getElementById("domHi");
+  const domLoVal = document.getElementById("domLoVal");
+  const domHiVal = document.getElementById("domHiVal");
+
+  function numLabel(n) {
+    // pretty -2, -1.5, 0, 0.5, 1, 2
+    if (Number.isInteger(n)) return String(n);
+    return String(n);
+  }
+  function latexFrom(a, b) {
+    const aa = Number(a), bb = Number(b);
+    let left;
+    if (aa === 0) left = "";
+    else if (aa === 1) left = "x";
+    else if (aa === -1) left = "−x";
+    else left = `${numLabel(aa).replace("-","−")}x`;
+    if (aa === 0) return `f(x) = ${numLabel(bb).replace("-","−")}`;
+    if (bb === 0) return `f(x) = ${left}`;
+    const sign = bb > 0 ? " + " : " − ";
+    return `f(x) = ${left}${sign}${numLabel(Math.abs(bb))}`;
+  }
+  function domainBounds() {
+    let lo = Number(domLoEl.value);
+    let hi = Number(domHiEl.value);
+    if (Number.isNaN(lo)) lo = -3;
+    if (Number.isNaN(hi)) hi = 3;
+    if (lo > hi) { const tmp = lo; lo = hi; hi = tmp; }
+    return { lo, hi };
+  }
+
+  function applyParamsToLesson() {
+    const a = Number(slopeEl.value);
+    const b = Number(interceptEl.value);
+    const { lo, hi } = domainBounds();
+    slopeVal.textContent = numLabel(a);
+    interceptVal.textContent = numLabel(b);
+    if (typeof syncDomainUI === "function") syncDomainUI();
+    lesson = {
+      ...lesson,
+      a, b,
+      domLo: lo,
+      domHi: hi,
+      latex: latexFrom(a, b),
+      sayLoad: `Armamos <strong>${latexFrom(a, b)}</strong> (línea de puntos). Dominio previsto <strong>[${numLabel(lo).replace("-","−")}, ${numLabel(hi).replace("-","−")}]</strong>.`,
+      sayPlay: "El mástil barre la línea punteada visible. En cada parada: etiqueta en X → cálculo → guía a Y. Al final, el trazo grueso marca el dominio.",
+    };
+  }
+
+  let loaded = false;
+  let playing = false;
+  let points = []; // {x,y}
+  let mastX = null;
+  let anim = null;
+  let guide = null; // {x, phase: "x"|"xy", y?} current step guides
+  let axisMarks = []; // accumulated {x,y} labels already revealed
+  let showDomainStroke = false; // thick domain segment only after Play ends
+  let finalClean = false; // after 4s: drop scaffolding, keep only domain segment
+  let showDomainAxis = false; // yellow domain projection on X-axis
+  let showImageProj = false; // green horizontal projections to Y
+  let showImageAxis = false; // green image segment on Y-axis
+  let cleanTimer = null;
+  let domainAxisTimer = null;
+  let imageTimer = null;
+
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const fnBox = document.getElementById("fnBox");
+  const loadBtn = document.getElementById("loadBtn");
+  const playBtn = document.getElementById("playBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const tbody = document.getElementById("tbody");
+  const calcLog = document.getElementById("calcLog");
+  const narration = document.getElementById("narration");
+  const tri = document.getElementById("tri");
+
+  // Symmetric view; actual draw uses equal px per unit (isotropic).
+  const VIEW = 7; // show roughly [-VIEW, VIEW] on both axes when square
+  let XMIN = -VIEW, XMAX = VIEW, YMIN = -VIEW, YMAX = VIEW;
+
+  function f(x) { return lesson.a * x + lesson.b; }
+
+  function fmtExpr(x) {
+    const a = lesson.a, b = lesson.b;
+    const xs = x < 0 ? `(${x})` : `${x}`;
+    if (a === 0) return `${b}`;
+    if (a === 1) return `${xs} + ${b}`;
+    if (a === -1) return `−${xs} + ${b}`;
+    const as = a < 0 ? `−${Math.abs(a)}` : `${a}`;
+    return `${as} · ${xs} + ${b}`;
+  }
+
+  function syncWorldToCanvas() {
+    const w = canvas.width, h = canvas.height;
+    // Equal scale: 1 unit X = 1 unit Y in pixels
+    const scale = Math.min(w / (2 * VIEW), h / (2 * VIEW));
+    const halfW = (w / scale) / 2;
+    const halfH = (h / scale) / 2;
+    XMIN = -halfW; XMAX = halfW;
+    YMIN = -halfH; YMAX = halfH;
+    return scale;
+  }
+
+  function toCanvas(x, y) {
+    const w = canvas.width, h = canvas.height;
+    const scale = Math.min(w / (2 * VIEW), h / (2 * VIEW));
+    const cx = w / 2, cy = h / 2;
+    return [cx + x * scale, cy - y * scale];
+  }
+  function xToRail(x) {
+    const w = canvas.width;
+    const scale = Math.min(w / (2 * VIEW), canvas.height / (2 * VIEW));
+    const cx = w / 2;
+    const px = cx + x * scale;
+    return (px / w) * 100;
+  }
+
+  function draw() {
+    syncWorldToCanvas();
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    // grid
+    ctx.strokeStyle = "#1c2738"; ctx.lineWidth = 1;
+    for (let x = Math.ceil(XMIN); x <= XMAX; x++) {
+      const [px] = toCanvas(x, 0);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+    }
+    for (let y = Math.ceil(YMIN); y <= YMAX; y++) {
+      const [, py] = toCanvas(0, y);
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+    }
+    // axes
+    ctx.strokeStyle = "#4b5d7a"; ctx.lineWidth = 1.5;
+    const [ox, oy] = toCanvas(0, 0);
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+
+    if (loaded) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+      const { lo, hi } = domainBounds();
+      // Construction dotted full line — hidden once finalClean (4s after Play)
+      if (!finalClean) {
+        const y0 = f(XMIN), y1 = f(XMAX);
+        const [p0x, p0y] = toCanvas(XMIN, y0);
+        const [p1x, p1y] = toCanvas(XMAX, y1);
+        ctx.strokeStyle = "rgba(255,92,92,0.85)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([7, 6]);
+        ctx.beginPath(); ctx.moveTo(p0x, p0y); ctx.lineTo(p1x, p1y); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      // Only after Play finishes: thick solid stroke on restricted domain
+      if (showDomainStroke) {
+        const xA = Math.max(lo, XMIN);
+        const xB = Math.min(hi, XMAX);
+        if (xB > xA) {
+          const y0 = f(xA), y1 = f(xB);
+          const [p0x, p0y] = toCanvas(xA, y0);
+          const [p1x, p1y] = toCanvas(xB, y1);
+          ctx.strokeStyle = "#ff5c5c";
+          ctx.lineWidth = 4.5;
+          ctx.lineCap = "round";
+          ctx.beginPath(); ctx.moveTo(p0x, p0y); ctx.lineTo(p1x, p1y); ctx.stroke();
+          const [ax] = toCanvas(xA, 0);
+          const [bx] = toCanvas(xB, 0);
+          ctx.fillStyle = "rgba(255,92,92,0.07)";
+          ctx.fillRect(Math.min(ax,bx), 0, Math.abs(bx - ax), h);
+
+          // Domain delimiters: dotted vertical from X-axis up to the line at x₁ and x₂
+          function domainFence(xBound) {
+            const yBound = f(xBound);
+            const [px0, py0] = toCanvas(xBound, 0);
+            const [px1, py1] = toCanvas(xBound, yBound);
+            ctx.save();
+            ctx.strokeStyle = "rgba(255,92,92,0.95)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(px0, py0);
+            ctx.lineTo(px1, py1);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // endpoint dots on axis and on the curve
+            ctx.fillStyle = "#ff5c5c";
+            ctx.beginPath(); ctx.arc(px0, py0, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(px1, py1, 4.5, 0, Math.PI * 2); ctx.fill();
+            // label x₁ / x₂ on axis
+            ctx.font = "700 12px ui-monospace, Menlo, sans-serif";
+            ctx.fillStyle = "#ff5c5c";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            ctx.fillText(String(xBound).replace("-", "−"), px0, py0 + 8);
+            ctx.restore();
+          }
+          domainFence(xA);
+          domainFence(xB);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawSoftDash(x0, y0, x1, y1, color) {
+      const [a, b] = toCanvas(x0, y0);
+      const [c, d] = toCanvas(x1, y1);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 5]);
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function labelX(x) {
+      const [px, py] = toCanvas(x, 0);
+      const txt = String(x).replace("-", "−");
+      ctx.save();
+      ctx.font = "700 13px ui-monospace, Menlo, sans-serif";
+      ctx.fillStyle = "#ff5c5c";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(txt, px, py + 8);
+      ctx.restore();
+    }
+    function labelY(y) {
+      const [px, py] = toCanvas(0, y);
+      const txt = String(y).replace("-", "−");
+      ctx.save();
+      ctx.font = "600 13px ui-monospace, Menlo, sans-serif";
+      ctx.fillStyle = "#c4b5fd";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText(txt, px - 10, py);
+      ctx.restore();
+    }
+
+    // scaffolding (marks / guides / mast / points) — drop after finalClean
+    if (!finalClean) {
+    for (const p of axisMarks) {
+      drawSoftDash(p.x, 0, p.x, p.y, "rgba(192,132,252,0.35)");
+      drawSoftDash(0, p.y, p.x, p.y, "rgba(192,132,252,0.35)");
+      labelX(p.x);
+      labelY(p.y);
+    }
+
+    if (guide) {
+      if (guide.phase === "x" || guide.phase === "xy") {
+        // soft mark on x-axis at current x (tick + number)
+        const [px, py] = toCanvas(guide.x, 0);
+        ctx.save();
+        ctx.strokeStyle = "rgba(96,165,250,0.9)";
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(px, py - 6); ctx.lineTo(px, py + 6); ctx.stroke();
+        ctx.restore();
+        labelX(guide.x);
+      }
+      if (guide.phase === "xy") {
+        drawSoftDash(guide.x, 0, guide.x, guide.y, "rgba(96,165,250,0.75)");
+        drawSoftDash(0, guide.y, guide.x, guide.y, "rgba(192,132,252,0.85)");
+        labelY(guide.y);
+      }
+    }
+
+    // mast
+    if (mastX !== null) {
+      const [mx] = toCanvas(mastX, 0);
+      ctx.strokeStyle = "rgba(96,165,250,0.55)"; ctx.lineWidth = 1.25;
+      ctx.beginPath(); ctx.moveTo(mx, 0); ctx.lineTo(mx, h); ctx.stroke();
+      const y = f(mastX);
+      if (y >= YMIN && y <= YMAX) {
+        const [, my] = toCanvas(mastX, y);
+        ctx.fillStyle = "rgba(96,165,250,0.3)";
+        ctx.beginPath(); ctx.arc(mx, my, 10, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    for (const p of points) {
+      const [px, py] = toCanvas(p.x, p.y);
+      ctx.fillStyle = "#c084fc";
+      ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    }
+    } // end !finalClean scaffolding
+
+    // Yellow domain projection on X-axis (4s after final clean)
+    if (showDomainAxis && showDomainStroke) {
+      const { lo, hi } = domainBounds();
+      const xA = Math.max(lo, XMIN);
+      const xB = Math.min(hi, XMAX);
+      if (xB > xA) {
+        const [ax, ay] = toCanvas(xA, 0);
+        const [bx] = toCanvas(xB, 0);
+        ctx.save();
+        ctx.strokeStyle = "#f5c542";
+        ctx.lineWidth = 8;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, ay);
+        ctx.stroke();
+        // end caps
+        ctx.fillStyle = "#f5c542";
+        ctx.beginPath(); ctx.arc(ax, ay, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx, ay, 5, 0, Math.PI * 2); ctx.fill();
+        // "dominio" pill above the midpoint
+        const mx = (ax + bx) / 2;
+        const label = "dominio";
+        ctx.font = "700 13px ui-sans-serif, system-ui, sans-serif";
+        const tw = ctx.measureText(label).width;
+        const padX = 8, padY = 4, bh = 22;
+        const bx0 = mx - tw / 2 - padX;
+        const by0 = ay - 28 - bh / 2;
+        ctx.fillStyle = "rgba(20, 16, 8, 0.92)";
+        ctx.strokeStyle = "#f5c542";
+        ctx.lineWidth = 1.5;
+        const r = 6;
+        ctx.beginPath();
+        ctx.moveTo(bx0 + r, by0);
+        ctx.arcTo(bx0 + tw + 2 * padX, by0, bx0 + tw + 2 * padX, by0 + bh, r);
+        ctx.arcTo(bx0 + tw + 2 * padX, by0 + bh, bx0, by0 + bh, r);
+        ctx.arcTo(bx0, by0 + bh, bx0, by0, r);
+        ctx.arcTo(bx0, by0, bx0 + tw + 2 * padX, by0, r);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        // little pointer
+        ctx.fillStyle = "rgba(20, 16, 8, 0.92)";
+        ctx.beginPath();
+        ctx.moveTo(mx - 5, by0 + bh);
+        ctx.lineTo(mx + 5, by0 + bh);
+        ctx.lineTo(mx, by0 + bh + 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#f5c542";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(label, mx, by0 + bh / 2);
+        ctx.restore();
+      }
+    }
+
+    // Green image: horizontal projections from (x₁,f(x₁)) and (x₂,f(x₂)) to Y-axis
+    if ((showImageProj || showImageAxis) && showDomainStroke) {
+      const { lo, hi } = domainBounds();
+      const xA = Math.max(lo, XMIN);
+      const xB = Math.min(hi, XMAX);
+      const yA = f(xA), yB = f(xB);
+      const ends = [
+        { x: xA, y: yA, tag: "f(x₁)" },
+        { x: xB, y: yB, tag: "f(x₂)" },
+      ];
+      if (showImageProj) {
+        for (const e of ends) {
+          const [px, py] = toCanvas(e.x, e.y);
+          const [zx, zy] = toCanvas(0, e.y);
+          ctx.save();
+          ctx.strokeStyle = "rgba(52, 211, 153, 0.95)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 5]);
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(zx, zy);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          // dots at curve and on Y-axis
+          ctx.fillStyle = "#34d399";
+          ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(zx, zy, 4.5, 0, Math.PI * 2); ctx.fill();
+          // value label near Y-axis
+          const yTxt = String(Number(e.y.toFixed(2))).replace("-", "−");
+          ctx.font = "700 12px ui-monospace, Menlo, sans-serif";
+          ctx.fillStyle = "#34d399";
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillText(yTxt, zx + 10, zy);
+          ctx.restore();
+        }
+      }
+      if (showImageAxis) {
+        const yLo = Math.min(yA, yB);
+        const yHi = Math.max(yA, yB);
+        // clip to visible Y if needed but still draw segment ends
+        const y0 = Math.max(yLo, YMIN);
+        const y1 = Math.min(yHi, YMAX);
+        if (y1 > y0 || Math.abs(yHi - yLo) < 1e-9) {
+          const drawLo = Math.abs(yHi - yLo) < 1e-9 ? yLo : y0;
+          const drawHi = Math.abs(yHi - yLo) < 1e-9 ? yHi : y1;
+          const [zx0, zy0] = toCanvas(0, drawLo);
+          const [, zy1] = toCanvas(0, drawHi);
+          ctx.save();
+          ctx.strokeStyle = "#34d399";
+          ctx.lineWidth = 8;
+          ctx.lineCap = "round";
+          ctx.beginPath();
+          ctx.moveTo(zx0, zy0);
+          ctx.lineTo(zx0, zy1);
+          ctx.stroke();
+          ctx.fillStyle = "#34d399";
+          ctx.beginPath(); ctx.arc(zx0, zy0, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(zx0, zy1, 5, 0, Math.PI * 2); ctx.fill();
+          // "imagen" pill to the left of midpoint
+          const my = (zy0 + zy1) / 2;
+          const label = "imagen";
+          ctx.font = "700 13px ui-sans-serif, system-ui, sans-serif";
+          const tw = ctx.measureText(label).width;
+          const padX = 8, bh = 22;
+          const bx0 = zx0 - tw - 2 * padX - 18;
+          const by0 = my - bh / 2;
+          ctx.fillStyle = "rgba(8, 20, 16, 0.92)";
+          ctx.strokeStyle = "#34d399";
+          ctx.lineWidth = 1.5;
+          const r = 6;
+          const ww = tw + 2 * padX;
+          ctx.beginPath();
+          ctx.moveTo(bx0 + r, by0);
+          ctx.arcTo(bx0 + ww, by0, bx0 + ww, by0 + bh, r);
+          ctx.arcTo(bx0 + ww, by0 + bh, bx0, by0 + bh, r);
+          ctx.arcTo(bx0, by0 + bh, bx0, by0, r);
+          ctx.arcTo(bx0, by0, bx0 + ww, by0, r);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          // pointer toward axis
+          ctx.fillStyle = "rgba(8, 20, 16, 0.92)";
+          ctx.beginPath();
+          ctx.moveTo(bx0 + ww, my - 5);
+          ctx.lineTo(bx0 + ww, my + 5);
+          ctx.lineTo(bx0 + ww + 6, my);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#34d399";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(label, bx0 + ww / 2, my);
+          ctx.restore();
+        }
+      }
+    }
+
+    const xs0 = visibleXs();
+    tri.style.left = (mastX === null ? xToRail(xs0[0] ?? 0) : xToRail(mastX)) + "%";
+  }
+
+  function visibleXs() {
+    syncWorldToCanvas();
+    // Play: every integer x on the dotted line with f(x) inside the graph
+    // (domain restriction only draws the thick stroke after Play ends)
+    const out = [];
+    const x0 = Math.ceil(XMIN + 1e-9);
+    const x1 = Math.floor(XMAX - 1e-9);
+    for (let x = x0; x <= x1; x++) {
+      const y = f(x);
+      if (y >= YMIN && y <= YMAX) out.push(x);
+    }
+    if (out.length <= 11) return out;
+    const step = Math.ceil(out.length / 11);
+    return out.filter((_, i) => i % step === 0);
+  }
+
+  function setNarration(html) { narration.innerHTML = html; }
+
+  function clearOutputs() {
+    points = [];
+    tbody.innerHTML = "";
+    calcLog.innerHTML = "";
+    mastX = null;
+    guide = null;
+    axisMarks = [];
+    showDomainStroke = false;
+    finalClean = false;
+    showDomainAxis = false;
+    showImageProj = false;
+    showImageAxis = false;
+    if (cleanTimer) { clearTimeout(cleanTimer); cleanTimer = null; }
+    if (domainAxisTimer) { clearTimeout(domainAxisTimer); domainAxisTimer = null; }
+    if (imageTimer) { clearTimeout(imageTimer); imageTimer = null; }
+  }
+
+  function loadFn() {
+    cancelAnim();
+    applyParamsToLesson();
+    loaded = true;
+    clearOutputs();
+    fnBox.textContent = lesson.latex;
+    playBtn.disabled = false;
+    setNarration(lesson.sayLoad);
+    const xs = visibleXs();
+    mastX = xs.length ? xs[0] : 0;
+    draw();
+  }
+
+  function fmtExprHtml(x) {
+    const a = lesson.a, b = lesson.b;
+    const xs = `<span class="x-red">${x < 0 ? `(${x})` : `${x}`}</span>`;
+    if (a === 0) return `${b}`;
+    if (a === 1) return `${xs} + ${b}`;
+    if (a === -1) return `−${xs} + ${b}`;
+    const as = a < 0 ? `−${Math.abs(a)}` : `${a}`;
+    return `${as} · ${xs} + ${b}`;
+  }
+
+  function addCalc(x, y) {
+    const line = document.createElement("div");
+    line.className = "calc-line";
+    line.innerHTML = `<span class="eq">${fmtExprHtml(x)}</span><span class="res">= ${y}</span>`;
+    calcLog.prepend(line);
+    while (calcLog.children.length > 8) calcLog.removeChild(calcLog.lastChild);
+  }
+
+  function addRow(x, y) {
+    const tr = document.createElement("tr");
+    tr.className = "new";
+    tr.innerHTML = `<td class="x-red">${x}</td><td>${y}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  function cancelAnim() {
+    playing = false;
+    if (anim) cancelAnimationFrame(anim);
+    anim = null;
+  }
+
+  function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  function animateTo(from, to, ms) {
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const step = (now) => {
+        if (!playing) return resolve(false);
+        const u = Math.min(1, (now - t0) / ms);
+        mastX = from + (to - from) * easeInOut(u);
+        draw();
+        if (u < 1) anim = requestAnimationFrame(step);
+        else resolve(true);
+      };
+      anim = requestAnimationFrame(step);
+    });
+  }
+
+  function wait(ms) {
+    return new Promise((r) => {
+      const t = setTimeout(() => r(playing), ms);
+      // if cancelled mid-wait, still ok
+    });
+  }
+
+  async function playTable() {
+    if (!loaded || playing) return;
+    playing = true;
+    playBtn.disabled = true;
+    loadBtn.disabled = true;
+    clearOutputs();
+    setNarration(lesson.sayPlay);
+    const xs = visibleXs();
+    if (!xs.length) {
+      setNarration("Con estos <strong>m</strong> y <strong>b</strong> no hay enteros x sobre la línea punteada con f(x) visible en el gráfico. Probá otros valores.");
+      playing = false;
+      playBtn.disabled = false;
+      loadBtn.disabled = false;
+      return;
+    }
+    mastX = xs[0];
+    draw();
+
+    for (let i = 0; i < xs.length; i++) {
+      if (!playing) break;
+      const x = xs[i];
+      if (i > 0) {
+        guide = null;
+        const ok = await animateTo(xs[i - 1], x, 900);
+        if (!ok) break;
+      }
+      const y = f(x);
+      mastX = x;
+      // 1) mark x on the axis first
+      guide = { x, phase: "x" };
+      draw();
+      setNarration(`Tomamos <strong>x = ${x}</strong> sobre el eje X (está en el campo visible).`);
+      await wait(550);
+      if (!playing) break;
+      // 2) calculate
+      addCalc(x, y);
+      setNarration(`Calculamos <strong>${fmtExpr(x)} = ${y}</strong>.`);
+      await wait(450);
+      if (!playing) break;
+      // 3) dotted to y + label + point
+      guide = { x, y, phase: "xy" };
+      addRow(x, y);
+      points.push({ x, y });
+      axisMarks.push({ x, y });
+      draw();
+      setNarration(`Proyectamos hasta <strong>y = ${y}</strong> en el eje Y y marcamos el punto <strong>(${x}, ${y})</strong>.`);
+      await wait(700);
+    }
+    guide = null;
+    if (playing) {
+      showDomainStroke = true;
+      finalClean = false;
+      if (cleanTimer) clearTimeout(cleanTimer);
+      draw();
+      const { lo, hi } = domainBounds();
+      setNarration(`Tabla completa. Resaltamos el trazo en el dominio <strong>[${String(lo).replace("-","−")}, ${String(hi).replace("-","−")}]</strong>. En 4 s quitamos los andamios.`);
+      cleanTimer = setTimeout(() => {
+        finalClean = true;
+        mastX = null;
+        guide = null;
+        showDomainAxis = true;
+        if (domainAxisTimer) clearTimeout(domainAxisTimer);
+        draw();
+        setNarration(`Proyectamos el <strong>dominio</strong> sobre el eje X: <strong>[${String(lo).replace("-","−")}, ${String(hi).replace("-","−")}]</strong>.`);
+        domainAxisTimer = setTimeout(() => {
+          showDomainAxis = false;
+          showImageProj = true;
+          showImageAxis = false;
+          if (imageTimer) clearTimeout(imageTimer);
+          draw();
+          setNarration(`Proyectamos en verde <strong>f(x₁)</strong> y <strong>f(x₂)</strong> hasta el eje Y.`);
+          imageTimer = setTimeout(() => {
+            showImageAxis = true;
+            draw();
+            const y1 = f(lo), y2 = f(hi);
+            const a = Math.min(y1, y2), b = Math.max(y1, y2);
+            setNarration(`La <strong>imagen</strong> sobre el eje Y: <strong>[${String(Number(a.toFixed(2))).replace("-","−")}, ${String(Number(b.toFixed(2))).replace("-","−")}]</strong>.`);
+            imageTimer = setTimeout(() => {
+              showImageProj = false;
+              showImageAxis = false;
+              draw();
+              setNarration(`Construcción final: segmento de f en el dominio <strong>[${String(lo).replace("-","−")}, ${String(hi).replace("-","−")}]</strong>.`);
+            }, 4000);
+          }, 2500);
+        }, 4000);
+      }, 4000);
+    } else {
+      draw();
+    }
+    playing = false;
+    playBtn.disabled = false;
+    loadBtn.disabled = false;
+  }
+
+  function resetAll() {
+    cancelAnim();
+    loaded = false;
+    clearOutputs();
+    fnBox.innerHTML = '<span style="color:var(--muted)">Cargar f</span>';
+    playBtn.disabled = true;
+    loadBtn.disabled = false;
+    setNarration("Reset. Ajustá <strong>m</strong> y <strong>b</strong>, cargá f y dale Play.");
+    draw();
+  }
+
+
+
+
+  function onParamInput() {
+    applyParamsToLesson();
+    if (loaded && !playing) {
+      fnBox.textContent = lesson.latex;
+      clearOutputs();
+      const xs = visibleXs();
+      mastX = xs.length ? xs[0] : 0;
+      setNarration(lesson.sayLoad + " Tocá <strong>Play tabla</strong> para recorrerla.");
+      draw();
+    } else if (!loaded) {
+      fnBox.innerHTML = `<span style="color:var(--muted)">${lesson.latex}</span>`;
+    }
+  }
+  const DOM_MIN = -7, DOM_MAX = 7;
+  const domTrack = document.getElementById("domTrack");
+  const domFill = document.getElementById("domFill");
+  const domLoHandle = document.getElementById("domLoHandle");
+  const domHiHandle = document.getElementById("domHiHandle");
+
+  function domainToPct(v) {
+    return ((v - DOM_MIN) / (DOM_MAX - DOM_MIN)) * 100;
+  }
+  function pctToDomain(pct) {
+    const raw = DOM_MIN + (pct / 100) * (DOM_MAX - DOM_MIN);
+    // continuous but snap lightly to 0.5 for readability
+    return Math.round(raw * 2) / 2;
+  }
+  function syncDomainUI() {
+    let lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+    if (lo > hi) { const t = lo; lo = hi; hi = t; }
+    domLoEl.value = String(lo);
+    domHiEl.value = String(hi);
+    domLoHandle.style.left = domainToPct(lo) + "%";
+    domHiHandle.style.left = domainToPct(hi) + "%";
+    domFill.style.left = domainToPct(lo) + "%";
+    domFill.style.width = (domainToPct(hi) - domainToPct(lo)) + "%";
+    domLoVal.textContent = numLabel(lo).replace("-", "−");
+    domHiVal.textContent = numLabel(hi).replace("-", "−");
+  }
+
+  function bindHandle(handle, which) {
+    const onMove = (clientX) => {
+      const rect = domTrack.getBoundingClientRect();
+      let pct = ((clientX - rect.left) / rect.width) * 100;
+      pct = Math.max(0, Math.min(100, pct));
+      let v = pctToDomain(pct);
+      let lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+      if (which === "lo") {
+        lo = Math.min(v, hi);
+        domLoEl.value = String(lo);
+      } else {
+        hi = Math.max(v, lo);
+        domHiEl.value = String(hi);
+      }
+      syncDomainUI();
+      onParamInput();
+    };
+    handle.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+      onMove(e.clientX);
+      const move = (ev) => onMove(ev.clientX);
+      const up = () => {
+        handle.releasePointerCapture(e.pointerId);
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", up);
+      };
+      handle.addEventListener("pointermove", move);
+      handle.addEventListener("pointerup", up);
+    });
+  }
+  bindHandle(domLoHandle, "lo");
+  bindHandle(domHiHandle, "hi");
+  // click on rail moves nearest handle
+  domTrack.addEventListener("pointerdown", (e) => {
+    if (e.target.classList.contains("handle")) return;
+    const rect = domTrack.getBoundingClientRect();
+    const v = pctToDomain(((e.clientX - rect.left) / rect.width) * 100);
+    const lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+    if (Math.abs(v - lo) <= Math.abs(v - hi)) {
+      domLoEl.value = String(Math.min(v, hi));
+    } else {
+      domHiEl.value = String(Math.max(v, lo));
+    }
+    syncDomainUI();
+    onParamInput();
+  });
+
+  slopeEl.addEventListener("input", onParamInput);
+  interceptEl.addEventListener("input", onParamInput);
+
+  loadBtn.addEventListener("click", loadFn);
+  playBtn.addEventListener("click", playTable);
+  resetBtn.addEventListener("click", resetAll);
+
+  applyParamsToLesson();
+  syncDomainUI();
+  draw();
+})();
+</script>
+</body>
+</html>

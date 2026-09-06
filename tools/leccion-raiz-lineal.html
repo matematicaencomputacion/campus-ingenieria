@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 3 Raíz de una función lineal</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --line: #ff5c5c; --point: #c084fc; --mast: #60a5fa; --ok: #34d399;
+  --btn: #3b82f6; --border: #243044; --violet: #a78bfa; --amber: #fbbf24;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px; min-height: 100dvh;
+}
+.wrap { max-width: min(1400px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; margin-bottom: 2px; }
+h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; display: inline; }
+.sub {
+  display: inline; margin: 0 0 0 0.55rem; color: var(--muted);
+  font-size: 0.88rem; font-weight: 400;
+}
+.sub::before { content: "·"; margin-right: 0.55rem; opacity: 0.7; }
+header > div:first-child { line-height: 1.35; }
+.stage {
+  display: grid; grid-template-columns: 1.55fr 0.85fr; gap: 12px;
+  align-items: stretch;
+}
+@media (max-width: 860px) { .stage { grid-template-columns: 1fr; } }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px; min-height: 0;
+}
+.expr {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.expr .box { margin-right: 2px; }
+.expr .toolbar {
+  display: flex; flex-wrap: nowrap; gap: 6px; align-items: center;
+}
+.expr .toolbar button { white-space: nowrap; padding: 8px 12px; }
+@media (max-width: 720px) {
+  .expr .toolbar { flex-wrap: wrap; }
+}
+.expr .box {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 12px; font-family: ui-monospace, Menlo, monospace; font-size: 1rem;
+  min-width: 160px;
+}
+.expr .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.play {
+  background: var(--btn); color: white; border: 0; border-radius: 10px;
+  padding: 9px 14px; font: inherit; font-weight: 650; cursor: pointer;
+}
+button.ghost {
+  background: transparent; color: var(--ink); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; font: inherit; cursor: pointer;
+}
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.graph-wrap { position: relative; }
+.stage > .card:first-child { display: flex; flex-direction: column; }
+.graph-wrap { flex: 1; display: flex; flex-direction: column; }
+.graph-wrap canvas { flex: 1; min-height: 520px; max-height: min(78vh, 760px); width: 100%; object-fit: contain; }
+canvas { width: 100%; height: auto; display: block; border-radius: 10px; background: #0a0f18; }
+.slider-rail {
+  position: relative; height: 28px; margin-top: 6px;
+  background: #0a0f18; border-radius: 8px; border: 1px solid var(--border);
+}
+.tri {
+  position: absolute; top: 4px; width: 0; height: 0;
+  border-left: 8px solid transparent; border-right: 8px solid transparent;
+  border-top: 14px solid var(--mast); transform: translateX(-50%);
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.5));
+  pointer-events: none;
+}
+.table-card h2, .calc-card h2 {
+  margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+table {
+  width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.9rem;
+}
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #22304a; }
+th { color: var(--muted); font-weight: 600; }
+tr.new td { animation: flash 0.7s ease; }
+.x-red { color: #ff5c5c; font-weight: 700; }
+td.x-red { color: #ff5c5c; }
+.calc-line .eq .x-red { color: #ff5c5c; font-weight: 700; }
+@keyframes flash { from { background: rgba(192,132,252,.25); } to { background: transparent; } }
+.calc-log {
+  height: min(320px, 36vh); overflow: hidden; display: flex; flex-direction: column-reverse;
+  gap: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 0.92rem;
+  background: #0a0f18; border-radius: 10px; padding: 10px; border: 1px solid var(--border);
+}
+.calc-line {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 6px 8px; border-radius: 8px; background: #121a28;
+  animation: rise 0.45s ease;
+}
+.calc-line .eq { color: var(--muted); }
+.calc-line .res { color: #93c5fd; font-weight: 650; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.narration {
+  flex: 1 1 220px; margin: 0; min-width: 180px;
+  color: var(--muted); font-size: 0.86rem; line-height: 1.35;
+  padding: 0;
+}
+.narration strong { color: var(--ink); }
+.right-col { display: grid; gap: 12px; align-content: start; }
+.params {
+  display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; margin: 0 0 8px;
+}
+@media (max-width: 900px) { .params { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .params { grid-template-columns: 1fr; } }
+.param.domain .dual {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center;
+}
+.dual-track {
+  position: relative; height: 28px; touch-action: none; user-select: none;
+}
+.dual-track .rail {
+  position: absolute; left: 0; right: 0; top: 50%; height: 6px;
+  transform: translateY(-50%); border-radius: 999px; background: #243044;
+}
+.dual-track .fill {
+  position: absolute; top: 50%; height: 6px; transform: translateY(-50%);
+  border-radius: 999px; background: rgba(255,92,92,0.75); pointer-events: none;
+}
+.dual-track .fill.fill-invalid {
+  background: #6b7280; opacity: 0.85;
+}
+.dual-track .fill.fill-valid {
+  background: #f5c542;
+  box-shadow: 0 0 0 1px rgba(245,197,66,0.35);
+  z-index: 1;
+}
+.dual-track.resolved .fill.fill-attempt {
+  display: none;
+}
+.dual-track .handle {
+  position: absolute; top: 50%; width: 16px; height: 16px;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: #ff5c5c; border: 2px solid #fff; cursor: ew-resize;
+  box-shadow: 0 0 0 3px rgba(255,92,92,0.25);
+  z-index: 2;
+}
+.dual-track .handle:focus { outline: none; box-shadow: 0 0 0 4px rgba(96,165,250,0.45); }
+.dual-track .true-mark {
+  position: absolute; top: 50%; width: 12px; height: 12px;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: #f5c542; border: 2px solid #fff;
+  box-shadow: 0 0 0 2px rgba(245,197,66,0.35);
+  pointer-events: none; z-index: 3;
+}
+.dual-track .true-mark-label {
+  position: absolute; top: -2px; transform: translate(-50%, -100%);
+  font: 700 11px ui-monospace, Menlo, sans-serif;
+  color: #f5c542; white-space: nowrap;
+  pointer-events: none; z-index: 3;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+.param {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px;
+}
+.param label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+.param .row { display: flex; align-items: center; gap: 10px; }
+.param select, .param input[type=range] { flex: 1; accent-color: var(--btn); }
+.param .val {
+  font-family: ui-monospace, Menlo, monospace; min-width: 2.5rem; text-align: right; color: #93c5fd;
+}
+.badge-row {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px;
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem;
+  padding: 4px 10px; border-radius: 999px; background: #1e293b; color: #cbd5e1;
+  font-family: ui-monospace, Menlo, monospace;
+}
+.badge .k { color: var(--muted); font-family: "Segoe UI", system-ui, sans-serif; font-weight: 600; }
+.badge .v { color: #fcd34d; font-weight: 650; }
+.badge.rad-ok .v { color: #a78bfa; }
+.badge.rad-empty .v { color: #f87171; }
+.badge.rad-all .v { color: #34d399; }
+h1 .lesson-num { color: #a78bfa; font-weight: 800; }
+
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 10px; }
+.lesson-nav.next { right: 10px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 3</span> Raíz de una función lineal</h1>
+      <p class="sub">f(x)=√(mx+b) · dominio del radicando</p>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="params">
+      <div class="param">
+        <label for="slope">Pendiente <em>m</em></label>
+        <div class="row">
+          <input id="slope" type="range" min="-3" max="3" step="0.5" value="1" />
+          <span class="val" id="slopeVal">1</span>
+        </div>
+      </div>
+      <div class="param">
+        <label for="intercept">Ordenada <em>b</em> (en L)</label>
+        <div class="row">
+          <input id="intercept" type="range" min="-6" max="6" step="0.5" value="-4" />
+          <span class="val" id="interceptVal">−4</span>
+        </div>
+      </div>
+      <div class="param domain">
+        <label>Restricción del dominio <em>[x₁, x₂]</em></label>
+        <div class="dual">
+          <span class="val" id="domLoVal">4</span>
+          <div class="dual-track" id="domTrack" role="group" aria-label="Dominio continuo">
+            <div class="rail"></div>
+            <div class="fill fill-attempt" id="domFill"></div>
+            <div class="fill fill-invalid" id="domFillInvalid" hidden></div>
+            <div class="fill fill-valid" id="domFillValid" hidden></div>
+            <div class="true-mark" id="domTrueMark" hidden></div>
+            <div class="true-mark-label" id="domTrueMarkLabel" hidden></div>
+            <button type="button" class="handle" id="domLoHandle" aria-label="Inicio del dominio"></button>
+            <button type="button" class="handle" id="domHiHandle" aria-label="Fin del dominio"></button>
+          </div>
+          <span class="val" id="domHiVal">7</span>
+        </div>
+        <input id="domLo" type="hidden" value="4" />
+        <input id="domHi" type="hidden" value="7" />
+      </div>
+    </div>
+    <div class="badge-row" id="badgeRow" aria-live="polite">
+      <span class="badge rad-ok" id="badgeRad"><span class="k">dominio natural</span> <span class="v">—</span></span>
+    </div>
+    <div class="expr">
+      <span class="dot" aria-hidden="true"></span>
+      <div class="box" id="fnBox"><span style="color:var(--muted)">Cargar f</span></div>
+      <div class="toolbar">
+        <button class="ghost" id="loadBtn" type="button">Cargar f</button>
+        <button class="play" id="playBtn" type="button" disabled>▶ Play tabla</button>
+        <button class="ghost" id="resetBtn" type="button">Reset</button>
+      </div>
+      <p class="narration" id="narration">Ajustá <strong>m</strong> y <strong>b</strong>, cargá f = √(mx+b) y dale Play. Solo existe donde el <strong>radicando ≥ 0</strong>.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="card">
+      <div class="graph-wrap">
+        <a class="lesson-nav prev" href="leccion-cuadraticas.html" title="Lección 2: Funciones cuadráticas" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a><a class="lesson-nav next" href="leccion-homografica.html" title="Lección 4: Función homográfica" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="1000" height="680" aria-label="Gráfica"></canvas>
+        <div class="slider-rail" aria-hidden="true"><div class="tri" id="tri"></div></div>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="card table-card">
+        <h2>Tabla de valores</h2>
+        <table>
+          <thead><tr><th>x</th><th>f(x)</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="card calc-card">
+        <h2>Calculadora</h2>
+        <div class="calc-log" id="calcLog" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  let lesson = {
+    id: "custom",
+    title: "Personalizada",
+    latex: "f(x) = √(x − 4)",
+    m: 1, b: -4,
+    sayLoad: "",
+    sayPlay: "El mástil barre el dominio efectivo (donde el radicando ≥ 0). En cada parada: etiqueta en X → √ → guía a Y.",
+  };
+  const slopeEl = document.getElementById("slope");
+  const interceptEl = document.getElementById("intercept");
+  const slopeVal = document.getElementById("slopeVal");
+  const interceptVal = document.getElementById("interceptVal");
+  const domLoEl = document.getElementById("domLo");
+  const domHiEl = document.getElementById("domHi");
+  const domLoVal = document.getElementById("domLoVal");
+  const domHiVal = document.getElementById("domHiVal");
+  const badgeRad = document.getElementById("badgeRad");
+  const EPS = 1e-9;
+
+  function numLabel(n) {
+    if (Number.isInteger(n)) return String(n);
+    return String(Number(n.toFixed(4)));
+  }
+  function prettyNum(n) {
+    return numLabel(n).replace(/-/g, "−");
+  }
+
+  function linearInnerText(m, b) {
+    m = Number(m); b = Number(b);
+    let left;
+    if (Math.abs(m) < EPS) left = "";
+    else if (m === 1) left = "x";
+    else if (m === -1) left = "−x";
+    else left = `${prettyNum(m)}x`;
+    if (Math.abs(m) < EPS) return prettyNum(b);
+    if (Math.abs(b) < EPS) return left;
+    const sign = b > 0 ? " + " : " − ";
+    return `${left}${sign}${prettyNum(Math.abs(b))}`;
+  }
+
+  function latexFrom(m, b) {
+    return `f(x) = √(${linearInnerText(m, b)})`;
+  }
+
+  function domainBounds() {
+    let lo = Number(domLoEl.value);
+    let hi = Number(domHiEl.value);
+    if (Number.isNaN(lo)) lo = 4;
+    if (Number.isNaN(hi)) hi = 7;
+    if (lo > hi) { const tmp = lo; lo = hi; hi = tmp; }
+    return { lo, hi };
+  }
+
+  /** Natural domain of √(mx+b). */
+  function naturalDomain(m, b) {
+    m = Number(m); b = Number(b);
+    if (Math.abs(m) < EPS) {
+      if (b >= -EPS) return { kind: "all", threshold: null, text: "ℝ" };
+      return { kind: "empty", threshold: null, text: "∅" };
+    }
+    const thr = -b / m;
+    if (m > 0) {
+      return {
+        kind: "rayRight",
+        threshold: thr,
+        lo: thr,
+        hi: Infinity,
+        text: `[${prettyNum(Number(thr.toFixed(4)))}, +∞)`,
+      };
+    }
+    return {
+      kind: "rayLeft",
+      threshold: thr,
+      lo: -Infinity,
+      hi: thr,
+      text: `(−∞, ${prettyNum(Number(thr.toFixed(4)))}]`,
+    };
+  }
+
+  /** Intersection of user [uLo,uHi] with natural domain → effective closed interval or null. */
+  function effectiveDomain(m, b, uLo, uHi) {
+    const nat = naturalDomain(m, b);
+    if (nat.kind === "empty") return null;
+    let lo = uLo, hi = uHi;
+    if (nat.kind === "rayRight") lo = Math.max(lo, nat.lo);
+    else if (nat.kind === "rayLeft") hi = Math.min(hi, nat.hi);
+    // kind === "all": keep user bounds
+    if (lo > hi + EPS) return null;
+    return { lo, hi };
+  }
+
+  function L(x, m, b) {
+    return Number(m) * x + Number(b);
+  }
+
+  function fAt(x, m, b) {
+    const rad = L(x, m, b);
+    if (rad < -EPS) return NaN;
+    return Math.sqrt(Math.max(0, rad));
+  }
+
+  function imageOnEffective(m, b, lo, hi) {
+    const ys = [];
+    const n = 80;
+    for (let i = 0; i <= n; i++) {
+      const x = lo + (hi - lo) * (i / n);
+      const y = fAt(x, m, b);
+      if (!Number.isNaN(y)) ys.push(y);
+    }
+    // endpoints guaranteed if effective is valid
+    if (!ys.length) return { min: 0, max: 0 };
+    return { min: Math.min(...ys), max: Math.max(...ys) };
+  }
+
+  function updateRadBadge() {
+    const m = Number(slopeEl.value);
+    const b = Number(interceptEl.value);
+    const nat = naturalDomain(m, b);
+    badgeRad.classList.remove("rad-ok", "rad-empty", "rad-all");
+    if (nat.kind === "empty") {
+      badgeRad.classList.add("rad-empty");
+      badgeRad.querySelector(".v").textContent = "vacío · L(x)<0 ∀x";
+    } else if (nat.kind === "all") {
+      badgeRad.classList.add("rad-all");
+      badgeRad.querySelector(".v").textContent = "dominio natural = ℝ (m≈0, b≥0)";
+    } else {
+      badgeRad.classList.add("rad-ok");
+      const thr = prettyNum(Number(nat.threshold.toFixed(4)));
+      badgeRad.querySelector(".v").textContent = `x* = ${thr} · dominio natural = ${nat.text}`;
+    }
+  }
+
+  function applyParamsToLesson() {
+    const m = Number(slopeEl.value);
+    const b = Number(interceptEl.value);
+    const { lo: uLo, hi: uHi } = domainBounds();
+    slopeVal.textContent = prettyNum(m);
+    interceptVal.textContent = prettyNum(b);
+    if (typeof syncDomainUI === "function") syncDomainUI();
+    updateRadBadge();
+    const nat = naturalDomain(m, b);
+    const eff = effectiveDomain(m, b, uLo, uHi);
+    let sayLoad = `Armamos <strong>${latexFrom(m, b)}</strong>. Condición: <strong>radicando L(x)=${linearInnerText(m, b)} ≥ 0</strong> → dominio natural <strong>${nat.text}</strong>.`;
+    if (eff) {
+      sayLoad += ` Intersección con [x₁,x₂]: <strong>[${prettyNum(eff.lo)}, ${prettyNum(eff.hi)}]</strong>.`;
+    } else {
+      sayLoad += ` La restricción [x₁,x₂] <strong>no intersecta</strong> el dominio natural — no hay trazo.`;
+    }
+    lesson = {
+      ...lesson,
+      m, b,
+      domLo: uLo,
+      domHi: uHi,
+      latex: latexFrom(m, b),
+      sayLoad,
+      sayPlay: "El mástil barre solo donde el radicando es ≥ 0 (dominio efectivo). En cada parada: X → √(mx+b) → Y.",
+    };
+  }
+
+  let loaded = false;
+  let playing = false;
+  let points = [];
+  let mastX = null;
+  let anim = null;
+  let guide = null;
+  let axisMarks = [];
+  let showDomainStroke = false;
+  let railResolved = false; // after Play: rail shows gray invalid + yellow true domain
+  let finalClean = false;
+  let showDomainAxis = false;
+  let showImageProj = false;
+  let showImageAxis = false;
+  let showRadSurprise = false;
+  let keepBoundaryTick = false;
+  let cleanTimer = null;
+  let domainAxisTimer = null;
+  let imageTimer = null;
+  let radTimer = null;
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const fnBox = document.getElementById("fnBox");
+  const loadBtn = document.getElementById("loadBtn");
+  const playBtn = document.getElementById("playBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const tbody = document.getElementById("tbody");
+  const calcLog = document.getElementById("calcLog");
+  const narration = document.getElementById("narration");
+  const tri = document.getElementById("tri");
+
+  const VIEW = 7;
+  let XMIN = -VIEW, XMAX = VIEW, YMIN = -VIEW, YMAX = VIEW;
+
+  function f(x) { return fAt(x, lesson.m, lesson.b); }
+
+  function fmtInner(x) {
+    const m = lesson.m, b = lesson.b;
+    const xs = x < 0 ? `(${x})` : `${x}`;
+    if (Math.abs(m) < EPS) return `${b}`;
+    let body;
+    if (m === 1) body = `${xs}`;
+    else if (m === -1) body = `−${xs}`;
+    else body = `${m < 0 ? "−" + Math.abs(m) : m} · ${xs}`;
+    if (Math.abs(b) < EPS) return body;
+    return b < 0 ? `${body} − ${Math.abs(b)}` : `${body} + ${b}`;
+  }
+
+  function fmtExpr(x) {
+    return `√(${fmtInner(x)})`;
+  }
+
+  function syncWorldToCanvas() {
+    const w = canvas.width, h = canvas.height;
+    const scale = Math.min(w / (2 * VIEW), h / (2 * VIEW));
+    const halfW = (w / scale) / 2;
+    const halfH = (h / scale) / 2;
+    XMIN = -halfW; XMAX = halfW;
+    YMIN = -halfH; YMAX = halfH;
+    return scale;
+  }
+
+  function toCanvas(x, y) {
+    const w = canvas.width, h = canvas.height;
+    const scale = Math.min(w / (2 * VIEW), h / (2 * VIEW));
+    const cx = w / 2, cy = h / 2;
+    return [cx + x * scale, cy - y * scale];
+  }
+  function xToRail(x) {
+    const w = canvas.width;
+    const scale = Math.min(w / (2 * VIEW), canvas.height / (2 * VIEW));
+    const cx = w / 2;
+    const px = cx + x * scale;
+    return (px / w) * 100;
+  }
+
+  function sampleSqrtCurve(x0, x1, n) {
+    const pts = [];
+    if (x1 < x0 - EPS) return pts;
+    for (let i = 0; i <= n; i++) {
+      const x = x0 + (x1 - x0) * (i / n);
+      const y = f(x);
+      if (!Number.isNaN(y)) pts.push({ x, y });
+    }
+    return pts;
+  }
+
+  /** Segments of view where L≥0 (for dotted construction). */
+  function allowedSegmentsInView() {
+    const nat = naturalDomain(lesson.m, lesson.b);
+    if (nat.kind === "empty") return [];
+    if (nat.kind === "all") return [{ a: XMIN, b: XMAX }];
+    if (nat.kind === "rayRight") {
+      const a = Math.max(nat.lo, XMIN);
+      const b = XMAX;
+      return b >= a - EPS ? [{ a, b }] : [];
+    }
+    // rayLeft
+    const a = XMIN;
+    const b = Math.min(nat.hi, XMAX);
+    return b >= a - EPS ? [{ a, b }] : [];
+  }
+
+  /** Forbidden x-intervals in view (L<0) for shading. */
+  function forbiddenSegmentsInView() {
+    const nat = naturalDomain(lesson.m, lesson.b);
+    if (nat.kind === "all") return [];
+    if (nat.kind === "empty") return [{ a: XMIN, b: XMAX }];
+    if (nat.kind === "rayRight") {
+      const b = Math.min(nat.lo, XMAX);
+      return b > XMIN + EPS ? [{ a: XMIN, b }] : [];
+    }
+    // rayLeft: forbidden is (threshold, +∞)
+    const a = Math.max(nat.hi, XMIN);
+    return a < XMAX - EPS ? [{ a, b: XMAX }] : [];
+  }
+
+  function drawXArrow(ax, ay, bx, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 8;
+    ctx.lineCap = "butt";
+    const dir = bx >= ax ? 1 : -1;
+    const tip = bx;
+    const endLine = tip - dir * 16;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(endLine, ay);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(tip, ay);
+    ctx.lineTo(tip - dir * 16, ay - 9);
+    ctx.lineTo(tip - dir * 16, ay + 9);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath(); ctx.arc(ax, ay, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawPill(cx, cy, label, stroke, fillBg, textCol, pointer) {
+    ctx.save();
+    ctx.font = "700 13px ui-sans-serif, system-ui, sans-serif";
+    const tw = ctx.measureText(label).width;
+    const padX = 8, bh = 22;
+    const bx0 = cx - tw / 2 - padX;
+    const by0 = cy - bh / 2;
+    const ww = tw + 2 * padX;
+    const r = 6;
+    ctx.fillStyle = fillBg;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bx0 + r, by0);
+    ctx.arcTo(bx0 + ww, by0, bx0 + ww, by0 + bh, r);
+    ctx.arcTo(bx0 + ww, by0 + bh, bx0, by0 + bh, r);
+    ctx.arcTo(bx0, by0 + bh, bx0, by0, r);
+    ctx.arcTo(bx0, by0, bx0 + ww, by0, r);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    if (pointer === "down") {
+      ctx.fillStyle = fillBg;
+      ctx.beginPath();
+      ctx.moveTo(cx - 5, by0 + bh);
+      ctx.lineTo(cx + 5, by0 + bh);
+      ctx.lineTo(cx, by0 + bh + 6);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = textCol;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, cx, by0 + bh / 2);
+    ctx.restore();
+  }
+
+
+  function draw() {
+    syncWorldToCanvas();
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = "#1c2738"; ctx.lineWidth = 1;
+    for (let x = Math.ceil(XMIN); x <= XMAX; x++) {
+      const [px] = toCanvas(x, 0);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+    }
+    for (let y = Math.ceil(YMIN); y <= YMAX; y++) {
+      const [, py] = toCanvas(0, y);
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+    }
+    ctx.strokeStyle = "#4b5d7a"; ctx.lineWidth = 1.5;
+    const [ox, oy] = toCanvas(0, 0);
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+
+    const nat = naturalDomain(lesson.m, lesson.b);
+    const { lo: uLo, hi: uHi } = domainBounds();
+    const eff = effectiveDomain(lesson.m, lesson.b, uLo, uHi);
+
+    if (loaded) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+
+      // Dotted curve only where L≥0
+      if (!finalClean) {
+        for (const seg of allowedSegmentsInView()) {
+          const pts = sampleSqrtCurve(seg.a, seg.b, 180);
+          if (pts.length >= 2) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(255,92,92,0.85)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([7, 6]);
+            ctx.beginPath();
+            let started = false;
+            for (const p of pts) {
+              const [px, py] = toCanvas(p.x, p.y);
+              if (!started) { ctx.moveTo(px, py); started = true; }
+              else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+          }
+        }
+
+        // Boundary where L=0 (start of graph on X-axis)
+        if (nat.threshold != null && nat.threshold >= XMIN && nat.threshold <= XMAX) {
+          const [rx, ry] = toCanvas(nat.threshold, 0);
+          ctx.save();
+          ctx.strokeStyle = "rgba(167,139,250,0.7)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(rx, ry - 8);
+          ctx.lineTo(rx, ry + 8);
+          ctx.stroke();
+          ctx.fillStyle = "rgba(167,139,250,0.85)";
+          ctx.beginPath(); ctx.arc(rx, ry, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Thick stroke on effective domain after Play
+      if (showDomainStroke && eff) {
+        const xA = Math.max(eff.lo, XMIN);
+        const xB = Math.min(eff.hi, XMAX);
+        if (xB >= xA - EPS) {
+          const seg = sampleSqrtCurve(xA, xB, 160);
+          if (seg.length >= 2) {
+            ctx.save();
+            ctx.strokeStyle = "#ff5c5c";
+            ctx.lineWidth = 4.5;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.beginPath();
+            let started = false;
+            for (const p of seg) {
+              const [px, py] = toCanvas(p.x, p.y);
+              if (!started) { ctx.moveTo(px, py); started = true; }
+              else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          function domainFence(xBound) {
+            const yBound = f(xBound);
+            if (Number.isNaN(yBound)) return;
+            const [px0, py0] = toCanvas(xBound, 0);
+            const [px1, py1] = toCanvas(xBound, yBound);
+            ctx.save();
+            ctx.strokeStyle = "rgba(255,92,92,0.95)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(px0, py0);
+            ctx.lineTo(px1, py1);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = "#ff5c5c";
+            ctx.beginPath(); ctx.arc(px0, py0, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(px1, py1, 4.5, 0, Math.PI * 2); ctx.fill();
+            ctx.font = "700 12px ui-monospace, Menlo, sans-serif";
+            ctx.fillStyle = "#ff5c5c";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            ctx.fillText(prettyNum(Number(xBound.toFixed(3))), px0, py0 + 8);
+            ctx.restore();
+          }
+          domainFence(xA);
+          domainFence(xB);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawSoftDash(x0, y0, x1, y1, color) {
+      const [a, b] = toCanvas(x0, y0);
+      const [c, d] = toCanvas(x1, y1);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 5]);
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function labelX(x) {
+      const [px, py] = toCanvas(x, 0);
+      const txt = prettyNum(x);
+      ctx.save();
+      ctx.font = "700 13px ui-monospace, Menlo, sans-serif";
+      ctx.fillStyle = "#ff5c5c";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(txt, px, py + 8);
+      ctx.restore();
+    }
+    function labelY(y) {
+      const [px, py] = toCanvas(0, y);
+      const txt = prettyNum(Number(y.toFixed(2)));
+      ctx.save();
+      ctx.font = "600 13px ui-monospace, Menlo, sans-serif";
+      ctx.fillStyle = "#c4b5fd";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText(txt, px - 10, py);
+      ctx.restore();
+    }
+
+    if (!finalClean) {
+      for (const p of axisMarks) {
+        drawSoftDash(p.x, 0, p.x, p.y, "rgba(192,132,252,0.35)");
+        drawSoftDash(0, p.y, p.x, p.y, "rgba(192,132,252,0.35)");
+        labelX(p.x);
+        labelY(p.y);
+      }
+
+      if (guide) {
+        if (guide.phase === "x" || guide.phase === "xy") {
+          const [px, py] = toCanvas(guide.x, 0);
+          ctx.save();
+          ctx.strokeStyle = "rgba(96,165,250,0.9)";
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(px, py - 6); ctx.lineTo(px, py + 6); ctx.stroke();
+          ctx.restore();
+          labelX(guide.x);
+        }
+        if (guide.phase === "xy") {
+          drawSoftDash(guide.x, 0, guide.x, guide.y, "rgba(96,165,250,0.75)");
+          drawSoftDash(0, guide.y, guide.x, guide.y, "rgba(192,132,252,0.85)");
+          labelY(guide.y);
+        }
+      }
+
+      if (mastX !== null) {
+        const [mx] = toCanvas(mastX, 0);
+        ctx.strokeStyle = "rgba(96,165,250,0.55)"; ctx.lineWidth = 1.25;
+        ctx.beginPath(); ctx.moveTo(mx, 0); ctx.lineTo(mx, h); ctx.stroke();
+        const y = f(mastX);
+        if (!Number.isNaN(y) && y >= YMIN && y <= YMAX) {
+          const [, my] = toCanvas(mastX, y);
+          ctx.fillStyle = "rgba(96,165,250,0.3)";
+          ctx.beginPath(); ctx.arc(mx, my, 10, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      for (const p of points) {
+        const [px, py] = toCanvas(p.x, p.y);
+        ctx.fillStyle = "#c084fc";
+        ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+      }
+    }
+
+    // Yellow on X: dominio VERDADERO = restricción ∩ dominio natural (eff)
+    if (showDomainAxis && showDomainStroke && eff) {
+      const xA = Math.max(eff.lo, XMIN);
+      const xB = Math.min(eff.hi, XMAX);
+      if (xB >= xA - EPS) {
+        const [ax, ay] = toCanvas(xA, 0);
+        const [bx] = toCanvas(xB, 0);
+        ctx.save();
+        ctx.strokeStyle = "#f5c542";
+        ctx.lineWidth = 8;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, ay);
+        ctx.stroke();
+        ctx.fillStyle = "#f5c542";
+        ctx.beginPath(); ctx.arc(ax, ay, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx, ay, 5, 0, Math.PI * 2); ctx.fill();
+        drawPill((ax + bx) / 2, ay - 28, `dominio [${prettyNum(eff.lo)}, ${prettyNum(eff.hi)}]`, "#f5c542", "rgba(20, 16, 8, 0.92)", "#f5c542", "down");
+        ctx.restore();
+      }
+    }
+
+    // Green image projections
+    if ((showImageProj || showImageAxis) && showDomainStroke && eff) {
+      const xA = Math.max(eff.lo, XMIN);
+      const xB = Math.min(eff.hi, XMAX);
+      const yA = f(xA), yB = f(xB);
+      const ends = [];
+      if (!Number.isNaN(yA)) ends.push({ x: xA, y: yA });
+      if (!Number.isNaN(yB)) ends.push({ x: xB, y: yB });
+
+      if (showImageProj) {
+        for (const e of ends) {
+          const [px, py] = toCanvas(e.x, e.y);
+          const [zx, zy] = toCanvas(0, e.y);
+          ctx.save();
+          ctx.strokeStyle = "rgba(52, 211, 153, 0.95)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 5]);
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(zx, zy);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#34d399";
+          ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(zx, zy, 4.5, 0, Math.PI * 2); ctx.fill();
+          const yTxt = prettyNum(Number(e.y.toFixed(2)));
+          ctx.font = "700 12px ui-monospace, Menlo, sans-serif";
+          ctx.fillStyle = "#34d399";
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillText(yTxt, zx + 10, zy);
+          ctx.restore();
+        }
+      }
+
+      if (showImageAxis) {
+        const img = imageOnEffective(lesson.m, lesson.b, eff.lo, eff.hi);
+        const yLo = img.min;
+        const yHi = img.max;
+        const y0 = Math.max(yLo, YMIN);
+        const y1 = Math.min(yHi, YMAX);
+        if (y1 > y0 || Math.abs(yHi - yLo) < 1e-9) {
+          const drawLo = Math.abs(yHi - yLo) < 1e-9 ? yLo : y0;
+          const drawHi = Math.abs(yHi - yLo) < 1e-9 ? yHi : y1;
+          const [zx0, zy0] = toCanvas(0, drawLo);
+          const [, zy1] = toCanvas(0, drawHi);
+          ctx.save();
+          ctx.strokeStyle = "#34d399";
+          ctx.lineWidth = 8;
+          ctx.lineCap = "round";
+          ctx.beginPath();
+          ctx.moveTo(zx0, zy0);
+          ctx.lineTo(zx0, zy1);
+          ctx.stroke();
+          ctx.fillStyle = "#34d399";
+          ctx.beginPath(); ctx.arc(zx0, zy0, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(zx0, zy1, 5, 0, Math.PI * 2); ctx.fill();
+          const my = (zy0 + zy1) / 2;
+          const label = "imagen";
+          ctx.font = "700 13px ui-sans-serif, system-ui, sans-serif";
+          const tw = ctx.measureText(label).width;
+          const padX = 8, bh = 22;
+          const bx0 = zx0 - tw - 2 * padX - 18;
+          const by0 = my - bh / 2;
+          ctx.fillStyle = "rgba(8, 20, 16, 0.92)";
+          ctx.strokeStyle = "#34d399";
+          ctx.lineWidth = 1.5;
+          const r = 6;
+          const ww = tw + 2 * padX;
+          ctx.beginPath();
+          ctx.moveTo(bx0 + r, by0);
+          ctx.arcTo(bx0 + ww, by0, bx0 + ww, by0 + bh, r);
+          ctx.arcTo(bx0 + ww, by0 + bh, bx0, by0 + bh, r);
+          ctx.arcTo(bx0, by0 + bh, bx0, by0, r);
+          ctx.arcTo(bx0, by0, bx0 + ww, by0, r);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "rgba(8, 20, 16, 0.92)";
+          ctx.beginPath();
+          ctx.moveTo(bx0 + ww, my - 5);
+          ctx.lineTo(bx0 + ww, my + 5);
+          ctx.lineTo(bx0 + ww + 6, my);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#34d399";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(label, bx0 + ww / 2, my);
+          ctx.restore();
+        }
+      }
+    }
+
+    // SURPRISE: radicando condition pill near boundary
+    if (showRadSurprise && nat.threshold != null) {
+      const thr = nat.threshold;
+      if (thr >= XMIN && thr <= XMAX) {
+        const [rx, ry] = toCanvas(thr, 0);
+        ctx.save();
+        ctx.strokeStyle = "#a78bfa";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(rx, ry - 10);
+        ctx.lineTo(rx, ry + 10);
+        ctx.stroke();
+        ctx.fillStyle = "#a78bfa";
+        ctx.beginPath(); ctx.arc(rx, ry, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        drawPill(rx, ry - 38, "radicando ≥ 0", "#a78bfa", "rgba(24, 16, 40, 0.94)", "#a78bfa", "down");
+        ctx.restore();
+      } else {
+        // threshold off-view: pill near left/right edge of allowed region
+        const segs = allowedSegmentsInView();
+        if (segs.length) {
+          const edge = nat.kind === "rayRight" ? segs[0].a : segs[0].b;
+          const [rx, ry] = toCanvas(edge, 0);
+          drawPill(rx, ry - 38, "L(x) ≥ 0", "#a78bfa", "rgba(24, 16, 40, 0.94)", "#a78bfa", "down");
+        }
+      }
+    } else if (keepBoundaryTick && nat.threshold != null && nat.threshold >= XMIN && nat.threshold <= XMAX) {
+      const [rx, ry] = toCanvas(nat.threshold, 0);
+      ctx.save();
+      ctx.strokeStyle = "rgba(167,139,250,0.9)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(rx, ry - 8);
+      ctx.lineTo(rx, ry + 8);
+      ctx.stroke();
+      ctx.fillStyle = "#a78bfa";
+      ctx.beginPath(); ctx.arc(rx, ry, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    const xs0 = visibleXs();
+    tri.style.left = (mastX === null ? xToRail(xs0[0] ?? 0) : xToRail(mastX)) + "%";
+  }
+
+  function visibleXs() {
+    syncWorldToCanvas();
+    const { lo: uLo, hi: uHi } = domainBounds();
+    const eff = effectiveDomain(lesson.m, lesson.b, uLo, uHi);
+    if (!eff) return [];
+    const out = [];
+    const x0 = Math.ceil(Math.max(eff.lo, XMIN) - 1e-9);
+    const x1 = Math.floor(Math.min(eff.hi, XMAX) + 1e-9);
+    for (let x = x0; x <= x1; x++) {
+      const y = f(x);
+      if (!Number.isNaN(y) && y >= YMIN && y <= YMAX) out.push(x);
+    }
+    if (out.length <= 11) return out;
+    const step = Math.ceil(out.length / 11);
+    return out.filter((_, i) => i % step === 0);
+  }
+
+  function setNarration(html) { narration.innerHTML = html; }
+
+  function clearOutputs() {
+    points = [];
+    tbody.innerHTML = "";
+    calcLog.innerHTML = "";
+    mastX = null;
+    guide = null;
+    axisMarks = [];
+    showDomainStroke = false;
+    railResolved = false;
+    finalClean = false;
+    showDomainAxis = false;
+    showImageProj = false;
+    showImageAxis = false;
+    showRadSurprise = false;
+    keepBoundaryTick = false;
+    if (cleanTimer) { clearTimeout(cleanTimer); cleanTimer = null; }
+    if (domainAxisTimer) { clearTimeout(domainAxisTimer); domainAxisTimer = null; }
+    if (imageTimer) { clearTimeout(imageTimer); imageTimer = null; }
+    if (radTimer) { clearTimeout(radTimer); radTimer = null; }
+  }
+
+  function loadFn() {
+    cancelAnim();
+    applyParamsToLesson();
+    loaded = true;
+    clearOutputs();
+    fnBox.textContent = lesson.latex;
+    playBtn.disabled = false;
+    setNarration(lesson.sayLoad);
+    const xs = visibleXs();
+    mastX = xs.length ? xs[0] : null;
+    draw();
+  }
+
+  function fmtExprHtml(x) {
+    const m = lesson.m, b = lesson.b;
+    const xs = `<span class="x-red">${x < 0 ? `(${x})` : `${x}`}</span>`;
+    let inner;
+    if (Math.abs(m) < EPS) inner = `${b}`;
+    else {
+      let body;
+      if (m === 1) body = xs;
+      else if (m === -1) body = `−${xs}`;
+      else body = `${m < 0 ? "−" + Math.abs(m) : m} · ${xs}`;
+      if (Math.abs(b) < EPS) inner = body;
+      else inner = b < 0 ? `${body} − ${Math.abs(b)}` : `${body} + ${b}`;
+    }
+    return `√(${inner})`;
+  }
+
+  function addCalc(x, y) {
+    const line = document.createElement("div");
+    line.className = "calc-line";
+    const yShow = Number.isInteger(y) ? y : Number(y.toFixed(4));
+    line.innerHTML = `<span class="eq">${fmtExprHtml(x)}</span><span class="res">= ${yShow}</span>`;
+    calcLog.prepend(line);
+    while (calcLog.children.length > 8) calcLog.removeChild(calcLog.lastChild);
+  }
+
+  function addRow(x, y) {
+    const tr = document.createElement("tr");
+    tr.className = "new";
+    const yShow = Number.isInteger(y) ? y : Number(y.toFixed(4));
+    tr.innerHTML = `<td class="x-red">${x}</td><td>${yShow}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  function cancelAnim() {
+    playing = false;
+    if (anim) cancelAnimationFrame(anim);
+    anim = null;
+  }
+
+  function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  function animateTo(from, to, ms) {
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const step = (now) => {
+        if (!playing) return resolve(false);
+        const u = Math.min(1, (now - t0) / ms);
+        mastX = from + (to - from) * easeInOut(u);
+        draw();
+        if (u < 1) anim = requestAnimationFrame(step);
+        else resolve(true);
+      };
+      anim = requestAnimationFrame(step);
+    });
+  }
+
+  function wait(ms) {
+    return new Promise((r) => {
+      setTimeout(() => r(playing), ms);
+    });
+  }
+
+  async function playTable() {
+    if (!loaded || playing) return;
+    playing = true;
+    playBtn.disabled = true;
+    loadBtn.disabled = true;
+    clearOutputs();
+    setNarration(lesson.sayPlay);
+    const xs = visibleXs();
+    const { lo: uLo, hi: uHi } = domainBounds();
+    const eff = effectiveDomain(lesson.m, lesson.b, uLo, uHi);
+    if (!eff) {
+      setNarration("No hay dominio efectivo: el radicando es negativo en toda la restricción [x₁,x₂], o el dominio natural es vacío. Ajustá <strong>m</strong>, <strong>b</strong> o el intervalo.");
+      playing = false;
+      playBtn.disabled = false;
+      loadBtn.disabled = false;
+      draw();
+      return;
+    }
+    if (!xs.length) {
+      setNarration("Hay dominio efectivo, pero no hay enteros x visibles con f(x) en el gráfico. Amplía [x₁,x₂] o mové m/b.");
+      playing = false;
+      playBtn.disabled = false;
+      loadBtn.disabled = false;
+      return;
+    }
+    mastX = xs[0];
+    draw();
+
+    for (let i = 0; i < xs.length; i++) {
+      if (!playing) break;
+      const x = xs[i];
+      if (i > 0) {
+        guide = null;
+        const ok = await animateTo(xs[i - 1], x, 900);
+        if (!ok) break;
+      }
+      const y = f(x);
+      const rad = L(x, lesson.m, lesson.b);
+      mastX = x;
+      guide = { x, phase: "x" };
+      draw();
+      setNarration(`Tomamos <strong>x = ${x}</strong>. ¿Existe √? Miramos el radicando: <strong>L(${x}) = ${prettyNum(Number(rad.toFixed(4)))}</strong> ${rad >= -EPS ? "≥ 0 ✓" : "< 0 ✗"}.`);
+      await wait(550);
+      if (!playing) break;
+      addCalc(x, y);
+      const yShow = Number.isInteger(y) ? y : Number(y.toFixed(4));
+      setNarration(`Como el radicando es no negativo, <strong>${fmtExpr(x)} = ${yShow}</strong>.`);
+      await wait(450);
+      if (!playing) break;
+      guide = { x, y, phase: "xy" };
+      addRow(x, y);
+      points.push({ x, y });
+      axisMarks.push({ x, y });
+      draw();
+      setNarration(`Proyectamos hasta <strong>y = ${yShow}</strong> (siempre ≥ 0) y marcamos <strong>(${x}, ${yShow})</strong>.`);
+      await wait(700);
+    }
+    guide = null;
+    if (playing) {
+      showDomainStroke = true;
+      railResolved = true;
+      finalClean = false;
+      if (typeof syncDomainUI === "function") syncDomainUI();
+      if (cleanTimer) clearTimeout(cleanTimer);
+      draw();
+      setNarration(`Tabla completa. Resaltamos f en el dominio efectivo <strong>[${prettyNum(eff.lo)}, ${prettyNum(eff.hi)}]</strong>. En 4 s quitamos los andamios.`);
+      cleanTimer = setTimeout(() => {
+        finalClean = true;
+        mastX = null;
+        guide = null;
+        showDomainAxis = true;
+        if (domainAxisTimer) clearTimeout(domainAxisTimer);
+        draw();
+        setNarration(`Proyectamos el <strong>dominio verdadero</strong> (restricción ∩ dominio natural): <strong>[${prettyNum(eff.lo)}, ${prettyNum(eff.hi)}]</strong>. En el riel, lo inválido queda <strong>gris</strong> y lo válido en <strong>amarillo</strong>.`);
+        domainAxisTimer = setTimeout(() => {
+          showDomainAxis = false;
+          showImageProj = true;
+          showImageAxis = false;
+          if (imageTimer) clearTimeout(imageTimer);
+          draw();
+          setNarration(`Proyectamos en verde <strong>f(x₁)</strong> y <strong>f(x₂)</strong> hasta el eje Y (f ≥ 0).`);
+          imageTimer = setTimeout(() => {
+            showImageAxis = true;
+            draw();
+            const img = imageOnEffective(lesson.m, lesson.b, eff.lo, eff.hi);
+            setNarration(`La <strong>imagen</strong> sobre el eje Y: <strong>[${prettyNum(Number(img.min.toFixed(2)))}, ${prettyNum(Number(img.max.toFixed(2)))}]</strong> ⊆ [0, +∞).`);
+            imageTimer = setTimeout(() => {
+              showImageProj = false;
+              showImageAxis = false;
+              // SURPRISE: radicando condition
+              showRadSurprise = true;
+              keepBoundaryTick = false;
+              draw();
+              const nat = naturalDomain(lesson.m, lesson.b);
+              setNarration(`★ Condición clave: <strong>radicando ≥ 0</strong>${nat.threshold != null ? ` · frontera <strong>x* = ${prettyNum(Number(nat.threshold.toFixed(3)))}</strong>` : ""} · dominio natural <strong>${nat.text}</strong>.`);
+              if (radTimer) clearTimeout(radTimer);
+              radTimer = setTimeout(() => {
+                showRadSurprise = false;
+                keepBoundaryTick = true;
+                draw();
+                setNarration(`Construcción final: arco de √(mx+b) en el dominio efectivo <strong>[${prettyNum(eff.lo)}, ${prettyNum(eff.hi)}]</strong>.`);
+              }, 4000);
+            }, 4000);
+          }, 2500);
+        }, 4000);
+      }, 4000);
+    } else {
+      draw();
+    }
+    playing = false;
+    playBtn.disabled = false;
+    loadBtn.disabled = false;
+  }
+
+  function resetAll() {
+    cancelAnim();
+    loaded = false;
+    clearOutputs();
+    fnBox.innerHTML = '<span style="color:var(--muted)">Cargar f</span>';
+    playBtn.disabled = true;
+    loadBtn.disabled = false;
+    setNarration("Reset. Ajustá <strong>m</strong> y <strong>b</strong>, cargá f = √(mx+b) y dale Play.");
+    draw();
+  }
+
+  function onParamInput() {
+    applyParamsToLesson();
+    if (loaded && !playing) {
+      fnBox.textContent = lesson.latex;
+      clearOutputs();
+      const xs = visibleXs();
+      mastX = xs.length ? xs[0] : null;
+      setNarration(lesson.sayLoad + " Tocá <strong>Play tabla</strong> para recorrerla.");
+      draw();
+    } else if (!loaded) {
+      fnBox.innerHTML = `<span style="color:var(--muted)">${lesson.latex}</span>`;
+    }
+  }
+
+  const DOM_MIN = -7, DOM_MAX = 7;
+  const domTrack = document.getElementById("domTrack");
+  const domFill = document.getElementById("domFill");
+  const domLoHandle = document.getElementById("domLoHandle");
+  const domHiHandle = document.getElementById("domHiHandle");
+
+  function domainToPct(v) {
+    return ((v - DOM_MIN) / (DOM_MAX - DOM_MIN)) * 100;
+  }
+  function pctToDomain(pct) {
+    const raw = DOM_MIN + (pct / 100) * (DOM_MAX - DOM_MIN);
+    return Math.round(raw * 2) / 2;
+  }
+  const domFillInvalid = document.getElementById("domFillInvalid");
+  const domFillValid = document.getElementById("domFillValid");
+
+  function syncDomainUI() {
+    let lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+    if (lo > hi) { const t = lo; lo = hi; hi = t; }
+    domLoEl.value = String(lo);
+    domHiEl.value = String(hi);
+    domLoHandle.style.left = domainToPct(lo) + "%";
+    domHiHandle.style.left = domainToPct(hi) + "%";
+    domLoVal.textContent = prettyNum(lo);
+    domHiVal.textContent = prettyNum(hi);
+
+    const m = Number(slopeEl.value);
+    const b = Number(interceptEl.value);
+    const eff = effectiveDomain(m, b, lo, hi);
+
+    if (railResolved) {
+      domTrack.classList.add("resolved");
+      // Full attempted restriction in gray
+      domFill.hidden = true;
+      domFillInvalid.hidden = false;
+      domFillInvalid.style.left = domainToPct(lo) + "%";
+      domFillInvalid.style.width = Math.max(0, domainToPct(hi) - domainToPct(lo)) + "%";
+      // True domain (intersection) in yellow
+      if (eff && eff.hi >= eff.lo - EPS) {
+        domFillValid.hidden = false;
+        domFillValid.style.left = domainToPct(eff.lo) + "%";
+        domFillValid.style.width = Math.max(0, domainToPct(eff.hi) - domainToPct(eff.lo)) + "%";
+        // Yellow mark at start of true domain if it doesn't coincide with x₁ or x₂
+        const mark = document.getElementById("domTrueMark");
+        const markLab = document.getElementById("domTrueMarkLabel");
+        const startInterior = Math.abs(eff.lo - lo) > EPS && Math.abs(eff.lo - hi) > EPS;
+        if (mark && markLab && startInterior) {
+          mark.hidden = false;
+          markLab.hidden = false;
+          mark.style.left = domainToPct(eff.lo) + "%";
+          markLab.style.left = domainToPct(eff.lo) + "%";
+          markLab.textContent = "x = " + prettyNum(eff.lo);
+        } else if (mark && markLab) {
+          mark.hidden = true;
+          markLab.hidden = true;
+        }
+      } else {
+        domFillValid.hidden = true;
+        const mark = document.getElementById("domTrueMark");
+        const markLab = document.getElementById("domTrueMarkLabel");
+        if (mark) mark.hidden = true;
+        if (markLab) markLab.hidden = true;
+      }
+      // Handles stay red (CSS unchanged)
+    } else {
+      domTrack.classList.remove("resolved");
+      domFill.hidden = false;
+      domFillInvalid.hidden = true;
+      domFillValid.hidden = true;
+      domFill.style.left = domainToPct(lo) + "%";
+      domFill.style.width = Math.max(0, domainToPct(hi) - domainToPct(lo)) + "%";
+      const mark = document.getElementById("domTrueMark");
+      const markLab = document.getElementById("domTrueMarkLabel");
+      if (mark) mark.hidden = true;
+      if (markLab) markLab.hidden = true;
+    }
+  }
+
+  function bindHandle(handle, which) {
+    const onMove = (clientX) => {
+      const rect = domTrack.getBoundingClientRect();
+      let pct = ((clientX - rect.left) / rect.width) * 100;
+      pct = Math.max(0, Math.min(100, pct));
+      let v = pctToDomain(pct);
+      let lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+      if (which === "lo") {
+        lo = Math.min(v, hi);
+        domLoEl.value = String(lo);
+      } else {
+        hi = Math.max(v, lo);
+        domHiEl.value = String(hi);
+      }
+      syncDomainUI();
+      onParamInput();
+    };
+    handle.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+      onMove(e.clientX);
+      const move = (ev) => onMove(ev.clientX);
+      const up = () => {
+        handle.releasePointerCapture(e.pointerId);
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", up);
+      };
+      handle.addEventListener("pointermove", move);
+      handle.addEventListener("pointerup", up);
+    });
+  }
+  bindHandle(domLoHandle, "lo");
+  bindHandle(domHiHandle, "hi");
+  domTrack.addEventListener("pointerdown", (e) => {
+    if (e.target.classList.contains("handle")) return;
+    const rect = domTrack.getBoundingClientRect();
+    const v = pctToDomain(((e.clientX - rect.left) / rect.width) * 100);
+    const lo = Number(domLoEl.value), hi = Number(domHiEl.value);
+    if (Math.abs(v - lo) <= Math.abs(v - hi)) {
+      domLoEl.value = String(Math.min(v, hi));
+    } else {
+      domHiEl.value = String(Math.max(v, lo));
+    }
+    syncDomainUI();
+    onParamInput();
+  });
+
+  slopeEl.addEventListener("input", onParamInput);
+  interceptEl.addEventListener("input", onParamInput);
+
+  loadBtn.addEventListener("click", loadFn);
+  playBtn.addEventListener("click", playTable);
+  resetBtn.addEventListener("click", resetAll);
+
+  applyParamsToLesson();
+  syncDomainUI();
+  draw();
+})();
+</script>
+</body>
+</html>

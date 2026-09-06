@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scrubber · Dominio ↔ Imagen</title>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #1a2332; --ink: #e8eef7; --muted: #8b9bb4;
+      --accent: #6ea8fe; --tramoA: #5ad4a8; --tramoB: #f0a35e; --gap: #4a5568; --probe: #ff6b9d;
+      --ok: #5ad4a8; --bad: #ff7b7b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: system-ui, sans-serif;
+      background: var(--bg); color: var(--ink);
+      display: flex; flex-direction: column; gap: 12px; padding: 16px;
+    }
+    h1 { font-size: 1.15rem; margin: 0; font-weight: 650; }
+    .sub { color: var(--muted); font-size: 0.85rem; margin: 0; }
+    .layout {
+      display: grid; grid-template-columns: 1fr 52px; gap: 10px;
+      max-width: 720px; width: 100%; margin: 0 auto;
+    }
+    .card {
+      background: var(--panel); border-radius: 12px; padding: 10px;
+      border: 1px solid #2a3548;
+    }
+    canvas {
+      width: 100%; height: auto; display: block; border-radius: 8px;
+      background: #0b1018; cursor: crosshair; touch-action: none;
+    }
+    canvas.locked { cursor: not-allowed; opacity: 0.92; }
+    .vwrap {
+      display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 4px;
+    }
+    .vwrap label { writing-mode: vertical-rl; transform: rotate(180deg);
+      font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+    #vWipe {
+      -webkit-appearance: slider-vertical; appearance: slider-vertical;
+      width: 28px; height: 280px; padding: 0; margin: 0; background: transparent;
+    }
+    .controls { max-width: 720px; width: 100%; margin: 0 auto; display: grid; gap: 10px; }
+    .row { display: grid; gap: 6px; }
+    .row label { font-size: 0.8rem; color: var(--muted); }
+    input[type=range] { width: 100%; accent-color: var(--accent); }
+    input[type=range]:disabled { opacity: 0.45; }
+    .readout {
+      display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: baseline;
+      font-variant-numeric: tabular-nums;
+    }
+    .readout strong { color: var(--accent); }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px; font-size: 0.78rem;
+      background: #243044; color: var(--ink);
+    }
+    .pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .hint { font-size: 0.8rem; color: var(--muted); line-height: 1.45; max-width: 720px; margin: 0 auto; }
+    code { background: #243044; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+    .predict {
+      display: grid; gap: 10px; padding: 12px; border-radius: 10px;
+      background: #152032; border: 1px dashed #3d4f6a;
+    }
+    .predict h2 { margin: 0; font-size: 0.95rem; }
+    .predict .q { font-size: 0.9rem; }
+    .predict .xchal { font-size: 1.25rem; font-variant-numeric: tabular-nums; color: var(--probe); }
+    .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+    button {
+      border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer;
+      background: #2a3c58; color: var(--ink);
+    }
+    button.primary { background: var(--accent); color: #0b1018; font-weight: 600; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .feedback.ok { color: var(--ok); }
+    .feedback.bad { color: var(--bad); }
+    .hidden { display: none !important; }
+    .probe-lock {
+      padding: 10px 12px; border-radius: 8px; background: #101826; color: var(--muted);
+      font-size: 0.85rem; border: 1px solid #2a3548;
+    }
+  </style>
+</head>
+<body>
+  <header style="max-width:720px;margin:0 auto;width:100%">
+    <h1>Scrubber de función · dominio ↔ imagen</h1>
+    <p class="sub">Predecí → verificá con el probe. 0 deps.</p>
+  </header>
+
+  <div class="layout">
+    <div class="card">
+      <canvas id="c" class="locked" width="640" height="400" aria-label="Gráfica de f"></canvas>
+    </div>
+    <div class="card vwrap">
+      <label for="vWipe">v-wipe</label>
+      <input id="vWipe" type="range" min="0" max="100" value="8" orient="vertical"
+        aria-label="Revelar curva verticalmente" title="Revelá la curva (celofán)" />
+    </div>
+  </div>
+
+  <div class="controls card">
+    <div id="predict" class="predict">
+      <h2>1 · Predecí (antes de arrastrar)</h2>
+      <p class="q">Para <span class="xchal" id="xChal">x = ?</span>:</p>
+      <div class="row">
+        <span class="sub">¿Existe f(x)?</span>
+        <div class="btns" id="existBtns">
+          <button type="button" data-exist="yes">Sí, existe</button>
+          <button type="button" data-exist="no">No existe</button>
+        </div>
+      </div>
+      <div class="row" id="signRow">
+        <span class="sub">Si existe, ¿f(x) es…?</span>
+        <div class="btns" id="signBtns">
+          <button type="button" data-sign="pos">positivo</button>
+          <button type="button" data-sign="neg">negativo</button>
+          <button type="button" data-sign="zero">cero</button>
+        </div>
+      </div>
+      <div class="btns">
+        <button type="button" class="primary" id="unlockBtn" disabled>Verificar con el probe</button>
+        <button type="button" id="newChal">Otro x</button>
+      </div>
+      <p class="feedback" id="predMsg"></p>
+    </div>
+
+    <p id="probeLockMsg" class="probe-lock">x-probe bloqueado hasta que predigas y pulses <strong>Verificar con el probe</strong>.</p>
+    <div id="probeBlock" class="hidden">
+      <div class="row">
+        <label for="xProbe">2 · x-probe · verificá tu predicción</label>
+        <input id="xProbe" type="range" min="-300" max="300" value="0" step="1" disabled
+          aria-label="Probar valor de x" />
+      </div>
+      <div class="readout" id="out"></div>
+      <p class="feedback" id="verifyMsg"></p>
+      <button type="button" id="againBtn">Nueva predicción</button>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="pill"><span class="dot" style="background:var(--tramoA)"></span> Tramo A · x∈[-3,-1]</span>
+      <span class="pill"><span class="dot" style="background:var(--gap)"></span> Hueco · x∈(-1,1)</span>
+      <span class="pill"><span class="dot" style="background:var(--tramoB)"></span> Tramo B · x∈[1,3]</span>
+    </div>
+  </div>
+
+  <p class="hint">
+    Primero anticipá dominio/signo; recién después el probe revela el par <code>(x, f(x))</code>.
+    El <strong>v-wipe</strong> revela la forma de a poco.
+  </p>
+
+<script>
+(() => {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const vWipe = document.getElementById("vWipe");
+  const xProbe = document.getElementById("xProbe");
+  const out = document.getElementById("out");
+  const predictEl = document.getElementById("predict");
+  const probeBlock = document.getElementById("probeBlock");
+  const xChal = document.getElementById("xChal");
+  const unlockBtn = document.getElementById("unlockBtn");
+  const predMsg = document.getElementById("predMsg");
+  const verifyMsg = document.getElementById("verifyMsg");
+  const signRow = document.getElementById("signRow");
+
+  const XMIN = -3.5, XMAX = 3.5, YMIN = -0.5, YMAX = 4.5;
+  let unlocked = false;
+  let challengeX = 0;
+  let guessExist = null; // "yes" | "no"
+  let guessSign = null;  // "pos" | "neg" | "zero"
+
+  function f(x) {
+    if (x >= -3 && x <= -1) {
+      const t = x + 2;
+      return { y: t * t + 1, piece: "A" };
+    }
+    if (x > -1 && x < 1) return null;
+    if (x >= 1 && x <= 3) return { y: 4 - x, piece: "B" };
+    return null;
+  }
+
+  function importantXs() { return [-3, -1, 1, 3]; }
+
+  function pickChallenge() {
+    // mix: domain points + gap + edges
+    const pool = [-2.5, -2, -1.2, -0.5, 0, 0.5, 1.2, 2, 2.5, -3, -1, 1, 3];
+    challengeX = pool[Math.floor(Math.random() * pool.length)];
+    xChal.textContent = "x = " + challengeX.toFixed(2);
+    guessExist = null; guessSign = null;
+    unlockBtn.disabled = true;
+    predMsg.textContent = "";
+    predMsg.className = "feedback";
+    signRow.classList.remove("hidden");
+    document.querySelectorAll("#existBtns button,#signBtns button").forEach(b => b.style.outline = "");
+  }
+
+  function updateUnlock() {
+    if (guessExist === "no") {
+      unlockBtn.disabled = false;
+      signRow.classList.add("hidden");
+      guessSign = null;
+    } else if (guessExist === "yes") {
+      signRow.classList.remove("hidden");
+      unlockBtn.disabled = !guessSign;
+    } else {
+      unlockBtn.disabled = true;
+    }
+  }
+
+  function toCanvas(x, y) {
+    const w = canvas.width, h = canvas.height;
+    return [((x - XMIN) / (XMAX - XMIN)) * w, h - ((y - YMIN) / (YMAX - YMIN)) * h];
+  }
+  function fromCanvas(px) {
+    return XMIN + (px / canvas.width) * (XMAX - XMIN);
+  }
+
+  function drawAxes() {
+    ctx.save();
+    ctx.strokeStyle = "#2e3a4f"; ctx.lineWidth = 1;
+    for (let x = Math.ceil(XMIN); x <= XMAX; x++) {
+      const [px] = toCanvas(x, 0);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, canvas.height); ctx.stroke();
+    }
+    for (let y = Math.ceil(YMIN); y <= YMAX; y++) {
+      const [, py] = toCanvas(0, y);
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(canvas.width, py); ctx.stroke();
+    }
+    ctx.strokeStyle = "#5a6d8c"; ctx.lineWidth = 1.5;
+    const [ox, oy] = toCanvas(0, 0);
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(canvas.width, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, canvas.height); ctx.stroke();
+    ctx.restore();
+  }
+
+  function samplePiece(x0, x1, color, revealFrac) {
+    const wipeY = canvas.height * (1 - revealFrac);
+    const steps = Math.max(40, Math.floor((x1 - x0) * 80));
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i <= steps; i++) {
+      const x = x0 + (i / steps) * (x1 - x0);
+      const r = f(x);
+      if (!r) { started = false; continue; }
+      const [px, py] = toCanvas(x, r.y);
+      if (py < wipeY - 0.5) { started = false; continue; }
+      if (!started) { ctx.moveTo(px, py); started = true; }
+      else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.stroke();
+  }
+
+  function shadeDomain(revealFrac) {
+    const wipeY = canvas.height * (1 - revealFrac);
+    const bands = [
+      { x0: -3, x1: -1, color: "rgba(90,212,168,0.18)" },
+      { x0: -1, x1: 1, color: "rgba(74,85,104,0.22)" },
+      { x0: 1, x1: 3, color: "rgba(240,163,94,0.18)" },
+    ];
+    for (const b of bands) {
+      const [px0] = toCanvas(b.x0, 0);
+      const [px1] = toCanvas(b.x1, 0);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(px0, wipeY, px1 - px0, canvas.height - wipeY);
+    }
+  }
+
+  function drawCelofan(revealFrac) {
+    const wipeY = canvas.height * (1 - revealFrac);
+    if (wipeY <= 0) return;
+    const g = ctx.createLinearGradient(0, 0, 0, wipeY);
+    g.addColorStop(0, "rgba(110,168,254,0.08)");
+    g.addColorStop(1, "rgba(110,168,254,0.22)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, wipeY);
+    ctx.strokeStyle = "rgba(110,168,254,0.65)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, wipeY); ctx.lineTo(canvas.width, wipeY); ctx.stroke();
+  }
+
+  function drawProbe(x) {
+    if (!unlocked) return;
+    const r = f(x);
+    const [px] = toCanvas(x, 0);
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,107,157,0.45)"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, canvas.height); ctx.stroke();
+    ctx.setLineDash([]);
+    if (r) {
+      const [, py] = toCanvas(x, r.y);
+      ctx.fillStyle = "#ff6b9d";
+      ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    } else {
+      const [, oy] = toCanvas(0, 0);
+      ctx.strokeStyle = "#ff6b9d"; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(px - 6, oy - 6); ctx.lineTo(px + 6, oy + 6);
+      ctx.moveTo(px + 6, oy - 6); ctx.lineTo(px - 6, oy + 6);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawChallengeMark() {
+    // During predict: no full vertical line (would leak f(x) against the curve).
+    // Only a small axis tick + the numeric x in the card.
+    if (unlocked) return;
+    const [px, oy] = [...toCanvas(challengeX, 0)];
+    ctx.save();
+    ctx.fillStyle = "rgba(255,107,157,0.9)";
+    ctx.beginPath();
+    ctx.moveTo(px, oy - 8); ctx.lineTo(px - 5, oy + 4); ctx.lineTo(px + 5, oy + 4);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function feedbackAt(x) {
+    for (const bx of importantXs()) if (Math.abs(x - bx) < 0.06) return bx;
+    return null;
+  }
+
+  function scorePrediction(x) {
+    const r = f(x);
+    const exists = !!r;
+    let existOk = (guessExist === "yes") === exists;
+    let signOk = true;
+    if (exists && guessExist === "yes") {
+      const s = r.y > 0.05 ? "pos" : (r.y < -0.05 ? "neg" : "zero");
+      signOk = guessSign === s;
+    }
+    if (!exists && guessExist === "no") signOk = true;
+    return { existOk, signOk, r, exists };
+  }
+
+  function render() {
+    const reveal = Number(vWipe.value) / 100;
+    const x = unlocked ? Number(xProbe.value) / 100 : challengeX;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawAxes();
+    shadeDomain(reveal);
+    samplePiece(-3, -1, "#5ad4a8", reveal);
+    samplePiece(1, 3, "#f0a35e", reveal);
+    drawCelofan(reveal);
+    drawChallengeMark();
+    drawProbe(x);
+
+    if (!unlocked) {
+      out.innerHTML = "";
+      return;
+    }
+    const r = f(x);
+    const edge = feedbackAt(x);
+    let status;
+    if (r) {
+      status = `<span class="pill" style="border:1px solid var(--probe)">punto <strong>(${x.toFixed(2)}, ${r.y.toFixed(2)})</strong></span>
+        <span>x = <strong>${x.toFixed(2)}</strong></span>
+        <span>f(x) = <strong>${r.y.toFixed(2)}</strong></span>
+        <span class="pill">tramo ${r.piece}</span>
+        <span class="pill">∈ Dom(f)</span>`;
+    } else {
+      status = `<span class="pill" style="border:1px solid var(--probe)">x = <strong>${x.toFixed(2)}</strong> → f(x) <strong>∄</strong></span>
+        <span class="pill">∉ Dom(f)</span>`;
+    }
+    if (edge !== null) status += `<span class="pill" style="border:1px solid var(--probe)">borde x=${edge}</span>`;
+    out.innerHTML = status;
+  }
+
+  function unlockProbe() {
+    unlocked = true;
+    predictEl.classList.add("hidden");
+    document.getElementById("probeLockMsg").classList.add("hidden");
+    probeBlock.classList.remove("hidden");
+    canvas.classList.remove("locked");
+    xProbe.disabled = false;
+    xProbe.value = String(Math.round(challengeX * 100));
+    const s = scorePrediction(challengeX);
+    if (s.existOk && s.signOk) {
+      verifyMsg.className = "feedback ok";
+      verifyMsg.textContent = "Acertaste la predicción. Ahora explorá otros x con el probe.";
+    } else if (s.existOk && !s.signOk) {
+      verifyMsg.className = "feedback bad";
+      verifyMsg.textContent = "Dominio bien; el signo no. Compará con el punto marcado.";
+    } else {
+      verifyMsg.className = "feedback bad";
+      verifyMsg.textContent = "Revisá el dominio: ¿está x en un tramo sombreado o en el hueco?";
+    }
+    render();
+  }
+
+  function lockAgain() {
+    unlocked = false;
+    predictEl.classList.remove("hidden");
+    document.getElementById("probeLockMsg").classList.remove("hidden");
+    probeBlock.classList.add("hidden");
+    canvas.classList.add("locked");
+    xProbe.disabled = true;
+    verifyMsg.textContent = "";
+    pickChallenge();
+    render();
+  }
+
+  document.getElementById("existBtns").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-exist]");
+    if (!b) return;
+    guessExist = b.dataset.exist;
+    document.querySelectorAll("#existBtns button").forEach(x => x.style.outline = "");
+    b.style.outline = "2px solid var(--accent)";
+    updateUnlock();
+  });
+  document.getElementById("signBtns").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-sign]");
+    if (!b) return;
+    guessSign = b.dataset.sign;
+    document.querySelectorAll("#signBtns button").forEach(x => x.style.outline = "");
+    b.style.outline = "2px solid var(--accent)";
+    updateUnlock();
+  });
+  unlockBtn.addEventListener("click", unlockProbe);
+  document.getElementById("newChal").addEventListener("click", () => { pickChallenge(); render(); });
+  document.getElementById("againBtn").addEventListener("click", lockAgain);
+
+  vWipe.addEventListener("input", render);
+  xProbe.addEventListener("input", render);
+
+  function setXFromEvent(e) {
+    if (!unlocked) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    let x = fromCanvas((e.clientX - rect.left) * scaleX);
+    x = Math.max(-3, Math.min(3, x));
+    xProbe.value = String(Math.round(x * 100));
+    render();
+  }
+  let dragging = false;
+  canvas.addEventListener("pointerdown", (e) => {
+    if (!unlocked) return;
+    dragging = true; canvas.setPointerCapture(e.pointerId); setXFromEvent(e);
+  });
+  canvas.addEventListener("pointermove", (e) => { if (dragging) setXFromEvent(e); });
+  canvas.addEventListener("pointerup", () => { dragging = false; });
+
+  pickChallenge();
+  render();
+})();
+</script>
+</body>
+</html>
