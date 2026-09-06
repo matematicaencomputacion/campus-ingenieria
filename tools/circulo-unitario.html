@@ -53,7 +53,7 @@
       border: 1px solid #2a3548; background: #121a27; color: #4a5a72;
       font: inherit; font-weight: 700; font-size: 0.82rem;
       padding: 7px 11px; border-radius: 999px;
-      cursor: default; transition: color .15s, background .15s, border-color .15s, box-shadow .15s;
+      cursor: pointer; transition: color .15s, background .15s, border-color .15s, box-shadow .15s;
       min-width: 2.2em; text-align: center;
     }
     .locus-strip .locus.on {
@@ -132,6 +132,8 @@
         <div class="hint" style="margin-bottom:6px">Modo</div>
         <div class="seg" role="group" aria-label="Modo">
           <button type="button" data-mode="educate" class="active" id="modeEducate">Educar · Play</button>
+          <button type="button" data-edu-screen="1" id="modeSeno" title="Seno de θ">Seno</button>
+          <button type="button" data-edu-screen="2" id="modeCoseno" title="Coseno de θ">Coseno</button>
           <button type="button" data-mode="predict" id="modePredict">Predecir</button>
           <button type="button" data-mode="drawAngle" id="modeDrawAngle">Dibujar ángulo</button>
           <button type="button" data-mode="drawCoord" id="modeDrawCoord">Dibujar coordenada</button>
@@ -156,6 +158,8 @@
         <div class="graph-wrap">
           <canvas id="c" width="720" height="720" aria-label="Círculo unitario"></canvas>
         <canvas id="confetti" width="720" height="720" aria-hidden="true"></canvas>
+          <button type="button" id="educatePrev" class="lesson-nav prev hidden" title="Pantalla anterior" aria-label="Pantalla anterior"><span class="chev" aria-hidden="true"></span></button>
+          <button type="button" id="educateNext" class="lesson-nav next hidden" title="Pantalla siguiente" aria-label="Pantalla siguiente"><span class="chev" aria-hidden="true"></span></button>
           <button type="button" id="anglePrev" class="lesson-nav prev hidden" title="Pantalla anterior" aria-label="Pantalla anterior"><span class="chev" aria-hidden="true"></span></button>
           <button type="button" id="angleNext" class="lesson-nav next hidden" title="Pantalla siguiente" aria-label="Pantalla siguiente"><span class="chev" aria-hidden="true"></span></button>
           <button type="button" id="coordPrev" class="lesson-nav prev hidden" title="Pantalla anterior" aria-label="Pantalla anterior"><span class="chev" aria-hidden="true"></span></button>
@@ -165,6 +169,7 @@
 
       <!-- Educate panel -->
       <div class="card panel" id="panelEducate">
+        <div id="educateScreen0">
         <h2>Construcción · paso <span id="stepLabel">30°</span></h2>
         <div class="toolbar" style="margin-bottom:12px;">
           <button class="btn primary" id="playBtn">▶ Play</button>
@@ -186,8 +191,77 @@
           <span class="locus" data-locus="x">eje X</span>
           <span class="locus" data-locus="y">eje Y</span>
         </div>
-      </div>
+        </div>
 
+        <div id="educateScreen1" class="hidden">
+          <h2>Seno · Película</h2>
+          <p class="hint" style="margin-bottom:10px;">Play recorre los ángulos notables (30°, 45°, 60°, ejes y múltiplos): en cada uno el segmento ámbar titila ×3 y se proyecta al eje Y en verde. La película es larga a propósito.</p>
+          <div class="toolbar" style="margin-bottom:12px;">
+            <button class="btn primary" id="senoMoviePlayBtn">▶ Play seno</button>
+            <button class="btn" id="senoMovieNextBtn">Siguiente</button>
+            <button class="btn" id="senoMovieStopBtn" disabled>Detener</button>
+            <button class="btn" id="senoMovieClearBtn">Limpiar Y</button>
+          </div>
+          <div class="locked" id="senoMovieStatus">Listo para ▶ Play seno · secuencia: 30° → 45° → 60° → … → 0°</div>
+          <p class="hint" style="margin-top:10px;">Educar + Seno activos. ▶ del círculo pasa a explorar un ángulo a la vez.</p>
+          <div class="locus-strip" id="educateLocusMovie" aria-label="Cuadrante o eje activo">
+            <span class="locus" data-locus="q1">I</span>
+            <span class="locus" data-locus="q2">II</span>
+            <span class="locus" data-locus="q3">III</span>
+            <span class="locus" data-locus="q4">IV</span>
+            <span class="locus" data-locus="x">eje X</span>
+            <span class="locus" data-locus="y">eje Y</span>
+          </div>
+        </div>
+
+        <div id="educateScreen2" class="hidden">
+          <h2>Seno · proyección en Y</h2>
+          <p class="hint" style="margin-bottom:10px;">El segmento <strong style="color:#FFBF00">ámbar</strong> es sen θ (altura desde el eje X hasta el punto). Titila ×3 y se desliza hasta el eje Y, donde queda en <strong style="color:#34d399">verde</strong>.</p>
+          <div class="toolbar" style="margin-bottom:12px;">
+            <button class="btn primary" id="senoReplayBtn">▶ Repetir seno</button>
+            <button class="btn" id="senoResetParkBtn">Limpiar Y</button>
+          </div>
+          <p class="hint">Elegí un ángulo en la tabla o en el círculo. Educar + Seno quedan activos.</p>
+          <div class="legend" style="overflow:auto; max-height:360px;">
+            <table>
+              <thead><tr><th>θ</th><th>(cos θ, sen θ)</th></tr></thead>
+              <tbody id="tbodySeno"></tbody>
+            </table>
+          </div>
+          <div class="locus-strip" id="educateLocusSeno" aria-label="Cuadrante o eje activo">
+            <span class="locus" data-locus="q1">I</span>
+            <span class="locus" data-locus="q2">II</span>
+            <span class="locus" data-locus="q3">III</span>
+            <span class="locus" data-locus="q4">IV</span>
+            <span class="locus" data-locus="x">eje X</span>
+            <span class="locus" data-locus="y">eje Y</span>
+          </div>
+        </div>
+
+        <div id="educateScreen3" class="hidden">
+          <h2>Coseno · proyección en X</h2>
+          <p class="hint" style="margin-bottom:10px;">El segmento <strong style="color:#FFBF00">ámbar</strong> es cos θ (desde el eje Y hasta el punto). Titila ×3 y se desliza hasta el eje X, donde queda en <strong style="color:#ff5c5c">rojo</strong>.</p>
+          <div class="toolbar" style="margin-bottom:12px;">
+            <button class="btn primary" id="cosenoReplayBtn">▶ Repetir coseno</button>
+            <button class="btn" id="cosenoResetParkBtn">Limpiar X</button>
+          </div>
+          <p class="hint">Elegí un ángulo en la tabla o en el círculo. Educar + Coseno quedan activos.</p>
+          <div class="legend" style="overflow:auto; max-height:360px;">
+            <table>
+              <thead><tr><th>θ</th><th>(cos θ, sen θ)</th></tr></thead>
+              <tbody id="tbodyCoseno"></tbody>
+            </table>
+          </div>
+          <div class="locus-strip" id="educateLocusCoseno" aria-label="Cuadrante o eje activo">
+            <span class="locus" data-locus="q1">I</span>
+            <span class="locus" data-locus="q2">II</span>
+            <span class="locus" data-locus="q3">III</span>
+            <span class="locus" data-locus="q4">IV</span>
+            <span class="locus" data-locus="x">eje X</span>
+            <span class="locus" data-locus="y">eje Y</span>
+          </div>
+        </div>
+      </div>
       <!-- Predict panel -->
       <div class="card panel hidden" id="panelPredict">
         <h2>Desafío</h2>
@@ -449,6 +523,17 @@
   const ctx = canvas.getContext("2d");
   const narration = document.getElementById("narration");
   const panelEducate = document.getElementById("panelEducate");
+  const educateScreen0 = document.getElementById("educateScreen0");
+  const educateScreen1 = document.getElementById("educateScreen1");
+  const educateScreen2 = document.getElementById("educateScreen2");
+  const educateScreen3 = document.getElementById("educateScreen3");
+  const educatePrev = document.getElementById("educatePrev");
+  const educateNext = document.getElementById("educateNext");
+  const modeSeno = document.getElementById("modeSeno");
+  const modeCoseno = document.getElementById("modeCoseno");
+  const tbodySeno = document.getElementById("tbodySeno");
+  const tbodyCoseno = document.getElementById("tbodyCoseno");
+
   const panelPredict = document.getElementById("panelPredict");
   const panelDrawAngle = document.getElementById("panelDrawAngle");
   const panelDrawCoord = document.getElementById("panelDrawCoord");
@@ -560,6 +645,20 @@
   const CHOICES = ["1", "0", "−1", "1/2", "−1/2", "√2/2", "−√2/2", "√3/2", "−√3/2"];
 
   let mode = "educate"; // educate | predict | drawAngle | drawCoord
+  let educateScreen = 0; // 0 construcción, 1 seno película, 2 seno explorar, 3 coseno
+  let senoMoviePlaying = false;
+  let senoMovieAbort = false;
+  let senoMovieCurr = null;
+  let senoMoviePrev = null;
+  let senoMovieIndex = -1;
+  let senoMovieBusy = false;
+  let locusSignal = null; // { key, on, t0, raf }
+  let pointPulse = null; // { deg, on, t0, raf }
+  const SIN_MOVIE_DEGS = [30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 0];
+  let sinParked = []; // degs with green Y segment parked
+  let cosParked = []; // degs with red X segment parked
+  let projAnim = null; // { kind:"sin"|"cos", deg, phase, blinkOn, blinkLeft, x, t0, raf }
+
   let step = 30;
   let revealed = [];
   let selected = null;
@@ -2060,8 +2159,17 @@
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
 
-    for (const deg of revealed) drawGuide(deg, L, deg === selected);
-    for (const deg of revealed) drawPoint(deg, L, deg === selected);
+    drawEducateLocusHighlight(L);
+
+    for (const deg of revealed) {
+      if (educateGuideVisible(deg)) drawGuide(deg, L, deg === selected);
+    }
+    for (const deg of revealed) {
+      if (pointPulse && pointPulse.deg === deg && !pointPulse.on) continue;
+      const emph = deg === selected || (pointPulse && pointPulse.deg === deg && pointPulse.on);
+      drawPoint(deg, L, emph);
+    }
+    if (mode === "educate" && educateScreen >= 1) drawParkedAndAnim(L);
 
     // faint ray in predict mode before verify
     if (mode === "predict" && challengeDeg != null && !verified && !revealed.includes(challengeDeg)) {
@@ -2428,6 +2536,74 @@
     }
   }
 
+
+  function paintLocusKey(L, key, strong) {
+    if (!key) return;
+    if (key.charAt(0) === "q") {
+      const q = Number(key.slice(1));
+      drawQuadrantWedge(L, q, strong ? "rgba(255, 191, 0, 0.42)" : "rgba(255, 191, 0, 0.16)");
+      return;
+    }
+    const band = 14;
+    const { cx, cy, R } = L;
+    ctx.save();
+    ctx.fillStyle = strong ? "rgba(255, 191, 0, 0.85)" : "rgba(255, 191, 0, 0.55)";
+    if (key === "x") ctx.fillRect(cx - R, cy - band / 2, R * 2, band);
+    else if (key === "y") ctx.fillRect(cx - band / 2, cy - R, band, R * 2);
+    ctx.restore();
+  }
+  function drawEducateLocusHighlight(L) {
+    if (mode !== "educate") return;
+    if (locusSignal) {
+      if (locusSignal.on) paintLocusKey(L, locusSignal.key, true);
+      return;
+    }
+    if (educateScreen < 1) return;
+    const key = locusKeyForDeg(selected);
+    if (!key) return;
+    paintLocusKey(L, key, false);
+  }
+  function stopLocusSignal() {
+    if (locusSignal && locusSignal.raf) cancelAnimationFrame(locusSignal.raf);
+    locusSignal = null;
+  }
+  function pulseLocusSignal(key) {
+    if (!key) return;
+    if (mode !== "educate") setMode("educate");
+    stopLocusSignal();
+    locusSignal = { key: key, on: true, t0: performance.now(), raf: null };
+    syncEducateLocus();
+    const tick = (now) => {
+      if (!locusSignal || locusSignal.key !== key) return;
+      const dt = now - locusSignal.t0;
+      const cycle = 600;
+      const inCycle = dt % cycle;
+      locusSignal.on = inCycle < 350;
+      const completed = Math.floor(dt / cycle);
+      syncEducateLocus();
+      draw();
+      if (completed >= 3) {
+        stopLocusSignal();
+        syncEducateLocus();
+        draw();
+        return;
+      }
+      locusSignal.raf = requestAnimationFrame(tick);
+    };
+    locusSignal.raf = requestAnimationFrame(tick);
+  }
+  function wireLocusSignalizers() {
+    if (window.__locusWired) return;
+    window.__locusWired = true;
+    document.addEventListener("click", (ev) => {
+      const el = ev.target && ev.target.closest ? ev.target.closest(".locus-strip .locus") : null;
+      if (!el) return;
+      const key = el.dataset.locus;
+      if (!key) return;
+      ev.preventDefault();
+      pulseLocusSignal(key);
+    });
+  }
   function drawQuadrantWedge(L, q, fillStyle) {
     if (!q || q < 1 || q > 4) return;
     const { cx, cy, R } = L;
@@ -2802,12 +2978,399 @@
     return q ? ("q" + q) : null;
   }
   function syncEducateLocus() {
-    const root = document.getElementById("educateLocus");
-    if (!root) return;
-    const key = mode === "educate" ? locusKeyForDeg(selected) : null;
-    root.querySelectorAll(".locus").forEach(el => {
-      el.classList.toggle("on", key != null && el.dataset.locus === key);
+    let key = null;
+    let chipOn = false;
+    if (mode === "educate") {
+      if (locusSignal) {
+        key = locusSignal.key;
+        chipOn = !!locusSignal.on;
+      } else {
+        key = locusKeyForDeg(selected);
+        chipOn = key != null;
+      }
+    }
+    for (const id of ["educateLocus", "educateLocusMovie", "educateLocusSeno", "educateLocusCoseno"]) {
+      const root = document.getElementById(id);
+      if (!root) continue;
+      root.querySelectorAll(".locus").forEach(el => {
+        el.classList.toggle("on", chipOn && key != null && el.dataset.locus === key);
+      });
+    }
+  }
+
+
+
+  function stopPointPulse() {
+    if (pointPulse && pointPulse.raf) cancelAnimationFrame(pointPulse.raf);
+    pointPulse = null;
+  }
+  function pulseEducatePoint(deg) {
+    if (deg == null || !Number.isFinite(deg)) return;
+    if (mode !== "educate") return;
+    if (!revealed.includes(deg)) revealed.push(deg);
+    selected = deg;
+    stopPointPulse();
+    pointPulse = { deg: deg, on: true, t0: performance.now(), raf: null };
+    rebuildEducateTable();
+    const tick = (now) => {
+      if (!pointPulse || pointPulse.deg !== deg) return;
+      const dt = now - pointPulse.t0;
+      const cycle = 520;
+      pointPulse.on = (dt % cycle) < 300;
+      const completed = Math.floor(dt / cycle);
+      draw();
+      if (completed >= 3) {
+        stopPointPulse();
+        draw();
+        return;
+      }
+      pointPulse.raf = requestAnimationFrame(tick);
+    };
+    pointPulse.raf = requestAnimationFrame(tick);
+  }
+  function educatePlayDone() {
+    return revealed.length >= anglesForStep(step).length && revealed.length > 0;
+  }
+  function stopProjAnim() {
+    if (projAnim && projAnim.raf) cancelAnimationFrame(projAnim.raf);
+    if (projAnim && projAnim._resolve) {
+      const r = projAnim._resolve;
+      projAnim = null;
+      r();
+      return;
+    }
+    projAnim = null;
+  }
+  function syncEducateChrome() {
+    const inEdu = mode === "educate";
+    if (educateScreen0) educateScreen0.classList.toggle("hidden", !inEdu || educateScreen !== 0);
+    if (educateScreen1) educateScreen1.classList.toggle("hidden", !inEdu || educateScreen !== 1);
+    if (educateScreen2) educateScreen2.classList.toggle("hidden", !inEdu || educateScreen !== 2);
+    if (educateScreen3) educateScreen3.classList.toggle("hidden", !inEdu || educateScreen !== 3);
+    if (modeSeno) modeSeno.classList.toggle("active", inEdu && (educateScreen === 1 || educateScreen === 2));
+    if (modeCoseno) modeCoseno.classList.toggle("active", inEdu && educateScreen === 3);
+    const eduBtn = document.getElementById("modeEducate");
+    if (eduBtn) eduBtn.classList.toggle("active", inEdu);
+    const maxS = 3;
+    if (educatePrev) {
+      educatePrev.classList.toggle("hidden", !inEdu);
+      educatePrev.disabled = !inEdu || educateScreen <= 0 || senoMoviePlaying;
+    }
+    if (educateNext) {
+      educateNext.classList.toggle("hidden", !inEdu);
+      const canNext = inEdu && !senoMoviePlaying && !senoMovieBusy && educateScreen < maxS;
+      educateNext.disabled = !canNext;
+    }
+    const playBtn = document.getElementById("senoMoviePlayBtn");
+    const stopBtn = document.getElementById("senoMovieStopBtn");
+    const nextBtn = document.getElementById("senoMovieNextBtn");
+    if (playBtn) playBtn.disabled = senoMoviePlaying || senoMovieBusy;
+    if (stopBtn) stopBtn.disabled = !senoMoviePlaying;
+    if (nextBtn) {
+      nextBtn.disabled = senoMoviePlaying || senoMovieBusy || senoMovieIndex >= SIN_MOVIE_DEGS.length - 1;
+    }
+  }
+  function fillEducateCloneTable(targetBody) {
+    if (!targetBody) return;
+    const angs = anglesForStep(step);
+    targetBody.innerHTML = "";
+    for (const deg of angs) {
+      const shown = revealed.includes(deg);
+      const e = EXACT[deg];
+      const tr = document.createElement("tr");
+      if (deg === selected) tr.classList.add("sel");
+      if (!shown) tr.classList.add("pending");
+      tr.dataset.deg = String(deg);
+      tr.innerHTML = shown
+        ? "<td>" + deg + "°</td><td class=\"pair\">(<span class=\"x\">" + e.x + "</span>, <span class=\"y\">" + e.y + "</span>)</td>"
+        : "<td>" + deg + "°</td><td class=\"pair\">…</td>";
+      if (shown) {
+        tr.addEventListener("click", () => {
+          selected = deg;
+          rebuildEducateTable();
+          if (educateScreen === 1 || educateScreen === 2) startSinAnim(deg);
+          if (educateScreen === 3) startCosAnim(deg);
+          draw();
+        });
+      }
+      targetBody.appendChild(tr);
+    }
+  }
+  function setEducateScreen(n) {
+    n = Math.max(0, Math.min(3, n|0));
+    if (senoMoviePlaying) {
+      senoMovieAbort = true;
+      senoMoviePlaying = false;
+    }
+    educateScreen = n;
+    stopProjAnim();
+    syncEducateChrome();
+    rebuildEducateTable();
+    const st = document.getElementById("senoMovieStatus");
+    if (n === 0) {
+      setNarration(educatePlayDone()
+        ? "Play completo. Usá ▶ para la película de Seno."
+        : "Modo Educar: tocá <strong>▶ Play</strong> o <strong>Siguiente</strong> para construir el círculo.");
+    } else if (n === 1) {
+      senoMovieCurr = null;
+      senoMoviePrev = null;
+      senoMovieIndex = -1;
+      ensureSinMovieAngles();
+      rebuildEducateTable();
+      setNarration("Seno · Película: ▶ Play seno recorre 30°, 45°, 60°… hasta proyectar cada sen θ en Y.");
+      if (st) st.textContent = "Listo para ▶ Play seno · secuencia: 30° → 45° → 60° → … → 0°";
+    } else if (n === 2) {
+      ensureSinMovieAngles();
+      rebuildEducateTable();
+      setNarration("Seno: el segmento vertical ámbar (altura) titila ×3 y se desliza al eje Y en verde.");
+      if (selected != null) startSinAnim(selected);
+      else if (revealed.length) { selected = revealed[revealed.length - 1]; startSinAnim(selected); }
+    } else {
+      setNarration("Coseno: el segmento horizontal ámbar titila ×3 y se desliza al eje X en rojo.");
+      if (selected != null) startCosAnim(selected);
+      else if (revealed.length) { selected = revealed[revealed.length - 1]; startCosAnim(selected); }
+    }
+    draw();
+  }
+  function startSinAnim(deg) {
+    stopProjAnim();
+    if (deg == null || !EXACT[deg]) return Promise.resolve();
+    const a = degToRad(deg);
+    const x0 = Math.cos(a);
+    return new Promise((resolve) => {
+      projAnim = {
+        kind: "sin", deg: deg, phase: "blink", blinkOn: true, blinkLeft: 3,
+        x: x0, t0: performance.now(), raf: null, _resolve: resolve
+      };
+      const tick = (now) => {
+        if (!projAnim || projAnim.kind !== "sin") { resolve(); return; }
+        const p = projAnim;
+        const dt = now - p.t0;
+        if (p.phase === "blink") {
+          const cycle = 500;
+          const inCycle = dt % cycle;
+          p.blinkOn = inCycle < 280;
+          const completed = Math.floor(dt / cycle);
+          if (completed >= 3) {
+            p.phase = "slide";
+            p.t0 = now;
+            p.blinkOn = true;
+          }
+        } else if (p.phase === "slide") {
+          const dur = 900;
+          const u = Math.min(1, (now - p.t0) / dur);
+          const ease = 1 - Math.pow(1 - u, 3);
+          p.x = x0 * (1 - ease);
+          if (u >= 1) {
+            p.phase = "done";
+            if (!sinParked.includes(deg)) sinParked.push(deg);
+            const done = p._resolve;
+            projAnim = null;
+            draw();
+            if (done) done();
+            return;
+          }
+        }
+        draw();
+        if (projAnim) projAnim.raf = requestAnimationFrame(tick);
+      };
+      projAnim.raf = requestAnimationFrame(tick);
     });
+  }
+  function waitMs(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
+
+  function educateGuideVisible(deg) {
+    // Seno · Película: only current + previous angle keep auxiliary guides
+    if (mode === "educate" && educateScreen === 1) {
+      if (senoMovieCurr == null && senoMoviePrev == null) return false;
+      return deg === senoMovieCurr || deg === senoMoviePrev;
+    }
+    return true;
+  }
+  function ensureSinMovieAngles() {
+    let added = false;
+    for (const d of SIN_MOVIE_DEGS) {
+      if (!revealed.includes(d)) { revealed.push(d); added = true; }
+    }
+    // keep construction order-ish but ensure 45-family present
+    revealed.sort((a, b) => a - b);
+    return added;
+  }
+  async function runSenoMovieStep(i) {
+    const deg = SIN_MOVIE_DEGS[i];
+    senoMovieIndex = i;
+    senoMoviePrev = i > 0 ? SIN_MOVIE_DEGS[i - 1] : null;
+    senoMovieCurr = deg;
+    selected = deg;
+    rebuildEducateTable();
+    draw();
+    const st = document.getElementById("senoMovieStatus");
+    if (st) st.textContent = "Seno · " + (i + 1) + "/" + SIN_MOVIE_DEGS.length + " · θ = " + deg + "° (titila → proyecta a Y)";
+    setNarration("θ = <strong>" + deg + "°</strong> · sen θ se titila y proyecta al eje Y.");
+    await startSinAnim(deg);
+  }
+  async function playSenoMovie() {
+    if (senoMoviePlaying || senoMovieBusy || mode !== "educate") return;
+    educateScreen = 1;
+    senoMoviePlaying = true;
+    senoMovieAbort = false;
+    senoMovieIndex = -1;
+    sinParked = [];
+    stopProjAnim();
+    syncEducateChrome();
+    const st = document.getElementById("senoMovieStatus");
+    setNarration("Película de seno en curso…");
+    ensureSinMovieAngles();
+    rebuildEducateTable();
+    draw();
+    for (let i = 0; i < SIN_MOVIE_DEGS.length; i++) {
+      if (senoMovieAbort) break;
+      await runSenoMovieStep(i);
+      if (senoMovieAbort) break;
+      await waitMs(450);
+    }
+    senoMoviePlaying = false;
+    syncEducateChrome();
+    if (senoMovieAbort) {
+      if (st) st.textContent = "Película detenida. Podés Siguiente o ▶ Play.";
+      setNarration("Película de seno detenida. Usá <strong>Siguiente</strong> o ▶ Play.");
+    } else {
+      if (st) st.textContent = "Película completa · todos los senos notables en Y.";
+      setNarration("Película completa: senos de los ángulos notables quedaron proyectados en Y.");
+    }
+    draw();
+  }
+  async function stepSenoMovieNext() {
+    if (senoMoviePlaying || senoMovieBusy || mode !== "educate") return;
+    if (educateScreen !== 1) {
+      setEducateScreen(1);
+    }
+    ensureSinMovieAngles();
+    const next = senoMovieIndex + 1;
+    if (next >= SIN_MOVIE_DEGS.length) {
+      const st = document.getElementById("senoMovieStatus");
+      if (st) st.textContent = "Secuencia completa · Limpiar Y o ▶ Play para reiniciar.";
+      setNarration("Ya recorriste todos los ángulos notables. ▶ Play reinicia la película.");
+      syncEducateChrome();
+      return;
+    }
+    senoMovieBusy = true;
+    syncEducateChrome();
+    await runSenoMovieStep(next);
+    senoMovieBusy = false;
+    syncEducateChrome();
+    draw();
+  }
+  function stopSenoMovie() {
+    senoMovieAbort = true;
+    stopProjAnim();
+    senoMoviePlaying = false;
+    senoMovieBusy = false;
+    syncEducateChrome();
+  }
+  function startCosAnim(deg) {
+    stopProjAnim();
+    if (deg == null || !EXACT[deg]) return;
+    const a = degToRad(deg);
+    const y0 = Math.sin(a);
+    projAnim = {
+      kind: "cos", deg: deg, phase: "blink", blinkOn: true, blinkLeft: 3,
+      y: y0, t0: performance.now(), raf: null
+    };
+    const tick = (now) => {
+      if (!projAnim || projAnim.kind !== "cos") return;
+      const p = projAnim;
+      const dt = now - p.t0;
+      if (p.phase === "blink") {
+        const cycle = 500;
+        const inCycle = dt % cycle;
+        p.blinkOn = inCycle < 280;
+        const completed = Math.floor(dt / cycle);
+        if (completed >= 3) {
+          p.phase = "slide";
+          p.t0 = now;
+          p.blinkOn = true;
+        }
+      } else if (p.phase === "slide") {
+        const dur = 900;
+        const u = Math.min(1, (now - p.t0) / dur);
+        const ease = 1 - Math.pow(1 - u, 3);
+        p.y = y0 * (1 - ease);
+        if (u >= 1) {
+          p.phase = "done";
+          if (!cosParked.includes(deg)) cosParked.push(deg);
+          projAnim = null;
+          draw();
+          return;
+        }
+      }
+      draw();
+      if (projAnim) projAnim.raf = requestAnimationFrame(tick);
+    };
+    projAnim.raf = requestAnimationFrame(tick);
+  }
+  function drawParkedAndAnim(L) {
+    // parked sine segments on Y (green)
+    for (const deg of sinParked) {
+      const a = degToRad(deg);
+      const y = Math.sin(a);
+      if (Math.abs(y) < 1e-9) continue;
+      const [x1, y1] = toCanvas(0, 0, L);
+      const [x2, y2] = toCanvas(0, y, L);
+      ctx.save();
+      ctx.strokeStyle = "#34d399";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.restore();
+    }
+    // parked cosine segments on X (red)
+    for (const deg of cosParked) {
+      const a = degToRad(deg);
+      const x = Math.cos(a);
+      if (Math.abs(x) < 1e-9) continue;
+      const [x1, y1] = toCanvas(0, 0, L);
+      const [x2, y2] = toCanvas(x, 0, L);
+      ctx.save();
+      ctx.strokeStyle = "#ff5c5c";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.restore();
+    }
+    if (!projAnim) return;
+    const p = projAnim;
+    const a = degToRad(p.deg);
+    const sx = Math.cos(a), sy = Math.sin(a);
+    if (p.kind === "sin") {
+      if (p.phase === "blink" && !p.blinkOn) return;
+      if (Math.abs(sy) < 1e-9 && p.phase !== "slide") return;
+      const x = p.phase === "slide" || p.phase === "done" ? p.x : sx;
+      const [a1, b1] = toCanvas(x, 0, L);
+      const [a2, b2] = toCanvas(x, sy, L);
+      ctx.save();
+      ctx.strokeStyle = p.phase === "slide" && Math.abs(x) < 0.02 ? "#34d399" : "#FFBF00";
+      ctx.lineWidth = 4.5;
+      ctx.lineCap = "round";
+      ctx.globalAlpha = p.phase === "blink" ? 1 : 0.95;
+      ctx.beginPath(); ctx.moveTo(a1, b1); ctx.lineTo(a2, b2); ctx.stroke();
+      ctx.restore();
+    } else if (p.kind === "cos") {
+      if (p.phase === "blink" && !p.blinkOn) return;
+      if (Math.abs(sx) < 1e-9 && p.phase !== "slide") return;
+      const y = p.phase === "slide" || p.phase === "done" ? p.y : sy;
+      const [a1, b1] = toCanvas(0, y, L);
+      const [a2, b2] = toCanvas(sx, y, L);
+      ctx.save();
+      ctx.strokeStyle = p.phase === "slide" && Math.abs(y) < 0.02 ? "#ff5c5c" : "#FFBF00";
+      ctx.lineWidth = 4.5;
+      ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(a1, b1); ctx.lineTo(a2, b2); ctx.stroke();
+      ctx.restore();
+    }
   }
 
   function rebuildEducateTable() {
@@ -2824,12 +3387,24 @@
       tr.innerHTML = shown
         ? "<td>" + deg + "°</td><td class=\"pair\">(<span class=\"x\">" + e.x + "</span>, <span class=\"y\">" + e.y + "</span>)</td>"
         : "<td>" + deg + "°</td><td class=\"pair\">…</td>";
-      if (shown) {
-        tr.addEventListener("click", () => { selected = deg; rebuildEducateTable(); draw(); });
-      }
+      tr.addEventListener("click", () => {
+        selected = deg;
+        if (educateScreen === 0) {
+          pulseEducatePoint(deg);
+          return;
+        }
+        if (!revealed.includes(deg)) revealed.push(deg);
+        rebuildEducateTable();
+        if (educateScreen === 1 || educateScreen === 2) startSinAnim(deg);
+        if (educateScreen === 3) startCosAnim(deg);
+        draw();
+      });
       tbody.appendChild(tr);
     }
     syncEducateLocus();
+    fillEducateCloneTable(tbodySeno);
+    fillEducateCloneTable(tbodyCoseno);
+    syncEducateChrome();
   }
 
   function syncEducateButtons() {
@@ -2870,7 +3445,8 @@
     playing = false;
     syncEducateButtons();
     if (revealed.length >= anglesForStep(step).length) {
-      setNarration("Play completo. Todas las construcciones quedaron permanentes. Tocá un punto o una fila para resaltar.");
+      setNarration("Play completo. Todas las construcciones quedaron permanentes. Tocá ▶ para Seno, o un punto/fila.");
+      syncEducateChrome();
     }
   }
 
@@ -2878,6 +3454,10 @@
     playAbort = true;
     playing = false;
     clearUserGuess();
+    stopProjAnim();
+    sinParked = [];
+    cosParked = [];
+    educateScreen = 0;
     revealed = [];
     selected = null;
     setNarration("Reset Educar. Tocá <strong>▶ Play</strong> o <strong>Siguiente</strong>.");
@@ -2971,6 +3551,12 @@
     panelDrawCoord.classList.toggle("hidden", m !== "drawCoord");
     const hideStep = (m === "drawAngle" || m === "drawCoord");
     stepSelectorWrap.classList.toggle("hidden", hideStep);
+    if (m !== "educate") {
+      if (educatePrev) educatePrev.classList.add("hidden");
+      if (educateNext) educateNext.classList.add("hidden");
+      educateScreen = 0;
+      stopProjAnim();
+    }
     if (m !== "drawAngle") {
       anglePrev.classList.add("hidden");
       angleNext.classList.add("hidden");
@@ -2992,8 +3578,10 @@
     drawCoordDragging = false;
     syncCanvasCursor();
     if (m === "educate") {
+      educateScreen = 0;
       rebuildEducateTable();
       syncEducateButtons();
+      syncEducateChrome();
       draw();
       setNarration("Modo Educar: tocá <strong>▶ Play</strong> o <strong>Siguiente</strong> para construir el círculo.");
     } else if (m === "predict") {
@@ -3177,7 +3765,15 @@
     }
     if (best != null) {
       selected = best;
-      if (mode === "educate") rebuildEducateTable();
+      if (mode === "educate") {
+        if (educateScreen === 0) {
+          pulseEducatePoint(best);
+          return;
+        }
+        rebuildEducateTable();
+        if (educateScreen === 1 || educateScreen === 2) startSinAnim(selected);
+        if (educateScreen === 3) startCosAnim(selected);
+      }
       draw();
     }
   });
@@ -3265,6 +3861,58 @@
   coordXYOtroBtn.addEventListener("click", () => newCoordXYChallenge(true));
   coordXYResetBtn.addEventListener("click", resetDrawCoord);
 
+
+
+  (function wireSenoMovie() {
+    const senoMoviePlayBtn = document.getElementById("senoMoviePlayBtn");
+    const senoMovieStopBtn = document.getElementById("senoMovieStopBtn");
+    const senoMovieClearBtn = document.getElementById("senoMovieClearBtn");
+    if (senoMoviePlayBtn) senoMoviePlayBtn.addEventListener("click", () => { playSenoMovie(); });
+    const senoMovieNextBtn = document.getElementById("senoMovieNextBtn");
+    if (senoMovieNextBtn) senoMovieNextBtn.addEventListener("click", () => { stepSenoMovieNext(); });
+    if (senoMovieStopBtn) senoMovieStopBtn.addEventListener("click", () => { stopSenoMovie(); });
+    if (senoMovieClearBtn) senoMovieClearBtn.addEventListener("click", () => {
+      if (senoMoviePlaying) stopSenoMovie();
+      sinParked = [];
+      senoMovieIndex = -1;
+      senoMovieCurr = null;
+      senoMoviePrev = null;
+      stopProjAnim();
+      draw();
+      const st = document.getElementById("senoMovieStatus");
+      if (st) st.textContent = "Y limpio · listo para ▶ Play seno o Siguiente";
+      syncEducateChrome();
+    });
+  })();
+
+  if (educatePrev) educatePrev.addEventListener("click", () => setEducateScreen(educateScreen - 1));
+  if (educateNext) educateNext.addEventListener("click", () => setEducateScreen(educateScreen + 1));
+  if (modeSeno) modeSeno.addEventListener("click", () => {
+    if (mode !== "educate") setMode("educate");
+    setEducateScreen(1);
+  });
+  if (modeCoseno) modeCoseno.addEventListener("click", () => {
+    if (mode !== "educate") setMode("educate");
+    setEducateScreen(3);
+  });
+  const senoReplayBtn = document.getElementById("senoReplayBtn");
+  const senoResetParkBtn = document.getElementById("senoResetParkBtn");
+  const cosenoReplayBtn = document.getElementById("cosenoReplayBtn");
+  const cosenoResetParkBtn = document.getElementById("cosenoResetParkBtn");
+  if (senoReplayBtn) senoReplayBtn.addEventListener("click", () => {
+    if (selected != null) startSinAnim(selected);
+  });
+  if (senoResetParkBtn) senoResetParkBtn.addEventListener("click", () => {
+    sinParked = []; stopProjAnim(); draw();
+  });
+  if (cosenoReplayBtn) cosenoReplayBtn.addEventListener("click", () => {
+    if (selected != null) startCosAnim(selected);
+  });
+  if (cosenoResetParkBtn) cosenoResetParkBtn.addEventListener("click", () => {
+    cosParked = []; stopProjAnim(); draw();
+  });
+
+  wireLocusSignalizers();
   setMode("educate");
 })();
 </script>
