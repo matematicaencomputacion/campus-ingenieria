@@ -43,6 +43,23 @@
     }
     button.btn.primary { background: var(--accent); color: #0b1018; }
     button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .locus-strip {
+      margin-top: 12px;
+      display: flex; flex-wrap: wrap; gap: 6px;
+      justify-content: flex-end; align-items: center;
+    }
+    .locus-strip .locus {
+      border: 1px solid #2a3548; background: #121a27; color: #4a5a72;
+      font: inherit; font-weight: 700; font-size: 0.82rem;
+      padding: 7px 11px; border-radius: 999px;
+      cursor: default; transition: color .15s, background .15s, border-color .15s, box-shadow .15s;
+      min-width: 2.2em; text-align: center;
+    }
+    .locus-strip .locus.on {
+      color: #0b1018; background: #FFBF00; border-color: #FFBF00;
+      box-shadow: 0 0 12px rgba(255,191,0,.45);
+    }
     .hint { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
     .narration { font-size: 0.9rem; color: var(--muted); line-height: 1.45; margin: 0; min-height: 1.4em; }
     .narration strong { color: var(--ink); }
@@ -76,6 +93,29 @@
     .legend tr.sel td { background: rgba(192,132,252,0.12); }
     .legend tr.pending td { opacity: 0.35; }
     .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+    .graph-wrap { position: relative; }
+    #confetti {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 5; border-radius: 10px;
+    }
+    .graph-wrap { position: relative; }
+    .lesson-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+      filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+      border: 0; background: transparent; cursor: pointer; padding: 10px;
+      appearance: none; -webkit-appearance: none;
+    }
+    .lesson-nav:hover { opacity: 1; }
+    .lesson-nav.prev { left: 10px; }
+    .lesson-nav.next { right: 10px; }
+    .lesson-nav .chev {
+      display: block; width: 0; height: 0;
+      border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+    }
+    .lesson-nav.prev .chev { border-right: 18px solid #60a5fa; }
+    .lesson-nav.next .chev { border-left: 18px solid #60a5fa; }
+    .lesson-nav:disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -112,7 +152,14 @@
 
     <div class="stage">
       <div class="card">
-        <canvas id="c" width="720" height="720" aria-label="Círculo unitario"></canvas>
+        <div class="graph-wrap">
+          <canvas id="c" width="720" height="720" aria-label="Círculo unitario"></canvas>
+        <canvas id="confetti" width="720" height="720" aria-hidden="true"></canvas>
+          <button type="button" id="anglePrev" class="lesson-nav prev hidden" title="Pantalla anterior" aria-label="Pantalla anterior"><span class="chev" aria-hidden="true"></span></button>
+          <button type="button" id="angleNext" class="lesson-nav next hidden" title="Pantalla siguiente" aria-label="Pantalla siguiente"><span class="chev" aria-hidden="true"></span></button>
+          <button type="button" id="coordPrev" class="lesson-nav prev hidden" title="Pantalla anterior" aria-label="Pantalla anterior"><span class="chev" aria-hidden="true"></span></button>
+          <button type="button" id="coordNext" class="lesson-nav next hidden" title="Pantalla siguiente" aria-label="Pantalla siguiente"><span class="chev" aria-hidden="true"></span></button>
+        </div>
       </div>
 
       <!-- Educate panel -->
@@ -129,6 +176,14 @@
             <thead><tr><th>θ</th><th>(cos θ, sen θ)</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
+        </div>
+        <div class="locus-strip" id="educateLocus" aria-label="Cuadrante o eje activo">
+          <span class="locus" data-locus="q1">I</span>
+          <span class="locus" data-locus="q2">II</span>
+          <span class="locus" data-locus="q3">III</span>
+          <span class="locus" data-locus="q4">IV</span>
+          <span class="locus" data-locus="x">eje X</span>
+          <span class="locus" data-locus="y">eje Y</span>
         </div>
       </div>
 
@@ -158,43 +213,230 @@
 
       <!-- Draw angle panel -->
       <div class="card panel hidden" id="panelDrawAngle">
-        <h2>Dibujar ángulo</h2>
-        <p class="hint" style="margin-bottom:10px;">Arrastrá el marcador sobre la circunferencia. Snap magnético cada 15° (umbral 8°).</p>
-        <div class="field">
-          <label>θ</label>
-          <div class="theta" id="drawAngleTheta">0°</div>
+        <div id="angleScreen0">
+          <h2>Dibujar ángulo · Enseñar</h2>
+          <p class="hint" style="margin-bottom:10px;">Arrastrá el marcador sobre la circunferencia. Snap magnético cada 15° (umbral 8°).</p>
+          <div class="field">
+            <label>θ</label>
+            <div class="theta" id="drawAngleTheta">0°</div>
+          </div>
+          <div class="field">
+            <label>Snap</label>
+            <div class="locked" id="drawAngleSnap">sí · 0°</div>
+          </div>
+          <div class="field">
+            <label>(cos θ, sen θ)</label>
+            <div class="locked" id="drawAnglePair">(<span style="color:#ff5c5c">1</span>, <span style="color:#34d399">0</span>)</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn" id="resetDrawAngleBtn">Reset</button>
+          </div>
         </div>
-        <div class="field">
-          <label>Snap</label>
-          <div class="locked" id="drawAngleSnap">sí · 0°</div>
+
+        <div id="angleScreen1" class="hidden">
+          <h2>Evaluar · Colocar θ</h2>
+          <p class="hint" style="margin-bottom:10px;">Colocá el punto en la circunferencia para el ángulo pedido. Snap cada 15°. Se verifica al soltar.</p>
+          <div class="field">
+            <label>Ángulo desafío θ</label>
+            <div class="theta" id="anglePlaceChallenge">—</div>
+          </div>
+          <div class="field">
+            <label>Tu colocación</label>
+            <div class="locked" id="anglePlaceUser">arrastrá el marcador</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary" id="anglePlaceOtroBtn">Otro ángulo</button>
+            <button class="btn" id="anglePlaceResetBtn">Reset</button>
+          </div>
         </div>
-        <div class="field">
-          <label>(cos θ, sen θ)</label>
-          <div class="locked" id="drawAnglePair">(<span style="color:#ff5c5c">1</span>, <span style="color:#34d399">0</span>)</div>
+
+        <div id="angleScreen2" class="hidden">
+          <h2>Evaluar · Nombrar θ</h2>
+          <p class="hint" style="margin-bottom:10px;">Mirá el punto en el círculo y elegí el ángulo notable. Luego Verificar.</p>
+          <div class="field">
+            <label>¿Qué ángulo es?</label>
+            <div class="chips" id="angleNameChips"></div>
+          </div>
+          <div class="field">
+            <label>Respuesta</label>
+            <div class="locked" id="angleNameReveal">—</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary" id="angleNameVerifyBtn" disabled>Verificar</button>
+            <button class="btn" id="angleNameOtroBtn">Otro ángulo</button>
+            <button class="btn" id="angleNameResetBtn">Reset</button>
+          </div>
         </div>
-        <div class="toolbar">
-          <button class="btn" id="resetDrawAngleBtn">Reset</button>
+
+        <div id="angleScreen3" class="hidden">
+          <h2>Evaluar · Ubicar cuadrante</h2>
+          <p class="hint" style="margin-bottom:10px;">¿En qué cuadrante está el punto? Tocá el gráfico o un chip. θ oculto.</p>
+          <div class="field">
+            <label>¿En qué cuadrante está?</label>
+            <div class="chips" id="angleQuadChips"></div>
+          </div>
+          <div class="field">
+            <label>Respuesta</label>
+            <div class="locked" id="angleQuadReveal">—</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary" id="angleQuadOtroBtn">Otro</button>
+            <button class="btn" id="angleQuadResetBtn">Reset</button>
+          </div>
+        </div>
+
+        <div id="angleScreen4" class="hidden">
+          <h2>Evaluar · Signos → cuadrante</h2>
+          <p class="hint" style="margin-bottom:10px;">Mirá el par (cos, sen) y sus signos. ¿En qué cuadrante cae?</p>
+          <div class="field">
+            <label>(cos θ, sen θ)</label>
+            <div class="locked" id="angleSignPair">—</div>
+          </div>
+          <p class="hint" style="margin-top:-6px;margin-bottom:10px;">Mirá los signos</p>
+          <div class="field">
+            <label>¿Cuadrante?</label>
+            <div class="chips" id="angleSignChips"></div>
+          </div>
+          <div class="field">
+            <label>Respuesta</label>
+            <div class="locked" id="angleSignReveal">—</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary" id="angleSignVerifyBtn" disabled>Verificar</button>
+            <button class="btn" id="angleSignOtroBtn">Otro</button>
+            <button class="btn" id="angleSignResetBtn">Reset</button>
+          </div>
         </div>
       </div>
 
       <!-- Draw coord panel -->
       <div class="card panel hidden" id="panelDrawCoord">
-        <h2>Dibujar coordenada</h2>
-        <p class="hint" style="margin-bottom:10px;">Arrastrá libremente; snap a valores exactos sobre los ejes (umbral 0.12).</p>
-        <div class="field">
-          <label>x</label>
-          <div class="locked" id="drawCoordX"><span style="color:#ff5c5c">1</span></div>
+        <div id="coordScreen0">
+          <h2>Dibujar coordenada · Enseñar</h2>
+          <p class="hint" style="margin-bottom:10px;">Arrastrá libremente; snap a valores exactos sobre los ejes (umbral 0.12).</p>
+          <div class="field">
+            <label>x</label>
+            <div class="locked" id="drawCoordX"><span style="color:#ff5c5c">1</span></div>
+          </div>
+          <div class="field">
+            <label>y</label>
+            <div class="locked" id="drawCoordY"><span style="color:#34d399">0</span></div>
+          </div>
+          <div class="field">
+            <label>Eje</label>
+            <div class="locked" id="drawCoordAxis">X</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn" id="resetDrawCoordBtn">Reset</button>
+          </div>
         </div>
-        <div class="field">
-          <label>y</label>
-          <div class="locked" id="drawCoordY"><span style="color:#34d399">0</span></div>
+
+        <div id="coordScreen1" class="hidden">
+          <h2>Evaluar · Predecir X</h2>
+          <p class="hint" style="margin-bottom:10px;">Dado θ, elegí <strong>cos θ</strong> (X) arrastrando en el eje X (snap magnético) o con un chip. Verificar al soltar o con el botón.</p>
+          <div class="field">
+            <label>Ángulo desafío θ</label>
+            <div class="theta" id="coordPredChallenge">—</div>
+          </div>
+          <div class="field">
+            <label>Tu X (cos θ)</label>
+            <div class="chips" id="coordPredXChips"></div>
+          </div>
+          <div class="field">
+            <label>Tu elección</label>
+            <div class="locked" id="coordPredUser">arrastrá en el eje X o elegí un chip</div>
+          </div>
+          <div class="field">
+            <label>Respuesta</label>
+            <div class="locked" id="coordPredReveal">—</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary" id="coordPredVerifyBtn" disabled>Verificar</button>
+            <button class="btn" id="coordPredOtroBtn">Otro ángulo</button>
+            <button class="btn" id="coordPredResetBtn">Reset</button>
+          </div>
         </div>
-        <div class="field">
-          <label>Eje</label>
-          <div class="locked" id="drawCoordAxis">X</div>
+
+        <div id="coordScreen2" class="hidden">
+          <h2>Evaluar · Predecir Y</h2>
+          <p class="hint" style="margin-bottom:10px;">Dado θ, elegí <strong>sen θ</strong> (Y) arrastrando en el eje Y (snap magnético) o con un chip. Verificar al soltar o con el botón.</p>
+          <div class="field">
+            <label>Ángulo desafío θ</label>
+            <div class="theta" id="coordPredYChallenge">—</div>
+          </div>
+          <div class="field">
+            <label>Tu Y (sen θ)</label>
+            <div class="chips" id="coordPredYChips"></div>
+          </div>
+          <div class="field">
+            <label>Tu elección</label>
+            <div class="locked" id="coordPredYUser">arrastrá en el eje Y o elegí un chip</div>
+          </div>
+          <div class="field">
+            <label>Respuesta</label>
+            <div class="locked" id="coordPredYReveal">—</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary" id="coordPredYVerifyBtn" disabled>Verificar</button>
+            <button class="btn" id="coordPredYOtroBtn">Otro ángulo</button>
+            <button class="btn" id="coordPredYResetBtn">Reset</button>
+          </div>
         </div>
-        <div class="toolbar">
-          <button class="btn" id="resetDrawCoordBtn">Reset</button>
+
+        <div id="coordScreen3" class="hidden">
+          <h2>Evaluar · Predecir θ(s) desde X</h2>
+          <p class="hint" style="margin-bottom:10px;">Dado <strong>X = cos θ</strong>, elegí el ángulo notable (o los dos) que lo comparten. Multi-selección cuando hay dos respuestas.</p>
+          <div class="field">
+            <label>X dado (cos θ)</label>
+            <div class="theta" id="coordThetaXChallenge" style="color:#ff5c5c">—</div>
+          </div>
+          <div class="field">
+            <label>Ángulos notables θ</label>
+            <div class="chips" id="coordThetaChips"></div>
+          </div>
+          <div class="field">
+            <label>Tu elección</label>
+            <div class="locked" id="coordThetaUser">elegí uno o dos ángulos</div>
+          </div>
+          <div class="field">
+            <label>Respuesta</label>
+            <div class="locked" id="coordThetaReveal">—</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary" id="coordThetaVerifyBtn" disabled>Verificar</button>
+            <button class="btn" id="coordThetaOtroBtn">Otro X</button>
+            <button class="btn" id="coordThetaResetBtn">Reset</button>
+          </div>
+        </div>
+
+        <div id="coordScreen4" class="hidden">
+          <h2>Evaluar · X → Y± / cuadrante</h2>
+          <p class="hint" style="margin-bottom:10px;">Dado <strong>X = cos θ</strong> (cuerda vertical = ambigüedad ↑↓). Predicí el <strong>cuadrante</strong> (I–IV) o el signo de <strong>sen</strong> <em>antes</em> de ver el punto.</p>
+          <div class="field">
+            <label>X dado (cos θ)</label>
+            <div class="theta" id="coordXYXChallenge" style="color:#ff5c5c">—</div>
+          </div>
+          <div class="field">
+            <label>Cuadrante (principal)</label>
+            <div class="chips" id="coordXYQuadChips"></div>
+          </div>
+          <div class="field">
+            <label>sen (opcional)</label>
+            <div class="chips" id="coordXYSignChips"></div>
+          </div>
+          <div class="field">
+            <label>Tu elección</label>
+            <div class="locked" id="coordXYUser">elegí cuadrante I–IV o sen ±</div>
+          </div>
+          <div class="field">
+            <label>Respuesta</label>
+            <div class="locked" id="coordXYReveal">—</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary" id="coordXYVerifyBtn" disabled>Verificar</button>
+            <button class="btn" id="coordXYOtroBtn">Otro X</button>
+            <button class="btn" id="coordXYResetBtn">Reset</button>
+          </div>
         </div>
       </div>
     </div>
@@ -227,10 +469,72 @@
   const drawAngleSnap = document.getElementById("drawAngleSnap");
   const drawAnglePair = document.getElementById("drawAnglePair");
   const resetDrawAngleBtn = document.getElementById("resetDrawAngleBtn");
+  const anglePrev = document.getElementById("anglePrev");
+  const angleNext = document.getElementById("angleNext");
+  const angleScreen0 = document.getElementById("angleScreen0");
+  const angleScreen1 = document.getElementById("angleScreen1");
+  const angleScreen2 = document.getElementById("angleScreen2");
+  const anglePlaceChallenge = document.getElementById("anglePlaceChallenge");
+  const anglePlaceUser = document.getElementById("anglePlaceUser");
+  const anglePlaceOtroBtn = document.getElementById("anglePlaceOtroBtn");
+  const anglePlaceResetBtn = document.getElementById("anglePlaceResetBtn");
+  const angleNameChips = document.getElementById("angleNameChips");
+  const angleNameReveal = document.getElementById("angleNameReveal");
+  const angleNameVerifyBtn = document.getElementById("angleNameVerifyBtn");
+  const angleNameOtroBtn = document.getElementById("angleNameOtroBtn");
+  const angleNameResetBtn = document.getElementById("angleNameResetBtn");
+  const angleScreen3 = document.getElementById("angleScreen3");
+  const angleScreen4 = document.getElementById("angleScreen4");
+  const angleQuadChips = document.getElementById("angleQuadChips");
+  const angleQuadReveal = document.getElementById("angleQuadReveal");
+  const angleQuadOtroBtn = document.getElementById("angleQuadOtroBtn");
+  const angleQuadResetBtn = document.getElementById("angleQuadResetBtn");
+  const angleSignPair = document.getElementById("angleSignPair");
+  const angleSignChips = document.getElementById("angleSignChips");
+  const angleSignReveal = document.getElementById("angleSignReveal");
+  const angleSignVerifyBtn = document.getElementById("angleSignVerifyBtn");
+  const angleSignOtroBtn = document.getElementById("angleSignOtroBtn");
+  const angleSignResetBtn = document.getElementById("angleSignResetBtn");
   const drawCoordX = document.getElementById("drawCoordX");
   const drawCoordY = document.getElementById("drawCoordY");
   const drawCoordAxis = document.getElementById("drawCoordAxis");
   const resetDrawCoordBtn = document.getElementById("resetDrawCoordBtn");
+  const coordPrev = document.getElementById("coordPrev");
+  const coordNext = document.getElementById("coordNext");
+  const coordScreen0 = document.getElementById("coordScreen0");
+  const coordScreen1 = document.getElementById("coordScreen1");
+  const coordScreen2 = document.getElementById("coordScreen2");
+  const coordScreen3 = document.getElementById("coordScreen3");
+  const coordThetaXChallenge = document.getElementById("coordThetaXChallenge");
+  const coordThetaChips = document.getElementById("coordThetaChips");
+  const coordThetaUser = document.getElementById("coordThetaUser");
+  const coordThetaReveal = document.getElementById("coordThetaReveal");
+  const coordThetaVerifyBtn = document.getElementById("coordThetaVerifyBtn");
+  const coordThetaOtroBtn = document.getElementById("coordThetaOtroBtn");
+  const coordThetaResetBtn = document.getElementById("coordThetaResetBtn");
+  const coordScreen4 = document.getElementById("coordScreen4");
+  const coordXYXChallenge = document.getElementById("coordXYXChallenge");
+  const coordXYQuadChips = document.getElementById("coordXYQuadChips");
+  const coordXYSignChips = document.getElementById("coordXYSignChips");
+  const coordXYUser = document.getElementById("coordXYUser");
+  const coordXYReveal = document.getElementById("coordXYReveal");
+  const coordXYVerifyBtn = document.getElementById("coordXYVerifyBtn");
+  const coordXYOtroBtn = document.getElementById("coordXYOtroBtn");
+  const coordXYResetBtn = document.getElementById("coordXYResetBtn");
+  const coordPredChallenge = document.getElementById("coordPredChallenge");
+  const coordPredXChips = document.getElementById("coordPredXChips");
+  const coordPredUser = document.getElementById("coordPredUser");
+  const coordPredReveal = document.getElementById("coordPredReveal");
+  const coordPredVerifyBtn = document.getElementById("coordPredVerifyBtn");
+  const coordPredOtroBtn = document.getElementById("coordPredOtroBtn");
+  const coordPredResetBtn = document.getElementById("coordPredResetBtn");
+  const coordPredYChallenge = document.getElementById("coordPredYChallenge");
+  const coordPredYChips = document.getElementById("coordPredYChips");
+  const coordPredYUser = document.getElementById("coordPredYUser");
+  const coordPredYReveal = document.getElementById("coordPredYReveal");
+  const coordPredYVerifyBtn = document.getElementById("coordPredYVerifyBtn");
+  const coordPredYOtroBtn = document.getElementById("coordPredYOtroBtn");
+  const coordPredYResetBtn = document.getElementById("coordPredYResetBtn");
   const stepButtons = [...document.querySelectorAll("[data-step]")];
   const modeButtons = [...document.querySelectorAll("[data-mode]")];
 
@@ -272,6 +576,19 @@
   let drawAngleDeg = 0;       // current marker angle [0,360)
   let drawAngleSnapped = true;
   let drawAngleDragging = false;
+  const NOTABLE = [0,30,45,60,90,120,135,150,180,210,225,240,270,300,315,330];
+  const AXIS_DEGS = new Set([0, 90, 180, 270]);
+  const QUAD_MID = { 1: 45, 2: 135, 3: 225, 4: 315 };
+  const QUAD_ROMAN = { 1: "I", 2: "II", 3: "III", 4: "IV" };
+  let angleScreen = 0; // 0 teach, 1 place, 2 name, 3 quadrant-graph, 4 signs→quadrant
+  let angleChallengeDeg = null;
+  let angleEvalLocked = false; // after verify until Otro
+  let anglePlaceActive = false; // screen1: marker shown after first drag
+  let angleNamePick = null; // screen2 chip selection
+  let anglePlaceCorrect = false;
+  let angleQuadrantPick = null; // screens 3–4: 1..4
+  let angleQuadrantCorrect = false;
+  let angleHighlightQ = null; // green wedge after verify
 
   // drawCoord state (magnetic labels; numeric map filled after SYM_NUM)
   const MAG_LABELS = ["−1", "−√3/2", "−√2/2", "−1/2", "0", "1/2", "√2/2", "√3/2", "1"];
@@ -281,6 +598,22 @@
   let drawCoordAxisHit = "X"; // X | Y
   let drawCoordXLab = "1", drawCoordYLab = "0";
   let drawCoordDragging = false;
+  let coordScreen = 0; // 0 teach, 1 predict X, 2 predict Y, 3 predict θ(s) from X, 4 X→Y±/cuadrante
+  let coordChallengeDeg = null;
+  let coordEvalLocked = false;
+  let coordPredXLab = null;
+  let coordPredXval = null;
+  let coordPredYLab = null;
+  let coordPredYval = null;
+  let coordPredSnapped = false;
+  let coordPredActive = false;
+  let coordPredCorrect = false;
+  let coordChallengeXLab = null; // screen 3/4: given cos
+  let coordChallengeYLab = null; // screen 4: true sen label (hidden until verify)
+  let coordChallengeAngles = []; // screen 3: true NOTABLE deg set
+  let coordThetaPicks = []; // screen 3: selected degrees
+  let coordXYQuadPick = null; // screen 4: 1..4
+  let coordXYSignPick = null; // screen 4: "+" | "-"
   let pointerDragging = false;
   // wrong guess marker: amber blink ×4 then muted stay
   let userGuess = null; // { x, y, xLab, yLab, visible, muted }
@@ -347,34 +680,1013 @@
       const a = degToRad(drawAngleDeg);
       drawAnglePair.innerHTML = '(<span style="color:#ff5c5c">' + fmt3(Math.cos(a)) + '</span>, <span style="color:#34d399">' + fmt3(Math.sin(a)) + '</span>)';
     }
+    if (angleScreen === 1) {
+      if (!anglePlaceActive) {
+        anglePlaceUser.textContent = "arrastrá el marcador";
+      } else {
+        const deg = drawAngleSnapped ? snapDeg : displayDeg;
+        anglePlaceUser.textContent = deg + "°";
+      }
+    }
   }
   function updateDrawCoordPanel() {
     drawCoordX.innerHTML = '<span style="color:#ff5c5c">' + drawCoordXLab + '</span>';
     drawCoordY.innerHTML = '<span style="color:#34d399">' + drawCoordYLab + '</span>';
     drawCoordAxis.textContent = drawCoordAxisHit;
   }
-  function resetDrawAngle() {
+  function randomNotable(exclude) {
+    const pool = NOTABLE.filter(d => d !== exclude);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function randomInteriorNotable(exclude) {
+    const pool = NOTABLE.filter(d => !AXIS_DEGS.has(d) && d !== exclude);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function quadrantOfDeg(deg) {
+    const d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 90 || d === 180 || d === 270) return 0;
+    if (d > 0 && d < 90) return 1;
+    if (d > 90 && d < 180) return 2;
+    if (d > 180 && d < 270) return 3;
+    return 4;
+  }
+  function quadrantFromWorld(x, y) {
+    // atan2 → degrees → quadrant; ignore exact axes (return 0)
+    const deg = normDeg(Math.atan2(y, x) * 180 / Math.PI);
+    return quadrantOfDeg(deg);
+  }
+  function labelsForDeg(deg) {
+    const a = degToRad(deg);
+    if (EXACT[deg]) return { xLab: EXACT[deg].x, yLab: EXACT[deg].y, x: Math.cos(a), y: Math.sin(a) };
+    return { xLab: fmt3(Math.cos(a)), yLab: fmt3(Math.sin(a)), x: Math.cos(a), y: Math.sin(a) };
+  }
+  function exactPairHtml(deg) {
+    const ex = EXACT[deg];
+    if (!ex) {
+      const a = degToRad(deg);
+      return '(<span style="color:#ff5c5c">' + fmt3(Math.cos(a)) + '</span>, <span style="color:#34d399">' + fmt3(Math.sin(a)) + '</span>)';
+    }
+    return '(<span style="color:#ff5c5c">' + ex.x + '</span>, <span style="color:#34d399">' + ex.y + '</span>)';
+  }
+  function clearAngleEval() {
+    clearUserGuess();
+    angleEvalLocked = false;
+    anglePlaceActive = false;
+    anglePlaceCorrect = false;
+    angleNamePick = null;
+    angleQuadrantPick = null;
+    angleQuadrantCorrect = false;
+    angleHighlightQ = null;
     drawAngleDeg = 0;
     drawAngleSnapped = true;
     drawAngleDragging = false;
-    updateDrawAnglePanel();
-    setNarration("Dibujar ángulo: arrastrá el marcador. Snap cada <strong>15°</strong> (umbral 8°).");
+  }
+  function buildAngleNameChips() {
+    angleNameChips.innerHTML = "";
+    for (const deg of NOTABLE) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = deg + "°";
+      b.dataset.deg = String(deg);
+      b.disabled = angleEvalLocked;
+      if (angleNamePick === deg) b.classList.add("picked");
+      b.addEventListener("click", () => {
+        if (angleEvalLocked) return;
+        angleNamePick = deg;
+        buildAngleNameChips();
+        angleNameVerifyBtn.disabled = false;
+        setNarration("Elegiste <strong>" + deg + "°</strong>. Tocá <strong>Verificar</strong>.");
+      });
+      angleNameChips.appendChild(b);
+    }
+  }
+  function buildQuadrantChips(container, immediate) {
+    container.innerHTML = "";
+    for (const q of [1, 2, 3, 4]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = QUAD_ROMAN[q];
+      b.dataset.q = String(q);
+      b.disabled = angleEvalLocked;
+      if (angleQuadrantPick === q) b.classList.add("picked");
+      b.addEventListener("click", () => {
+        if (angleEvalLocked) return;
+        if (immediate) {
+          verifyQuadrantPick(q);
+        } else {
+          angleQuadrantPick = q;
+          buildQuadrantChips(container, false);
+          angleSignVerifyBtn.disabled = false;
+          setNarration("Elegiste cuadrante <strong>" + QUAD_ROMAN[q] + "</strong>. Tocá <strong>Verificar</strong>.");
+        }
+      });
+      container.appendChild(b);
+    }
+  }
+  function syncAngleNav() {
+    const inAngle = mode === "drawAngle";
+    anglePrev.classList.toggle("hidden", !inAngle || angleScreen === 0);
+    angleNext.classList.toggle("hidden", !inAngle || angleScreen === 4);
+    anglePrev.disabled = !inAngle || angleScreen === 0;
+    angleNext.disabled = !inAngle || angleScreen === 4;
+  }
+  function syncAngleScreen() {
+    angleScreen0.classList.toggle("hidden", angleScreen !== 0);
+    angleScreen1.classList.toggle("hidden", angleScreen !== 1);
+    angleScreen2.classList.toggle("hidden", angleScreen !== 2);
+    angleScreen3.classList.toggle("hidden", angleScreen !== 3);
+    angleScreen4.classList.toggle("hidden", angleScreen !== 4);
+    syncAngleNav();
+    if (angleScreen === 0) {
+      updateDrawAnglePanel();
+      setNarration("Dibujar ángulo · Enseñar: arrastrá el marcador. Snap cada <strong>15°</strong> (umbral 8°).");
+    } else if (angleScreen === 1) {
+      if (angleChallengeDeg == null) newAnglePlaceChallenge(false);
+      else {
+        anglePlaceChallenge.textContent = angleChallengeDeg + "°";
+        updateDrawAnglePanel();
+        if (!angleEvalLocked) {
+          setNarration("Colocá el ángulo <strong>" + angleChallengeDeg + "°</strong> sobre la circunferencia y soltá.");
+        }
+      }
+    } else if (angleScreen === 2) {
+      if (angleChallengeDeg == null) newAngleNameChallenge(false);
+      else {
+        angleNameReveal.textContent = angleEvalLocked ? (angleChallengeDeg + "°") : "—";
+        buildAngleNameChips();
+        angleNameVerifyBtn.disabled = angleEvalLocked || angleNamePick == null;
+        if (!angleEvalLocked) {
+          setNarration("¿Qué ángulo notable es el punto dibujado? Elegí un chip y verificá.");
+        }
+      }
+    } else if (angleScreen === 3) {
+      if (angleChallengeDeg == null) newAngleQuadChallenge(false);
+      else {
+        const truth = quadrantOfDeg(angleChallengeDeg);
+        angleQuadReveal.textContent = angleEvalLocked ? ("Cuadrante " + QUAD_ROMAN[truth]) : "—";
+        buildQuadrantChips(angleQuadChips, true);
+        if (!angleEvalLocked) {
+          setNarration("¿En qué cuadrante está el punto? Tocá el gráfico o un chip <strong>I–IV</strong>.");
+        }
+      }
+    } else if (angleScreen === 4) {
+      if (angleChallengeDeg == null) newAngleSignChallenge(false);
+      else {
+        angleSignPair.innerHTML = exactPairHtml(angleChallengeDeg);
+        const truth = quadrantOfDeg(angleChallengeDeg);
+        angleSignReveal.textContent = angleEvalLocked ? ("Cuadrante " + QUAD_ROMAN[truth]) : "—";
+        buildQuadrantChips(angleSignChips, false);
+        angleSignVerifyBtn.disabled = angleEvalLocked || angleQuadrantPick == null;
+        if (!angleEvalLocked) {
+          setNarration("Mirá los signos del par. ¿En qué cuadrante cae? Elegí <strong>I–IV</strong> y verificá.");
+        }
+      }
+    }
+    syncCanvasCursor();
     draw();
   }
-  function resetDrawCoord() {
+  function setAngleScreen(n) {
+    n = Math.max(0, Math.min(4, n));
+    if (n === angleScreen && mode === "drawAngle") {
+      syncAngleScreen();
+      return;
+    }
+    clearAngleEval();
+    angleScreen = n;
+    angleChallengeDeg = null;
+    if (mode === "drawAngle") syncAngleScreen();
+  }
+  function newAnglePlaceChallenge(announce) {
+    clearAngleEval();
+    angleChallengeDeg = randomNotable(angleChallengeDeg);
+    anglePlaceChallenge.textContent = angleChallengeDeg + "°";
+    anglePlaceUser.textContent = "arrastrá el marcador";
+    updateDrawAnglePanel();
+    if (announce !== false) {
+      setNarration("Nuevo desafío: colocá <strong>" + angleChallengeDeg + "°</strong> sobre la circunferencia.");
+    } else {
+      setNarration("Colocá el ángulo <strong>" + angleChallengeDeg + "°</strong> sobre la circunferencia y soltá.");
+    }
+    draw();
+  }
+  function newAngleNameChallenge(announce) {
+    clearAngleEval();
+    angleChallengeDeg = randomNotable(angleChallengeDeg);
+    angleNameReveal.textContent = "—";
+    buildAngleNameChips();
+    angleNameVerifyBtn.disabled = true;
+    if (announce !== false) {
+      setNarration("Nuevo desafío: ¿qué ángulo notable es el punto?");
+    } else {
+      setNarration("¿Qué ángulo notable es el punto dibujado? Elegí un chip y verificá.");
+    }
+    draw();
+  }
+  function newAngleQuadChallenge(announce) {
+    clearAngleEval();
+    angleChallengeDeg = randomInteriorNotable(angleChallengeDeg);
+    angleQuadReveal.textContent = "—";
+    buildQuadrantChips(angleQuadChips, true);
+    if (announce !== false) {
+      setNarration("Nuevo desafío: ¿en qué cuadrante está el punto?");
+    } else {
+      setNarration("¿En qué cuadrante está el punto? Tocá el gráfico o un chip <strong>I–IV</strong>.");
+    }
+    draw();
+  }
+  function newAngleSignChallenge(announce) {
+    clearAngleEval();
+    angleChallengeDeg = randomInteriorNotable(angleChallengeDeg);
+    angleSignPair.innerHTML = exactPairHtml(angleChallengeDeg);
+    angleSignReveal.textContent = "—";
+    buildQuadrantChips(angleSignChips, false);
+    angleSignVerifyBtn.disabled = true;
+    if (announce !== false) {
+      setNarration("Nuevo desafío: mirá los signos → ¿cuadrante?");
+    } else {
+      setNarration("Mirá los signos del par. ¿En qué cuadrante cae? Elegí <strong>I–IV</strong> y verificá.");
+    }
+    draw();
+  }
+  function checkAnglePlaceOnRelease() {
+    if (angleScreen !== 1 || angleEvalLocked || !anglePlaceActive) return;
+    const userDeg = nearestAngle15(drawAngleDeg);
+    drawAngleDeg = userDeg;
+    drawAngleSnapped = true;
+    angleEvalLocked = true;
+    updateDrawAnglePanel();
+    if (userDeg === angleChallengeDeg) {
+      anglePlaceCorrect = true;
+      clearUserGuess();
+      setNarration(
+        "✓ Correcto: colocaste <strong>" + userDeg + "°</strong>. " + pairLabel(userDeg),
+        "ok"
+      );
+    } else {
+      anglePlaceCorrect = false;
+      const lab = labelsForDeg(userDeg);
+      startWrongBlink(lab.xLab, lab.yLab, lab.x, lab.y);
+      setNarration(
+        "✗ Era <strong>" + angleChallengeDeg + "°</strong>. Tu colocación <span style='color:#FFBF00'>" + userDeg + "°</span> parpadea en ámbar.",
+        "bad"
+      );
+    }
+    draw();
+  }
+  function verifyAngleName() {
+    if (angleScreen !== 2 || angleEvalLocked || angleNamePick == null || angleChallengeDeg == null) return;
+    angleEvalLocked = true;
+    angleNameReveal.textContent = angleChallengeDeg + "°";
+    buildAngleNameChips();
+    angleNameVerifyBtn.disabled = true;
+    if (angleNamePick === angleChallengeDeg) {
+      clearUserGuess();
+      setNarration("✓ Correcto: el punto es <strong>" + angleChallengeDeg + "°</strong>.", "ok");
+    } else {
+      const lab = labelsForDeg(angleNamePick);
+      startWrongBlink(lab.xLab, lab.yLab, lab.x, lab.y);
+      setNarration(
+        "✗ Era <strong>" + angleChallengeDeg + "°</strong>. Tu elección <span style='color:#FFBF00'>" + angleNamePick + "°</span> parpadea en ámbar.",
+        "bad"
+      );
+    }
+    draw();
+  }
+  function verifyQuadrantPick(pickedQ) {
+    if (angleEvalLocked || angleChallengeDeg == null) return;
+    if (pickedQ < 1 || pickedQ > 4) return;
+    const truth = quadrantOfDeg(angleChallengeDeg);
+    if (!truth) return;
+    angleEvalLocked = true;
+    angleQuadrantPick = pickedQ;
+    angleHighlightQ = truth;
+    angleQuadrantCorrect = (pickedQ === truth);
+    const revealEl = angleScreen === 3 ? angleQuadReveal : angleSignReveal;
+    revealEl.textContent = "Cuadrante " + QUAD_ROMAN[truth];
+    if (angleScreen === 3) buildQuadrantChips(angleQuadChips, true);
+    else {
+      buildQuadrantChips(angleSignChips, false);
+      angleSignVerifyBtn.disabled = true;
+    }
+    if (angleQuadrantCorrect) {
+      clearUserGuess();
+      setNarration(
+        "✓ Correcto: cuadrante <strong>" + QUAD_ROMAN[truth] + "</strong>" +
+        (angleScreen === 4 ? (" · " + pairLabel(angleChallengeDeg)) : "") + ".",
+        "ok"
+      );
+    } else {
+      const midWrong = QUAD_MID[pickedQ];
+      const lab = labelsForDeg(midWrong);
+      startWrongBlink(lab.xLab, lab.yLab, lab.x, lab.y);
+      setNarration(
+        "✗ Era cuadrante <strong>" + QUAD_ROMAN[truth] + "</strong>. Tu elección <span style='color:#FFBF00'>" +
+        QUAD_ROMAN[pickedQ] + "</span> parpadea en ámbar (medio del cuadrante).",
+        "bad"
+      );
+    }
+    draw();
+  }
+  function verifyAngleSign() {
+    if (angleScreen !== 4 || angleEvalLocked || angleQuadrantPick == null) return;
+    verifyQuadrantPick(angleQuadrantPick);
+  }
+  function resetDrawAngle() {
+    clearAngleEval();
+    if (angleScreen === 0) {
+      updateDrawAnglePanel();
+      setNarration("Dibujar ángulo · Enseñar: arrastrá el marcador. Snap cada <strong>15°</strong> (umbral 8°).");
+      draw();
+    } else if (angleScreen === 1) {
+      newAnglePlaceChallenge(true);
+    } else if (angleScreen === 2) {
+      newAngleNameChallenge(true);
+    } else if (angleScreen === 3) {
+      newAngleQuadChallenge(true);
+    } else {
+      newAngleSignChallenge(true);
+    }
+  }
+  function clearCoordEval() {
+    clearUserGuess();
+    coordEvalLocked = false;
+    coordPredXLab = null;
+    coordPredXval = null;
+    coordPredYLab = null;
+    coordPredYval = null;
+    coordPredSnapped = false;
+    coordPredActive = false;
+    coordPredCorrect = false;
+    coordChallengeXLab = null;
+    coordChallengeYLab = null;
+    coordChallengeAngles = [];
+    coordThetaPicks = [];
+    coordXYQuadPick = null;
+    coordXYSignPick = null;
+    drawCoordDragging = false;
+  }
+  function resetDrawCoordTeach() {
     drawCoordXval = 1; drawCoordYval = 0;
     drawCoordXLab = "1"; drawCoordYLab = "0";
     drawCoordAxisHit = "X";
     drawCoordSnapped = true;
     drawCoordDragging = false;
     updateDrawCoordPanel();
-    setNarration("Dibujar coordenada: arrastrá libremente; snap a valores exactos en los ejes (umbral 0.12).");
+  }
+  function updateCoordPredPanel() {
+    if (coordPredActive && coordPredXLab != null) {
+      coordPredUser.innerHTML = '<span style="color:#ff5c5c">' + coordPredXLab + '</span>';
+    } else {
+      coordPredUser.textContent = "arrastrá en el eje X o elegí un chip";
+    }
+    coordPredVerifyBtn.disabled = coordEvalLocked || !coordPredActive || !coordPredSnapped;
+  }
+  function buildCoordPredXChips() {
+    coordPredXChips.innerHTML = "";
+    for (const lab of MAG_LABELS) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = lab;
+      b.disabled = coordEvalLocked;
+      if (coordPredXLab === lab && coordPredSnapped) b.classList.add("picked");
+      b.addEventListener("click", () => {
+        if (coordEvalLocked) return;
+        coordPredXLab = lab;
+        coordPredXval = SYM_NUM[lab];
+        coordPredSnapped = true;
+        coordPredActive = true;
+        buildCoordPredXChips();
+        updateCoordPredPanel();
+        setNarration("Elegiste X = <strong style='color:#ff5c5c'>" + lab + "</strong>. Tocá <strong>Verificar</strong> o soltá tras snap.");
+        draw();
+      });
+      coordPredXChips.appendChild(b);
+    }
+  }
+  function updateCoordPredYPanel() {
+    if (coordPredActive && coordPredYLab != null) {
+      coordPredYUser.innerHTML = '<span style="color:#34d399">' + coordPredYLab + '</span>';
+    } else {
+      coordPredYUser.textContent = "arrastrá en el eje Y o elegí un chip";
+    }
+    coordPredYVerifyBtn.disabled = coordEvalLocked || !coordPredActive || !coordPredSnapped;
+  }
+  function buildCoordPredYChips() {
+    coordPredYChips.innerHTML = "";
+    for (const lab of MAG_LABELS) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = lab;
+      b.disabled = coordEvalLocked;
+      if (coordPredYLab === lab && coordPredSnapped) b.classList.add("picked");
+      b.addEventListener("click", () => {
+        if (coordEvalLocked) return;
+        coordPredYLab = lab;
+        coordPredYval = SYM_NUM[lab];
+        coordPredSnapped = true;
+        coordPredActive = true;
+        buildCoordPredYChips();
+        updateCoordPredYPanel();
+        setNarration("Elegiste Y = <strong style='color:#34d399'>" + lab + "</strong>. Tocá <strong>Verificar</strong> o soltá tras snap.");
+        draw();
+      });
+      coordPredYChips.appendChild(b);
+    }
+  }
+  function randomCoordPredAngle(exclude, axis) {
+    // Prefer notable angles whose cos/sin is a MAG_LABELS exact
+    const key = axis === "y" ? "y" : "x";
+    const preferred = NOTABLE.filter(d => EXACT[d] && MAG_LABELS.includes(EXACT[d][key]) && d !== exclude);
+    const pool = preferred.length ? preferred : NOTABLE.filter(d => EXACT[d] && d !== exclude);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function syncCoordNav() {
+    const inCoord = mode === "drawCoord";
+    coordPrev.classList.toggle("hidden", !inCoord || coordScreen === 0);
+    coordNext.classList.toggle("hidden", !inCoord || coordScreen === 4);
+    coordPrev.disabled = !inCoord || coordScreen === 0;
+    coordNext.disabled = !inCoord || coordScreen === 4;
+  }
+  function syncCoordScreen() {
+    coordScreen0.classList.toggle("hidden", coordScreen !== 0);
+    coordScreen1.classList.toggle("hidden", coordScreen !== 1);
+    coordScreen2.classList.toggle("hidden", coordScreen !== 2);
+    coordScreen3.classList.toggle("hidden", coordScreen !== 3);
+    coordScreen4.classList.toggle("hidden", coordScreen !== 4);
+    syncCoordNav();
+    if (coordScreen === 0) {
+      updateDrawCoordPanel();
+      setNarration("Dibujar coordenada · Enseñar: arrastrá libremente; snap a valores exactos en los ejes (umbral <strong>0.12</strong>).");
+    } else if (coordScreen === 1) {
+      if (coordChallengeDeg == null) newCoordPredChallenge(false);
+      else {
+        coordPredChallenge.textContent = coordChallengeDeg + "°";
+        const truth = EXACT[coordChallengeDeg] ? EXACT[coordChallengeDeg].x : "—";
+        coordPredReveal.innerHTML = coordEvalLocked
+          ? ('<span style="color:#ff5c5c">' + truth + '</span>')
+          : "—";
+        buildCoordPredXChips();
+        updateCoordPredPanel();
+        if (!coordEvalLocked) {
+          setNarration("Predicí <strong>X = cos(" + coordChallengeDeg + "°)</strong>. Arrastrá en el eje X o elegí un chip.");
+        }
+      }
+    } else if (coordScreen === 2) {
+      if (coordChallengeDeg == null) newCoordPredYChallenge(false);
+      else {
+        coordPredYChallenge.textContent = coordChallengeDeg + "°";
+        const truth = EXACT[coordChallengeDeg] ? EXACT[coordChallengeDeg].y : "—";
+        coordPredYReveal.innerHTML = coordEvalLocked
+          ? ('<span style="color:#34d399">' + truth + '</span>')
+          : "—";
+        buildCoordPredYChips();
+        updateCoordPredYPanel();
+        if (!coordEvalLocked) {
+          setNarration("Predicí <strong>Y = sen(" + coordChallengeDeg + "°)</strong>. Arrastrá en el eje Y o elegí un chip.");
+        }
+      }
+    } else if (coordScreen === 3) {
+      if (coordChallengeXLab == null) newCoordThetaChallenge(false);
+      else {
+        coordThetaXChallenge.innerHTML = '<span style="color:#ff5c5c">' + coordChallengeXLab + '</span>';
+        coordThetaReveal.innerHTML = coordEvalLocked
+          ? formatAngleSet(coordChallengeAngles)
+          : "—";
+        buildCoordThetaChips();
+        updateCoordThetaPanel();
+        if (!coordEvalLocked) {
+          const n = coordChallengeAngles.length;
+          setNarration(
+            "Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, ¿qué ángulo" +
+            (n === 1 ? "" : "s") + " notable" + (n === 1 ? "" : "s") + " lo " + (n === 1 ? "tiene" : "tienen") + "?"
+          );
+        }
+      }
+    } else if (coordScreen === 4) {
+      if (coordChallengeDeg == null) newCoordXYChallenge(false);
+      else {
+        const xLab = coordChallengeXLab || (EXACT[coordChallengeDeg] ? EXACT[coordChallengeDeg].x : "—");
+        coordXYXChallenge.innerHTML = '<span style="color:#ff5c5c">' + xLab + '</span>';
+        if (coordEvalLocked && EXACT[coordChallengeDeg]) {
+          const e = EXACT[coordChallengeDeg];
+          const q = quadrantOfDeg(coordChallengeDeg);
+          coordXYReveal.innerHTML =
+            exactPairHtml(coordChallengeDeg) +
+            (q ? (" · cuadrante <strong>" + QUAD_ROMAN[q] + "</strong>") : "");
+        } else {
+          coordXYReveal.textContent = "—";
+        }
+        buildCoordXYQuadChips();
+        buildCoordXYSignChips();
+        updateCoordXYPanel();
+        if (!coordEvalLocked) {
+          setNarration(
+            "Dado <strong style='color:#ff5c5c'>X = " + xLab + "</strong>, ¿cuadrante <strong>I–IV</strong> o signo de <strong style='color:#34d399'>sen</strong>? (sin ver el punto)"
+          );
+        }
+      }
+    }
+    syncCanvasCursor();
     draw();
   }
+  function setCoordScreen(n) {
+    n = Math.max(0, Math.min(4, n));
+    if (n === coordScreen && mode === "drawCoord") {
+      syncCoordScreen();
+      return;
+    }
+    clearCoordEval();
+    coordScreen = n;
+    coordChallengeDeg = null;
+    if (n === 0) resetDrawCoordTeach();
+    if (mode === "drawCoord") syncCoordScreen();
+  }
+  function newCoordPredChallenge(announce) {
+    clearCoordEval();
+    coordChallengeDeg = randomCoordPredAngle(coordChallengeDeg, "x");
+    coordPredChallenge.textContent = coordChallengeDeg + "°";
+    coordPredReveal.textContent = "—";
+    buildCoordPredXChips();
+    updateCoordPredPanel();
+    if (announce !== false) {
+      setNarration("Nuevo desafío: ¿cuál es <strong>X = cos(" + coordChallengeDeg + "°)</strong>?");
+    } else {
+      setNarration("Predicí <strong>X = cos(" + coordChallengeDeg + "°)</strong>. Arrastrá en el eje X o elegí un chip.");
+    }
+    draw();
+  }
+  function newCoordPredYChallenge(announce) {
+    clearCoordEval();
+    coordChallengeDeg = randomCoordPredAngle(coordChallengeDeg, "y");
+    coordPredYChallenge.textContent = coordChallengeDeg + "°";
+    coordPredYReveal.textContent = "—";
+    buildCoordPredYChips();
+    updateCoordPredYPanel();
+    if (announce !== false) {
+      setNarration("Nuevo desafío: ¿cuál es <strong>Y = sen(" + coordChallengeDeg + "°)</strong>?");
+    } else {
+      setNarration("Predicí <strong>Y = sen(" + coordChallengeDeg + "°)</strong>. Arrastrá en el eje Y o elegí un chip.");
+    }
+    draw();
+  }
+  function verifyCoordPredX() {
+    if (coordScreen !== 1 || coordEvalLocked || !coordPredActive || !coordPredSnapped) return;
+    if (coordChallengeDeg == null || coordPredXLab == null) return;
+    const truth = EXACT[coordChallengeDeg].x;
+    coordEvalLocked = true;
+    coordPredReveal.innerHTML = '<span style="color:#ff5c5c">' + truth + '</span>';
+    buildCoordPredXChips();
+    updateCoordPredPanel();
+    if (coordPredXLab === truth) {
+      coordPredCorrect = true;
+      clearUserGuess();
+      setNarration(
+        "✓ Correcto: cos(" + coordChallengeDeg + "°) = <strong style='color:#ff5c5c'>" + truth + "</strong>.",
+        "ok"
+      );
+    } else {
+      coordPredCorrect = false;
+      // blink at (X_user, 0); vertical chord also blinks via drawDrawCoord
+      startWrongBlink(coordPredXLab, "0", coordPredXval, 0);
+      if (userGuess) userGuess.verticalChord = true;
+      setNarration(
+        "✗ Era <strong style='color:#ff5c5c'>" + truth + "</strong>. Tu X <span style='color:#FFBF00'>" +
+        coordPredXLab + "</span> parpadea (guía vertical).",
+        "bad"
+      );
+    }
+    draw();
+  }
+  function verifyCoordPredY() {
+    if (coordScreen !== 2 || coordEvalLocked || !coordPredActive || !coordPredSnapped) return;
+    if (coordChallengeDeg == null || coordPredYLab == null) return;
+    const truth = EXACT[coordChallengeDeg].y;
+    coordEvalLocked = true;
+    coordPredYReveal.innerHTML = '<span style="color:#34d399">' + truth + '</span>';
+    buildCoordPredYChips();
+    updateCoordPredYPanel();
+    if (coordPredYLab === truth) {
+      coordPredCorrect = true;
+      clearUserGuess();
+      setNarration(
+        "✓ Correcto: sen(" + coordChallengeDeg + "°) = <strong style='color:#34d399'>" + truth + "</strong>.",
+        "ok"
+      );
+    } else {
+      coordPredCorrect = false;
+      // blink at (0, Y_user); horizontal chord also blinks via drawDrawCoord
+      startWrongBlink("0", coordPredYLab, 0, coordPredYval);
+      if (userGuess) userGuess.horizontalChord = true;
+      setNarration(
+        "✗ Era <strong style='color:#34d399'>" + truth + "</strong>. Tu Y <span style='color:#FFBF00'>" +
+        coordPredYLab + "</span> parpadea (guía horizontal).",
+        "bad"
+      );
+    }
+    draw();
+  }
+  function anglesForXLab(xLab) {
+    return NOTABLE.filter(d => EXACT[d] && EXACT[d].x === xLab);
+  }
+  function xLabsWithNotable() {
+    const set = [];
+    for (const lab of MAG_LABELS) {
+      if (anglesForXLab(lab).length) set.push(lab);
+    }
+    return set;
+  }
+  function formatAngleSet(degs) {
+    const sorted = degs.slice().sort((a, b) => a - b);
+    return sorted.map(d => "<strong>" + d + "°</strong>").join(" y ");
+  }
+  function setsEqualDeg(a, b) {
+    if (a.length !== b.length) return false;
+    const sa = a.slice().sort((x, y) => x - y);
+    const sb = b.slice().sort((x, y) => x - y);
+    for (let i = 0; i < sa.length; i++) if (sa[i] !== sb[i]) return false;
+    return true;
+  }
+  function randomCoordXLab(exclude) {
+    const pool = xLabsWithNotable().filter(l => l !== exclude);
+    const use = pool.length ? pool : xLabsWithNotable();
+    return use[Math.floor(Math.random() * use.length)];
+  }
+  function updateCoordThetaPanel() {
+    if (coordThetaPicks.length) {
+      const sorted = coordThetaPicks.slice().sort((a, b) => a - b);
+      coordThetaUser.innerHTML = sorted.map(d => d + "°").join(", ");
+    } else {
+      const n = coordChallengeAngles.length;
+      coordThetaUser.textContent = n === 1 ? "elegí el ángulo" : "elegí los " + n + " ángulos";
+    }
+    const need = coordChallengeAngles.length || 1;
+    coordThetaVerifyBtn.disabled = coordEvalLocked || coordThetaPicks.length !== need;
+  }
+  function buildCoordThetaChips() {
+    coordThetaChips.innerHTML = "";
+    const multi = coordChallengeAngles.length === 2;
+    for (const deg of NOTABLE) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = deg + "°";
+      b.disabled = coordEvalLocked;
+      if (coordThetaPicks.includes(deg)) b.classList.add("picked");
+      b.addEventListener("click", () => {
+        if (coordEvalLocked) return;
+        const idx = coordThetaPicks.indexOf(deg);
+        if (idx >= 0) {
+          coordThetaPicks.splice(idx, 1);
+        } else if (multi) {
+          if (coordThetaPicks.length >= 2) {
+            // replace oldest when already 2
+            coordThetaPicks.shift();
+          }
+          coordThetaPicks.push(deg);
+        } else {
+          coordThetaPicks = [deg];
+        }
+        buildCoordThetaChips();
+        updateCoordThetaPanel();
+        const sorted = coordThetaPicks.slice().sort((a, b) => a - b);
+        setNarration(
+          sorted.length
+            ? ("Elegiste <strong>" + sorted.map(d => d + "°").join(", ") + "</strong>. Tocá <strong>Verificar</strong>.")
+            : ("Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, elegí el ángulo" + (multi ? "s" : "") + ".")
+        );
+        draw();
+      });
+      coordThetaChips.appendChild(b);
+    }
+  }
+  function newCoordThetaChallenge(announce) {
+    const prevLab = coordChallengeXLab;
+    clearCoordEval();
+    coordChallengeXLab = randomCoordXLab(prevLab);
+    coordChallengeAngles = anglesForXLab(coordChallengeXLab);
+    coordThetaPicks = [];
+    coordThetaXChallenge.innerHTML = '<span style="color:#ff5c5c">' + coordChallengeXLab + '</span>';
+    coordThetaReveal.textContent = "—";
+    buildCoordThetaChips();
+    updateCoordThetaPanel();
+    const n = coordChallengeAngles.length;
+    if (announce !== false) {
+      setNarration(
+        "Nuevo X: <strong style='color:#ff5c5c'>" + coordChallengeXLab + "</strong>. ¿Qué ángulo" +
+        (n === 1 ? "" : "s") + " notable" + (n === 1 ? "" : "s") + "?"
+      );
+    } else {
+      setNarration(
+        "Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, ¿qué ángulo" +
+        (n === 1 ? "" : "s") + " notable" + (n === 1 ? "" : "s") + " lo " + (n === 1 ? "tiene" : "tienen") + "?"
+      );
+    }
+    draw();
+  }
+  function verifyCoordTheta() {
+    if (coordScreen !== 3 || coordEvalLocked) return;
+    if (coordChallengeXLab == null || !coordChallengeAngles.length) return;
+    const need = coordChallengeAngles.length;
+    if (coordThetaPicks.length !== need) return;
+    coordEvalLocked = true;
+    coordThetaReveal.innerHTML = formatAngleSet(coordChallengeAngles);
+    buildCoordThetaChips();
+    updateCoordThetaPanel();
+    const ok = setsEqualDeg(coordThetaPicks, coordChallengeAngles);
+    if (ok) {
+      coordPredCorrect = true;
+      clearUserGuess();
+      setNarration(
+        "✓ Correcto: cos θ = <strong style='color:#ff5c5c'>" + coordChallengeXLab + "</strong> en " +
+        formatAngleSet(coordChallengeAngles) + ".",
+        "ok"
+      );
+    } else {
+      coordPredCorrect = false;
+      const truth = new Set(coordChallengeAngles);
+      const wrongChosen = coordThetaPicks.filter(d => !truth.has(d));
+      const blinkDegs = wrongChosen.length ? wrongChosen : coordChallengeAngles.slice();
+      startWrongBlinkDegs(blinkDegs);
+      setNarration(
+        "✗ Era " + formatAngleSet(coordChallengeAngles) + ". Tu elección <span style='color:#FFBF00'>" +
+        coordThetaPicks.slice().sort((a,b)=>a-b).map(d => d + "°").join(", ") +
+        "</span> parpadea en ámbar.",
+        "bad"
+      );
+    }
+    draw();
+  }
+  function startWrongBlinkDegs(degs) {
+    clearBlink();
+    const points = [];
+    for (const deg of degs) {
+      const lab = labelsForDeg(deg);
+      points.push({ x: lab.x, y: lab.y, xLab: lab.xLab, yLab: lab.yLab, deg: deg });
+    }
+    if (!points.length) return;
+    userGuess = { points, visible: true, muted: false, circleOnly: true };
+    let flashesLeft = 4;
+    function tickOff() {
+      if (!userGuess) return;
+      userGuess.visible = false;
+      draw();
+      blinkTimer = setTimeout(tickOn, 220);
+    }
+    function tickOn() {
+      if (!userGuess) return;
+      flashesLeft -= 1;
+      if (flashesLeft <= 0) {
+        userGuess.visible = true;
+        userGuess.muted = true;
+        blinkTimer = null;
+        draw();
+        return;
+      }
+      userGuess.visible = true;
+      draw();
+      blinkTimer = setTimeout(tickOff, 220);
+    }
+    draw();
+    blinkTimer = setTimeout(tickOff, 280);
+  }
+
+  function yPositiveLab(yLab) {
+    return !!yLab && yLab !== "0" && !String(yLab).startsWith("−");
+  }
+  function chordIntersectionsForX(xLab) {
+    const x = SYM_NUM[xLab];
+    if (!Number.isFinite(x)) return null;
+    const yAbs = Math.sqrt(Math.max(0, 1 - x * x));
+    return {
+      x,
+      upper: { x, y: yAbs },
+      lower: { x, y: -yAbs },
+    };
+  }
+  function updateCoordXYPanel() {
+    const parts = [];
+    if (coordXYQuadPick != null) parts.push("cuadrante <strong>" + QUAD_ROMAN[coordXYQuadPick] + "</strong>");
+    if (coordXYSignPick != null) {
+      parts.push("sen <strong style='color:#34d399'>" + (coordXYSignPick === "+" ? "+" : "−") + "</strong>");
+    }
+    coordXYUser.innerHTML = parts.length ? parts.join(" · ") : "elegí cuadrante I–IV o sen ±";
+    coordXYVerifyBtn.disabled = coordEvalLocked || (coordXYQuadPick == null && coordXYSignPick == null);
+  }
+  function buildCoordXYQuadChips() {
+    coordXYQuadChips.innerHTML = "";
+    for (const q of [1, 2, 3, 4]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = QUAD_ROMAN[q];
+      b.disabled = coordEvalLocked;
+      if (coordXYQuadPick === q) b.classList.add("picked");
+      b.addEventListener("click", () => {
+        if (coordEvalLocked) return;
+        coordXYQuadPick = (coordXYQuadPick === q) ? null : q;
+        // map optional sign from quadrant for this |cos|
+        if (coordXYQuadPick != null) {
+          coordXYSignPick = (coordXYQuadPick === 1 || coordXYQuadPick === 2) ? "+" : "-";
+        }
+        buildCoordXYQuadChips();
+        buildCoordXYSignChips();
+        updateCoordXYPanel();
+        setNarration(
+          coordXYQuadPick != null
+            ? ("Elegiste cuadrante <strong>" + QUAD_ROMAN[coordXYQuadPick] + "</strong>. Tocá <strong>Verificar</strong>.")
+            : ("Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, ¿cuadrante o signo de sen?")
+        );
+        draw();
+      });
+      coordXYQuadChips.appendChild(b);
+    }
+  }
+  function buildCoordXYSignChips() {
+    coordXYSignChips.innerHTML = "";
+    for (const s of ["+", "-"]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = "sen " + (s === "+" ? "+" : "−");
+      b.disabled = coordEvalLocked;
+      if (coordXYSignPick === s) b.classList.add("picked");
+      b.addEventListener("click", () => {
+        if (coordEvalLocked) return;
+        coordXYSignPick = (coordXYSignPick === s) ? null : s;
+        // map sign → likely quadrants for this cos (optional sync of primary)
+        if (coordXYSignPick != null && coordChallengeXLab != null) {
+          const c = SYM_NUM[coordChallengeXLab];
+          if (Number.isFinite(c)) {
+            if (coordXYSignPick === "+") coordXYQuadPick = c >= 0 ? 1 : 2;
+            else coordXYQuadPick = c >= 0 ? 4 : 3;
+          }
+        }
+        buildCoordXYQuadChips();
+        buildCoordXYSignChips();
+        updateCoordXYPanel();
+        setNarration(
+          coordXYSignPick != null
+            ? ("Elegiste <strong style='color:#34d399'>sen " + (coordXYSignPick === "+" ? "+" : "−") + "</strong>. Tocá <strong>Verificar</strong>.")
+            : ("Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, ¿cuadrante o signo de sen?")
+        );
+        draw();
+      });
+      coordXYSignChips.appendChild(b);
+    }
+  }
+  function randomCoordXYAngle(exclude) {
+    // Interior notables only (not axes): clear I–IV and sen± ambiguity on the vertical chord
+    const preferred = NOTABLE.filter(d => EXACT[d] && !AXIS_DEGS.has(d) && d !== exclude);
+    const pool = preferred.length ? preferred : NOTABLE.filter(d => EXACT[d] && d !== exclude);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function newCoordXYChallenge(announce) {
+    const prevDeg = coordChallengeDeg;
+    clearCoordEval();
+    coordChallengeDeg = randomCoordXYAngle(announce !== false ? prevDeg : null);
+    const e = EXACT[coordChallengeDeg];
+    coordChallengeXLab = e.x;
+    coordChallengeYLab = e.y;
+    coordXYQuadPick = null;
+    coordXYSignPick = null;
+    coordXYXChallenge.innerHTML = '<span style="color:#ff5c5c">' + coordChallengeXLab + '</span>';
+    coordXYReveal.textContent = "—";
+    buildCoordXYQuadChips();
+    buildCoordXYSignChips();
+    updateCoordXYPanel();
+    if (announce !== false) {
+      setNarration(
+        "Nuevo X: <strong style='color:#ff5c5c'>" + coordChallengeXLab + "</strong>. ¿Cuadrante I–IV o signo de sen?"
+      );
+    } else {
+      setNarration(
+        "Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, ¿cuadrante <strong>I–IV</strong> o signo de <strong style='color:#34d399'>sen</strong>? (sin ver el punto)"
+      );
+    }
+    draw();
+  }
+  function coordXYPickOk() {
+    if (coordChallengeDeg == null || !EXACT[coordChallengeDeg]) return false;
+    const truthQ = quadrantOfDeg(coordChallengeDeg);
+    const yLab = EXACT[coordChallengeDeg].y;
+    const yPos = yPositiveLab(yLab);
+    const yNeg = String(yLab).startsWith("−");
+    const hasQ = coordXYQuadPick != null;
+    const hasS = coordXYSignPick != null;
+    if (!hasQ && !hasS) return false;
+    let ok = true;
+    if (hasQ) ok = ok && (coordXYQuadPick === truthQ);
+    if (hasS) {
+      const signOk = (coordXYSignPick === "+" && yPos) || (coordXYSignPick === "-" && yNeg);
+      ok = ok && signOk;
+    }
+    return ok;
+  }
+  function wrongIntersectionForXYPick() {
+    const ints = chordIntersectionsForX(coordChallengeXLab);
+    if (!ints) return null;
+    // Intersection implied by the pick (upper for + / I–II, lower for − / III–IV)
+    let wantUpper = null;
+    if (coordXYSignPick != null) wantUpper = coordXYSignPick === "+";
+    else if (coordXYQuadPick != null) wantUpper = (coordXYQuadPick === 1 || coordXYQuadPick === 2);
+    if (wantUpper == null) wantUpper = true;
+    const truthUpper = yPositiveLab(coordChallengeYLab);
+    // Blink at the wrong intersection: if pick already matches truth Y, use the other one
+    const blinkUpper = (wantUpper === truthUpper) ? !truthUpper : wantUpper;
+    const pt = blinkUpper ? ints.upper : ints.lower;
+    const peers = anglesForXLab(coordChallengeXLab);
+    let yOut = null;
+    for (const d of peers) {
+      const ey = EXACT[d].y;
+      if (blinkUpper && yPositiveLab(ey)) { yOut = ey; break; }
+      if (!blinkUpper && String(ey).startsWith("−")) { yOut = ey; break; }
+    }
+    if (!yOut) {
+      // Synthesize signed magnitude from truth |y|
+      const mag = String(coordChallengeYLab || "").replace(/^−/, "") || fmt3(Math.abs(pt.y));
+      yOut = blinkUpper ? mag : ("−" + mag);
+    }
+    return { x: pt.x, y: pt.y, xLab: coordChallengeXLab, yLab: yOut };
+  }
+  function verifyCoordXY() {
+    if (coordScreen !== 4 || coordEvalLocked) return;
+    if (coordChallengeDeg == null || !EXACT[coordChallengeDeg]) return;
+    if (coordXYQuadPick == null && coordXYSignPick == null) return;
+    coordEvalLocked = true;
+    const e = EXACT[coordChallengeDeg];
+    const truthQ = quadrantOfDeg(coordChallengeDeg);
+    coordXYReveal.innerHTML =
+      exactPairHtml(coordChallengeDeg) +
+      (truthQ ? (" · cuadrante <strong>" + QUAD_ROMAN[truthQ] + "</strong>") : "");
+    buildCoordXYQuadChips();
+    buildCoordXYSignChips();
+    updateCoordXYPanel();
+    const ok = coordXYPickOk();
+    if (ok) {
+      coordPredCorrect = true;
+      clearUserGuess();
+      setNarration(
+        "✓ Correcto: " + exactPairHtml(coordChallengeDeg) +
+        (truthQ ? (" en cuadrante <strong>" + QUAD_ROMAN[truthQ] + "</strong>") : "") + ".",
+        "ok"
+      );
+    } else {
+      coordPredCorrect = false;
+      const wrong = wrongIntersectionForXYPick();
+      if (wrong) startWrongBlink(wrong.xLab, wrong.yLab, wrong.x, wrong.y);
+      const pickBits = [];
+      if (coordXYQuadPick != null) pickBits.push(QUAD_ROMAN[coordXYQuadPick]);
+      if (coordXYSignPick != null) pickBits.push("sen " + (coordXYSignPick === "+" ? "+" : "−"));
+      setNarration(
+        "✗ Era " + exactPairHtml(coordChallengeDeg) +
+        (truthQ ? (" · cuadrante <strong>" + QUAD_ROMAN[truthQ] + "</strong>") : "") +
+        ". Tu elección <span style='color:#FFBF00'>" + pickBits.join(" · ") + "</span> parpadea en la intersección incorrecta.",
+        "bad"
+      );
+    }
+    draw();
+  }
+
+  function resetDrawCoord() {
+    if (coordScreen === 0) {
+      clearCoordEval();
+      resetDrawCoordTeach();
+      setNarration("Dibujar coordenada · Enseñar: arrastrá libremente; snap a valores exactos en los ejes (umbral <strong>0.12</strong>).");
+      draw();
+    } else if (coordScreen === 2) {
+      newCoordPredYChallenge(true);
+    } else if (coordScreen === 3) {
+      newCoordThetaChallenge(true);
+    } else if (coordScreen === 4) {
+      newCoordXYChallenge(true);
+    } else {
+      newCoordPredChallenge(true);
+    }
+  }
   function syncCanvasCursor() {
-    const isDraw = mode === "drawAngle" || mode === "drawCoord";
+    let isDraw = false;
+    if (mode === "drawCoord") {
+      if (coordScreen === 0) isDraw = true;
+      else if ((coordScreen === 1 || coordScreen === 2) && !coordEvalLocked) isDraw = true;
+      // screen 3: chips only — no drag
+    }
+    if (mode === "drawAngle") {
+      if (angleScreen === 0) isDraw = true;
+      else if (angleScreen === 1 && !angleEvalLocked) isDraw = true;
+      else isDraw = false;
+    }
     canvas.classList.toggle("draw-mode", isDraw);
     canvas.classList.toggle("dragging", isDraw && pointerDragging);
+    // screen 3: click-to-pick quadrant
+    if (mode === "drawAngle" && angleScreen === 3 && !angleEvalLocked) {
+      canvas.style.cursor = "pointer";
+    } else if (!isDraw) {
+      canvas.style.cursor = "";
+    }
   }
   function clearBlink() {
     if (blinkTimer) { clearTimeout(blinkTimer); blinkTimer = null; }
@@ -383,9 +1695,10 @@
     clearBlink();
     userGuess = null;
   }
-  function startWrongBlink(xLab, yLab) {
+  function startWrongBlink(xLab, yLab, optX, optY) {
     clearBlink();
-    const xn = SYM_NUM[xLab], yn = SYM_NUM[yLab];
+    const xn = Number.isFinite(optX) ? optX : SYM_NUM[xLab];
+    const yn = Number.isFinite(optY) ? optY : SYM_NUM[yLab];
     if (!Number.isFinite(xn) || !Number.isFinite(yn)) return;
     userGuess = { x: xn, y: yn, xLab, yLab, visible: true, muted: false };
     // 4 blink cycles: on→off = 1 cycle; total 4 offs after initial on
@@ -419,6 +1732,30 @@
     const muted = !!userGuess.muted;
     const lineCol = muted ? AMBER_LINE_MUTED : AMBER_LINE;
     const fillCol = muted ? AMBER_MUTED : AMBER;
+    if (userGuess.points && userGuess.points.length) {
+      ctx.save();
+      for (const p of userGuess.points) {
+        const [px, py] = toCanvas(p.x, p.y, L);
+        ctx.fillStyle = fillCol;
+        ctx.beginPath(); ctx.arc(px, py, muted ? 6 : 9, 0, Math.PI * 2); ctx.fill();
+        if (!muted) {
+          ctx.strokeStyle = "#fff8e1";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+        if (p.deg != null) {
+          ctx.fillStyle = fillCol;
+          ctx.font = "700 12px system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          const [lx, ly] = toCanvas(p.x * 1.18, p.y * 1.18, L);
+          ctx.fillText(p.deg + "°", lx, ly);
+        }
+      }
+      ctx.restore();
+      return;
+    }
+    if (!Number.isFinite(userGuess.x) || !Number.isFinite(userGuess.y)) return;
     const [px, py] = toCanvas(userGuess.x, userGuess.y, L);
     const [ax, ay] = toCanvas(userGuess.x, 0, L);
     const [zx, zy] = toCanvas(0, userGuess.y, L);
@@ -478,9 +1815,63 @@
     return e ? "(" + e.x + ", " + e.y + ")" : "(?, ?)";
   }
   function degToRad(d) { return d * Math.PI / 180; }
+  const confettiCanvas = document.getElementById("confetti");
+  const confettiCtx = confettiCanvas ? confettiCanvas.getContext("2d") : null;
+  let confettiRaf = null;
+  function fireConfetti() {
+    if (!confettiCanvas || !confettiCtx) return;
+    const parent = confettiCanvas.parentElement;
+    const w = confettiCanvas.width = parent ? parent.clientWidth || 720 : 720;
+    const h = confettiCanvas.height = parent ? parent.clientHeight || 720 : 720;
+    const colors = ["#FFBF00", "#ff5c5c", "#34d399", "#c084fc", "#60a5fa", "#f472b6", "#fbbf24"];
+    const parts = [];
+    for (let i = 0; i < 90; i++) {
+      parts.push({
+        x: w * 0.5 + (Math.random() - 0.5) * w * 0.35,
+        y: h * 0.25 + Math.random() * h * 0.15,
+        vx: (Math.random() - 0.5) * 9,
+        vy: Math.random() * -7 - 2,
+        g: 0.22 + Math.random() * 0.12,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35,
+        w: 5 + Math.random() * 5,
+        h: 3 + Math.random() * 4,
+        color: colors[(Math.random() * colors.length) | 0],
+        life: 55 + ((Math.random() * 25) | 0),
+      });
+    }
+    if (confettiRaf) cancelAnimationFrame(confettiRaf);
+    function frame() {
+      confettiCtx.clearRect(0, 0, w, h);
+      let alive = 0;
+      for (const p of parts) {
+        if (p.life <= 0) continue;
+        alive++;
+        p.life--;
+        p.vy += p.g;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate(p.rot);
+        confettiCtx.globalAlpha = Math.max(0, p.life / 40);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        confettiCtx.restore();
+      }
+      if (alive > 0) confettiRaf = requestAnimationFrame(frame);
+      else {
+        confettiCtx.clearRect(0, 0, w, h);
+        confettiRaf = null;
+      }
+    }
+    confettiRaf = requestAnimationFrame(frame);
+  }
   function setNarration(html, cls) {
     narration.className = "narration" + (cls ? " " + cls : "");
     narration.innerHTML = html;
+    if (cls === "ok") fireConfetti();
   }
   function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -670,7 +2061,6 @@
 
     for (const deg of revealed) drawGuide(deg, L, deg === selected);
     for (const deg of revealed) drawPoint(deg, L, deg === selected);
-    drawUserGuess(L);
 
     // faint ray in predict mode before verify
     if (mode === "predict" && challengeDeg != null && !verified && !revealed.includes(challengeDeg)) {
@@ -688,6 +2078,7 @@
 
     if (mode === "drawAngle") drawDrawAngle(L);
     if (mode === "drawCoord") drawDrawCoord(L);
+    drawUserGuess(L);
   }
 
   function drawArcArrowAtLilac(cx, cy, arcR, mathA) {
@@ -712,26 +2103,8 @@
     ctx.fill();
   }
 
-  function drawDrawAngle(L) {
+  function drawAmberPlusX(L) {
     const { cx, cy, R } = L;
-    // faint magnetic ticks every 15°
-    ctx.save();
-    ctx.fillStyle = "rgba(110,168,254,0.35)";
-    ctx.strokeStyle = "rgba(110,168,254,0.25)";
-    ctx.lineWidth = 1;
-    for (let d = 0; d < 360; d += ANGLE_SNAP_DEG) {
-      const a = degToRad(d);
-      const x1 = cx + Math.cos(a) * R * 0.97;
-      const y1 = cy - Math.sin(a) * R * 0.97;
-      const x2 = cx + Math.cos(a) * R;
-      const y2 = cy - Math.sin(a) * R;
-      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-      const [dx, dy] = toCanvas(Math.cos(a), Math.sin(a), L);
-      ctx.beginPath(); ctx.arc(dx, dy, 2.2, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.restore();
-
-    // Positive X semi-axis: amber + thicker (θ = 0 reference)
     ctx.save();
     ctx.strokeStyle = "#FFBF00";
     ctx.fillStyle = "#FFBF00";
@@ -752,20 +2125,66 @@
     ctx.textBaseline = "top";
     ctx.fillText("0°", cx + R * 0.55, cy + 10);
     ctx.restore();
-
-    const a = degToRad(drawAngleDeg);
+  }
+  function drawAmberPlusY(L) {
+    const { cx, cy, R } = L;
+    ctx.save();
+    ctx.strokeStyle = "#FFBF00";
+    ctx.fillStyle = "#FFBF00";
+    ctx.lineWidth = 3.6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx, cy - R);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - R - 12);
+    ctx.lineTo(cx - 7, cy - R + 1);
+    ctx.lineTo(cx + 7, cy - R + 1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.font = "700 12px system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("90°", cx + 10, cy - R * 0.55);
+    ctx.restore();
+  }
+  function drawAngleTicks(L) {
+    const { cx, cy, R } = L;
+    ctx.save();
+    ctx.fillStyle = "rgba(110,168,254,0.35)";
+    ctx.strokeStyle = "rgba(110,168,254,0.25)";
+    ctx.lineWidth = 1;
+    for (let d = 0; d < 360; d += ANGLE_SNAP_DEG) {
+      const a = degToRad(d);
+      const x1 = cx + Math.cos(a) * R * 0.97;
+      const y1 = cy - Math.sin(a) * R * 0.97;
+      const x2 = cx + Math.cos(a) * R;
+      const y2 = cy - Math.sin(a) * R;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      const [dx, dy] = toCanvas(Math.cos(a), Math.sin(a), L);
+      ctx.beginPath(); ctx.arc(dx, dy, 2.2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawAnglePointFull(L, deg, opts) {
+    opts = opts || {};
+    const showArc = !!opts.showArc;
+    const showTheta = opts.showTheta !== false;
+    const showGuides = opts.showGuides !== false;
+    const showPair = opts.showPair !== false;
+    const a = degToRad(deg);
     const x = Math.cos(a), y = Math.sin(a);
     const [px, py] = toCanvas(x, y, L);
+    const { cx, cy, R } = L;
 
-    // radius (lila)
     ctx.save();
     ctx.strokeStyle = "rgba(192,132,252,0.95)";
     ctx.lineWidth = 2.2;
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
 
-    // arc from +X to lilac ray, with arrow at the tip on the lilac line
-    const arcR = R * 0.28;
-    if (Math.abs(a) > 1e-9) {
+    if (showArc && Math.abs(a) > 1e-9) {
+      const arcR = R * 0.28;
       ctx.strokeStyle = "rgba(253,230,138,0.95)";
       ctx.fillStyle = "#FFBF00";
       ctx.lineWidth = 2;
@@ -775,31 +2194,26 @@
       drawArcArrowAtLilac(cx, cy, arcR, a);
     }
 
-    // marker
-    ctx.fillStyle = drawAngleSnapped ? "#e9d5ff" : "#c084fc";
+    ctx.fillStyle = opts.markerFill || "#e9d5ff";
     ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
 
-    // θ label
-    const labelDeg = drawAngleSnapped ? nearestAngle15(drawAngleDeg) : Math.round(drawAngleDeg * 10) / 10;
-    ctx.fillStyle = "#fde68a";
-    ctx.font = "700 13px system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const mid = a / 2;
-    const [tx, ty] = toCanvas(Math.cos(mid) * 0.38, Math.sin(mid) * 0.38, L);
-    ctx.fillText(labelDeg + "°", tx, ty);
-
-    // pair label
-    const snapDeg = nearestAngle15(drawAngleDeg);
     let xLab, yLab;
-    if (drawAngleSnapped && EXACT[snapDeg]) {
-      xLab = EXACT[snapDeg].x; yLab = EXACT[snapDeg].y;
-    } else {
-      xLab = fmt3(x); yLab = fmt3(y);
+    if (EXACT[deg]) { xLab = EXACT[deg].x; yLab = EXACT[deg].y; }
+    else { xLab = fmt3(x); yLab = fmt3(y); }
+
+    if (showTheta) {
+      ctx.fillStyle = "#fde68a";
+      ctx.font = "700 13px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const mid = a / 2;
+      const [tx, ty] = toCanvas(Math.cos(mid) * 0.38, Math.sin(mid) * 0.38, L);
+      const labelDeg = opts.thetaLabel != null ? opts.thetaLabel : deg;
+      ctx.fillText(labelDeg + "°", tx, ty);
     }
-    // guides when snapped with EXACT
-    if (drawAngleSnapped && EXACT[snapDeg]) {
+
+    if (showGuides && EXACT[deg]) {
       const [ax, ay] = toCanvas(x, 0, L);
       const [zx, zy] = toCanvas(0, y, L);
       ctx.setLineDash([6, 5]);
@@ -821,37 +2235,494 @@
       ctx.textAlign = "right"; ctx.textBaseline = "middle";
       ctx.fillText(yLab, zx - 8, zy);
     }
-    // pair near point
-    const parts = [
-      { t: "(", c: "#f5e1ff" },
-      { t: xLab, c: "#ff5c5c" },
-      { t: ", ", c: "#f5e1ff" },
-      { t: yLab, c: "#34d399" },
-      { t: ")", c: "#f5e1ff" },
+
+    if (showPair) {
+      const parts = [
+        { t: "(", c: "#f5e1ff" },
+        { t: xLab, c: "#ff5c5c" },
+        { t: ", ", c: "#f5e1ff" },
+        { t: yLab, c: "#34d399" },
+        { t: ")", c: "#f5e1ff" },
+      ];
+      ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+      let tw = 0;
+      for (const p of parts) tw += ctx.measureText(p.t).width;
+      const [lx, ly] = toCanvas(x * 1.22, y * 1.22, L);
+      const padX = 6, bh = 20;
+      const bx = lx - tw / 2 - padX, by = ly - bh / 2;
+      ctx.fillStyle = "rgba(40,20,60,0.92)";
+      ctx.strokeStyle = "rgba(192,132,252,0.9)";
+      ctx.lineWidth = 1;
+      roundRect(ctx, bx, by, tw + 2 * padX, bh, 6);
+      ctx.fill(); ctx.stroke();
+      let xCursor = lx - tw / 2;
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      for (const p of parts) {
+        ctx.fillStyle = p.c;
+        ctx.fillText(p.t, xCursor, ly);
+        xCursor += ctx.measureText(p.t).width;
+      }
+    }
+    ctx.restore();
+  }
+  function drawDrawAngle(L) {
+    drawAngleTicks(L);
+    drawAmberPlusX(L);
+
+    if (angleScreen === 0) {
+      const snapDeg = nearestAngle15(drawAngleDeg);
+      const labelDeg = drawAngleSnapped ? snapDeg : Math.round(drawAngleDeg * 10) / 10;
+      const a = degToRad(drawAngleDeg);
+      const x = Math.cos(a), y = Math.sin(a);
+      const [px, py] = toCanvas(x, y, L);
+      const { cx, cy, R } = L;
+      ctx.save();
+      ctx.strokeStyle = "rgba(192,132,252,0.95)";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+      const arcR = R * 0.28;
+      if (Math.abs(a) > 1e-9) {
+        ctx.strokeStyle = "rgba(253,230,138,0.95)";
+        ctx.fillStyle = "#FFBF00";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, arcR, 0, -a, a > 0);
+        ctx.stroke();
+        drawArcArrowAtLilac(cx, cy, arcR, a);
+      }
+      ctx.fillStyle = drawAngleSnapped ? "#e9d5ff" : "#c084fc";
+      ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = "#fde68a";
+      ctx.font = "700 13px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const mid = a / 2;
+      const [tx, ty] = toCanvas(Math.cos(mid) * 0.38, Math.sin(mid) * 0.38, L);
+      ctx.fillText(labelDeg + "°", tx, ty);
+      let xLab, yLab;
+      if (drawAngleSnapped && EXACT[snapDeg]) {
+        xLab = EXACT[snapDeg].x; yLab = EXACT[snapDeg].y;
+      } else {
+        xLab = fmt3(x); yLab = fmt3(y);
+      }
+      if (drawAngleSnapped && EXACT[snapDeg]) {
+        const [ax, ay] = toCanvas(x, 0, L);
+        const [zx, zy] = toCanvas(0, y, L);
+        ctx.setLineDash([6, 5]);
+        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = "rgba(255,92,92,0.85)";
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ax, ay); ctx.stroke();
+        ctx.strokeStyle = "rgba(52,211,153,0.85)";
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(zx, zy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#ff5c5c";
+        ctx.beginPath(); ctx.arc(ax, ay, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#34d399";
+        ctx.beginPath(); ctx.arc(zx, zy, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+        ctx.fillStyle = "#ff5c5c";
+        ctx.textAlign = "center"; ctx.textBaseline = "top";
+        ctx.fillText(xLab, ax, ay + 8);
+        ctx.fillStyle = "#34d399";
+        ctx.textAlign = "right"; ctx.textBaseline = "middle";
+        ctx.fillText(yLab, zx - 8, zy);
+      }
+      const parts = [
+        { t: "(", c: "#f5e1ff" },
+        { t: xLab, c: "#ff5c5c" },
+        { t: ", ", c: "#f5e1ff" },
+        { t: yLab, c: "#34d399" },
+        { t: ")", c: "#f5e1ff" },
+      ];
+      ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+      let tw = 0;
+      for (const p of parts) tw += ctx.measureText(p.t).width;
+      const [lx, ly] = toCanvas(x * 1.22, y * 1.22, L);
+      const padX = 6, bh = 20;
+      const bx = lx - tw / 2 - padX, by = ly - bh / 2;
+      ctx.fillStyle = "rgba(40,20,60,0.92)";
+      ctx.strokeStyle = "rgba(192,132,252,0.9)";
+      ctx.lineWidth = 1;
+      roundRect(ctx, bx, by, tw + 2 * padX, bh, 6);
+      ctx.fill(); ctx.stroke();
+      let xCursor = lx - tw / 2;
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      for (const p of parts) {
+        ctx.fillStyle = p.c;
+        ctx.fillText(p.t, xCursor, ly);
+        xCursor += ctx.measureText(p.t).width;
+      }
+      ctx.restore();
+      return;
+    }
+
+    if (angleScreen === 1) {
+      // user marker while placing (before or after lock)
+      if (anglePlaceActive && !angleEvalLocked) {
+        const snapDeg = nearestAngle15(drawAngleDeg);
+        const labelDeg = drawAngleSnapped ? snapDeg : Math.round(drawAngleDeg * 10) / 10;
+        drawAnglePointFull(L, drawAngleDeg, {
+          showArc: false,
+          showTheta: true,
+          showGuides: drawAngleSnapped && !!EXACT[snapDeg],
+          showPair: true,
+          thetaLabel: labelDeg,
+          markerFill: drawAngleSnapped ? "#e9d5ff" : "#c084fc",
+        });
+      } else if (angleEvalLocked && angleChallengeDeg != null) {
+        // reveal correct (purple) with arc + guides
+        drawAnglePointFull(L, angleChallengeDeg, {
+          showArc: true,
+          showTheta: true,
+          showGuides: true,
+          showPair: true,
+          markerFill: "#c084fc",
+        });
+        // if wrong, also keep a muted lilac? user blink handles wrong
+        if (!anglePlaceCorrect && anglePlaceActive) {
+          // user's snapped point as faint lilac under blink (optional) — blink covers it
+        }
+      }
+      return;
+    }
+
+    if (angleScreen === 2 && angleChallengeDeg != null) {
+      drawAnglePointFull(L, angleChallengeDeg, {
+        showArc: false,
+        showTheta: angleEvalLocked, // reveal θ after verify
+        showGuides: true,
+        showPair: true,
+        markerFill: "#c084fc",
+      });
+      return;
+    }
+
+    if (angleScreen === 3 && angleChallengeDeg != null) {
+      drawQuadrantLabels(L);
+      if (angleHighlightQ) drawQuadrantWedge(L, angleHighlightQ, "rgba(90,212,168,0.22)");
+      // lilac radius + point; HIDE θ number
+      drawAnglePointFull(L, angleChallengeDeg, {
+        showArc: false,
+        showTheta: false,
+        showGuides: angleEvalLocked,
+        showPair: angleEvalLocked,
+        markerFill: "#c084fc",
+      });
+      return;
+    }
+
+    if (angleScreen === 4) {
+      // pre-verify: only amber +X (already drawn); post-verify: show point
+      if (angleEvalLocked && angleChallengeDeg != null) {
+        if (angleHighlightQ) drawQuadrantWedge(L, angleHighlightQ, "rgba(90,212,168,0.18)");
+        drawAnglePointFull(L, angleChallengeDeg, {
+          showArc: false,
+          showTheta: true,
+          showGuides: true,
+          showPair: true,
+          markerFill: "#c084fc",
+        });
+      }
+    }
+  }
+
+  function drawQuadrantWedge(L, q, fillStyle) {
+    if (!q || q < 1 || q > 4) return;
+    const { cx, cy, R } = L;
+    const a0 = degToRad((q - 1) * 90);
+    const a1 = degToRad(q * 90);
+    ctx.save();
+    ctx.fillStyle = fillStyle;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, -a0, -a1, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  function drawQuadrantLabels(L) {
+    const labels = [
+      { deg: 45, t: "I" },
+      { deg: 135, t: "II" },
+      { deg: 225, t: "III" },
+      { deg: 315, t: "IV" },
     ];
-    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
-    let tw = 0;
-    for (const p of parts) tw += ctx.measureText(p.t).width;
-    const [lx, ly] = toCanvas(x * 1.22, y * 1.22, L);
-    const padX = 6, bh = 20;
-    const bx = lx - tw / 2 - padX, by = ly - bh / 2;
-    ctx.fillStyle = "rgba(40,20,60,0.92)";
-    ctx.strokeStyle = "rgba(192,132,252,0.9)";
-    ctx.lineWidth = 1;
-    roundRect(ctx, bx, by, tw + 2 * padX, bh, 6);
-    ctx.fill(); ctx.stroke();
-    let xCursor = lx - tw / 2;
-    ctx.textAlign = "left"; ctx.textBaseline = "middle";
-    for (const p of parts) {
-      ctx.fillStyle = p.c;
-      ctx.fillText(p.t, xCursor, ly);
-      xCursor += ctx.measureText(p.t).width;
+    ctx.save();
+    ctx.fillStyle = "rgba(139,155,180,0.45)";
+    ctx.font = "700 28px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (const lab of labels) {
+      const a = degToRad(lab.deg);
+      const [x, y] = toCanvas(Math.cos(a) * 0.52, Math.sin(a) * 0.52, L);
+      ctx.fillText(lab.t, x, y);
+    }
+    ctx.restore();
+  }
+
+  function drawVerticalChord(L, x, style) {
+    if (!Number.isFinite(x) || Math.abs(x) > 1) return;
+    const yTop = Math.sqrt(Math.max(0, 1 - x * x));
+    const yBot = -yTop;
+    const [tx, ty] = toCanvas(x, yTop, L);
+    const [bx, by] = toCanvas(x, yBot, L);
+    const muted = !!(style && style.muted);
+    const visible = !(style && style.visible === false);
+    if (!visible) return;
+    ctx.save();
+    ctx.setLineDash([7, 5]);
+    ctx.lineWidth = muted ? 1.6 : 2.4;
+    ctx.strokeStyle = muted ? AMBER_LINE_MUTED : (style && style.stroke ? style.stroke : AMBER_LINE);
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(bx, by);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const fillCol = muted ? AMBER_MUTED : (style && style.fill ? style.fill : AMBER);
+    ctx.fillStyle = fillCol;
+    ctx.beginPath(); ctx.arc(tx, ty, muted ? 3.5 : 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx, by, muted ? 3.5 : 5, 0, Math.PI * 2); ctx.fill();
+    // foot on X axis
+    const [ax, ay] = toCanvas(x, 0, L);
+    ctx.beginPath(); ctx.arc(ax, ay, muted ? 4 : 6, 0, Math.PI * 2); ctx.fill();
+    if (style && style.label) {
+      ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+      ctx.fillStyle = fillCol;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(style.label, ax, ay + 8);
+    }
+    ctx.restore();
+  }
+
+  function drawHorizontalChord(L, y, style) {
+    if (!Number.isFinite(y) || Math.abs(y) > 1) return;
+    const xRight = Math.sqrt(Math.max(0, 1 - y * y));
+    const xLeft = -xRight;
+    const [lx, ly] = toCanvas(xLeft, y, L);
+    const [rx, ry] = toCanvas(xRight, y, L);
+    const muted = !!(style && style.muted);
+    const visible = !(style && style.visible === false);
+    if (!visible) return;
+    ctx.save();
+    ctx.setLineDash([7, 5]);
+    ctx.lineWidth = muted ? 1.6 : 2.4;
+    ctx.strokeStyle = muted ? AMBER_LINE_MUTED : (style && style.stroke ? style.stroke : AMBER_LINE);
+    ctx.beginPath();
+    ctx.moveTo(lx, ly);
+    ctx.lineTo(rx, ry);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const fillCol = muted ? AMBER_MUTED : (style && style.fill ? style.fill : AMBER);
+    ctx.fillStyle = fillCol;
+    ctx.beginPath(); ctx.arc(lx, ly, muted ? 3.5 : 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(rx, ry, muted ? 3.5 : 5, 0, Math.PI * 2); ctx.fill();
+    // foot on Y axis
+    const [ax, ay] = toCanvas(0, y, L);
+    ctx.beginPath(); ctx.arc(ax, ay, muted ? 4 : 6, 0, Math.PI * 2); ctx.fill();
+    if (style && style.label) {
+      ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+      ctx.fillStyle = fillCol;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(style.label, ax + 8, ay);
     }
     ctx.restore();
   }
 
   function drawDrawCoord(L) {
-    // faint magnetic dots on axes
+    if (coordScreen === 4) {
+      // Given X only: full vertical chord through BOTH intersections (ambiguity).
+      // Do NOT mark the challenge point / ray before verify.
+      drawAmberPlusX(L);
+      const xLab = coordChallengeXLab || (coordChallengeDeg != null && EXACT[coordChallengeDeg] ? EXACT[coordChallengeDeg].x : null);
+      const xNum = xLab != null ? SYM_NUM[xLab] : null;
+      if (Number.isFinite(xNum)) {
+        drawVerticalChord(L, xNum, {
+          stroke: "rgba(255,92,92,0.95)",
+          fill: "#ff5c5c",
+          label: xLab,
+          muted: false,
+          visible: true,
+        });
+      }
+      // After verify: reveal correct point + pair guides
+      if (coordEvalLocked && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
+        drawGuide(coordChallengeDeg, L, !!coordPredCorrect);
+        drawPoint(coordChallengeDeg, L, !!coordPredCorrect);
+      }
+      return;
+    }
+
+    if (coordScreen === 3) {
+      drawAmberPlusX(L);
+      const xNum = coordChallengeXLab != null ? SYM_NUM[coordChallengeXLab] : null;
+      if (Number.isFinite(xNum)) {
+        drawVerticalChord(L, xNum, {
+          stroke: "rgba(255,92,92,0.95)",
+          fill: "#ff5c5c",
+          label: coordChallengeXLab,
+          muted: false,
+          visible: true,
+        });
+      }
+      // After verify: mark correct point(s) with θ labels (no labels before)
+      if (coordEvalLocked && coordChallengeAngles.length) {
+        for (const deg of coordChallengeAngles) {
+          drawGuide(deg, L, !!coordPredCorrect);
+          drawPoint(deg, L, !!coordPredCorrect);
+        }
+      }
+      return;
+    }
+
+    if (coordScreen === 2) {
+      // Y-axis magnets only; amber reference stays on +X (θ origin), never +Y
+      drawAmberPlusX(L);
+      ctx.save();
+      ctx.fillStyle = "rgba(110,168,254,0.45)";
+      for (const lab of MAG_LABELS) {
+        const v = SYM_NUM[lab];
+        const [dx, dy] = toCanvas(0, v, L);
+        ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+
+      // live / chosen horizontal guide (before verify, or blinking/muted wrong after)
+      if (coordPredActive && coordPredYval != null && Math.abs(coordPredYval) <= 1) {
+        const blinkingWrong = coordEvalLocked && !coordPredCorrect && userGuess && userGuess.horizontalChord;
+        if (!coordEvalLocked) {
+          drawHorizontalChord(L, coordPredYval, {
+            stroke: "rgba(52,211,153,0.95)",
+            fill: "#34d399",
+            label: coordPredSnapped ? coordPredYLab : null,
+            muted: false,
+            visible: true,
+          });
+        } else if (blinkingWrong) {
+          drawHorizontalChord(L, coordPredYval, {
+            label: coordPredYLab,
+            muted: !!userGuess.muted,
+            visible: !!userGuess.visible,
+          });
+        } else if (!coordPredCorrect) {
+          drawHorizontalChord(L, coordPredYval, {
+            label: coordPredYLab,
+            muted: true,
+            visible: true,
+          });
+        }
+      }
+
+      // marker on Y axis while choosing / wrong (not after correct)
+      if (coordPredActive && coordPredYval != null && (!coordEvalLocked || !coordPredCorrect)) {
+        const [mx, my] = toCanvas(0, coordPredYval, L);
+        ctx.save();
+        ctx.fillStyle = coordPredSnapped ? "#e9d5ff" : "#c084fc";
+        ctx.beginPath(); ctx.arc(mx, my, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.4; ctx.stroke();
+        ctx.restore();
+      }
+
+      // after verify: reveal true point + guides
+      if (coordEvalLocked && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
+        if (coordPredCorrect) {
+          drawGuide(coordChallengeDeg, L, true);
+          drawPoint(coordChallengeDeg, L, true);
+        } else {
+          drawGuide(coordChallengeDeg, L, false);
+          drawPoint(coordChallengeDeg, L, false);
+          const ty = SYM_NUM[EXACT[coordChallengeDeg].y];
+          if (Number.isFinite(ty)) {
+            drawHorizontalChord(L, ty, {
+              stroke: "rgba(52,211,153,0.75)",
+              fill: "#34d399",
+              label: EXACT[coordChallengeDeg].y,
+              muted: false,
+              visible: true,
+            });
+          }
+        }
+      }
+      return;
+    }
+
+    if (coordScreen === 1) {
+      // X-axis magnets only; no challenge ray/point before verify
+      drawAmberPlusX(L);
+      ctx.save();
+      ctx.fillStyle = "rgba(110,168,254,0.45)";
+      for (const lab of MAG_LABELS) {
+        const v = SYM_NUM[lab];
+        const [dx, dy] = toCanvas(v, 0, L);
+        ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+
+      // live / chosen vertical guide (before verify, or blinking/muted wrong after)
+      if (coordPredActive && coordPredXval != null && Math.abs(coordPredXval) <= 1) {
+        const blinkingWrong = coordEvalLocked && !coordPredCorrect && userGuess && userGuess.verticalChord;
+        if (!coordEvalLocked) {
+          drawVerticalChord(L, coordPredXval, {
+            stroke: "rgba(255,140,60,0.95)",
+            fill: "#fbbf24",
+            label: coordPredSnapped ? coordPredXLab : null,
+            muted: false,
+            visible: true,
+          });
+        } else if (blinkingWrong) {
+          drawVerticalChord(L, coordPredXval, {
+            label: coordPredXLab,
+            muted: !!userGuess.muted,
+            visible: !!userGuess.visible,
+          });
+        } else if (!coordPredCorrect) {
+          drawVerticalChord(L, coordPredXval, {
+            label: coordPredXLab,
+            muted: true,
+            visible: true,
+          });
+        }
+      }
+
+      // marker on X axis while choosing / wrong (not after correct)
+      if (coordPredActive && coordPredXval != null && (!coordEvalLocked || !coordPredCorrect)) {
+        const [mx, my] = toCanvas(coordPredXval, 0, L);
+        ctx.save();
+        ctx.fillStyle = coordPredSnapped ? "#e9d5ff" : "#c084fc";
+        ctx.beginPath(); ctx.arc(mx, my, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.4; ctx.stroke();
+        ctx.restore();
+      }
+
+      // after verify: reveal true point + guides
+      if (coordEvalLocked && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
+        const lab = labelsForDeg(coordChallengeDeg);
+        if (coordPredCorrect) {
+          drawGuide(coordChallengeDeg, L, true);
+          drawPoint(coordChallengeDeg, L, true);
+        } else {
+          // optional true point muted/clear after wrong
+          drawGuide(coordChallengeDeg, L, false);
+          drawPoint(coordChallengeDeg, L, false);
+          // correct vertical at true X
+          const tx = SYM_NUM[EXACT[coordChallengeDeg].x];
+          if (Number.isFinite(tx)) {
+            drawVerticalChord(L, tx, {
+              stroke: "rgba(255,92,92,0.75)",
+              fill: "#ff5c5c",
+              label: EXACT[coordChallengeDeg].x,
+              muted: false,
+              visible: true,
+            });
+          }
+        }
+      }
+      return;
+    }
+
+    // screen 0 — teach (existing free drag)
     ctx.save();
     ctx.fillStyle = "rgba(110,168,254,0.4)";
     for (const t of MAG_TARGETS) {
@@ -920,6 +2791,24 @@
     ctx.restore();
   }
 
+
+  function locusKeyForDeg(deg) {
+    if (deg == null || !Number.isFinite(deg)) return null;
+    const d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 180) return "x";
+    if (d === 90 || d === 270) return "y";
+    const q = quadrantOfDeg(d);
+    return q ? ("q" + q) : null;
+  }
+  function syncEducateLocus() {
+    const root = document.getElementById("educateLocus");
+    if (!root) return;
+    const key = mode === "educate" ? locusKeyForDeg(selected) : null;
+    root.querySelectorAll(".locus").forEach(el => {
+      el.classList.toggle("on", key != null && el.dataset.locus === key);
+    });
+  }
+
   function rebuildEducateTable() {
     const angs = anglesForStep(step);
     stepLabel.textContent = step + "°";
@@ -939,6 +2828,7 @@
       }
       tbody.appendChild(tr);
     }
+    syncEducateLocus();
   }
 
   function syncEducateButtons() {
@@ -1080,6 +2970,19 @@
     panelDrawCoord.classList.toggle("hidden", m !== "drawCoord");
     const hideStep = (m === "drawAngle" || m === "drawCoord");
     stepSelectorWrap.classList.toggle("hidden", hideStep);
+    if (m !== "drawAngle") {
+      anglePrev.classList.add("hidden");
+      angleNext.classList.add("hidden");
+      clearAngleEval();
+      angleChallengeDeg = null;
+    }
+    if (m !== "drawCoord") {
+      coordPrev.classList.add("hidden");
+      coordNext.classList.add("hidden");
+      clearCoordEval();
+      coordChallengeDeg = null;
+      coordScreen = 0;
+    }
     clearUserGuess();
     revealed = [];
     selected = null;
@@ -1097,19 +3000,16 @@
       scoreOk.textContent = "0"; scoreN.textContent = "0";
       newChallenge(false);
     } else if (m === "drawAngle") {
-      drawAngleDeg = 0;
-      drawAngleSnapped = true;
-      updateDrawAnglePanel();
-      setNarration("Dibujar ángulo: arrastrá el marcador sobre la circunferencia. Snap cada <strong>15°</strong> (umbral 8°).");
-      draw();
+      clearAngleEval();
+      angleScreen = 0;
+      angleChallengeDeg = null;
+      syncAngleScreen();
     } else if (m === "drawCoord") {
-      drawCoordXval = 1; drawCoordYval = 0;
-      drawCoordXLab = "1"; drawCoordYLab = "0";
-      drawCoordAxisHit = "X";
-      drawCoordSnapped = true;
-      updateDrawCoordPanel();
-      setNarration("Dibujar coordenada: arrastrá libremente; snap a valores exactos en los ejes (umbral <strong>0.12</strong>).");
-      draw();
+      clearCoordEval();
+      coordScreen = 0;
+      coordChallengeDeg = null;
+      resetDrawCoordTeach();
+      syncCoordScreen();
     }
   }
 
@@ -1182,16 +3082,85 @@
     updateDrawCoordPanel();
   }
 
+  function applyCoordPredXFromWorld(x, y, forceSnap) {
+    // X-axis only: ignore Y for placement; snap to MAG_LABELS on X
+    x = Math.max(-1.25, Math.min(1.25, x));
+    let bestLab = MAG_LABELS[0], bestD = Infinity;
+    for (const lab of MAG_LABELS) {
+      const v = SYM_NUM[lab];
+      const d = Math.abs(v - x);
+      if (d < bestD) { bestD = d; bestLab = lab; }
+    }
+    if (forceSnap || bestD <= COORD_SNAP_THRESH) {
+      coordPredXLab = bestLab;
+      coordPredXval = SYM_NUM[bestLab];
+      coordPredSnapped = true;
+    } else {
+      coordPredXLab = fmt3(x);
+      coordPredXval = x;
+      coordPredSnapped = false;
+    }
+    coordPredActive = true;
+    buildCoordPredXChips();
+    updateCoordPredPanel();
+  }
+
+  function applyCoordPredYFromWorld(x, y, forceSnap) {
+    // Y-axis only: ignore X for placement; snap to MAG_LABELS on Y
+    y = Math.max(-1.25, Math.min(1.25, y));
+    let bestLab = MAG_LABELS[0], bestD = Infinity;
+    for (const lab of MAG_LABELS) {
+      const v = SYM_NUM[lab];
+      const d = Math.abs(v - y);
+      if (d < bestD) { bestD = d; bestLab = lab; }
+    }
+    if (forceSnap || bestD <= COORD_SNAP_THRESH) {
+      coordPredYLab = bestLab;
+      coordPredYval = SYM_NUM[bestLab];
+      coordPredSnapped = true;
+    } else {
+      coordPredYLab = fmt3(y);
+      coordPredYval = y;
+      coordPredSnapped = false;
+    }
+    coordPredActive = true;
+    buildCoordPredYChips();
+    updateCoordPredYPanel();
+  }
+
   canvas.addEventListener("pointerdown", (ev) => {
     if (mode === "drawAngle" || mode === "drawCoord") {
+      if (mode === "drawAngle") {
+        if (angleScreen === 2 || angleScreen === 4) return;
+        if (angleScreen === 3) {
+          if (angleEvalLocked) return;
+          const w = clientToWorld(ev);
+          const q = quadrantFromWorld(w.x, w.y);
+          if (q >= 1 && q <= 4) verifyQuadrantPick(q);
+          return;
+        }
+        if (angleScreen === 1 && angleEvalLocked) return;
+      }
+      if (mode === "drawCoord") {
+        if (coordScreen === 3 || coordScreen === 4) return; // chips only
+        if ((coordScreen === 1 || coordScreen === 2) && coordEvalLocked) return;
+      }
       pointerDragging = true;
       drawAngleDragging = mode === "drawAngle";
       drawCoordDragging = mode === "drawCoord";
       try { canvas.setPointerCapture(ev.pointerId); } catch (_) {}
       syncCanvasCursor();
       const w = clientToWorld(ev);
-      if (mode === "drawAngle") applyDrawAngleFromWorld(w.x, w.y, false);
-      else applyDrawCoordFromWorld(w.x, w.y, false);
+      if (mode === "drawAngle") {
+        if (angleScreen === 1) anglePlaceActive = true;
+        applyDrawAngleFromWorld(w.x, w.y, false);
+      } else if (coordScreen === 1) {
+        applyCoordPredXFromWorld(w.x, w.y, false);
+      } else if (coordScreen === 2) {
+        applyCoordPredYFromWorld(w.x, w.y, false);
+      } else {
+        applyDrawCoordFromWorld(w.x, w.y, false);
+      }
       draw();
       return;
     }
@@ -1217,6 +3186,8 @@
     if (mode !== "drawAngle" && mode !== "drawCoord") return;
     const w = clientToWorld(ev);
     if (mode === "drawAngle") applyDrawAngleFromWorld(w.x, w.y, false);
+    else if (coordScreen === 1) applyCoordPredXFromWorld(w.x, w.y, false);
+    else if (coordScreen === 2) applyCoordPredYFromWorld(w.x, w.y, false);
     else applyDrawCoordFromWorld(w.x, w.y, false);
     draw();
   });
@@ -1232,13 +3203,66 @@
     syncCanvasCursor();
     if (wasAngle || wasCoord) {
       const w = clientToWorld(ev);
-      if (wasAngle) applyDrawAngleFromWorld(w.x, w.y, true); // always land on magnetic
-      else applyDrawCoordFromWorld(w.x, w.y, true);
-      draw();
+      if (wasAngle) {
+        applyDrawAngleFromWorld(w.x, w.y, true); // always land on magnetic
+        if (angleScreen === 1) checkAnglePlaceOnRelease();
+        else draw();
+      } else if (coordScreen === 1) {
+        applyCoordPredXFromWorld(w.x, w.y, true);
+        if (!coordEvalLocked && coordPredSnapped) verifyCoordPredX();
+        else draw();
+      } else if (coordScreen === 2) {
+        applyCoordPredYFromWorld(w.x, w.y, true);
+        if (!coordEvalLocked && coordPredSnapped) verifyCoordPredY();
+        else draw();
+      } else {
+        applyDrawCoordFromWorld(w.x, w.y, true);
+        draw();
+      }
     }
   }
   canvas.addEventListener("pointerup", endPointerDrag);
   canvas.addEventListener("pointercancel", endPointerDrag);
+
+  anglePrev.addEventListener("click", () => {
+    if (mode !== "drawAngle") return;
+    setAngleScreen(angleScreen - 1);
+  });
+  angleNext.addEventListener("click", () => {
+    if (mode !== "drawAngle") return;
+    setAngleScreen(angleScreen + 1);
+  });
+  anglePlaceOtroBtn.addEventListener("click", () => newAnglePlaceChallenge(true));
+  anglePlaceResetBtn.addEventListener("click", resetDrawAngle);
+  angleNameVerifyBtn.addEventListener("click", verifyAngleName);
+  angleNameOtroBtn.addEventListener("click", () => newAngleNameChallenge(true));
+  angleNameResetBtn.addEventListener("click", resetDrawAngle);
+  angleQuadOtroBtn.addEventListener("click", () => newAngleQuadChallenge(true));
+  angleQuadResetBtn.addEventListener("click", resetDrawAngle);
+  angleSignVerifyBtn.addEventListener("click", verifyAngleSign);
+  angleSignOtroBtn.addEventListener("click", () => newAngleSignChallenge(true));
+  angleSignResetBtn.addEventListener("click", resetDrawAngle);
+
+  coordPrev.addEventListener("click", () => {
+    if (mode !== "drawCoord") return;
+    setCoordScreen(coordScreen - 1);
+  });
+  coordNext.addEventListener("click", () => {
+    if (mode !== "drawCoord") return;
+    setCoordScreen(coordScreen + 1);
+  });
+  coordPredVerifyBtn.addEventListener("click", verifyCoordPredX);
+  coordPredOtroBtn.addEventListener("click", () => newCoordPredChallenge(true));
+  coordPredResetBtn.addEventListener("click", resetDrawCoord);
+  coordPredYVerifyBtn.addEventListener("click", verifyCoordPredY);
+  coordPredYOtroBtn.addEventListener("click", () => newCoordPredYChallenge(true));
+  coordPredYResetBtn.addEventListener("click", resetDrawCoord);
+  coordThetaVerifyBtn.addEventListener("click", verifyCoordTheta);
+  coordThetaOtroBtn.addEventListener("click", () => newCoordThetaChallenge(true));
+  coordThetaResetBtn.addEventListener("click", resetDrawCoord);
+  coordXYVerifyBtn.addEventListener("click", verifyCoordXY);
+  coordXYOtroBtn.addEventListener("click", () => newCoordXYChallenge(true));
+  coordXYResetBtn.addEventListener("click", resetDrawCoord);
 
   setMode("educate");
 })();
