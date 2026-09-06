@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  static-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Required public files
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test -f app.js
+          test -f data.js
+          test -f styles.css
+          test -f tools/index.html
+          test -f tools/leccion-lineales.html
+          test -f resources/favicon.png
+
+      - name: Keep payload lean (no shots/_gen/bak)
+        run: |
+          set -euo pipefail
+          if [ -d shots ] || [ -d tools/_gen ]; then
+            echo "Forbidden deploy dirs present" >&2
+            exit 1
+          fi
+          if find . -name '*.bak' -print -quit | grep -q .; then
+            echo "Found .bak files" >&2
+            exit 1
+          fi
+
+      - name: HTML/JS basic sanity
+        run: |
+          set -euo pipefail
+          # Every HTML must declare doctype + not be empty
+          while IFS= read -r -d '' f; do
+            test -s "$f"
+            head -c 200 "$f" | tr '[:upper:]' '[:lower:]' | grep -q '<!doctype html'
+          done < <(find . -name '*.html' -print0)
+
+          # JS files parseable by node
+          node --check app.js
+          node --check data.js
+
+      - name: Size budget (warn > 2MB tree)
+        run: |
+          set -euo pipefail
+          bytes=$(du -sb . --exclude=.git | cut -f1)
+          echo "tree_bytes=$bytes"
+          # Soft ceiling: fail if tree > 5MB (keeps CI from shipping fat assets)
+          if [ "$bytes" -gt 5242880 ]; then
+            echo "Tree exceeds 5MB budget" >&2
+            exit 1
+          fi
