@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 15 · Seno · amplitud · juego</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #34d399; --border: #243044;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #34d399; --pink: #f472b6;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.88rem; margin-left: 0.45rem; font-weight: 400; }
+.sub strong { color: #93c5fd; font-family: ui-monospace, Menlo, monospace; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink);
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn:hover { filter: brightness(1.08); }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548;
+}
+.score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+.score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+.score.stage { color: var(--amber); border-color: rgba(255,191,0,0.4); }
+.score.round { color: var(--mast); border-color: rgba(110,168,254,0.45); }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
+}
+.graph-wrap { position: relative; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--canvas-bg); touch-action: none;
+}
+#confetti {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 5; border-radius: 10px; background: transparent;
+}
+.prompt {
+  margin: 0 0 8px; font-size: 0.95rem; color: var(--muted); line-height: 1.45; min-height: 1.4em;
+}
+.prompt strong { color: var(--ink); }
+.prompt.ok { color: var(--ok); }
+.prompt.bad { color: var(--bad); }
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.locus-strip {
+  margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;
+  justify-content: flex-end; align-items: center;
+}
+.locus-strip .locus {
+  border: 1px solid #2a3548; background: #121a27; color: #4a5a72;
+  font: inherit; font-weight: 700; font-size: 0.82rem;
+  padding: 7px 11px; border-radius: 999px; cursor: default;
+  transition: color .15s, background .15s, border-color .15s, box-shadow .15s;
+  min-width: 2.2em; text-align: center;
+}
+.locus-strip .locus.on {
+  color: #0b1018; background: #FFBF00; border-color: #FFBF00;
+  box-shadow: 0 0 12px rgba(255,191,0,.45);
+}
+@keyframes shakeX {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.shake { animation: shakeX 0.42s ease; }
+.round-banner {
+  position: absolute; left: 50%; top: 16%; transform: translateX(-50%);
+  z-index: 8; pointer-events: none;
+  background: rgba(26,35,50,0.92); border: 1px solid rgba(90,212,168,0.55);
+  color: var(--ok); font-weight: 800; font-size: 1.05rem;
+  padding: 10px 18px; border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  opacity: 0; transition: opacity .2s;
+}
+.round-banner.show { opacity: 1; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 15</span> Seno · amplitud · juego
+        <span class="sub" id="eqSub">g(θ) = <strong id="eqA">A</strong>·sen(θ)</span>
+      </h1>
+    </div>
+    <div class="toolbar" id="gameBar">
+      <button type="button" class="btn primary" id="restartBtn">Reiniciar</button>
+      <button type="button" class="btn" id="clearBtn">Limpiar</button>
+      <span class="score ok" id="scoreOk">Aciertos <strong>0</strong></span>
+      <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
+      <span class="score stage" id="scoreStage">Etapa <strong>1</strong> · θ→g</span>
+      <span class="score round" id="scoreRound">Ronda <strong>0/5</strong></span>
+    </div>
+  </header>
+
+  <p class="prompt" id="prompt">Elegí θ y luego g(θ). A está fija en esta ronda.</p>
+  <p class="hint">Nodos: −720°…720° (cada 90°). Tocá una pastilla θ bajo el eje y un valor Y a la izquierda.</p>
+
+  <div class="card">
+    <div class="graph-wrap" id="graphWrap">
+      <a class="lesson-nav prev" href="leccion-coseno-amplitud.html" title="Lección 14: Coseno · amplitud" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+      <a class="lesson-nav next" href="leccion-coseno-amplitud-juego.html" title="Lección 16: Coseno · amplitud · juego" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+      <canvas id="c" width="1200" height="560" aria-label="Juego seno con amplitud"></canvas>
+      <canvas id="confetti" width="1200" height="560" aria-hidden="true"></canvas>
+      <div class="round-banner" id="roundBanner" aria-live="polite"></div>
+    </div>
+    <div class="locus-strip" id="locusStrip" aria-label="Cuadrante o eje activo">
+      <span class="locus" data-locus="q1">I</span>
+      <span class="locus" data-locus="q2">II</span>
+      <span class="locus" data-locus="q3">III</span>
+      <span class="locus" data-locus="q4">IV</span>
+      <span class="locus" data-locus="x">eje X</span>
+      <span class="locus" data-locus="y">eje Y</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const NODES = (() => { const out = []; for (let d = -720; d <= 720; d += 90) out.push(d); return out; })();
+  const Y_INTS = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
+  const ROUND_N = 5;
+  const COL_RIGHT = "#34d399";
+  const COL_LEFT = "#f472b6";
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const graphWrap = document.getElementById("graphWrap");
+  const promptEl = document.getElementById("prompt");
+  const eqA = document.getElementById("eqA");
+  const scoreOkEl = document.getElementById("scoreOk");
+  const scoreBadEl = document.getElementById("scoreBad");
+  const scoreStageEl = document.getElementById("scoreStage");
+  const scoreRoundEl = document.getElementById("scoreRound");
+  const roundBanner = document.getElementById("roundBanner");
+  const confettiCanvas = document.getElementById("confetti");
+  const confettiCtx = confettiCanvas.getContext("2d");
+
+  let A = 1;
+  let gameOk = 0, gameBad = 0, ronda = 1;
+  let targets = [];
+  let done = [];
+  let currentTarget = null;
+  let selDeg = null, selY = null;
+  let shakeDeg = null, shakeY = null, shakeUntil = 0;
+  let showCurve = false;
+  let marked = []; // {deg,y}
+  let busy = false;
+  let tickHits = [], yHits = [];
+  let confettiRaf = null;
+  let audioCtx = null;
+  let locusPulse = null;
+
+  function degToRad(d) { return d * Math.PI / 180; }
+  function senExact(deg) {
+    const d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 180) return 0;
+    if (d === 90) return 1;
+    if (d === 270) return -1;
+    return Math.sin(degToRad(d));
+  }
+  function gVal(deg) { return A * senExact(deg); }
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function setPrompt(html, cls) {
+    promptEl.className = "prompt" + (cls ? " " + cls : "");
+    promptEl.innerHTML = html;
+  }
+  function syncScores() {
+    scoreOkEl.innerHTML = "Aciertos <strong>" + gameOk + "</strong>";
+    scoreBadEl.innerHTML = "Errores <strong>" + gameBad + "</strong>";
+    scoreStageEl.innerHTML = "Etapa <strong>1</strong> · θ→g";
+    scoreRoundEl.innerHTML = "Ronda <strong>" + done.length + "/" + ROUND_N + "</strong> · #" + ronda;
+    eqA.textContent = String(A);
+  }
+  function waitMs(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+  function fireConfetti() {
+    if (!confettiCanvas || !confettiCtx) return;
+    const parent = confettiCanvas.parentElement;
+    const w = confettiCanvas.width = parent ? parent.clientWidth || 720 : 720;
+    const h = confettiCanvas.height = parent ? parent.clientHeight || 560 : 560;
+    const colors = ["#FFBF00", "#ff5c5c", "#34d399", "#c084fc", "#60a5fa", "#f472b6", "#fbbf24"];
+    const parts = [];
+    for (let i = 0; i < 90; i++) {
+      parts.push({
+        x: w * 0.5 + (Math.random() - 0.5) * w * 0.35,
+        y: h * 0.25 + Math.random() * h * 0.15,
+        vx: (Math.random() - 0.5) * 9,
+        vy: Math.random() * -7 - 2,
+        g: 0.22 + Math.random() * 0.12,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35,
+        w: 5 + Math.random() * 5,
+        h: 3 + Math.random() * 4,
+        color: colors[(Math.random() * colors.length) | 0],
+        life: 55 + ((Math.random() * 25) | 0)
+      });
+    }
+    if (confettiRaf) cancelAnimationFrame(confettiRaf);
+    function frame() {
+      confettiCtx.clearRect(0, 0, w, h);
+      let alive = 0;
+      for (const p of parts) {
+        if (p.life <= 0) continue;
+        alive++;
+        p.life--;
+        p.vy += p.g;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate(p.rot);
+        confettiCtx.globalAlpha = Math.max(0, p.life / 40);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        confettiCtx.restore();
+      }
+      if (alive > 0) confettiRaf = requestAnimationFrame(frame);
+      else { confettiCtx.clearRect(0, 0, w, h); confettiRaf = null; }
+    }
+    confettiRaf = requestAnimationFrame(frame);
+  }
+  function playErrorSound() {
+    const ac = ensureAudio();
+    if (!ac) return;
+    const t0 = ac.currentTime;
+    const bufLen = Math.floor(ac.sampleRate * 0.16);
+    const buffer = ac.createBuffer(1, bufLen, ac.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.pow(1 - i / bufLen, 1.4);
+      data[i] = (Math.random() * 2 - 1) * env * 0.35;
+    }
+    const noise = ac.createBufferSource();
+    noise.buffer = buffer;
+    const filter = ac.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 280;
+    filter.Q.value = 1.2;
+    const gain = ac.createGain();
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.55, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+    noise.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+    noise.start(t0); noise.stop(t0 + 0.17);
+    const osc = ac.createOscillator();
+    const og = ac.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(110, t0);
+    osc.frequency.exponentialRampToValueAtTime(55, t0 + 0.12);
+    og.gain.setValueAtTime(0.0001, t0);
+    og.gain.exponentialRampToValueAtTime(0.18, t0 + 0.01);
+    og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.14);
+    osc.connect(og); og.connect(ac.destination);
+    osc.start(t0); osc.stop(t0 + 0.15);
+  }
+  function playOkChime() {
+    const ac = ensureAudio();
+    if (!ac) return;
+    const t0 = ac.currentTime;
+    [523.25, 659.25, 783.99].forEach((f, i) => {
+      const osc = ac.createOscillator();
+      const g = ac.createGain();
+      osc.type = "sine";
+      osc.frequency.value = f;
+      const t = t0 + i * 0.05;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      osc.connect(g); g.connect(ac.destination);
+      osc.start(t); osc.stop(t + 0.24);
+    });
+  }
+
+
+  let miniBlink = null;
+  const MINI_DEGS = [0,30,60,90,120,150,180,210,240,270,300,330];
+  function stopMiniBlink() {
+    if (miniBlink && miniBlink.timer) clearInterval(miniBlink.timer);
+    miniBlink = null;
+  }
+  function drawMiniAt720(L) {
+    // Circulo transparente 2 unidades (2 celdas = 60°) fuera de la rejilla, a la derecha de 720°
+    const cx = toX(720, L) + 2 * L.cell;
+    const cy = toY(0, L);
+    const R = Math.min(42, Math.max(22, (L.cell || 12) * 0.95));
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = "rgba(148,163,184,0.45)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx - R - 4, cy); ctx.lineTo(cx + R + 4, cy);
+    ctx.moveTo(cx, cy - R - 4); ctx.lineTo(cx, cy + R + 4);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.stroke();
+    const lit = miniBlink && miniBlink.on ? miniBlink.deg : null;
+    for (const d of MINI_DEGS) {
+      const rad = d * Math.PI / 180;
+      const x = cx + R * Math.cos(rad);
+      const y = cy - R * Math.sin(rad);
+      const isAxis = d % 90 === 0;
+      const isLit = lit != null && ((lit % 360) + 360) % 360 === d;
+      ctx.beginPath();
+      ctx.arc(x, y, isLit ? 5.5 : (isAxis ? 4 : 3.2), 0, Math.PI * 2);
+      if (isLit) {
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = "#FFBF00";
+        ctx.shadowColor = "rgba(255,191,0,0.75)";
+        ctx.shadowBlur = 10;
+      } else {
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = isAxis ? "#c084fc" : "#a78bfa";
+        ctx.shadowBlur = 0;
+      }
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(10,15,24,0.5)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function blinkMiniAngle(deg) {
+    stopMiniBlink();
+    if (deg == null || !Number.isFinite(deg)) { draw(); return; }
+    let d = ((deg % 360) + 360) % 360;
+    if (d === 360) d = 0;
+    d = Math.round(d / 30) * 30;
+    if (d === 360) d = 0;
+    let n = 0;
+    miniBlink = { deg: d, on: true, timer: null };
+    draw();
+    miniBlink.timer = setInterval(() => {
+      n++;
+      miniBlink.on = (n % 2 === 1);
+      draw();
+      if (n >= 6) {
+        stopMiniBlink();
+        miniBlink = { deg: d, on: true, timer: null };
+        draw();
+      }
+    }, 220);
+  }
+  function locusKeyForDeg(deg) {
+    if (deg == null || !Number.isFinite(deg)) return null;
+    const d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 180 || d === 360) return "x";
+    if (d === 90 || d === 270) return "y";
+    if (d > 0 && d < 90) return "q1";
+    if (d > 90 && d < 180) return "q2";
+    if (d > 180 && d < 270) return "q3";
+    return "q4";
+  }
+
+  function syncLocusStrip(key, on) {
+    const root = document.getElementById("locusStrip");
+    if (!root) return;
+    root.querySelectorAll(".locus").forEach((el) => {
+      el.classList.toggle("on", !!(on && key != null && el.dataset.locus === key));
+    });
+  }
+  function stopLocusPulse() {
+    if (locusPulse && locusPulse.timer) clearInterval(locusPulse.timer);
+    locusPulse = null;
+  }
+  function highlightLocusForDeg(deg) {
+    blinkMiniAngle(deg);
+    const key = locusKeyForDeg(deg);
+    stopLocusPulse();
+    if (!key) { syncLocusStrip(null, false); return; }
+    let n = 0;
+    syncLocusStrip(key, true);
+    locusPulse = { key, timer: setInterval(() => {
+      n++;
+      syncLocusStrip(key, n % 2 === 1);
+      if (n >= 6) { stopLocusPulse(); syncLocusStrip(key, true); }
+    }, 220) };
+  }
+
+  function layout() {
+    const w = canvas.width, h = canvas.height;
+    const padL = 58, padR = 112, padT = 28, padB = 100;
+    const availW = w - padL - padR;
+    const availH = h - padT - padB;
+    const xmin = -720, xmax = 720;  // ±720°
+    const ymin = -6.5, ymax = 6.5;
+    const cellsX = (xmax - xmin) / 30;
+    const cellsY = (ymax - ymin) / 0.5;
+    const cell = Math.min(availW / cellsX, availH / cellsY);
+    const pw = cell * cellsX;
+    const ph = cell * cellsY;
+    const x0 = padL + (availW - pw) / 2;
+    const y0 = padT + (availH - ph) / 2;
+    return { w, h, x0, y0, pw, ph, xmin, xmax, ymin, ymax, cell };
+  }
+  function toX(th, L) { return L.x0 + ((th - L.xmin) / (L.xmax - L.xmin)) * L.pw; }
+  function toY(y, L) { return L.y0 + ((L.ymax - y) / (L.ymax - L.ymin)) * L.ph; }
+
+  function roundedPill(bx, by, bw, bh, r) {
+    ctx.beginPath();
+    ctx.moveTo(bx + r, by);
+    ctx.arcTo(bx + bw, by, bx + bw, by + bh, r);
+    ctx.arcTo(bx + bw, by + bh, bx, by + bh, r);
+    ctx.arcTo(bx, by + bh, bx, by, r);
+    ctx.arcTo(bx, by, bx + bw, by, r);
+    ctx.closePath();
+  }
+
+  function drawGrid(L) {
+    ctx.clearRect(0, 0, L.w, L.h);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, L.w, L.h);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    for (let th = L.xmin; th <= L.xmax + 1e-9; th += 30) {
+      const x = toX(th, L);
+      ctx.beginPath(); ctx.moveTo(x, L.y0); ctx.lineTo(x, L.y0 + L.ph); ctx.stroke();
+    }
+    for (let y = -6; y <= 6 + 1e-9; y += 0.5) {
+      const yy = toY(y, L);
+      ctx.beginPath(); ctx.moveTo(L.x0, yy); ctx.lineTo(L.x0 + L.pw, yy); ctx.stroke();
+    }
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 1.5;
+    const yAxis = toY(0, L);
+    const xAxis = toX(0, L);
+    ctx.beginPath();
+    ctx.moveTo(L.x0, yAxis); ctx.lineTo(L.x0 + L.pw, yAxis);
+    ctx.moveTo(xAxis, L.y0); ctx.lineTo(xAxis, L.y0 + L.ph);
+    ctx.stroke();
+    ctx.font = "11px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (const th of [-720, -540, -360, -180, 0, 180, 360, 540, 720]) {
+      ctx.fillStyle = th === 720 ? "#ffffff" : "#8b9bb4";
+      ctx.fillText(th + "°", toX(th, L), L.y0 + L.ph + 8);
+    }
+    ctx.fillText("θ (°)", (L.x0 + L.x0 + L.pw) / 2, L.y0 + L.ph + 34);
+  }
+
+  function drawParent(L) {
+    ctx.strokeStyle = "rgba(71,85,105,0.45)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    let started = false;
+    for (let th = L.xmin; th <= L.xmax; th += 1) {
+      const y = Math.sin(degToRad(th));
+      const x = toX(th, L), yy = toY(y, L);
+      if (!started) { ctx.moveTo(x, yy); started = true; }
+      else ctx.lineTo(x, yy);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawAmpCurve(L) {
+    if (!showCurve && marked.length === 0) return;
+    const w = 2.8;
+    // left of 0 doesn't matter; split at θ=0 → pink left unused, teal for θ≥0
+    // Split visually at mid: use teal for θ≥180? Spec: teal/pink split like amplitude lesson at h=0 → pink left of 0, teal right.
+    // Domain is 0..360 so mostly teal; still draw split at 0 for consistency, and soft pink near 0 from pad.
+    function span(th0, th1, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = w;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      let started = false;
+      for (let th = th0; th <= th1 + 1e-9; th += 0.5) {
+        const y = A * Math.sin(degToRad(th));
+        const x = toX(th, L), yy = toY(y, L);
+        if (!started) { ctx.moveTo(x, yy); started = true; }
+        else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+    if (showCurve) {
+      span(L.xmin, 0, COL_LEFT);
+      span(0, L.xmax, COL_RIGHT);
+    }
+  }
+
+  function drawYPills(L) {
+    yHits = [];
+    const shaking = performance.now() < shakeUntil;
+    ctx.save();
+    ctx.font = "700 12px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (let i = 0; i < Y_INTS.length; i++) {
+      const v = Y_INTS[i];
+      const lab = String(v).replace("-", "−");
+      const y = toY(v, L);
+      const selected = selY === v;
+      const isShake = shaking && shakeY === v;
+      let fill = "#64748b", stroke = "rgba(100,116,139,0.55)";
+      if (selected) { fill = "#FFBF00"; stroke = "#FFBF00"; }
+      if (isShake) { fill = "#ff7b7b"; stroke = "#ff7b7b"; }
+      const padX = 8, padY = 9;
+      const tw = ctx.measureText(lab).width;
+      const hx0 = L.x0 - 14 - tw - padX;
+      const hx1 = L.x0 - 4;
+      const hy0 = y - padY;
+      const hy1 = y + padY;
+      if (selected || isShake) {
+        ctx.fillStyle = isShake ? "rgba(255,123,123,0.18)" : "rgba(255,191,0,0.18)";
+        ctx.fillRect(hx0, hy0, hx1 - hx0, hy1 - hy0);
+      }
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = selected || isShake ? 2.2 : 1.4;
+      ctx.beginPath(); ctx.moveTo(L.x0 - 6, y); ctx.lineTo(L.x0 + 6, y); ctx.stroke();
+      ctx.fillStyle = fill;
+      ctx.fillText(lab, L.x0 - 12, y);
+      yHits.push({ v, x0: hx0, y0: hy0, x1: hx1, y1: hy1 });
+    }
+    ctx.restore();
+  }
+
+  function drawXPills(L) {
+    tickHits = [];
+    const shaking = performance.now() < shakeUntil;
+    const yAxis = toY(0, L);
+    ctx.save();
+    ctx.font = "700 9px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (const d of NODES) {
+      const x = toX(d, L);
+      const label = d + "°";
+      const tw = ctx.measureText(label).width;
+      const bw = Math.max(tw + 8, 28);
+      const bh = 18;
+      const bx = x - bw / 2;
+      const by = yAxis + 12;
+      const isTarget = currentTarget === d && !done.includes(d);
+      const isDone = done.includes(d);
+      const isSel = selDeg === d;
+      const isShake = shaking && shakeDeg === d;
+      let fill = "#121a27", stroke = "#2a3548", ink = "#8b9bb4";
+      if (isDone) { fill = "rgba(90,212,168,0.28)"; stroke = "#5ad4a8"; ink = "#e8eef7"; }
+      else if (isShake) { fill = "rgba(255,123,123,0.35)"; stroke = "#ff7b7b"; ink = "#e8eef7"; }
+      else if (isSel) { fill = "rgba(255,191,0,0.35)"; stroke = "#FFBF00"; ink = "#e8eef7"; }
+      else if (isTarget) { fill = "rgba(110,168,254,0.28)"; stroke = "#6ea8fe"; ink = "#e8eef7"; }
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = isSel || isTarget || isDone || isShake ? 1.6 : 1;
+      roundedPill(bx, by, bw, bh, 8);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = ink;
+      ctx.fillText(label, x, by + bh / 2);
+      tickHits.push({ deg: d, x0: bx, y0: by, x1: bx + bw, y1: by + bh });
+    }
+    ctx.restore();
+  }
+
+  function drawMarked(L) {
+    for (const m of marked) {
+      const x = toX(m.deg, L), yy = toY(m.y, L);
+      const col = m.deg >= 0 ? COL_RIGHT : COL_LEFT;
+      ctx.strokeStyle = "rgba(90,212,168,0.55)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(L.x0, yy); ctx.lineTo(x, yy);
+      ctx.moveTo(x, toY(0, L)); ctx.lineTo(x, yy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(x, yy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = col;
+      ctx.fill();
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    if (selDeg != null && !done.includes(selDeg)) {
+      const x = toX(selDeg, L);
+      ctx.strokeStyle = "rgba(255,191,0,0.55)";
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(x, L.y0); ctx.lineTo(x, L.y0 + L.ph);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    if (selY != null) {
+      const y = toY(selY, L);
+      ctx.strokeStyle = "rgba(255,191,0,0.55)";
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(L.x0, y); ctx.lineTo(L.x0 + L.pw, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  function draw() {
+    const L = layout();
+    drawGrid(L);
+    drawParent(L);
+    drawAmpCurve(L);
+    drawYPills(L);
+    drawXPills(L);
+    drawMarked(L);
+    drawMiniAt720(L);
+  }
+
+  function showRoundBanner(text) {
+    roundBanner.textContent = text;
+    roundBanner.classList.add("show");
+  }
+  function hideRoundBanner() {
+    roundBanner.classList.remove("show");
+    roundBanner.textContent = "";
+  }
+
+  function pickNextTarget() {
+    const pending = targets.filter((d) => !done.includes(d));
+    if (!pending.length) { currentTarget = null; return; }
+    currentTarget = pending[(Math.random() * pending.length) | 0];
+    selDeg = null;
+    selY = null;
+    highlightLocusForDeg(currentTarget);
+    setPrompt(
+      "θ = <strong>" + currentTarget + "°</strong> · ¿g(θ)? &nbsp;|&nbsp; A = <strong>" + A + "</strong> · g(θ) = " + A + "·sen(θ)",
+      null
+    );
+    syncScores();
+    draw();
+  }
+
+  function startRound(keepScores) {
+    if (!keepScores) { gameOk = 0; gameBad = 0; ronda = 1; }
+    A = 1 + ((Math.random() * 6) | 0);
+    // 5 targets from nodes; allow repeats across angles but prefer distinct
+    targets = shuffle(NODES).slice(0, Math.min(ROUND_N, NODES.length));
+    // if we need 5 and only 5 nodes, use all
+    if (NODES.length >= ROUND_N) targets = shuffle(NODES).slice(0, ROUND_N);
+    done = [];
+    marked = [];
+    showCurve = false;
+    selDeg = null;
+    selY = null;
+    busy = false;
+    syncScores();
+    pickNextTarget();
+  }
+
+  function restartAll() {
+    ensureAudio();
+    hideRoundBanner();
+    stopLocusPulse();
+    startRound(false);
+  }
+
+  function clearSelection() {
+    selDeg = null;
+    selY = null;
+    setPrompt(
+      currentTarget != null
+        ? ("θ = <strong>" + currentTarget + "°</strong> · ¿g(θ)? &nbsp;|&nbsp; A = <strong>" + A + "</strong>")
+        : "Elegí θ y luego g(θ).",
+      null
+    );
+    draw();
+  }
+
+  async function celebrateRound() {
+    busy = true;
+    showCurve = true;
+    draw();
+    showRoundBanner("¡Ronda completa! · A = " + A);
+    fireConfetti();
+    playOkChime();
+    await waitMs(1400);
+    hideRoundBanner();
+    ronda += 1;
+    startRound(true);
+    showRoundBanner("Nueva ronda · A = " + A);
+    await waitMs(900);
+    hideRoundBanner();
+    busy = false;
+    draw();
+  }
+
+  function tryCheck() {
+    if (busy || currentTarget == null || selDeg == null || selY == null) return;
+    // Must match the prompted target angle
+    if (selDeg !== currentTarget) {
+      gameBad += 1;
+      shakeDeg = selDeg;
+      shakeY = selY;
+      shakeUntil = performance.now() + 420;
+      playErrorSound();
+      setPrompt("Ese no es el ángulo pedido. Tocá <strong>" + currentTarget + "°</strong> y luego g(θ).", "bad");
+      syncScores();
+      graphWrap.classList.remove("shake");
+      void graphWrap.offsetWidth;
+      graphWrap.classList.add("shake");
+      draw();
+      setTimeout(() => {
+        selDeg = null; selY = null;
+        if (performance.now() >= shakeUntil) { shakeDeg = null; shakeY = null; }
+        draw();
+      }, 430);
+      return;
+    }
+    const expected = gVal(currentTarget);
+    const ok = selY === expected;
+    if (ok) {
+      done.push(currentTarget);
+      marked.push({ deg: currentTarget, y: expected });
+      gameOk += 1;
+      highlightLocusForDeg(currentTarget);
+      fireConfetti();
+      playOkChime();
+      setPrompt(
+        "¡Bien! g(" + currentTarget + "°) = <strong>" + expected + "</strong> · A·sen = " + A + "·(" + senExact(currentTarget) + ")",
+        "ok"
+      );
+      selDeg = null;
+      selY = null;
+      syncScores();
+      draw();
+      if (done.length >= ROUND_N) {
+        celebrateRound();
+      } else {
+        setTimeout(() => { if (!busy) pickNextTarget(); }, 550);
+      }
+    } else {
+      gameBad += 1;
+      shakeDeg = selDeg;
+      shakeY = selY;
+      shakeUntil = performance.now() + 420;
+      playErrorSound();
+      setPrompt(
+        "No coincide. g(" + currentTarget + "°) = A·sen(" + currentTarget + "°) con A = <strong>" + A + "</strong>. Probá de nuevo.",
+        "bad"
+      );
+      syncScores();
+      graphWrap.classList.remove("shake");
+      void graphWrap.offsetWidth;
+      graphWrap.classList.add("shake");
+      draw();
+      setTimeout(() => {
+        selY = null;
+        if (performance.now() >= shakeUntil) { shakeDeg = null; shakeY = null; }
+        draw();
+      }, 430);
+    }
+  }
+
+  function onPickDeg(deg) {
+    if (busy) return;
+    ensureAudio();
+    highlightLocusForDeg(deg);
+    if (done.includes(deg) && deg !== currentTarget) return;
+    selDeg = (selDeg === deg) ? null : deg;
+    draw();
+    if (selDeg != null && selY != null) tryCheck();
+  }
+  function onPickY(v) {
+    if (busy) return;
+    ensureAudio();
+    selY = (selY === v) ? null : v;
+    draw();
+    if (selDeg != null && selY != null) tryCheck();
+  }
+
+  function canvasPos(ev) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width;
+    const sy = canvas.height / rect.height;
+    return { mx: (ev.clientX - rect.left) * sx, my: (ev.clientY - rect.top) * sy };
+  }
+
+  canvas.addEventListener("pointermove", (ev) => {
+    const { mx, my } = canvasPos(ev);
+    const hitT = tickHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    const hitY = yHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    canvas.style.cursor = (hitT || hitY) ? "pointer" : "default";
+  });
+  canvas.addEventListener("pointerdown", (ev) => {
+    const { mx, my } = canvasPos(ev);
+    const hitY = yHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    if (hitY) { onPickY(hitY.v); return; }
+    const hit = tickHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    if (hit) onPickDeg(hit.deg);
+  });
+
+  document.getElementById("restartBtn").addEventListener("click", restartAll);
+  document.getElementById("clearBtn").addEventListener("click", clearSelection);
+
+  // resize canvas to CSS size for sharpness
+  function fitCanvas() {
+    const wrap = graphWrap;
+    const cssW = Math.max(640, wrap.clientWidth || 960);
+    const cssH = Math.round(cssW * 0.46);
+    canvas.width = Math.round(cssW * (window.devicePixelRatio > 1.5 ? 1.25 : 1));
+    // keep logical layout coords stable-ish via fixed internal size
+    canvas.width = 1200;
+    canvas.height = 560;
+    confettiCanvas.width = wrap.clientWidth || 1200;
+    confettiCanvas.height = wrap.clientHeight || 560;
+    draw();
+  }
+  window.addEventListener("resize", () => { fitCanvas(); });
+
+  startRound(false);
+  fitCanvas();
+})();
+</script>
+</body>
+</html>
