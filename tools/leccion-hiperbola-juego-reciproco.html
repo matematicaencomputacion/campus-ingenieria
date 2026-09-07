@@ -229,7 +229,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     </div>
 
     <div class="bottom-bar">
-      <p class="hint">Reflexión sobre y=x · mismo producto k · win@20</p>
+      <p class="hint">Reflexión sobre y=x · guía en L (↕ y ↔ casillas) hasta la diagonal · mismo producto k · 20 éxitos</p>
       <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
         <span class="sound-meter-label" aria-hidden="true">♪</span>
         <span class="sound-bar" data-i="0"></span>
@@ -654,6 +654,68 @@ var GK = window.CampusGameKit || {};
     later(900, function () { state.locked = false; if (state.placed !== undefined) state.placed = null; draw(); });
   }
 
+
+  function drawReflectL(src, tgt) {
+    /* L respecto de y=x: A → (ax,ax) en la diagonal → A′(ay,ax) */
+    if (!src || !tgt) return;
+    var ax = src.x, ay = src.y;
+    var corner = { x: ax, y: ax }; /* pie sobre la diagonal */
+    /* if A is already on diagonal, nothing to draw */
+    if (Math.abs(ax - ay) < 1e-9) return;
+    var a0 = worldToScreen(ax, ay);
+    var c0 = worldToScreen(corner.x, corner.y);
+    var a1 = worldToScreen(tgt.x, tgt.y);
+    var dy = corner.y - ay; /* vertical leg */
+    var dx = tgt.x - corner.x; /* horizontal leg */
+    ctx.save();
+    ctx.lineWidth = 2.4;
+    ctx.setLineDash([6, 4]);
+    /* vertical first (hacia la diagonal) */
+    ctx.strokeStyle = "rgba(52,211,153,0.95)";
+    ctx.beginPath(); ctx.moveTo(a0.x, a0.y); ctx.lineTo(c0.x, c0.y); ctx.stroke();
+    /* horizontal to A′ */
+    ctx.strokeStyle = "rgba(96,165,250,0.95)";
+    ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(a1.x, a1.y); ctx.stroke();
+    ctx.setLineDash([]);
+    /* ticks */
+    ctx.lineWidth = 1.5;
+    if (dy !== 0) {
+      var stepY = dy > 0 ? 1 : -1;
+      ctx.strokeStyle = "rgba(52,211,153,0.75)";
+      for (var iy = 1; iy <= Math.abs(dy); iy++) {
+        var ty = worldToScreen(ax, ay + stepY * iy);
+        ctx.beginPath(); ctx.moveTo(ty.x - 5, ty.y); ctx.lineTo(ty.x + 5, ty.y); ctx.stroke();
+      }
+    }
+    if (dx !== 0) {
+      var stepX = dx > 0 ? 1 : -1;
+      ctx.strokeStyle = "rgba(96,165,250,0.75)";
+      for (var ix = 1; ix <= Math.abs(dx); ix++) {
+        var tx = worldToScreen(corner.x + stepX * ix, corner.y);
+        ctx.beginPath(); ctx.moveTo(tx.x, tx.y - 5); ctx.lineTo(tx.x, tx.y + 5); ctx.stroke();
+      }
+    }
+    /* labels casillas */
+    ctx.font = "800 14px ui-monospace, Menlo, monospace";
+    ctx.textBaseline = "middle";
+    var midV = worldToScreen(ax, (ay + corner.y) / 2);
+    var midH = worldToScreen((corner.x + tgt.x) / 2, corner.y);
+    var vLab = "↕ " + fmtNum(Math.abs(dy)) + (Math.abs(dy) === 1 ? " casilla" : " casillas");
+    var hLab = "↔ " + fmtNum(Math.abs(dx)) + (Math.abs(dx) === 1 ? " casilla" : " casillas");
+    ctx.fillStyle = "#6ee7b7";
+    ctx.textAlign = "left";
+    var vx = midV.x + 10;
+    if (vx > canvas.width - 130) { ctx.textAlign = "right"; vx = midV.x - 10; }
+    ctx.fillText(vLab, vx, midV.y);
+    ctx.fillStyle = "#93c5fd";
+    ctx.textAlign = "center";
+    ctx.fillText(hLab, midH.x, midH.y + (dy >= 0 ? -14 : 16));
+    /* small mark on diagonal corner */
+    ctx.fillStyle = "rgba(255,191,0,0.85)";
+    ctx.beginPath(); ctx.arc(c0.x, c0.y, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
 var state = { ok:0,bad:0,round:1,p:null,src:null,tgt:null,locked:false,paused:false,won:false,speedFactor:1,timers:[],reveal:false,hover:null,placed:null };
   function buildRound(){
     state.p = pickParams({ preferPos: true }); /* reflection nicer with QI */
@@ -666,10 +728,10 @@ var state = { ok:0,bad:0,round:1,p:null,src:null,tgt:null,locked:false,paused:fa
   }
   function draw(){
     drawGrid(); drawAsymptotes(state.p, 0.4); drawDiagonalYX(0.7);
+    drawReflectL(state.src, state.tgt);
     drawPoint(state.src.x, state.src.y, "A" + fmtPt(state.src), CURVE_QI);
     if (state.reveal) {
       drawCurve(state.p, 0.8);
-      drawArrow(state.src.x, state.src.y, state.tgt.x, state.tgt.y, AMBER);
       drawPoint(state.tgt.x, state.tgt.y, "A′" + fmtPt(state.tgt), OK, "rgba(90,212,168,0.4)");
     } else {
       drawHover(state.hover);
