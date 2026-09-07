@@ -469,6 +469,10 @@
         <div id="coordScreen1" class="hidden">
           <h2>Evaluar · Predecir X</h2>
           <p class="hint" style="margin-bottom:10px;">Dado θ, elegí <strong>cos θ</strong> (X) arrastrando en el eje X (snap magnético) o con un chip. Verificar al soltar o con el botón.</p>
+          <div class="score" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;">
+            <span class="score ok" id="coordPredScoreOk">Éxitos <strong>0</strong></span>
+            <span class="score bad" id="coordPredScoreBad">Fracasos <strong>0</strong></span>
+          </div>
           <div class="field">
             <label>Ángulo desafío θ</label>
             <div class="theta" id="coordPredChallenge">—</div>
@@ -487,7 +491,7 @@
           </div>
           <div class="toolbar">
             <button class="btn primary" id="coordPredVerifyBtn" disabled>Verificar</button>
-            <button class="btn" id="coordPredOtroBtn">Otro ángulo</button>
+            <button class="btn" id="coordPredOtroBtn">Pausar</button>
             <button class="btn" id="coordPredResetBtn">Reset</button>
           </div>
         </div>
@@ -495,6 +499,10 @@
         <div id="coordScreen2" class="hidden">
           <h2>Evaluar · Predecir Y</h2>
           <p class="hint" style="margin-bottom:10px;">Dado θ, elegí <strong>sen θ</strong> (Y) arrastrando en el eje Y (snap magnético) o con un chip. Verificar al soltar o con el botón.</p>
+          <div class="score" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;">
+            <span class="score ok" id="coordPredYScoreOk">Éxitos <strong>0</strong></span>
+            <span class="score bad" id="coordPredYScoreBad">Fracasos <strong>0</strong></span>
+          </div>
           <div class="field">
             <label>Ángulo desafío θ</label>
             <div class="theta" id="coordPredYChallenge">—</div>
@@ -513,7 +521,7 @@
           </div>
           <div class="toolbar">
             <button class="btn primary" id="coordPredYVerifyBtn" disabled>Verificar</button>
-            <button class="btn" id="coordPredYOtroBtn">Otro ángulo</button>
+            <button class="btn" id="coordPredYOtroBtn">Pausar</button>
             <button class="btn" id="coordPredYResetBtn">Reset</button>
           </div>
         </div>
@@ -684,6 +692,8 @@
   const coordPredVerifyBtn = document.getElementById("coordPredVerifyBtn");
   const coordPredOtroBtn = document.getElementById("coordPredOtroBtn");
   const coordPredResetBtn = document.getElementById("coordPredResetBtn");
+  const coordPredScoreOk = document.getElementById("coordPredScoreOk");
+  const coordPredScoreBad = document.getElementById("coordPredScoreBad");
   const coordPredYChallenge = document.getElementById("coordPredYChallenge");
   const coordPredYChips = document.getElementById("coordPredYChips");
   const coordPredYUser = document.getElementById("coordPredYUser");
@@ -691,6 +701,8 @@
   const coordPredYVerifyBtn = document.getElementById("coordPredYVerifyBtn");
   const coordPredYOtroBtn = document.getElementById("coordPredYOtroBtn");
   const coordPredYResetBtn = document.getElementById("coordPredYResetBtn");
+  const coordPredYScoreOk = document.getElementById("coordPredYScoreOk");
+  const coordPredYScoreBad = document.getElementById("coordPredYScoreBad");
   const stepButtons = [...document.querySelectorAll("[data-step]")];
   const modeButtons = [...document.querySelectorAll("[data-mode]")];
 
@@ -790,6 +802,19 @@
   let coordPredSnapped = false;
   let coordPredActive = false;
   let coordPredCorrect = false;
+  const COORD_PRED_WIN = 20;
+  let coordPredXOk = 0;
+  let coordPredXBad = 0;
+  let coordPredXPaused = false;
+  let coordPredXWon = false;
+  let coordPredXAutoTimer = null;
+  let coordPredXUnlockTimer = null;
+  let coordPredYOk = 0;
+  let coordPredYBad = 0;
+  let coordPredYPaused = false;
+  let coordPredYWon = false;
+  let coordPredYAutoTimer = null;
+  let coordPredYUnlockTimer = null;
   let coordChallengeXLab = null; // screen 3/4: given cos
   let coordChallengeYLab = null; // screen 4: true sen label (hidden until verify)
   let coordChallengeAngles = []; // screen 3: true NOTABLE deg set
@@ -1297,19 +1322,21 @@
     } else {
       coordPredUser.textContent = "arrastrá en el eje X o elegí un chip";
     }
-    coordPredVerifyBtn.disabled = coordEvalLocked || !coordPredActive || !coordPredSnapped;
+    coordPredVerifyBtn.disabled =
+      coordEvalLocked || coordPredXPaused || coordPredXWon || !coordPredActive || !coordPredSnapped;
   }
   function buildCoordPredXChips() {
     coordPredXChips.innerHTML = "";
+    const locked = coordEvalLocked || coordPredXPaused || coordPredXWon;
     for (const lab of MAG_LABELS) {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "chip";
       b.textContent = lab;
-      b.disabled = coordEvalLocked;
+      b.disabled = locked;
       if (coordPredXLab === lab && coordPredSnapped) b.classList.add("picked");
       b.addEventListener("click", () => {
-        if (coordEvalLocked) return;
+        if (coordEvalLocked || coordPredXPaused || coordPredXWon) return;
         coordPredXLab = lab;
         coordPredXval = SYM_NUM[lab];
         coordPredSnapped = true;
@@ -1328,19 +1355,21 @@
     } else {
       coordPredYUser.textContent = "arrastrá en el eje Y o elegí un chip";
     }
-    coordPredYVerifyBtn.disabled = coordEvalLocked || !coordPredActive || !coordPredSnapped;
+    coordPredYVerifyBtn.disabled =
+      coordEvalLocked || coordPredYPaused || coordPredYWon || !coordPredActive || !coordPredSnapped;
   }
   function buildCoordPredYChips() {
     coordPredYChips.innerHTML = "";
+    const locked = coordEvalLocked || coordPredYPaused || coordPredYWon;
     for (const lab of MAG_LABELS) {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "chip";
       b.textContent = lab;
-      b.disabled = coordEvalLocked;
+      b.disabled = locked;
       if (coordPredYLab === lab && coordPredSnapped) b.classList.add("picked");
       b.addEventListener("click", () => {
-        if (coordEvalLocked) return;
+        if (coordEvalLocked || coordPredYPaused || coordPredYWon) return;
         coordPredYLab = lab;
         coordPredYval = SYM_NUM[lab];
         coordPredSnapped = true;
@@ -1363,9 +1392,17 @@
   function syncCoordNav() {
     const inCoord = mode === "drawCoord";
     coordPrev.classList.toggle("hidden", !inCoord || coordScreen === 0);
-    coordNext.classList.toggle("hidden", !inCoord || coordScreen === 4);
+    // Screen 4 keeps ▶ enabled to exit the lote back to Enseñar
+    coordNext.classList.toggle("hidden", !inCoord);
     coordPrev.disabled = !inCoord || coordScreen === 0;
-    coordNext.disabled = !inCoord || coordScreen === 4;
+    coordNext.disabled = !inCoord;
+    if (coordScreen === 4) {
+      coordNext.title = "Salir del lote";
+      coordNext.setAttribute("aria-label", "Volver a Enseñar");
+    } else {
+      coordNext.title = "Pantalla siguiente";
+      coordNext.setAttribute("aria-label", "Pantalla siguiente");
+    }
   }
   function syncCoordScreen() {
     coordScreen0.classList.toggle("hidden", coordScreen !== 0);
@@ -1456,13 +1493,180 @@
       syncCoordScreen();
       return;
     }
+    clearCoordPredTimers();
     clearCoordEval();
     coordScreen = n;
     coordChallengeDeg = null;
     if (n === 0) resetDrawCoordTeach();
     if (mode === "drawCoord") syncCoordScreen();
   }
+  function clearCoordPredXAuto() {
+    if (coordPredXAutoTimer) {
+      clearTimeout(coordPredXAutoTimer);
+      coordPredXAutoTimer = null;
+    }
+  }
+  function clearCoordPredYAuto() {
+    if (coordPredYAutoTimer) {
+      clearTimeout(coordPredYAutoTimer);
+      coordPredYAutoTimer = null;
+    }
+  }
+  function clearCoordPredXUnlock() {
+    if (coordPredXUnlockTimer) {
+      clearTimeout(coordPredXUnlockTimer);
+      coordPredXUnlockTimer = null;
+    }
+  }
+  function clearCoordPredYUnlock() {
+    if (coordPredYUnlockTimer) {
+      clearTimeout(coordPredYUnlockTimer);
+      coordPredYUnlockTimer = null;
+    }
+  }
+  function clearCoordPredTimers() {
+    clearCoordPredXAuto();
+    clearCoordPredYAuto();
+    clearCoordPredXUnlock();
+    clearCoordPredYUnlock();
+  }
+  function syncCoordPredXScores() {
+    if (coordPredScoreOk) coordPredScoreOk.innerHTML = "Éxitos <strong>" + coordPredXOk + "</strong>";
+    if (coordPredScoreBad) coordPredScoreBad.innerHTML = "Fracasos <strong>" + coordPredXBad + "</strong>";
+  }
+  function syncCoordPredYScores() {
+    if (coordPredYScoreOk) coordPredYScoreOk.innerHTML = "Éxitos <strong>" + coordPredYOk + "</strong>";
+    if (coordPredYScoreBad) coordPredYScoreBad.innerHTML = "Fracasos <strong>" + coordPredYBad + "</strong>";
+  }
+  function syncCoordPredXPauseBtn() {
+    if (!coordPredOtroBtn) return;
+    coordPredOtroBtn.textContent = coordPredXPaused ? "Continuar" : "Pausar";
+  }
+  function syncCoordPredYPauseBtn() {
+    if (!coordPredYOtroBtn) return;
+    coordPredYOtroBtn.textContent = coordPredYPaused ? "Continuar" : "Pausar";
+  }
+  function resetCoordPredXScoreState() {
+    clearCoordPredXAuto();
+    clearCoordPredXUnlock();
+    coordPredXOk = 0;
+    coordPredXBad = 0;
+    coordPredXPaused = false;
+    coordPredXWon = false;
+    syncCoordPredXScores();
+    syncCoordPredXPauseBtn();
+  }
+  function resetCoordPredYScoreState() {
+    clearCoordPredYAuto();
+    clearCoordPredYUnlock();
+    coordPredYOk = 0;
+    coordPredYBad = 0;
+    coordPredYPaused = false;
+    coordPredYWon = false;
+    syncCoordPredYScores();
+    syncCoordPredYPauseBtn();
+  }
+  function toggleCoordPredXPause() {
+    if (coordPredXWon) return;
+    coordPredXPaused = !coordPredXPaused;
+    syncCoordPredXPauseBtn();
+    if (coordPredXPaused) {
+      clearCoordPredXAuto();
+      setNarration("Pausa · tocá <strong>Continuar</strong> para seguir.");
+    } else if (coordEvalLocked && coordPredCorrect) {
+      newCoordPredChallenge(true);
+    } else if (coordChallengeDeg != null) {
+      setNarration("Predicí <strong>X = cos(" + coordChallengeDeg + "°)</strong>. Arrastrá en el eje X o elegí un chip.");
+    }
+    syncCanvasCursor();
+  }
+  function toggleCoordPredYPause() {
+    if (coordPredYWon) return;
+    coordPredYPaused = !coordPredYPaused;
+    syncCoordPredYPauseBtn();
+    if (coordPredYPaused) {
+      clearCoordPredYAuto();
+      setNarration("Pausa · tocá <strong>Continuar</strong> para seguir.");
+    } else if (coordEvalLocked && coordPredCorrect) {
+      newCoordPredYChallenge(true);
+    } else if (coordChallengeDeg != null) {
+      setNarration("Predicí <strong>Y = sen(" + coordChallengeDeg + "°)</strong>. Arrastrá en el eje Y o elegí un chip.");
+    }
+    syncCanvasCursor();
+  }
+  function scheduleCoordPredXNext() {
+    clearCoordPredXAuto();
+    if (coordPredXPaused || coordPredXWon) return;
+    coordPredXAutoTimer = setTimeout(function () {
+      coordPredXAutoTimer = null;
+      if (coordPredXPaused || coordPredXWon || mode !== "drawCoord" || coordScreen !== 1) return;
+      newCoordPredChallenge(true);
+    }, 1100);
+  }
+  function scheduleCoordPredYNext() {
+    clearCoordPredYAuto();
+    if (coordPredYPaused || coordPredYWon) return;
+    coordPredYAutoTimer = setTimeout(function () {
+      coordPredYAutoTimer = null;
+      if (coordPredYPaused || coordPredYWon || mode !== "drawCoord" || coordScreen !== 2) return;
+      newCoordPredYChallenge(true);
+    }, 1100);
+  }
+  function unlockCoordPredXRetry() {
+    clearCoordPredXUnlock();
+    if (mode !== "drawCoord" || coordScreen !== 1 || coordPredXWon) return;
+    clearUserGuess();
+    coordEvalLocked = false;
+    coordPredCorrect = false;
+    coordPredXLab = null;
+    coordPredXval = null;
+    coordPredSnapped = false;
+    coordPredActive = false;
+    if (coordPredReveal) coordPredReveal.textContent = "—";
+    buildCoordPredXChips();
+    updateCoordPredPanel();
+    if (coordChallengeDeg != null) {
+      setNarration("Reintentá: predicí <strong>X = cos(" + coordChallengeDeg + "°)</strong>.");
+    }
+    syncCanvasCursor();
+    draw();
+  }
+  function unlockCoordPredYRetry() {
+    clearCoordPredYUnlock();
+    if (mode !== "drawCoord" || coordScreen !== 2 || coordPredYWon) return;
+    clearUserGuess();
+    coordEvalLocked = false;
+    coordPredCorrect = false;
+    coordPredYLab = null;
+    coordPredYval = null;
+    coordPredSnapped = false;
+    coordPredActive = false;
+    if (coordPredYReveal) coordPredYReveal.textContent = "—";
+    buildCoordPredYChips();
+    updateCoordPredYPanel();
+    if (coordChallengeDeg != null) {
+      setNarration("Reintentá: predicí <strong>Y = sen(" + coordChallengeDeg + "°)</strong>.");
+    }
+    syncCanvasCursor();
+    draw();
+  }
+  function scheduleCoordPredXUnlock() {
+    clearCoordPredXUnlock();
+    coordPredXUnlockTimer = setTimeout(function () {
+      coordPredXUnlockTimer = null;
+      unlockCoordPredXRetry();
+    }, 2100);
+  }
+  function scheduleCoordPredYUnlock() {
+    clearCoordPredYUnlock();
+    coordPredYUnlockTimer = setTimeout(function () {
+      coordPredYUnlockTimer = null;
+      unlockCoordPredYRetry();
+    }, 2100);
+  }
   function newCoordPredChallenge(announce) {
+    clearCoordPredXAuto();
+    clearCoordPredXUnlock();
     clearCoordEval();
     coordChallengeDeg = randomCoordPredAngle(coordChallengeDeg, "x");
     coordPredChallenge.textContent = coordChallengeDeg + "°";
@@ -1474,9 +1678,12 @@
     } else {
       setNarration("Predicí <strong>X = cos(" + coordChallengeDeg + "°)</strong>. Arrastrá en el eje X o elegí un chip.");
     }
+    syncCanvasCursor();
     draw();
   }
   function newCoordPredYChallenge(announce) {
+    clearCoordPredYAuto();
+    clearCoordPredYUnlock();
     clearCoordEval();
     coordChallengeDeg = randomCoordPredAngle(coordChallengeDeg, "y");
     coordPredYChallenge.textContent = coordChallengeDeg + "°";
@@ -1488,62 +1695,92 @@
     } else {
       setNarration("Predicí <strong>Y = sen(" + coordChallengeDeg + "°)</strong>. Arrastrá en el eje Y o elegí un chip.");
     }
+    syncCanvasCursor();
     draw();
   }
   function verifyCoordPredX() {
     if (coordScreen !== 1 || coordEvalLocked || !coordPredActive || !coordPredSnapped) return;
+    if (coordPredXPaused || coordPredXWon) return;
     if (coordChallengeDeg == null || coordPredXLab == null) return;
     const truth = EXACT[coordChallengeDeg].x;
     coordEvalLocked = true;
-    coordPredReveal.innerHTML = '<span style="color:#ff5c5c">' + truth + '</span>';
     buildCoordPredXChips();
     updateCoordPredPanel();
     if (coordPredXLab === truth) {
       coordPredCorrect = true;
       clearUserGuess();
-      setNarration(
-        "✓ Correcto: cos(" + coordChallengeDeg + "°) = <strong style='color:#ff5c5c'>" + truth + "</strong>.",
-        "ok"
-      );
+      coordPredReveal.innerHTML = '<span style="color:#ff5c5c">' + truth + '</span>';
+      coordPredXOk++;
+      syncCoordPredXScores();
+      if (coordPredXOk >= COORD_PRED_WIN) {
+        coordPredXWon = true;
+        clearCoordPredXAuto();
+        setNarration("¡Ganaste! <strong>20 éxitos</strong>", "ok");
+      } else {
+        setNarration(
+          "✓ Correcto: cos(" + coordChallengeDeg + "°) = <strong style='color:#ff5c5c'>" + truth + "</strong>.",
+          "ok"
+        );
+        scheduleCoordPredXNext();
+      }
     } else {
       coordPredCorrect = false;
-      // blink at (X_user, 0); vertical chord also blinks via drawDrawCoord
+      // do not reveal truth — same θ retry after blink
+      coordPredReveal.textContent = "—";
       startWrongBlink(coordPredXLab, "0", coordPredXval, 0);
       if (userGuess) userGuess.verticalChord = true;
+      coordPredXBad++;
+      syncCoordPredXScores();
       setNarration(
-        "✗ Era <strong style='color:#ff5c5c'>" + truth + "</strong>. Tu X <span style='color:#FFBF00'>" +
-        coordPredXLab + "</span> parpadea (guía vertical).",
+        "✗ Incorrecto. Tu X <span style='color:#FFBF00'>" +
+        coordPredXLab + "</span> parpadea · reintentá el mismo θ.",
         "bad"
       );
+      scheduleCoordPredXUnlock();
     }
+    syncCanvasCursor();
     draw();
   }
   function verifyCoordPredY() {
     if (coordScreen !== 2 || coordEvalLocked || !coordPredActive || !coordPredSnapped) return;
+    if (coordPredYPaused || coordPredYWon) return;
     if (coordChallengeDeg == null || coordPredYLab == null) return;
     const truth = EXACT[coordChallengeDeg].y;
     coordEvalLocked = true;
-    coordPredYReveal.innerHTML = '<span style="color:#34d399">' + truth + '</span>';
     buildCoordPredYChips();
     updateCoordPredYPanel();
     if (coordPredYLab === truth) {
       coordPredCorrect = true;
       clearUserGuess();
-      setNarration(
-        "✓ Correcto: sen(" + coordChallengeDeg + "°) = <strong style='color:#34d399'>" + truth + "</strong>.",
-        "ok"
-      );
+      coordPredYReveal.innerHTML = '<span style="color:#34d399">' + truth + '</span>';
+      coordPredYOk++;
+      syncCoordPredYScores();
+      if (coordPredYOk >= COORD_PRED_WIN) {
+        coordPredYWon = true;
+        clearCoordPredYAuto();
+        setNarration("¡Ganaste! <strong>20 éxitos</strong>", "ok");
+      } else {
+        setNarration(
+          "✓ Correcto: sen(" + coordChallengeDeg + "°) = <strong style='color:#34d399'>" + truth + "</strong>.",
+          "ok"
+        );
+        scheduleCoordPredYNext();
+      }
     } else {
       coordPredCorrect = false;
-      // blink at (0, Y_user); horizontal chord also blinks via drawDrawCoord
+      coordPredYReveal.textContent = "—";
       startWrongBlink("0", coordPredYLab, 0, coordPredYval);
       if (userGuess) userGuess.horizontalChord = true;
+      coordPredYBad++;
+      syncCoordPredYScores();
       setNarration(
-        "✗ Era <strong style='color:#34d399'>" + truth + "</strong>. Tu Y <span style='color:#FFBF00'>" +
-        coordPredYLab + "</span> parpadea (guía horizontal).",
+        "✗ Incorrecto. Tu Y <span style='color:#FFBF00'>" +
+        coordPredYLab + "</span> parpadea · reintentá el mismo θ.",
         "bad"
       );
+      scheduleCoordPredYUnlock();
     }
+    syncCanvasCursor();
     draw();
   }
   function anglesForXLab(xLab) {
@@ -1910,15 +2147,22 @@
 
   function resetDrawCoord() {
     if (coordScreen === 0) {
+      clearCoordPredTimers();
       clearCoordEval();
       resetDrawCoordTeach();
       setNarration("Dibujar coordenada · Enseñar: arrastrá libremente; snap a valores exactos en los ejes (umbral <strong>0.12</strong>).");
       draw();
+    } else if (coordScreen === 1) {
+      resetCoordPredXScoreState();
+      newCoordPredChallenge(true);
     } else if (coordScreen === 2) {
+      resetCoordPredYScoreState();
       newCoordPredYChallenge(true);
     } else if (coordScreen === 3) {
+      clearCoordPredTimers();
       newCoordThetaChallenge(true);
     } else if (coordScreen === 4) {
+      clearCoordPredTimers();
       newCoordXYChallenge(true);
     } else {
       newCoordPredChallenge(true);
@@ -1928,7 +2172,8 @@
     let isDraw = false;
     if (mode === "drawCoord") {
       if (coordScreen === 0) isDraw = true;
-      else if ((coordScreen === 1 || coordScreen === 2) && !coordEvalLocked) isDraw = true;
+      else if (coordScreen === 1 && !coordEvalLocked && !coordPredXPaused && !coordPredXWon) isDraw = true;
+      else if (coordScreen === 2 && !coordEvalLocked && !coordPredYPaused && !coordPredYWon) isDraw = true;
       // screen 3: chips only — no drag
     }
     if (mode === "drawAngle") {
@@ -3030,25 +3275,10 @@
         ctx.restore();
       }
 
-      // after verify: reveal true point + guides
-      if (coordEvalLocked && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
-        if (coordPredCorrect) {
-          drawGuide(coordChallengeDeg, L, true);
-          drawPoint(coordChallengeDeg, L, true);
-        } else {
-          drawGuide(coordChallengeDeg, L, false);
-          drawPoint(coordChallengeDeg, L, false);
-          const ty = SYM_NUM[EXACT[coordChallengeDeg].y];
-          if (Number.isFinite(ty)) {
-            drawHorizontalChord(L, ty, {
-              stroke: "rgba(52,211,153,0.75)",
-              fill: "#34d399",
-              label: EXACT[coordChallengeDeg].y,
-              muted: false,
-              visible: true,
-            });
-          }
-        }
+      // after verify: reveal true point only on success (wrong → retry same θ, no spoil)
+      if (coordEvalLocked && coordPredCorrect && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
+        drawGuide(coordChallengeDeg, L, true);
+        drawPoint(coordChallengeDeg, L, true);
       }
       return;
     }
@@ -3101,28 +3331,10 @@
         ctx.restore();
       }
 
-      // after verify: reveal true point + guides
-      if (coordEvalLocked && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
-        const lab = labelsForDeg(coordChallengeDeg);
-        if (coordPredCorrect) {
-          drawGuide(coordChallengeDeg, L, true);
-          drawPoint(coordChallengeDeg, L, true);
-        } else {
-          // optional true point muted/clear after wrong
-          drawGuide(coordChallengeDeg, L, false);
-          drawPoint(coordChallengeDeg, L, false);
-          // correct vertical at true X
-          const tx = SYM_NUM[EXACT[coordChallengeDeg].x];
-          if (Number.isFinite(tx)) {
-            drawVerticalChord(L, tx, {
-              stroke: "rgba(255,92,92,0.75)",
-              fill: "#ff5c5c",
-              label: EXACT[coordChallengeDeg].x,
-              muted: false,
-              visible: true,
-            });
-          }
-        }
+      // after verify: reveal true point only on success (wrong → retry same θ, no spoil)
+      if (coordEvalLocked && coordPredCorrect && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
+        drawGuide(coordChallengeDeg, L, true);
+        drawPoint(coordChallengeDeg, L, true);
       }
       return;
     }
@@ -4136,7 +4348,8 @@
       }
       if (mode === "drawCoord") {
         if (coordScreen === 3 || coordScreen === 4) return; // chips only
-        if ((coordScreen === 1 || coordScreen === 2) && coordEvalLocked) return;
+        if (coordScreen === 1 && (coordEvalLocked || coordPredXPaused || coordPredXWon)) return;
+        if (coordScreen === 2 && (coordEvalLocked || coordPredYPaused || coordPredYWon)) return;
       }
       pointerDragging = true;
       drawAngleDragging = mode === "drawAngle";
@@ -4250,13 +4463,18 @@
   });
   coordNext.addEventListener("click", () => {
     if (mode !== "drawCoord") return;
+    if (coordScreen === 4) {
+      // Salir del lote → volver a Enseñar
+      setCoordScreen(0);
+      return;
+    }
     setCoordScreen(coordScreen + 1);
   });
   coordPredVerifyBtn.addEventListener("click", verifyCoordPredX);
-  coordPredOtroBtn.addEventListener("click", () => newCoordPredChallenge(true));
+  coordPredOtroBtn.addEventListener("click", () => toggleCoordPredXPause());
   coordPredResetBtn.addEventListener("click", resetDrawCoord);
   coordPredYVerifyBtn.addEventListener("click", verifyCoordPredY);
-  coordPredYOtroBtn.addEventListener("click", () => newCoordPredYChallenge(true));
+  coordPredYOtroBtn.addEventListener("click", () => toggleCoordPredYPause());
   coordPredYResetBtn.addEventListener("click", resetDrawCoord);
   coordThetaVerifyBtn.addEventListener("click", verifyCoordTheta);
   coordThetaOtroBtn.addEventListener("click", () => newCoordThetaChallenge(true));
