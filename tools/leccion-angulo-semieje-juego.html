@@ -127,6 +127,14 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   pointer-events: none;
 }
 .paused-banner.on { display: flex; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548;
+}
+.score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+.score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+.score strong { font-family: ui-monospace, Menlo, monospace; }
 </style>
 </head>
 <body>
@@ -142,6 +150,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn amber" id="speakBtn" title="Decí el ángulo en español">🎙 Hablar ángulo</button>
       <button type="button" class="btn" id="pauseBtn">Pausa</button>
       <button type="button" class="btn primary" id="resetBtn">Reiniciar</button>
+      <span class="score ok" id="scoreOk">Aciertos <strong>0</strong></span>
+      <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
+      <span class="score ok" id="scoreWins">Victorias <strong>0</strong></span>
     </div>
   </header>
 
@@ -161,8 +172,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="readout" id="readout">
       <div class="kv"><span class="k">θ rayo</span><span class="v amber" id="degOut">0°</span></div>
       <div class="kv"><span class="k">rad</span><span class="v" id="radOut">0</span></div>
-      <div class="kv"><span class="k">bajas</span><span class="v ok" id="killsOut">0</span></div>
-      <div class="kv"><span class="k">fallos</span><span class="v bad" id="missOut">0</span></div>
+      <div class="kv"><span class="k">aciertos</span><span class="v ok" id="killsOut">0</span></div>
+      <div class="kv"><span class="k">errores</span><span class="v bad" id="missOut">0</span></div>
+      <div class="kv"><span class="k">victorias</span><span class="v ok" id="winsOut">0</span></div>
       <div class="kv"><span class="k">vivos</span><span class="v pink" id="aliveOut">0</span></div>
       <div class="kv"><span class="k">ω</span><span class="v teal" id="omegaOut">55°/s</span></div>
     </div>
@@ -231,10 +243,16 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   const missOut = document.getElementById("missOut");
   const aliveOut = document.getElementById("aliveOut");
   const omegaOut = document.getElementById("omegaOut");
+  const scoreOkEl = document.getElementById("scoreOk");
+  const scoreBadEl = document.getElementById("scoreBad");
+  const scoreWinsEl = document.getElementById("scoreWins");
+  const winsOut = document.getElementById("winsOut");
 
   let thetaDeg = 0;
   let rayActiveUntil = 0; // ms timestamp; ray only lethal while active
   const RAY_MS = 3000;
+  let shotHadKill = false;
+  let shotOpen = false; // true while a fired ray window is being tracked
   let dragging = false;
   let recognition = null;
   let listening = false;
@@ -245,6 +263,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   let nextId = 1;
   let kills = 0;
   let misses = 0;
+  let wins = 0;
   let paused = false;
   let lastTs = 0;
   let spawnAcc = 0;
@@ -335,7 +354,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     radOut.textContent = radLabel(d);
     killsOut.textContent = String(kills);
     missOut.textContent = String(misses);
+    if (winsOut) winsOut.textContent = String(wins);
     aliveOut.textContent = String(pacs.length);
+    if (scoreOkEl) scoreOkEl.innerHTML = "Aciertos <strong>" + kills + "</strong>";
+    if (scoreBadEl) scoreBadEl.innerHTML = "Errores <strong>" + misses + "</strong>";
+    if (scoreWinsEl) scoreWinsEl.innerHTML = "Victorias <strong>" + wins + "</strong>";
     syncPills();
     syncLocusStrip(locusKeyForDeg(d));
   }
@@ -468,6 +491,18 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     pacs = pacs.filter((x) => x.id !== p.id);
     hitCooldown.delete(p.id);
     kills++;
+    if (shotOpen || isRayActive()) shotHadKill = true;
+    if (pacs.length === 0) {
+      wins++;
+      voiceStatus.className = "voice-status ok";
+      voiceStatus.textContent = "¡Victoria! Round ganado — todos eliminados.";
+      setTimeout(() => {
+        if (pacs.length === 0) {
+          spawnPac();
+          spawnPac();
+        }
+      }, 900);
+    }
     updateUI();
   }
 
@@ -477,14 +512,36 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function fireShot(deg, fromVoice) {
     ensureAudio();
+    // cerrar shot anterior (aunque aún no hayan pasado los 3 s)
+    if (shotOpen) {
+      rayActiveUntil = 0;
+      settleShotIfNeeded();
+    }
     thetaDeg = normDeg(Math.round(deg));
     rayActiveUntil = performance.now() + RAY_MS;
     hitCooldown.clear();
+    shotHadKill = false;
+    shotOpen = true;
     voiceStatus.className = "voice-status";
     voiceStatus.textContent = "Rayo activo " + Math.round(thetaDeg) + "° · 3 s";
     updateUI();
     continuousHit();
     return isRayActive();
+  }
+
+  function settleShotIfNeeded() {
+    if (!shotOpen) return;
+    if (isRayActive()) return; // still running
+    shotOpen = false;
+    if (!shotHadKill) {
+      misses++;
+      voiceStatus.className = "voice-status bad";
+      voiceStatus.textContent = "Error: el ángulo " + Math.round(normDeg(thetaDeg)) + "° no mató a nadie.";
+      updateUI();
+    } else {
+      voiceStatus.className = "voice-status ok";
+      voiceStatus.textContent = "Acierto: ángulo " + Math.round(normDeg(thetaDeg)) + "°.";
+    }
   }
 
   function tryHit(fromVoiceOrPill) {
@@ -788,6 +845,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       particles = particles.filter((p) => p.life > 0);
 
       continuousHit();
+      if (shotOpen && !isRayActive()) settleShotIfNeeded();
       // clear cooldown for pacs that moved away
       for (const id of [...hitCooldown]) {
         const p = pacs.find((x) => x.id === id);
@@ -836,6 +894,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     hitCooldown.clear();
     kills = 0;
     misses = 0;
+    wins = 0;
+    shotHadKill = false;
+    shotOpen = false;
+    rayActiveUntil = 0;
     spawnAcc = 0;
     nextId = 1;
     paused = false;
