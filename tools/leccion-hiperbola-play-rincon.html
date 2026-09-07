@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 59 · Hipérbola · play · área invariante</title>
+<title>Lección 60 · Hipérbola · play · rincón corrido</title>
 <style>
+
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
   --mast: #60a5fa; --accent: #c084fc; --border: #243044;
@@ -178,6 +179,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .chip.qi { color: #ff4d4d; border-color: rgba(255,77,77,0.45); }
 .chip.qiii { color: #60a5fa; border-color: rgba(96,165,250,0.45); }
 .chip.neg { color: #f472b6; border-color: rgba(244,114,182,0.45); }
+
+.expr-row.slider-h::before { background: var(--run); }
+.expr-row.slider-v::before { background: #ff4d4d; }
+.slider-h .slider-val { color: var(--run); }
+.slider-v .slider-val { color: #ff4d4d; }
+.expr-formula .hl-c { color: var(--asy); }
+
 </style>
 </head>
 <body>
@@ -185,8 +193,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 59</span> · Hipérbola · play
-        <span class="sub">área invariante · compensación</span>
+      <h1><span class="lesson-num">Lección 60</span> · Hipérbola · play
+        <span class="sub">rincón corrido · C=(xa, ya)</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -206,25 +214,49 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         </div>
         <div class="expr-row slider-asy" id="rowAsy">
           <div class="slider-head">
-            <span class="slider-val">C <span class="eq">=</span> (0, 0)</span>
-            <span class="slider-hint">cruz de asíntotas · no está en la curva</span>
+            <span class="slider-val">C <span class="eq">=</span> <span id="cLabel">(—, —)</span></span>
+            <span class="slider-hint">cruz corrida · C no está en la curva</span>
+          </div>
+        </div>
+        <div class="expr-row slider-asy" id="rowXa">
+          <div class="slider-head">
+            <span class="slider-val">xa <span class="eq">=</span> <span id="xaLabel">—</span></span>
+            <span class="slider-hint">asíntota vertical x = xa</span>
+          </div>
+        </div>
+        <div class="expr-row slider-asy" id="rowYa">
+          <div class="slider-head">
+            <span class="slider-val">ya <span class="eq">=</span> <span id="yaLabel">—</span></span>
+            <span class="slider-hint">asíntota horizontal y = ya</span>
+          </div>
+        </div>
+        <div class="expr-row slider-h" id="rowH">
+          <div class="slider-head">
+            <span class="slider-val">h <span class="eq">=</span> <span id="hLabel">—</span></span>
+            <span class="slider-hint">corrida horizontal desde C</span>
+          </div>
+        </div>
+        <div class="expr-row slider-v" id="rowV">
+          <div class="slider-head">
+            <span class="slider-val">v <span class="eq">=</span> <span id="vLabel">—</span></span>
+            <span class="slider-hint">corrida vertical · v·h = k</span>
           </div>
         </div>
         <div class="expr-row slider-k" id="rowK">
           <div class="slider-head">
-            <span class="slider-val">área <span class="eq">=</span> <span class="k-big" id="kLabel">—</span></span>
-            <span class="slider-hint">invariante |x · y| = |k|</span>
+            <span class="slider-val">|v·h| <span class="eq">=</span> <span class="k-big" id="kLabel">—</span></span>
+            <span class="slider-hint">área invariante |Δx · Δy| = |k|</span>
           </div>
         </div>
         <div class="expr-row slider-p" id="rowP">
           <div class="slider-head">
             <span class="slider-val">P <span class="eq">=</span> <span id="pLabel">(—, —)</span></span>
-            <span class="slider-hint">ancla · madre h=1, v=k</span>
+            <span class="slider-hint">P = (xa+h, ya+v)</span>
           </div>
         </div>
         <div class="expr-row">
           <div class="chips" id="chips">
-            <span class="chip dim asy" id="chipC">C = (0, 0)</span>
+            <span class="chip dim asy" id="chipC">C = (—, —)</span>
             <span class="chip dim k" id="chipK">k = —</span>
             <span class="chip dim" id="chipP">P = (—, —)</span>
           </div>
@@ -232,13 +264,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </aside>
 
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-raiz-juego-mixto.html" title="Lección 58: Raíz · juego · mixto" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-hiperbola-play-rincon.html" title="Lección 60: Hipérbola · play · rincón corrido" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="900" aria-label="Hipérbola · play · área invariante"></canvas>
+        <a class="lesson-nav prev" href="leccion-hiperbola-play.html" title="Lección 59: Hipérbola · play · área invariante" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-hiperbola-play-negativo.html" title="Lección 61: Hipérbola · play · k&lt;0" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="900" aria-label="Hipérbola · play · rincón corrido"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · cruz de asíntotas en C=(0,0), luego área invariante k · compensación.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · el rincón C=(xa, ya) se corre · f(x)=(v·h)/(x−xa)+ya · área |v·h|=|k|.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -248,7 +280,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">y = k/x · el rectángulo de C a Q=(x,y) tiene área |x·y| = |k| · la curva <strong>nunca toca</strong> los ejes · C es el cruce de asíntotas, no un punto de la curva · QI <span style="color:#ff4d4d">rojo</span> · QIII <span style="color:#60a5fa">azul</span> · madre xa=ya=0</p>
+    <p class="hint">f(x) = (v·h)/(x − xa) + ya · rectángulos desde C hasta Q · |Δx·Δy| = |k| · C es el cruce de asíntotas corridas, <strong>no</strong> un punto de la curva · k ∈ {12, 6, 24} y también k&lt;0</p>
   </div>
 </div>
 
@@ -267,14 +299,27 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var CURVE_NEG = "#f472b6";
   var AREA_FILL = "rgba(192, 132, 252, 0.22)";
   var AREA_STROKE = "rgba(192, 132, 252, 0.78)";
+  var RUN = "#60a5fa";
+  var RISE = "#ff4d4d";
 
   var SOFT_CAP = 16;
   var PAD = { l: 48, r: 28, t: 28, b: 48 };
   var CELL_PX = 28;
 
-  /* First pass ordered; later shuffles. Negative k after first full pass. */
   var K_ORDER_POS = [12, 6, 24];
   var K_ORDER_NEG = [-12, -6, -24];
+  /* Corners: first pass prefers non-origin, then mix including (0,0) */
+  var CORNERS = [
+    { xa: 2, ya: 1 },
+    { xa: -1, ya: 2 },
+    { xa: 3, ya: -2 },
+    { xa: -2, ya: -1 },
+    { xa: 1, ya: -3 },
+    { xa: -3, ya: 1 },
+    { xa: 0, ya: 0 },
+    { xa: 4, ya: 2 },
+    { xa: -2, ya: 3 }
+  ];
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -289,7 +334,16 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var soundMeter = document.getElementById("soundMeter");
   var kLabel = document.getElementById("kLabel");
   var pLabel = document.getElementById("pLabel");
+  var cLabel = document.getElementById("cLabel");
+  var xaLabel = document.getElementById("xaLabel");
+  var yaLabel = document.getElementById("yaLabel");
+  var hLabel = document.getElementById("hLabel");
+  var vLabel = document.getElementById("vLabel");
   var rowAsyEl = document.getElementById("rowAsy");
+  var rowXaEl = document.getElementById("rowXa");
+  var rowYaEl = document.getElementById("rowYa");
+  var rowHEl = document.getElementById("rowH");
+  var rowVEl = document.getElementById("rowV");
   var rowKEl = document.getElementById("rowK");
   var rowPEl = document.getElementById("rowP");
   var chipC = document.getElementById("chipC");
@@ -300,7 +354,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   var XMIN = -14, XMAX = 14, YMIN = -14, YMAX = 14;
 
-  var FIXED = { k: 12, xa: 0, ya: 0, h: 1, v: 12 };
+  var FIXED = { k: 12, xa: 2, ya: 1, h: 1, v: 12 };
   var state = {
     playing: false,
     loop: 0,
@@ -324,21 +378,22 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     return s.replace("-", "−");
   }
 
-  var formulaReveal = { k: false, general: false };
+  var formulaReveal = { xa: false, ya: false, h: false, v: false, vh: false };
 
   function formulaHTML(rev) {
     rev = rev || formulaReveal;
-    if (!rev.general) {
-      if (rev.k) {
-        return "y = <span class=\"hl-k\">" + fmtNum(FIXED.k) + "</span> / x";
-      }
-      return "y = <span class=\"hl-k\">k</span> / x";
-    }
-    /* General form ready; madre xa=ya=0, vh=k */
-    var kPart = rev.k
+    var vhPart = rev.vh
       ? ('<span class="hl-vh">' + fmtNum(FIXED.k) + "</span>")
-      : '<span class="hl-vh">v·h</span>';
-    return "f(x) = " + kPart + " / (x − <span class=\"hl-xa\">0</span>) + <span class=\"hl-ya\">0</span>";
+      : (rev.h && rev.v
+        ? ('<span class="hl-v">' + fmtNum(FIXED.v) + '</span>·<span class="hl-h">' + fmtNum(FIXED.h) + "</span>")
+        : '<span class="hl-vh">v·h</span>');
+    var xaPart = rev.xa
+      ? ('<span class="hl-xa">' + fmtNum(FIXED.xa) + "</span>")
+      : '<span class="hl-xa">xa</span>';
+    var yaPart = rev.ya
+      ? ('<span class="hl-ya">' + fmtNum(FIXED.ya) + "</span>")
+      : '<span class="hl-ya">ya</span>';
+    return "f(x) = " + vhPart + " / (x − " + xaPart + ") + " + yaPart;
   }
 
   function syncFormula(patch) {
@@ -349,7 +404,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function resetFormulaReveal() {
-    formulaReveal = { k: false, general: false };
+    formulaReveal = { xa: false, ya: false, h: false, v: false, vh: false };
     syncFormula();
   }
 
@@ -379,47 +434,51 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     return out;
   }
 
-  /** Lattice points on y=k/x with soft-cap |coord|<=SOFT_CAP. */
+  /** Relative lattice (dx,dy) with dx·dy = k, then absolute Q = C + (dx,dy). */
   function latticePoints(k) {
     var absK = Math.abs(k);
     var sign = k >= 0 ? 1 : -1;
     var divs = positiveDivisors(absK);
-    var qi = [];
-    var opposite = [];
+    var same = [];
+    var opp = [];
     for (var i = 0; i < divs.length; i++) {
-      var x = divs[i];
-      var y = absK / x;
-      if (Math.max(x, y) > SOFT_CAP + 1e-9) continue;
+      var dx = divs[i];
+      var dy = absK / dx;
+      if (Math.max(dx, dy) > SOFT_CAP + 1e-9) continue;
       if (sign > 0) {
-        qi.push({ x: x, y: y });
-        opposite.push({ x: -x, y: -y });
+        same.push({ dx: dx, dy: dy });
+        opp.push({ dx: -dx, dy: -dy });
       } else {
-        /* k<0 → QII and QIV */
-        qi.push({ x: -x, y: y });
-        opposite.push({ x: x, y: -y });
+        same.push({ dx: -dx, dy: dy });
+        opp.push({ dx: dx, dy: -dy });
       }
     }
-    return { same: qi, opp: opposite };
+    return { same: same, opp: opp };
   }
 
-  function worldHalfForK(k) {
-    var absK = Math.abs(k);
+  function absPoint(rel) {
+    return { x: FIXED.xa + rel.dx, y: FIXED.ya + rel.dy };
+  }
+
+  function worldHalfForScene(k, xa, ya) {
     var pts = latticePoints(k);
-    var maxC = 6;
+    var maxAbs = 6;
+    maxAbs = Math.max(maxAbs, Math.abs(xa) + 1, Math.abs(ya) + 1);
     var all = pts.same.concat(pts.opp);
     for (var i = 0; i < all.length; i++) {
-      maxC = Math.max(maxC, Math.abs(all[i].x), Math.abs(all[i].y));
+      var p = { x: xa + all[i].dx, y: ya + all[i].dy };
+      maxAbs = Math.max(maxAbs, Math.abs(p.x), Math.abs(p.y), Math.abs(all[i].dx), Math.abs(all[i].dy));
     }
-    /* room for P=(1,k) if soft-capped away */
-    if (absK <= SOFT_CAP) maxC = Math.max(maxC, absK);
-    return Math.ceil(maxC + 1);
+    if (Math.abs(k) <= SOFT_CAP) {
+      maxAbs = Math.max(maxAbs, Math.abs(xa) + 1, Math.abs(ya) + Math.abs(k));
+    }
+    return Math.ceil(maxAbs + 1.5);
   }
 
-  function applyWorldForK(k) {
-    var half = worldHalfForK(k);
+  function applyWorld() {
+    var half = worldHalfForScene(FIXED.k, FIXED.xa, FIXED.ya);
     XMIN = -half; XMAX = half; YMIN = -half; YMAX = half;
     var span = half * 2;
-    /* Keep canvas ~720–820px for typical halves */
     CELL_PX = span <= 14 ? 32 : (span <= 20 ? 28 : (span <= 28 ? 24 : 20));
     sizeCanvas();
   }
@@ -530,26 +589,55 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     else exprPanel.classList.remove("locked");
   }
 
-  function pickKForLoop() {
+  function blankPanelNums() {
+    kLabel.textContent = "—";
+    pLabel.textContent = "(—, —)";
+    cLabel.textContent = "(—, —)";
+    xaLabel.textContent = "—";
+    yaLabel.textContent = "—";
+    hLabel.textContent = "—";
+    vLabel.textContent = "—";
+  }
+
+  function pickSceneForLoop() {
     if (!state.schedule || state.scheduleIdx >= state.schedule.length) {
       state.pass++;
+      var corners, ks, list = [], i, j, c, k;
       if (state.pass <= 1) {
-        state.schedule = K_ORDER_POS.slice();
+        corners = CORNERS.slice(0, 4);
+        ks = K_ORDER_POS.slice();
+        for (i = 0; i < ks.length; i++) {
+          list.push({ k: ks[i], xa: corners[i % corners.length].xa, ya: corners[i % corners.length].ya, h: 1, v: ks[i] });
+        }
       } else if (state.pass === 2) {
-        state.schedule = shuffleInPlace(K_ORDER_POS.slice());
+        corners = shuffleInPlace(CORNERS.slice());
+        ks = shuffleInPlace(K_ORDER_POS.slice());
+        for (i = 0; i < Math.max(ks.length, 4); i++) {
+          c = corners[i % corners.length];
+          k = ks[i % ks.length];
+          list.push({ k: k, xa: c.xa, ya: c.ya, h: 1, v: k });
+        }
       } else {
-        /* later: mix in negative k (QII/QIV) */
-        var mix = K_ORDER_POS.concat(K_ORDER_NEG);
-        state.schedule = shuffleInPlace(mix);
+        corners = shuffleInPlace(CORNERS.slice());
+        ks = shuffleInPlace(K_ORDER_POS.concat(K_ORDER_NEG));
+        for (i = 0; i < ks.length; i++) {
+          c = corners[i % corners.length];
+          k = ks[i];
+          list.push({ k: k, xa: c.xa, ya: c.ya, h: k >= 0 ? 1 : -1, v: k >= 0 ? k : -k });
+          /* ensure vh = k: if h=-1 and k=-12, v should be 12 → (-1)*12=-12 */
+          list[list.length - 1].v = list[list.length - 1].k / list[list.length - 1].h;
+        }
       }
+      state.schedule = list;
       state.scheduleIdx = 0;
     }
-    FIXED.k = state.schedule[state.scheduleIdx++];
-    FIXED.v = FIXED.k;
-    FIXED.h = 1;
-    FIXED.xa = 0;
-    FIXED.ya = 0;
-    return FIXED.k;
+    var scene = state.schedule[state.scheduleIdx++];
+    FIXED.k = scene.k;
+    FIXED.xa = scene.xa;
+    FIXED.ya = scene.ya;
+    FIXED.h = scene.h;
+    FIXED.v = scene.v;
+    return scene;
   }
 
   function emptyScene() {
@@ -557,11 +645,15 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       showAsy: false,
       asyBlink: 1,
       showC: false,
+      showXa: false,
+      showYa: false,
+      showH: false,
+      showV: false,
       showK: false,
       showP: false,
-      pointsShown: 0,      /* QI / primary branch lattice */
-      oppShown: 0,         /* QIII / opposite */
-      rectIdx: -1,         /* which point has active rect */
+      pointsShown: 0,
+      oppShown: 0,
+      rectIdx: -1,
       rectAlpha: 0,
       showCurve: false,
       curveAlpha: 0,
@@ -585,7 +677,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       q0 = worldToScreen(XMIN, yi); q1 = worldToScreen(XMAX, yi);
       ctx.beginPath(); ctx.moveTo(q0.x, q0.y); ctx.lineTo(q1.x, q1.y); ctx.stroke();
     }
-    /* Axes (not the dashed asymptotes — same lines but subtler underlay) */
     var ox = worldToScreen(0, 0);
     ctx.strokeStyle = "#64748b";
     ctx.lineWidth = 1.4;
@@ -629,10 +720,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function drawAsymptotes(alpha) {
     var a = alpha == null ? 1 : alpha;
-    var top = worldToScreen(0, YMAX);
-    var bot = worldToScreen(0, YMIN);
-    var left = worldToScreen(XMIN, 0);
-    var right = worldToScreen(XMAX, 0);
+    var xa = FIXED.xa, ya = FIXED.ya;
+    var top = worldToScreen(xa, YMAX);
+    var bot = worldToScreen(xa, YMIN);
+    var left = worldToScreen(XMIN, ya);
+    var right = worldToScreen(XMAX, ya);
     ctx.save();
     ctx.globalAlpha = Math.max(0.15, Math.min(1, a));
     ctx.strokeStyle = ASY;
@@ -650,16 +742,23 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.font = "700 12px ui-monospace, Menlo, monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("x = 0", top.x + 10, PAD.t + 8);
+    ctx.fillText("x = " + fmtNum(xa), top.x + 10, PAD.t + 8);
     ctx.textAlign = "right";
     ctx.textBaseline = "bottom";
-    ctx.fillText("y = 0", canvas.width - PAD.r - 8, left.y - 8);
+    ctx.fillText("y = " + fmtNum(ya), canvas.width - PAD.r - 8, left.y - 8);
     ctx.restore();
   }
 
   function drawCornerC() {
-    var p = worldToScreen(0, 0);
+    var p = worldToScreen(FIXED.xa, FIXED.ya);
     ctx.save();
+    /* cruz marker */
+    ctx.strokeStyle = ASY;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 12, p.y); ctx.lineTo(p.x + 12, p.y);
+    ctx.moveTo(p.x, p.y - 12); ctx.lineTo(p.x, p.y + 12);
+    ctx.stroke();
     ctx.beginPath();
     ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(148,163,184,0.35)";
@@ -672,18 +771,18 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.font = "800 13px ui-monospace, Menlo, monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
-    ctx.fillText("C (rincón)", p.x + 10, p.y - 10);
-    ctx.font = "600 11px Segoe UI, system-ui, sans-serif";
-    ctx.fillStyle = "rgba(148,163,184,0.9)";
-    ctx.fillText("no es de la curva", p.x + 10, p.y - 24);
+    ctx.fillText("C (" + fmtNum(FIXED.xa) + ", " + fmtNum(FIXED.ya) + ")", p.x + 12, p.y - 12);
+    ctx.font = "700 11px Segoe UI, system-ui, sans-serif";
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillText("C no está en la curva", p.x + 12, p.y - 28);
     ctx.restore();
   }
 
-  function drawRectangle(x, y, alpha, label) {
-    var o = worldToScreen(0, 0);
-    var qx = worldToScreen(x, 0);
-    var q = worldToScreen(x, y);
-    var qy = worldToScreen(0, y);
+  function drawRectangleRel(dx, dy, alpha, label) {
+    var o = worldToScreen(FIXED.xa, FIXED.ya);
+    var qx = worldToScreen(FIXED.xa + dx, FIXED.ya);
+    var q = worldToScreen(FIXED.xa + dx, FIXED.ya + dy);
+    var qy = worldToScreen(FIXED.xa, FIXED.ya + dy);
     var a = alpha == null ? 1 : alpha;
     ctx.save();
     ctx.globalAlpha = Math.max(0, Math.min(1, a));
@@ -698,9 +797,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.strokeStyle = AREA_STROKE;
     ctx.lineWidth = 2;
     ctx.stroke();
-    /* area label at rectangle center (omit for faint ghosts) */
     if (label !== "") {
-      var mid = worldToScreen(x / 2, y / 2);
+      var mid = worldToScreen(FIXED.xa + dx / 2, FIXED.ya + dy / 2);
       ctx.fillStyle = ACCENT;
       ctx.font = "800 13px ui-monospace, Menlo, monospace";
       ctx.textAlign = "center";
@@ -737,17 +835,17 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     if (label) {
       ctx.fillStyle = color;
       ctx.font = "700 12px ui-monospace, Menlo, monospace";
-      var preferRight = x >= 0;
+      var preferRight = x >= FIXED.xa;
       ctx.textAlign = preferRight ? "left" : "right";
-      ctx.textBaseline = y >= 0 ? "bottom" : "top";
+      ctx.textBaseline = y >= FIXED.ya ? "bottom" : "top";
       var ox = preferRight ? 10 : -10;
-      var oy = y >= 0 ? -8 : 8;
+      var oy = y >= FIXED.ya ? -8 : 8;
       ctx.fillText(label, p.x + ox, p.y + oy);
     }
     ctx.restore();
   }
 
-  function drawHyperbolaBranch(k, xFrom, xTo, color, alpha) {
+  function drawHyperbolaBranch(k, xa, ya, xFrom, xTo, color, alpha) {
     var a = alpha == null ? 1 : alpha;
     ctx.save();
     ctx.globalAlpha = Math.max(0.15, Math.min(1, a));
@@ -756,12 +854,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.lineJoin = "round";
     ctx.beginPath();
     var first = true;
-    var steps = 220;
+    var steps = 240;
     for (var i = 0; i <= steps; i++) {
       var t = i / steps;
       var x = xFrom + (xTo - xFrom) * t;
-      if (Math.abs(x) < 0.08) { first = true; continue; }
-      var y = k / x;
+      if (Math.abs(x - xa) < 0.08) { first = true; continue; }
+      var y = k / (x - xa) + ya;
       if (y < YMIN - 0.5 || y > YMAX + 0.5) { first = true; continue; }
       var p = worldToScreen(x, y);
       if (first) { ctx.moveTo(p.x, p.y); first = false; }
@@ -773,18 +871,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function drawBothBranches(k, alpha) {
     var eps = 0.12;
+    var xa = FIXED.xa, ya = FIXED.ya;
     if (k > 0) {
-      drawHyperbolaBranch(k, eps, XMAX, CURVE_QI, alpha);
-      drawHyperbolaBranch(k, XMIN, -eps, CURVE_QIII, alpha);
+      drawHyperbolaBranch(k, xa, ya, xa + eps, XMAX, CURVE_QI, alpha);
+      drawHyperbolaBranch(k, xa, ya, XMIN, xa - eps, CURVE_QIII, alpha);
     } else {
-      drawHyperbolaBranch(k, XMIN, -eps, CURVE_NEG, alpha);
-      drawHyperbolaBranch(k, eps, XMAX, CURVE_NEG, alpha);
+      drawHyperbolaBranch(k, xa, ya, XMIN, xa - eps, CURVE_NEG, alpha);
+      drawHyperbolaBranch(k, xa, ya, xa + eps, XMAX, CURVE_NEG, alpha);
     }
   }
 
-  function pointColor(pt, k) {
+  function pointColor(rel, k) {
     if (k < 0) return CURVE_NEG;
-    if (pt.x > 0 && pt.y > 0) return CURVE_QI;
+    if (rel.dx > 0 && rel.dy > 0) return CURVE_QI;
     return CURVE_QIII;
   }
 
@@ -792,7 +891,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     if (!sc) return;
     if (chipC) {
       chipC.classList.toggle("dim", !sc.showC);
-      chipC.textContent = "C = (0, 0)";
+      chipC.textContent = sc.showC
+        ? ("C = (" + fmtNum(FIXED.xa) + ", " + fmtNum(FIXED.ya) + ")")
+        : "C = (—, —)";
     }
     if (chipK) {
       chipK.classList.toggle("dim", !sc.showK);
@@ -801,33 +902,31 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     if (chipP) {
       chipP.classList.toggle("dim", !sc.showP);
       if (sc.showP) {
-        var px = FIXED.k >= 0 ? 1 : -1;
-        var py = FIXED.k >= 0 ? FIXED.k : Math.abs(FIXED.k);
-        if (FIXED.k < 0) { px = -1; py = Math.abs(FIXED.k); }
-        chipP.textContent = "P = (" + fmtNum(px) + ", " + fmtNum(py) + ")";
+        chipP.textContent = "P = (" + fmtNum(FIXED.xa + FIXED.h) + ", " + fmtNum(FIXED.ya + FIXED.v) + ")";
       } else {
         chipP.textContent = "P = (—, —)";
       }
     }
-    /* dynamic visited chips after P */
     var existing = chipsEl.querySelectorAll(".chip.dyn");
     for (var e = 0; e < existing.length; e++) existing[e].remove();
     var lat = sc.lattice || { same: [], opp: [] };
-    var i, pt, chip;
+    var i, pt, chip, abs;
     for (i = 0; i < (sc.pointsShown || 0); i++) {
       pt = lat.same[i];
       if (!pt) continue;
+      abs = absPoint(pt);
       chip = document.createElement("span");
       chip.className = "chip dyn " + (FIXED.k < 0 ? "neg" : "qi");
-      chip.textContent = "(" + fmtNum(pt.x) + "," + fmtNum(pt.y) + ")";
+      chip.textContent = "(" + fmtNum(abs.x) + "," + fmtNum(abs.y) + ")";
       chipsEl.appendChild(chip);
     }
     for (i = 0; i < (sc.oppShown || 0); i++) {
       pt = lat.opp[i];
       if (!pt) continue;
+      abs = absPoint(pt);
       chip = document.createElement("span");
       chip.className = "chip dyn " + (FIXED.k < 0 ? "neg" : "qiii");
-      chip.textContent = "(" + fmtNum(pt.x) + "," + fmtNum(pt.y) + ")";
+      chip.textContent = "(" + fmtNum(abs.x) + "," + fmtNum(abs.y) + ")";
       chipsEl.appendChild(chip);
     }
   }
@@ -838,21 +937,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     if (sc.showAsy) drawAsymptotes(sc.asyBlink);
     if (sc.showC) drawCornerC();
 
-    /* Active rectangle under current walk point */
     if (sc.rectIdx >= 0 && sc.rectAlpha > 0) {
       var pool = sc.rectPool === "opp" ? sc.lattice.opp : sc.lattice.same;
       var rp = pool[sc.rectIdx];
       if (rp) {
-        drawRectangle(rp.x, rp.y, sc.rectAlpha, "área = " + fmtNum(Math.abs(FIXED.k)));
+        drawRectangleRel(rp.dx, rp.dy, sc.rectAlpha, "área = " + fmtNum(Math.abs(FIXED.k)));
       }
     }
 
-    /* Ghost rectangles for already-visited same-branch points (faint) */
-    var i, pt;
+    var i, pt, abs;
     for (i = 0; i < (sc.pointsShown || 0); i++) {
       if (sc.rectPool !== "opp" && i === sc.rectIdx && sc.rectAlpha > 0.4) continue;
       pt = sc.lattice.same[i];
-      if (pt) drawRectangle(pt.x, pt.y, 0.28, "");
+      if (pt) drawRectangleRel(pt.dx, pt.dy, 0.28, "");
     }
 
     if (sc.showCurve) {
@@ -862,10 +959,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     for (i = 0; i < (sc.pointsShown || 0); i++) {
       pt = sc.lattice.same[i];
       if (!pt) continue;
+      abs = absPoint(pt);
       var isAnchor = i === 0;
       drawPoint(
-        pt.x, pt.y,
-        "(" + fmtNum(pt.x) + ", " + fmtNum(pt.y) + ")",
+        abs.x, abs.y,
+        "(" + fmtNum(abs.x) + ", " + fmtNum(abs.y) + ")",
         isAnchor && sc.showP ? AMBER : pointColor(pt, FIXED.k),
         isAnchor ? 8 : 6.5,
         isAnchor
@@ -874,10 +972,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     for (i = 0; i < (sc.oppShown || 0); i++) {
       pt = sc.lattice.opp[i];
       if (!pt) continue;
-      drawPoint(pt.x, pt.y, "(" + fmtNum(pt.x) + ", " + fmtNum(pt.y) + ")", pointColor(pt, FIXED.k), 6.5);
+      abs = absPoint(pt);
+      drawPoint(abs.x, abs.y, "(" + fmtNum(abs.x) + ", " + fmtNum(abs.y) + ")", pointColor(pt, FIXED.k), 6.5);
     }
 
-    /* If P was soft-capped out of lattice (e.g. k=24 → (1,24)), still mark conceptually in panel only */
     refreshChips(sc);
   }
 
@@ -903,52 +1001,53 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function walkCaption(from, to) {
     var absK = Math.abs(FIXED.k);
-    var ratioX = Math.abs(to.x / from.x);
-    var ratioY = Math.abs(to.y / from.y);
+    var ratioX = Math.abs(to.dx / from.dx);
+    var ratioY = Math.abs(to.dy / from.dy);
     if (Math.abs(ratioX - 2) < 1e-9 && Math.abs(ratioY - 0.5) < 1e-9) {
-      return "Me alejo al <span class=\"hl\">doble</span> → altura a la <span class=\"hl\">mitad</span> · área sigue = <span class=\"hl-k\">" + fmtNum(absK) + "</span>";
+      return "Me alejo al <span class=\"hl\">doble</span> → altura a la <span class=\"hl\">mitad</span> · área = <span class=\"hl-k\">" + fmtNum(absK) + "</span>";
     }
     if (Math.abs(ratioX - 3) < 1e-9 && Math.abs(ratioY - 1 / 3) < 1e-9) {
-      return "×3 en x → altura ×⅓ · armónica · área = <span class=\"hl-k\">" + fmtNum(absK) + "</span>";
+      return "×3 en Δx → altura ×⅓ · armónica · área = <span class=\"hl-k\">" + fmtNum(absK) + "</span>";
     }
     if (Math.abs(ratioX - 0.5) < 1e-9 && Math.abs(ratioY - 2) < 1e-9) {
-      return "Me acerco a la mitad → altura al doble · reciprocidad · área = <span class=\"hl-k\">" + fmtNum(absK) + "</span>";
+      return "Me acerco a la mitad → altura al doble · área = <span class=\"hl-k\">" + fmtNum(absK) + "</span>";
     }
-    return "x: " + fmtNum(from.x) + " → " + fmtNum(to.x) + " · y: " + fmtNum(from.y) + " → " + fmtNum(to.y) + " · |x·y| = <span class=\"hl-k\">" + fmtNum(absK) + "</span>";
+    var aFrom = absPoint(from), aTo = absPoint(to);
+    return "Q: (" + fmtNum(aFrom.x) + "," + fmtNum(aFrom.y) + ") → (" + fmtNum(aTo.x) + "," + fmtNum(aTo.y) + ") · |Δx·Δy| = <span class=\"hl-k\">" + fmtNum(absK) + "</span>";
   }
 
   function runLoop(token) {
-    var k = pickKForLoop();
-    applyWorldForK(k);
+    pickSceneForLoop();
+    applyWorld();
+    var k = FIXED.k;
     var lat = latticePoints(k);
-    /* Ensure P=(±1, ±|k|) leads the walk when it fits soft-cap */
     var sc = emptyScene();
     sc.lattice = lat;
     state.anim = sc;
 
-    kLabel.textContent = "—";
-    pLabel.textContent = "(—, —)";
+    blankPanelNums();
     paintScene(sc);
     resetFormulaReveal();
     setWork("");
-    setCaption("Bucle <strong>" + state.loop + "</strong> · próxima área invariante · celda cuadrada · asíntotas en el origen");
+    setCaption("Bucle <strong>" + state.loop + "</strong> · rincón corrido · próxima cruz en C ≠ (0,0) a menudo");
 
     function stepCruz() {
       if (token !== state.token) return;
-      setCaption("Bucle <strong>" + state.loop + "</strong> · <span class=\"hl hl-asy\">cruz de asíntotas</span> x=0 y y=0 · rincón <span class=\"hl hl-asy\">C=(0,0)</span> · <strong>no</strong> es punto de la curva");
-      setWork("Asíntotas · <span class=\"hl-asy\">x = 0</span> · <span class=\"hl-asy\">y = 0</span> · C");
+      cLabel.textContent = "(" + fmtNum(FIXED.xa) + ", " + fmtNum(FIXED.ya) + ")";
       sc.showAsy = true;
       sc.showC = true;
       sc.asyBlink = 1;
       paintScene(sc);
       bipRow(rowAsyEl);
+      setCaption("Bucle <strong>" + state.loop + "</strong> · <span class=\"hl hl-asy\">cruz corrida</span> · <span class=\"hl hl-asy\">C=(" + fmtNum(FIXED.xa) + ", " + fmtNum(FIXED.ya) + ")</span> · <strong>C no está en la curva</strong>");
+      setWork("C · <span class=\"hl-asy\">(" + fmtNum(FIXED.xa) + ", " + fmtNum(FIXED.ya) + ")</span> · no es de la curva");
       var blinks = 0;
       function doBlink() {
         if (token !== state.token) return;
         if (blinks >= 3) {
           sc.asyBlink = 1;
           paintScene(sc);
-          later(450, stepK);
+          later(400, stepXa);
           return;
         }
         sc.asyBlink = 0.22;
@@ -964,14 +1063,62 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       later(200, doBlink);
     }
 
+    function stepXa() {
+      if (token !== state.token) return;
+      xaLabel.textContent = fmtNum(FIXED.xa);
+      sc.showXa = true;
+      syncFormula({ xa: true });
+      bipRow(rowXaEl);
+      setCaption("Asíntota vertical <span class=\"hl hl-asy\">x = " + fmtNum(FIXED.xa) + "</span> · xa corre el rincón");
+      setWork("xa = <span class=\"hl-asy\">" + fmtNum(FIXED.xa) + "</span>");
+      paintScene(sc);
+      later(900, stepYa);
+    }
+
+    function stepYa() {
+      if (token !== state.token) return;
+      yaLabel.textContent = fmtNum(FIXED.ya);
+      sc.showYa = true;
+      syncFormula({ ya: true });
+      bipRow(rowYaEl);
+      setCaption("Asíntota horizontal <span class=\"hl hl-asy\">y = " + fmtNum(FIXED.ya) + "</span> · C = (xa, ya)");
+      setWork("ya = <span class=\"hl-asy\">" + fmtNum(FIXED.ya) + "</span> · C = (" + fmtNum(FIXED.xa) + ", " + fmtNum(FIXED.ya) + ")");
+      paintScene(sc);
+      later(900, stepH);
+    }
+
+    function stepH() {
+      if (token !== state.token) return;
+      hLabel.textContent = fmtNum(FIXED.h);
+      sc.showH = true;
+      syncFormula({ h: true });
+      bipRow(rowHEl);
+      setCaption("Corrida horizontal <span class=\"hl\" style=\"color:#60a5fa\">h = " + fmtNum(FIXED.h) + "</span> · desde C hacia P");
+      setWork("h = <span style=\"color:#60a5fa\">" + fmtNum(FIXED.h) + "</span>");
+      paintScene(sc);
+      later(850, stepV);
+    }
+
+    function stepV() {
+      if (token !== state.token) return;
+      vLabel.textContent = fmtNum(FIXED.v);
+      sc.showV = true;
+      syncFormula({ v: true });
+      bipRow(rowVEl);
+      setCaption("Corrida vertical <span class=\"hl\" style=\"color:#ff4d4d\">v = " + fmtNum(FIXED.v) + "</span> · producto v·h = k");
+      setWork("v = <span style=\"color:#ff4d4d\">" + fmtNum(FIXED.v) + "</span>");
+      paintScene(sc);
+      later(850, stepK);
+    }
+
     function stepK() {
       if (token !== state.token) return;
-      kLabel.textContent = fmtNum(k);
+      kLabel.textContent = fmtNum(Math.abs(k));
       sc.showK = true;
-      syncFormula({ k: true });
+      syncFormula({ vh: true, h: true, v: true, xa: true, ya: true });
       bipRow(rowKEl);
-      setCaption("Área invariante <span class=\"hl hl-k\">k = " + fmtNum(k) + "</span> · en todo Q de la curva, el rectángulo C→Q tiene |x·y| = |k|");
-      setWork("área invariante = <span class=\"hl-k\">" + fmtNum(k) + "</span>");
+      setCaption("Área invariante <span class=\"hl hl-k\">|v·h| = |k| = " + fmtNum(Math.abs(k)) + "</span> · k = " + fmtNum(k) + " · rectángulo C→Q");
+      setWork("|v·h| = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span> · k = " + fmtNum(k));
       paintScene(sc);
       later(1100, stepP);
     }
@@ -982,16 +1129,30 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         later(400, stepCurve);
         return;
       }
-      var P = lat.same[0];
-      pLabel.textContent = "(" + fmtNum(P.x) + ", " + fmtNum(P.y) + ")";
+      /* Prefer lattice point matching (h,v) as anchor when present */
+      var prefer = null;
+      for (var i = 0; i < lat.same.length; i++) {
+        if (Math.abs(lat.same[i].dx - FIXED.h) < 1e-9 && Math.abs(lat.same[i].dy - FIXED.v) < 1e-9) {
+          prefer = i;
+          break;
+        }
+      }
+      if (prefer != null && prefer !== 0) {
+        var tmp = lat.same[0];
+        lat.same[0] = lat.same[prefer];
+        lat.same[prefer] = tmp;
+      }
+      var Pref = lat.same[0];
+      var Pabs = absPoint(Pref);
+      pLabel.textContent = "(" + fmtNum(Pabs.x) + ", " + fmtNum(Pabs.y) + ")";
       sc.showP = true;
       sc.pointsShown = 1;
       sc.rectIdx = 0;
       sc.rectPool = "same";
       sc.rectAlpha = 0;
       bipRow(rowPEl);
-      setCaption("Ancla ámbar <span class=\"hl\">P(" + fmtNum(P.x) + ", " + fmtNum(P.y) + ")</span> · madre h=1, v=k · rectángulo con área <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
-      setWork("P · (" + fmtNum(P.x) + ", " + fmtNum(P.y) + ") · área = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
+      setCaption("Ancla <span class=\"hl\">P(" + fmtNum(Pabs.x) + ", " + fmtNum(Pabs.y) + ")</span> = (xa+h, ya+v) · área <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
+      setWork("P · (" + fmtNum(Pabs.x) + ", " + fmtNum(Pabs.y) + ") · |Δx·Δy| = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
       paintScene(sc);
       animateProgress("rectAlpha", 700, token, function () {
         if (token !== state.token) return;
@@ -1007,12 +1168,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       }
       var from = lat.same[idx - 1];
       var to = lat.same[idx];
+      var toAbs = absPoint(to);
       sc.rectIdx = idx;
       sc.rectPool = "same";
       sc.rectAlpha = 0;
-      sc.pointsShown = idx; /* point appears with rect */
+      sc.pointsShown = idx;
       setCaption(walkCaption(from, to));
-      setWork("(" + fmtNum(to.x) + ", " + fmtNum(to.y) + ") · |x·y| = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
+      setWork("(" + fmtNum(toAbs.x) + ", " + fmtNum(toAbs.y) + ") · |Δx·Δy| = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
       paintScene(sc);
       later(120, function () {
         if (token !== state.token) return;
@@ -1030,7 +1192,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         later(400, stepCurve);
         return;
       }
-      /* Show a few opposite-branch points (same area) — up to 4 for pace */
       if (idx >= 4) {
         sc.oppShown = Math.min(lat.opp.length, Math.max(sc.oppShown, 4));
         paintScene(sc);
@@ -1038,12 +1199,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         return;
       }
       var to = lat.opp[idx];
+      var toAbs = absPoint(to);
       sc.rectIdx = idx;
       sc.rectPool = "opp";
       sc.rectAlpha = 0;
-      var branchName = k > 0 ? "QIII" : "rama opuesta";
-      setCaption("Misma área en <span class=\"hl\">" + branchName + "</span> · (" + fmtNum(to.x) + ", " + fmtNum(to.y) + ") · |x·y| = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
-      setWork(branchName + " · (" + fmtNum(to.x) + ", " + fmtNum(to.y) + ") · área = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
+      var branchName = k > 0 ? "rama opuesta" : "rama opuesta (k&lt;0)";
+      setCaption("Misma área en <span class=\"hl\">" + branchName + "</span> · (" + fmtNum(toAbs.x) + ", " + fmtNum(toAbs.y) + ") · |Δx·Δy| = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
+      setWork(branchName + " · (" + fmtNum(toAbs.x) + ", " + fmtNum(toAbs.y) + ")");
       paintScene(sc);
       later(80, function () {
         if (token !== state.token) return;
@@ -1061,15 +1223,14 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       sc.rectAlpha = 0;
       sc.showCurve = true;
       sc.curveAlpha = 0;
-      /* Reveal remaining opposite points */
       sc.oppShown = lat.opp.length;
       sc.pointsShown = lat.same.length;
       var branchMsg = k > 0
-        ? "<span class=\"hl hl-qi\">QI</span> y <span class=\"hl hl-qiii\">QIII</span>"
-        : "<span class=\"hl\">QII</span> y <span class=\"hl\">QIV</span> (k&lt;0)";
-      setCaption("<strong>Curva</strong> · " + branchMsg + " · y = <span class=\"hl-k\">" + fmtNum(k) + "</span>/x · nunca toca los ejes");
-      setWork("y = <span class=\"hl-k\">" + fmtNum(k) + "</span>/x · ramas");
-      syncFormula({ k: true, general: true });
+        ? "ramas positivas relativas a C"
+        : "<span class=\"hl\">ramas k&lt;0</span> (producto firmado)";
+      setCaption("<strong>Curva</strong> · " + branchMsg + " · f(x) = <span class=\"hl-k\">" + fmtNum(k) + "</span>/(x−" + fmtNum(FIXED.xa) + ") + " + fmtNum(FIXED.ya));
+      setWork("f(x) = <span class=\"hl-k\">" + fmtNum(k) + "</span>/(x−" + fmtNum(FIXED.xa) + ") + " + fmtNum(FIXED.ya));
+      syncFormula({ xa: true, ya: true, h: true, v: true, vh: true });
       animateProgress("curveAlpha", 900, token, function () {
         if (token !== state.token) return;
         try { if (GK.playOkChime) GK.playOkChime(); } catch (e) {}
@@ -1080,12 +1241,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
     function stepCompensa() {
       if (token !== state.token) return;
-      setCaption("<strong>Compensación</strong> · presupuesto fijo <span class=\"hl-k\">|k| = " + fmtNum(Math.abs(k)) + "</span>: si te alejás en x, bajás en y (y al revés) · armónica 1, ½, ⅓… y la recíproca");
-      setWork("presupuesto · |x·y| = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span>");
+      setCaption("<strong>Compensación</strong> · presupuesto fijo <span class=\"hl-k\">|k| = " + fmtNum(Math.abs(k)) + "</span> desde C corrido · si Δx crece, |Δy| baja");
+      setWork("presupuesto · |Δx·Δy| = <span class=\"hl-k\">" + fmtNum(Math.abs(k)) + "</span> · C=(" + fmtNum(FIXED.xa) + "," + fmtNum(FIXED.ya) + ")");
       later(4200, function () {
         if (token !== state.token) return;
         if (!state.playing) return;
-        setCaption("Pausa 5 s · próximo k ∈ {12, 6, 24}…");
+        setCaption("Pausa 5 s · próximos (xa, ya, k)…");
         setWork("");
         later(5000, function () {
           if (token !== state.token) return;
@@ -1118,7 +1279,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     clearTimers();
     state.token++;
     updateButtons();
-    setCaption("Detenido · el rectángulo de C a cualquier Q de la curva guarda el mismo presupuesto |k|.");
+    setCaption("Detenido · el rectángulo de C a cualquier Q guarda |Δx·Δy| = |k| · C no está en la curva.");
     paintScene(state.anim);
   }
 
@@ -1132,17 +1293,16 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     FIXED.k = 12;
     FIXED.v = 12;
     FIXED.h = 1;
-    FIXED.xa = 0;
-    FIXED.ya = 0;
-    kLabel.textContent = "—";
-    pLabel.textContent = "(—, —)";
+    FIXED.xa = 2;
+    FIXED.ya = 1;
+    blankPanelNums();
     setLoop(0);
     updateButtons();
-    applyWorldForK(12);
+    applyWorld();
     state.anim = emptyScene();
     setWork("");
     resetFormulaReveal();
-    setCaption("Presioná <strong>▶ Play</strong> · cruz de asíntotas en C=(0,0), luego área invariante k · compensación.");
+    setCaption("Presioná <strong>▶ Play</strong> · el rincón C=(xa, ya) se corre · f(x)=(v·h)/(x−xa)+ya · área |v·h|=|k|.");
     paintScene(state.anim);
     refreshChips(state.anim);
   }
@@ -1158,8 +1318,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   });
   restartBtn.addEventListener("click", restart);
 
-  applyWorldForK(12);
-  try { if (GK.injectMeterStyles) { /* styles via pulse */ } } catch (e) {}
+  applyWorld();
   updateButtons();
   syncSlowBtn();
   syncFormula();
