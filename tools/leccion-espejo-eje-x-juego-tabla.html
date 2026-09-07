@@ -186,7 +186,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .chip.mir { color: #38bdf8; border-color: rgba(56,189,248,0.5); }
 .table-y {
   width: 100%; border-collapse: collapse; font-family: ui-monospace, Menlo, monospace;
-  font-size: 0.85rem; margin-top: 6px;
+  font-size: 1.05rem; margin-top: 6px;
 }
 .table-y th, .table-y td {
   border: 1px solid var(--row-border); padding: 6px 8px; text-align: center;
@@ -202,14 +202,25 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .table-y input.y-in:focus { outline: 2px solid rgba(56,189,248,0.5); }
 .table-y input.y-in.ok { border-color: rgba(90,212,168,0.6); color: var(--ok); }
 .table-y input.y-in.bad { border-color: rgba(255,123,123,0.6); color: var(--bad); }
-.pad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding-left: 6px; margin-top: 6px; }
+.pad-row {
+  display: flex; align-items: stretch; gap: 8px; padding-left: 6px; margin-top: 8px;
+}
+.pad-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex: 1 1 auto; min-width: 0;
+}
 .pad-btn {
-  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 0.9rem;
-  padding: 8px 4px; border-radius: 8px; border: 1px solid #2a3548; background: #1a2435;
-  color: var(--ink); cursor: pointer;
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 1.8rem;
+  line-height: 1.1; padding: 10px 4px; border-radius: 8px; border: 1px solid #2a3548;
+  background: #1a2435; color: var(--ink); cursor: pointer; min-height: 2.6rem;
 }
 .pad-btn:hover { border-color: var(--mast); }
 .pad-btn.neg { color: var(--bad); }
+.pad-check {
+  flex: 0 0 auto; align-self: flex-end;
+  font-family: inherit; font-weight: 700; font-size: 0.78rem; line-height: 1.2;
+  padding: 8px 10px; border-radius: 8px; border: none; cursor: pointer;
+  background: var(--mast); color: #0b1018; max-width: 5.5rem; white-space: normal;
+}
 .chip-btn.picked { border-color: var(--amber); color: var(--amber); background: rgba(255,191,0,0.12); box-shadow: 0 0 0 2px rgba(255,191,0,0.25); }
 
 </style>
@@ -762,8 +773,8 @@ var state = { ok:0,bad:0,round:1,fam:null,rows:[],locked:false,paused:false,won:
       html += '<td class="yp-cell"><input class="y-in" data-i="'+i+'" type="text" inputmode="numeric" value="'+(r.val||"")+'" '+(state.locked?"disabled":"")+' aria-label="−y de P'+(i+1)+'" /></td></tr>';
     });
     html += '</tbody></table>';
-    html += '<div class="pad-grid" id="padGrid"></div>';
-    html += '<button type="button" class="btn primary" id="checkBtn" style="margin:8px 0 0 6px">Comprobar</button>';
+    html += '<div class="pad-row"><div class="pad-grid" id="padGrid"></div>';
+    html += '<button type="button" class="pad-check" id="checkBtn">Comprobar</button></div>';
     chipBox.innerHTML = html;
     var pad = document.getElementById("padGrid");
     ["−","0","1","2","3","4","5","6","7","8","9","⌫"].forEach(function(lab){
