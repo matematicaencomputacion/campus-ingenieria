@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 19 · Ángulo en el círculo · juego</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #c084fc; --border: #243044;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #34d399; --pink: #f472b6;
+  --dot: #a78bfa; --dot-axis: #c084fc;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.88rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink);
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn:hover { filter: brightness(1.08); }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548;
+}
+.score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+.score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+.score.round { color: var(--mast); border-color: rgba(110,168,254,0.45); }
+.score.streak { color: var(--amber); border-color: rgba(255,191,0,0.4); }
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
+}
+.graph-wrap { position: relative; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--canvas-bg); touch-action: none; cursor: pointer;
+}
+#confetti {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 5; border-radius: 10px; background: transparent;
+}
+.target-badge {
+  position: absolute; left: 14px; top: 12px; z-index: 4;
+  background: rgba(18,26,39,0.92); border: 1px solid rgba(192,132,252,0.55);
+  border-radius: 12px; padding: 10px 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
+.target-badge .k { display: block; color: var(--muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; }
+.target-badge .v {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 1.85rem;
+  color: var(--amber); line-height: 1.15;
+}
+.target-badge .timer {
+  margin-top: 4px; font-size: 0.78rem; font-weight: 700; color: var(--muted);
+}
+.target-badge .timer.warn { color: var(--bad); }
+.prompt {
+  margin: 0 0 8px; font-size: 0.95rem; color: var(--muted); line-height: 1.45; min-height: 1.4em;
+}
+.prompt strong { color: var(--ink); }
+.prompt.ok { color: var(--ok); }
+.prompt.bad { color: #f5e6a8; }
+.prompt.attention {
+  background: rgba(210, 180, 100, 0.22);
+  border: 1px solid rgba(255, 191, 0, 0.45);
+  border-radius: 10px; padding: 8px 12px;
+  box-shadow: 0 0 14px rgba(255, 191, 0, 0.28);
+}
+.prompt.attention-on {
+  background: rgba(255, 191, 0, 0.38);
+  border-color: #FFBF00;
+  box-shadow: 0 0 18px rgba(255, 191, 0, 0.55);
+  color: #0b1018;
+}
+.prompt.attention-on strong { color: #0b1018; }
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.sound-meter {
+  margin: 10px 0 0; display: flex; align-items: flex-end; justify-content: flex-end;
+  gap: 5px; min-height: 28px; padding: 6px 10px;
+  color: var(--muted); font-size: 0.8rem; font-weight: 700;
+  user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px;
+  width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar {
+  display: inline-block; width: 5px; height: 8px; border-radius: 2px;
+  background: #3b4a63; transition: height .08s ease, background .08s ease;
+}
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+.locus-strip {
+  margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;
+  justify-content: flex-end; align-items: center;
+}
+.locus-strip .locus {
+  border: 1px solid #2a3548; background: #121a27; color: #4a5a72;
+  font: inherit; font-weight: 700; font-size: 0.82rem;
+  padding: 7px 11px; border-radius: 999px; cursor: default;
+  transition: color .15s, background .15s, border-color .15s, box-shadow .15s;
+  min-width: 2.2em; text-align: center;
+}
+.locus-strip .locus.on {
+  color: #0b1018; background: #FFBF00; border-color: #FFBF00;
+  box-shadow: 0 0 12px rgba(255,191,0,.45);
+}
+.hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+@keyframes shakeX {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.shake { animation: shakeX 0.42s ease; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 19</span> Ángulo en el círculo · juego
+        <span class="sub">tocá el nodo del ángulo pedido</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="restartBtn">Reiniciar</button>
+      <span class="score ok" id="scoreOk">Aciertos <strong>0</strong></span>
+      <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
+      <span class="score round" id="scoreRound">Ronda <strong>1</strong></span>
+      <span class="score streak" id="scoreStreak">Racha <strong>0</strong></span>
+    </div>
+  </header>
+
+  <p class="prompt" id="prompt">Tocá en el círculo el punto que corresponde al ángulo <strong>θ</strong> mostrado.</p>
+  <p class="hint">12 notables cada 30°. Los ejes (0°/90°/180°/270°) tienen centro hueco. Tenés unos segundos por pregunta.</p>
+
+  <div class="card">
+    <div class="graph-wrap" id="graphWrap">
+      <a class="lesson-nav prev" href="leccion-angulo-semieje-juego.html" title="Lección 18: Ángulo desde el semieje X · juego" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+      <span class="lesson-nav next" aria-disabled="true" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+      <div class="target-badge" id="targetBadge" aria-live="polite">
+        <span class="k">ÁNGULO PEDIDO</span>
+        <span class="v" id="targetDeg">θ = —</span>
+        <div class="timer" id="timerEl">⏱ —</div>
+      </div>
+      <canvas id="c" width="1200" height="620" aria-label="Círculo unitario · click en el ángulo"></canvas>
+      <canvas id="confetti" width="1200" height="620" aria-hidden="true"></canvas>
+    </div>
+    <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
+    <div class="locus-strip" id="locusStrip" aria-label="Cuadrante o eje activo">
+      <span class="locus" data-locus="q1">I</span>
+      <span class="locus" data-locus="q2">II</span>
+      <span class="locus" data-locus="q3">III</span>
+      <span class="locus" data-locus="q4">IV</span>
+      <span class="locus" data-locus="x">eje X</span>
+      <span class="locus" data-locus="y">eje Y</span>
+    </div>
+  </div>
+</div>
+
+<script src="game-kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var GK = window.CampusGameKit || {};
+  var DEGS = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+  var TIME_MIN = 8, TIME_MAX = 12;
+  var HIT_R = 18;
+
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var confettiCanvas = document.getElementById("confetti");
+  var graphWrap = document.getElementById("graphWrap");
+  var promptEl = document.getElementById("prompt");
+  var targetDegEl = document.getElementById("targetDeg");
+  var timerEl = document.getElementById("timerEl");
+  var soundMeter = document.getElementById("soundMeter");
+  var locusEls = Array.prototype.slice.call(document.querySelectorAll("#locusStrip .locus"));
+
+  var scoreEls = {
+    ok: document.getElementById("scoreOk"),
+    bad: document.getElementById("scoreBad"),
+    round: document.getElementById("scoreRound"),
+    streak: document.getElementById("scoreStreak")
+  };
+
+  var state = { ok: 0, bad: 0, round: 1, streak: 0, target: null, locked: false };
+  var shakeDeg = null, shakeUntil = 0, flashDeg = null, flashUntil = 0;
+  var timerId = null, deadline = 0, timeLimit = 10;
+  var nodes = [];
+  var raf = null;
+
+  function syncScores() {
+    if (GK.scoreChips) GK.scoreChips(scoreEls, state);
+    else {
+      scoreEls.ok.innerHTML = "Aciertos <strong>" + state.ok + "</strong>";
+      scoreEls.bad.innerHTML = "Errores <strong>" + state.bad + "</strong>";
+      scoreEls.round.innerHTML = "Ronda <strong>" + state.round + "</strong>";
+      scoreEls.streak.innerHTML = "Racha <strong>" + state.streak + "</strong>";
+    }
+  }
+
+  function locusKey(deg) {
+    var d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 180) return "x";
+    if (d === 90 || d === 270) return "y";
+    if (d > 0 && d < 90) return "q1";
+    if (d > 90 && d < 180) return "q2";
+    if (d > 180 && d < 270) return "q3";
+    return "q4";
+  }
+
+  function syncLocus(deg) {
+    var key = deg == null ? null : locusKey(deg);
+    locusEls.forEach(function (el) {
+      el.classList.toggle("on", key != null && el.getAttribute("data-locus") === key);
+    });
+  }
+
+  function layout() {
+    var w = canvas.width, h = canvas.height;
+    var cx = w * 0.5, cy = h * 0.52;
+    var R = Math.min(w, h) * 0.38;
+    return { w: w, h: h, cx: cx, cy: cy, R: R };
+  }
+
+  function rebuildNodes() {
+    var L = layout();
+    nodes = DEGS.map(function (d) {
+      var rad = d * Math.PI / 180;
+      return {
+        deg: d,
+        x: L.cx + L.R * Math.cos(rad),
+        y: L.cy - L.R * Math.sin(rad),
+        axis: d % 90 === 0
+      };
+    });
+  }
+
+  function flashPromptAttention() {
+    promptEl.classList.add("attention");
+    var n = 0;
+    var id = setInterval(function () {
+      n++;
+      promptEl.classList.toggle("attention-on", n % 2 === 1);
+      if (n >= 6) {
+        clearInterval(id);
+        promptEl.classList.remove("attention", "attention-on");
+      }
+    }, 180);
+  }
+
+  function setPrompt(html, kind) {
+    promptEl.classList.remove("ok", "bad", "attention", "attention-on");
+    if (kind) promptEl.classList.add(kind);
+    promptEl.innerHTML = html;
+  }
+
+  function stopTimer() {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+  }
+
+  function updateTimerUI() {
+    var left = Math.max(0, Math.ceil((deadline - performance.now()) / 1000));
+    timerEl.textContent = "⏱ " + left + " s";
+    timerEl.classList.toggle("warn", left <= 3);
+  }
+
+  function startTimer() {
+    stopTimer();
+    timeLimit = TIME_MIN + ((Math.random() * (TIME_MAX - TIME_MIN + 1)) | 0);
+    deadline = performance.now() + timeLimit * 1000;
+    updateTimerUI();
+    timerId = setInterval(function () {
+      updateTimerUI();
+      if (performance.now() >= deadline) {
+        stopTimer();
+        if (!state.locked) onTimeout();
+      }
+    }, 100);
+  }
+
+  function pickTarget(avoid) {
+    var pool = DEGS.filter(function (d) { return d !== avoid; });
+    if (!pool.length) pool = DEGS.slice();
+    return pool[(Math.random() * pool.length) | 0];
+  }
+
+  function nextRound(prev) {
+    state.locked = false;
+    state.target = pickTarget(prev);
+    targetDegEl.textContent = "θ = " + state.target + "°";
+    syncLocus(state.target);
+    setPrompt("Tocá el nodo de <strong>θ = " + state.target + "°</strong> en el círculo.", null);
+    startTimer();
+    draw();
+  }
+
+  function onCorrect() {
+    state.locked = true;
+    stopTimer();
+    state.ok++;
+    state.streak++;
+    state.round++;
+    syncScores();
+    setPrompt("¡Correcto! <strong>θ = " + state.target + "°</strong>", "ok");
+    if (GK.ensureAudio) GK.ensureAudio();
+    if (GK.playOkChime) GK.playOkChime();
+    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    if (GK.fireConfetti) GK.fireConfetti(confettiCanvas);
+    var prev = state.target;
+    setTimeout(function () { nextRound(prev); }, 900);
+  }
+
+  function onWrong(deg) {
+    state.locked = true;
+    stopTimer();
+    state.bad++;
+    state.streak = 0;
+    syncScores();
+    shakeDeg = deg;
+    flashDeg = deg;
+    shakeUntil = performance.now() + 420;
+    flashUntil = performance.now() + 500;
+    graphWrap.classList.remove("shake");
+    void graphWrap.offsetWidth;
+    graphWrap.classList.add("shake");
+    setPrompt("Incorrecto: tocaste <strong>" + deg + "°</strong>. Pedido: <strong>" + state.target + "°</strong>.", "bad");
+    flashPromptAttention();
+    if (GK.ensureAudio) GK.ensureAudio();
+    if (GK.playErrorBuzz) GK.playErrorBuzz();
+    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "bad");
+    var prev = state.target;
+    setTimeout(function () { nextRound(prev); }, 1100);
+    draw();
+  }
+
+  function onTimeout() {
+    state.locked = true;
+    state.bad++;
+    state.streak = 0;
+    syncScores();
+    setPrompt("Tiempo agotado. Era <strong>θ = " + state.target + "°</strong>.", "bad");
+    flashPromptAttention();
+    if (GK.ensureAudio) GK.ensureAudio();
+    if (GK.playErrorBuzz) GK.playErrorBuzz();
+    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "bad");
+    var prev = state.target;
+    setTimeout(function () { nextRound(prev); }, 1100);
+  }
+
+  function draw() {
+    var L = layout();
+    var w = L.w, h = L.h, cx = L.cx, cy = L.cy, R = L.R;
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.save();
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    var step = R / 4;
+    var x, y;
+    for (x = cx; x < w; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+    for (x = cx - step; x > 0; x -= step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+    for (y = cy; y < h; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    for (y = cy - step; y > 0; y -= step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    ctx.restore();
+
+    var axPad = 36;
+    ctx.save();
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(axPad, cy); ctx.lineTo(w - axPad, cy);
+    ctx.moveTo(cx, axPad); ctx.lineTo(cx, h - axPad);
+    ctx.stroke();
+    ctx.fillStyle = "#94a3b8";
+    ctx.beginPath();
+    ctx.moveTo(w - axPad + 4, cy);
+    ctx.lineTo(w - axPad - 10, cy - 7);
+    ctx.lineTo(w - axPad - 10, cy + 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx, axPad - 4);
+    ctx.lineTo(cx - 7, axPad + 10);
+    ctx.lineTo(cx + 7, axPad + 10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.font = "700 15px Segoe UI, system-ui, sans-serif";
+    ctx.fillStyle = "#94a3b8";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("X", w - axPad - 8, cy + 22);
+    ctx.textAlign = "right";
+    ctx.fillText("Y", cx - 12, axPad + 4);
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = "#60a5fa";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(96,165,250,0.04)";
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "700 18px Segoe UI, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(139,155,180,0.35)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    var qOff = R * 0.42;
+    ctx.fillText("I", cx + qOff, cy - qOff);
+    ctx.fillText("II", cx - qOff, cy - qOff);
+    ctx.fillText("III", cx - qOff, cy + qOff);
+    ctx.fillText("IV", cx + qOff, cy + qOff);
+    ctx.restore();
+
+    // faint ray to target (subtle cue for easy mode — always light)
+    if (state.target != null) {
+      var trad = state.target * Math.PI / 180;
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,191,0,0.18)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 8]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R * Math.cos(trad), cy - R * Math.sin(trad));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    var now = performance.now();
+    var shaking = shakeDeg != null && now < shakeUntil;
+    var flashing = flashDeg != null && now < flashUntil;
+
+    nodes.forEach(function (n) {
+      var r = n.axis ? 11 : 9;
+      var dx = 0;
+      if (shaking && n.deg === shakeDeg) {
+        dx = Math.sin(now / 30) * 5;
+      }
+      var isFlash = flashing && n.deg === flashDeg;
+      ctx.save();
+      ctx.translate(n.x + dx, n.y);
+      if (isFlash) {
+        ctx.shadowColor = "rgba(255,123,123,0.85)";
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = "#ff7b7b";
+        ctx.beginPath();
+        ctx.arc(0, 0, r + 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.shadowColor = "rgba(167,139,250,0.55)";
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = n.axis ? "#c084fc" : "#a78bfa";
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+        if (n.axis) {
+          // hollow center for axis points
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = "#0f172a";
+          ctx.beginPath();
+          ctx.arc(0, 0, r * 0.42, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(192,132,252,0.85)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, r * 0.42, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(10,15,24,0.55)";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // angle labels near nodes
+      var labelR = R + 22;
+      var lx = (labelR) * Math.cos(n.deg * Math.PI / 180);
+      var ly = -(labelR) * Math.sin(n.deg * Math.PI / 180);
+      // labels relative to node position from center — redraw from absolute
+      ctx.restore();
+      ctx.save();
+      ctx.font = "650 12px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = "rgba(139,155,180,0.75)";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      var lxAbs = cx + (R + 26) * Math.cos(n.deg * Math.PI / 180);
+      var lyAbs = cy - (R + 26) * Math.sin(n.deg * Math.PI / 180);
+      ctx.fillText(n.deg + "°", lxAbs, lyAbs);
+      ctx.restore();
+    });
+
+    // origin
+    ctx.save();
+    ctx.fillStyle = "#e9eef7";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    if (shaking || flashing) {
+      if (!raf) raf = requestAnimationFrame(function () { raf = null; draw(); });
+    }
+  }
+
+  function hitTest(px, py) {
+    var best = null, bestD = HIT_R * HIT_R;
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      var dx = px - n.x, dy = py - n.y;
+      var d2 = dx * dx + dy * dy;
+      if (d2 <= bestD) { bestD = d2; best = n; }
+    }
+    return best;
+  }
+
+  function canvasPos(ev) {
+    var rect = canvas.getBoundingClientRect();
+    var sx = canvas.width / rect.width;
+    var sy = canvas.height / rect.height;
+    var clientX = ev.clientX, clientY = ev.clientY;
+    if (ev.touches && ev.touches[0]) {
+      clientX = ev.touches[0].clientX;
+      clientY = ev.touches[0].clientY;
+    }
+    return { x: (clientX - rect.left) * sx, y: (clientY - rect.top) * sy };
+  }
+
+  function onPointer(ev) {
+    if (state.locked) return;
+    if (GK.ensureAudio) GK.ensureAudio();
+    var p = canvasPos(ev);
+    var hit = hitTest(p.x, p.y);
+    if (!hit) return;
+    ev.preventDefault();
+    if (hit.deg === state.target) onCorrect();
+    else onWrong(hit.deg);
+  }
+
+  function restart() {
+    stopTimer();
+    state = { ok: 0, bad: 0, round: 1, streak: 0, target: null, locked: false };
+    shakeDeg = flashDeg = null;
+    syncScores();
+    rebuildNodes();
+    nextRound(null);
+  }
+
+  function fitCanvas() {
+    var wrap = graphWrap;
+    var cssW = wrap.clientWidth || 1200;
+    var cssH = Math.max(420, Math.min(620, Math.round(cssW * 0.52)));
+    canvas.width = Math.round(cssW);
+    canvas.height = cssH;
+    if (confettiCanvas) {
+      confettiCanvas.width = canvas.width;
+      confettiCanvas.height = canvas.height;
+    }
+    rebuildNodes();
+    draw();
+  }
+
+  canvas.addEventListener("pointerdown", onPointer);
+  document.getElementById("restartBtn").addEventListener("click", function () {
+    if (GK.ensureAudio) GK.ensureAudio();
+    restart();
+  });
+  window.addEventListener("resize", fitCanvas);
+
+  fitCanvas();
+  syncScores();
+  nextRound(null);
+})();
+</script>
+</body>
+</html>
