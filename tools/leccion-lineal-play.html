@@ -609,19 +609,39 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function syncSlidersFromParams() {
     var p = state.params;
     if (!p) return;
+    /* Idle/static: restore play-only min=0 on h, then match targets. */
+    hSlider.min = "1";
+    bSlider.step = "1";
+    hSlider.step = "1";
+    vSlider.step = "1";
     bSlider.value = String(p.b);
     hSlider.value = String(p.h);
     vSlider.value = String(p.v);
     refreshExprUI();
   }
 
+  function resetSlidersToZero() {
+    /* Play storytelling start: all three selectors show 0 (labels + thumbs). */
+    hSlider.min = "0";
+    bSlider.step = "1";
+    hSlider.step = "1";
+    vSlider.step = "1";
+    bSlider.value = "0";
+    hSlider.value = "0";
+    vSlider.value = "0";
+    bLabel.textContent = "0";
+    hLabel.textContent = "0";
+    vLabel.textContent = "0";
+  }
+
   function refreshExprUI() {
     var p = state.params;
     if (!p) return;
     var rev = state.reveal || { x0: true, y0: true, xh: true, yh: true };
-    bLabel.textContent = fmtNum(p.b);
-    hLabel.textContent = fmtNum(p.h);
-    vLabel.textContent = fmtNum(p.v);
+    /* Labels follow slider DOM (animated during play); table/formula use target params. */
+    bLabel.textContent = fmtNum(parseInt(bSlider.value, 10) || 0);
+    hLabel.textContent = fmtNum(parseInt(hSlider.value, 10) || 0);
+    vLabel.textContent = fmtNum(parseInt(vSlider.value, 10) || 0);
     exprFormula.innerHTML = formulaHTML(p.b, p.h, p.v);
     tX0.textContent = rev.x0 ? "0" : "—";
     tY0.textContent = rev.y0 ? fmtNum(p.b) : "—";
@@ -661,10 +681,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function onSliderInput(which) {
     if (state.playing) return;
+    /* Leaving play-reveal: restore h min and snap v off display-0. */
+    if (hSlider.min === "0") hSlider.min = "1";
     var b = parseInt(bSlider.value, 10);
     var h = parseInt(hSlider.value, 10);
     var v = parseInt(vSlider.value, 10);
-    // Snap v off 0
+    if (h < 1) h = 1;
+    // Snap v off 0 (play may leave display 0; idle user input must leave 0)
     if (v === 0) {
       var prev = state.params ? state.params.v : 1;
       v = prev < 0 ? -1 : 1;
@@ -979,6 +1002,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function finishAll() {
     state.playing = false;
     updateButtons();
+    if (state.params) syncSlidersFromParams();
     revealAllTable();
     setCaption("Completaste las <strong>20</strong> presentaciones. Podés <strong>Repetir</strong> o reiniciar.");
     doneBanner.classList.add("on");
@@ -986,13 +1010,46 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     paintScene(state.anim);
   }
 
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function animateSlider(slider, labelEl, fromVal, toVal, ms, token, done) {
+    if (token !== state.token) return;
+    var dur = ms || 550;
+    if (fromVal === toVal) {
+      slider.step = "1";
+      slider.value = String(toVal);
+      labelEl.textContent = fmtNum(toVal);
+      later(40, function () { if (done) done(); });
+      return;
+    }
+    slider.step = "any";
+    var t0 = performance.now();
+    function tick(now) {
+      if (token !== state.token) {
+        slider.step = "1";
+        return;
+      }
+      var u = Math.min(1, (now - t0) / dur);
+      var eased = easeOut(u);
+      var val = fromVal + (toVal - fromVal) * eased;
+      slider.value = String(val);
+      labelEl.textContent = fmtNum(Math.round(val));
+      if (u < 1) state.raf = requestAnimationFrame(tick);
+      else {
+        slider.step = "1";
+        slider.value = String(toVal);
+        labelEl.textContent = fmtNum(toVal);
+        if (done) done();
+      }
+    }
+    state.raf = requestAnimationFrame(tick);
+  }
+
   function runPresentation(token) {
     var p = pickParams();
     state.params = p;
-    /* Sliders jump to target values; bip fires per phase when that concept is told. */
-    bSlider.value = String(p.b);
-    hSlider.value = String(p.h);
-    vSlider.value = String(p.v);
+    /* Do NOT sync sliders to final params yet — reveal b→h→v per phase. */
+    resetSlidersToZero();
     resetTableReveal();
     var b = p.b, h = p.h, v = p.v;
     var sc = {
@@ -1008,59 +1065,77 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
     function phase1() {
       if (token !== state.token) return;
-      sc.highlightB = true;
-      sc.showA = true;
-      bipRow(rowBEl);
-      setCaption("Ordenada al origen <span class=\"hl hl-b\">b = " + fmtNum(b) + "</span> · punto <strong>A(0, " + fmtNum(b) + ")</strong>");
-      var t0 = performance.now();
-      function tick(now) {
+      setCaption("Seleccionando <span class=\"hl hl-b\">b</span>…");
+      animateSlider(bSlider, bLabel, 0, b, 550, token, function () {
         if (token !== state.token) return;
-        sc.t = now - t0;
+        sc.highlightB = true;
+        sc.showA = true;
+        setCaption("Ordenada al origen <span class=\"hl hl-b\">b = " + fmtNum(b) + "</span> · punto <strong>A(0, " + fmtNum(b) + ")</strong>");
         paintScene(sc);
-        if (now - t0 < 1600) state.raf = requestAnimationFrame(tick);
-        else { sc.highlightB = false; paintScene(sc); later(200, phase2); }
-      }
-      state.raf = requestAnimationFrame(tick);
+        bipRow(rowBEl);
+        var t0 = performance.now();
+        function tick(now) {
+          if (token !== state.token) return;
+          sc.t = now - t0;
+          paintScene(sc);
+          if (now - t0 < 1400) state.raf = requestAnimationFrame(tick);
+          else { sc.highlightB = false; paintScene(sc); later(200, phase2); }
+        }
+        state.raf = requestAnimationFrame(tick);
+      });
     }
 
     function phase2() {
       if (token !== state.token) return;
-      sc.showDottedH = true;
-      bipRow(rowHEl);
-      setCaption("Corrimiento horizontal <span class=\"hl hl-h\">h = " + h + "</span>");
-      var t0 = performance.now();
-      var dur = 1100;
-      function tick(now) {
+      setCaption("Seleccionando <span class=\"hl hl-h\">h</span>…");
+      animateSlider(hSlider, hLabel, 0, h, 550, token, function () {
         if (token !== state.token) return;
-        var u = Math.min(1, (now - t0) / dur);
-        sc.hProgress = easeOut(u);
-        paintScene(sc);
-        if (u < 1) state.raf = requestAnimationFrame(tick);
-        else { sc.hProgress = 1; paintScene(sc); later(250, phase3); }
-      }
-      state.raf = requestAnimationFrame(tick);
+        sc.showDottedH = true;
+        setCaption("Corrimiento horizontal <span class=\"hl hl-h\">h = " + h + "</span>");
+        var t0 = performance.now();
+        var dur = 1100;
+        function tick(now) {
+          if (token !== state.token) return;
+          var u = Math.min(1, (now - t0) / dur);
+          sc.hProgress = easeOut(u);
+          paintScene(sc);
+          if (u < 1) state.raf = requestAnimationFrame(tick);
+          else {
+            sc.hProgress = 1;
+            paintScene(sc);
+            bipRow(rowHEl);
+            later(700, phase3);
+          }
+        }
+        state.raf = requestAnimationFrame(tick);
+      });
     }
 
     function phase3() {
       if (token !== state.token) return;
       var dir = v > 0 ? "arriba" : "abajo";
-      bipRow(rowVEl);
-      setCaption("Corrimiento vertical <span class=\"hl hl-v\">v = " + fmtNum(v) + "</span> (" + dir + ") · punto <strong>B(" + h + ", " + fmtNum(b + v) + ")</strong>");
-      var t0 = performance.now();
-      var dur = 1100;
-      function tick(now) {
+      setCaption("Seleccionando <span class=\"hl hl-v\">v</span>…");
+      animateSlider(vSlider, vLabel, 0, v, 550, token, function () {
         if (token !== state.token) return;
-        var u = Math.min(1, (now - t0) / dur);
-        sc.vProgress = easeOut(u);
-        if (u > 0.85) { sc.showB = true; sc.showTriangle = true; }
-        paintScene(sc);
-        if (u < 1) state.raf = requestAnimationFrame(tick);
-        else {
-          sc.vProgress = 1; sc.showB = true; sc.showTriangle = true;
-          paintScene(sc); later(350, phaseSubA);
+        setCaption("Corrimiento vertical <span class=\"hl hl-v\">v = " + fmtNum(v) + "</span> (" + dir + ") · punto <strong>B(" + h + ", " + fmtNum(b + v) + ")</strong>");
+        var t0 = performance.now();
+        var dur = 1100;
+        function tick(now) {
+          if (token !== state.token) return;
+          var u = Math.min(1, (now - t0) / dur);
+          sc.vProgress = easeOut(u);
+          if (u > 0.85) { sc.showB = true; sc.showTriangle = true; }
+          paintScene(sc);
+          if (u < 1) state.raf = requestAnimationFrame(tick);
+          else {
+            sc.vProgress = 1; sc.showB = true; sc.showTriangle = true;
+            paintScene(sc);
+            bipRow(rowVEl);
+            later(700, phaseSubA);
+          }
         }
-      }
-      state.raf = requestAnimationFrame(tick);
+        state.raf = requestAnimationFrame(tick);
+      });
     }
 
     /* After B exists: substitution walkthrough fills the table. */
@@ -1170,8 +1245,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     phase1();
   }
 
-  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
-
   function startNextRound() {
     if (!state.playing) return;
     if (state.round >= TOTAL) { finishAll(); return; }
@@ -1197,9 +1270,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.token++;
     updateButtons();
     setCaption("Detenido en ronda <strong>" + state.round + "/" + TOTAL + "</strong>. Presioná Play para continuar o Reiniciar.");
-    // Show complete figure for current params
-    if (state.params) drawFullStatic();
-    else paintScene(state.anim);
+    // Idle after round: sliders + full table match target params
+    if (state.params) {
+      syncSlidersFromParams();
+      drawFullStatic();
+    } else paintScene(state.anim);
   }
 
   function skipNext() {
