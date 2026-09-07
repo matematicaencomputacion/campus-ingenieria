@@ -251,10 +251,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="expr-row slider-v" id="rowV">
           <div class="slider-head">
             <span class="slider-val">v <span class="eq">=</span> <span id="vLabel">0</span></span>
-            <span class="slider-hint">piso vertical (igual en cada peldaño)</span>
+            <span class="slider-hint">piso vertical v ∈ [−2, 6]</span>
           </div>
-          <input type="range" id="vSlider" min="-2" max="2" step="0.5" value="0" aria-label="unidad vertical v" />
-          <div class="range-ends"><span>−2</span><span>2</span></div>
+          <input type="range" id="vSlider" min="-2" max="6" step="0.5" value="0" aria-label="unidad vertical v" />
+          <div class="range-ends"><span>−2</span><span>6</span></div>
         </div>
         <div class="expr-row">
           <div class="chips">
@@ -517,7 +517,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function speedFactor() { return state.slow ? 2 : 1; }
 
   var H_POOL = [1, 2, 3];
-  var V_POOL = [1, 2, -1, 0.5];
+  var V_POOL = [1, 2, 3, 4, 5, 6, -1, -2, 0.5];
   var XA_POOL = [-1, 0, 1, 2];
   var YP_POOL = [-1, 0, 1, 2];
 
