@@ -554,22 +554,26 @@
 
         <div id="coordScreen4" class="hidden">
           <h2>Evaluar · X → Y± / cuadrante</h2>
-          <p class="hint" style="margin-bottom:10px;">Dado <strong>X = cos θ</strong> (cuerda vertical = ambigüedad ↑↓). Predicí el <strong>cuadrante</strong> (I–IV) o el signo de <strong>sen</strong> <em>antes</em> de ver el punto.</p>
+          <p class="hint" style="margin-bottom:10px;">Elegí <strong>todas las opciones posibles</strong> para ese valor de cos θ.</p>
+          <div class="score" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;">
+            <span class="score ok" id="coordXYScoreOk">Éxitos <strong>0</strong></span>
+            <span class="score bad" id="coordXYScoreBad">Fracasos <strong>0</strong></span>
+          </div>
           <div class="field">
             <label>X dado (cos θ)</label>
             <div class="theta" id="coordXYXChallenge" style="color:#ff5c5c">—</div>
           </div>
           <div class="field">
-            <label>Cuadrante (principal)</label>
+            <label>Cuadrantes posibles</label>
             <div class="chips" id="coordXYQuadChips"></div>
           </div>
           <div class="field">
-            <label>sen (opcional)</label>
+            <label>Signos posibles de sen</label>
             <div class="chips" id="coordXYSignChips"></div>
           </div>
           <div class="field">
             <label>Tu elección</label>
-            <div class="locked" id="coordXYUser">elegí cuadrante I–IV o sen ±</div>
+            <div class="locked" id="coordXYUser">elegí todos los cuadrantes y signos posibles</div>
           </div>
           <div class="field">
             <label>Respuesta</label>
@@ -577,7 +581,7 @@
           </div>
           <div class="toolbar">
             <button class="btn primary" id="coordXYVerifyBtn" disabled>Verificar</button>
-            <button class="btn" id="coordXYOtroBtn">Otro X</button>
+            <button class="btn" id="coordXYOtroBtn">Pausar</button>
             <button class="btn" id="coordXYResetBtn">Reset</button>
           </div>
         </div>
@@ -685,6 +689,8 @@
   const coordXYVerifyBtn = document.getElementById("coordXYVerifyBtn");
   const coordXYOtroBtn = document.getElementById("coordXYOtroBtn");
   const coordXYResetBtn = document.getElementById("coordXYResetBtn");
+  const coordXYScoreOk = document.getElementById("coordXYScoreOk");
+  const coordXYScoreBad = document.getElementById("coordXYScoreBad");
   const coordPredChallenge = document.getElementById("coordPredChallenge");
   const coordPredXChips = document.getElementById("coordPredXChips");
   const coordPredUser = document.getElementById("coordPredUser");
@@ -819,8 +825,14 @@
   let coordChallengeYLab = null; // screen 4: true sen label (hidden until verify)
   let coordChallengeAngles = []; // screen 3: true NOTABLE deg set
   let coordThetaPicks = []; // screen 3: selected degrees
-  let coordXYQuadPick = null; // screen 4: 1..4
-  let coordXYSignPick = null; // screen 4: "+" | "-"
+  let coordXYQuadPicks = new Set(); // screen 4: multi 1..4
+  let coordXYSignPicks = new Set(); // screen 4: multi "+" | "-"
+  let coordXYOk = 0;
+  let coordXYBad = 0;
+  let coordXYPaused = false;
+  let coordXYWon = false;
+  let coordXYAutoTimer = null;
+  let coordXYUnlockTimer = null;
   let pointerDragging = false;
   // wrong guess marker: amber blink ×4 then muted stay
   let userGuess = null; // { x, y, xLab, yLab, visible, muted }
@@ -1304,8 +1316,8 @@
     coordChallengeYLab = null;
     coordChallengeAngles = [];
     coordThetaPicks = [];
-    coordXYQuadPick = null;
-    coordXYSignPick = null;
+    coordXYQuadPicks = new Set();
+    coordXYSignPicks = new Set();
     drawCoordDragging = false;
   }
   function resetDrawCoordTeach() {
@@ -1465,21 +1477,19 @@
       else {
         const xLab = coordChallengeXLab || (EXACT[coordChallengeDeg] ? EXACT[coordChallengeDeg].x : "—");
         coordXYXChallenge.innerHTML = '<span style="color:#ff5c5c">' + xLab + '</span>';
-        if (coordEvalLocked && EXACT[coordChallengeDeg]) {
-          const e = EXACT[coordChallengeDeg];
-          const q = quadrantOfDeg(coordChallengeDeg);
-          coordXYReveal.innerHTML =
-            exactPairHtml(coordChallengeDeg) +
-            (q ? (" · cuadrante <strong>" + QUAD_ROMAN[q] + "</strong>") : "");
+        if (coordEvalLocked && coordPredCorrect) {
+          coordXYReveal.innerHTML = formatCoordXYReveal(xLab);
         } else {
           coordXYReveal.textContent = "—";
         }
+        syncCoordXYScores();
+        syncCoordXYPauseBtn();
         buildCoordXYQuadChips();
         buildCoordXYSignChips();
         updateCoordXYPanel();
-        if (!coordEvalLocked) {
+        if (!coordEvalLocked && !coordXYPaused && !coordXYWon) {
           setNarration(
-            "Dado <strong style='color:#ff5c5c'>X = " + xLab + "</strong>, ¿cuadrante <strong>I–IV</strong> o signo de <strong style='color:#34d399'>sen</strong>? (sin ver el punto)"
+            "Elegí <strong>todas las opciones posibles</strong> para <strong style='color:#ff5c5c'>X = " + xLab + "</strong>."
           );
         }
       }
@@ -1529,6 +1539,8 @@
     clearCoordPredYAuto();
     clearCoordPredXUnlock();
     clearCoordPredYUnlock();
+    clearCoordXYAuto();
+    clearCoordXYUnlock();
   }
   function syncCoordPredXScores() {
     if (coordPredScoreOk) coordPredScoreOk.innerHTML = "Éxitos <strong>" + coordPredXOk + "</strong>";
@@ -1545,6 +1557,84 @@
   function syncCoordPredYPauseBtn() {
     if (!coordPredYOtroBtn) return;
     coordPredYOtroBtn.textContent = coordPredYPaused ? "Continuar" : "Pausar";
+  }
+  function clearCoordXYAuto() {
+    if (coordXYAutoTimer) {
+      clearTimeout(coordXYAutoTimer);
+      coordXYAutoTimer = null;
+    }
+  }
+  function clearCoordXYUnlock() {
+    if (coordXYUnlockTimer) {
+      clearTimeout(coordXYUnlockTimer);
+      coordXYUnlockTimer = null;
+    }
+  }
+  function syncCoordXYScores() {
+    if (coordXYScoreOk) coordXYScoreOk.innerHTML = "Éxitos <strong>" + coordXYOk + "</strong>";
+    if (coordXYScoreBad) coordXYScoreBad.innerHTML = "Fracasos <strong>" + coordXYBad + "</strong>";
+  }
+  function syncCoordXYPauseBtn() {
+    if (!coordXYOtroBtn) return;
+    coordXYOtroBtn.textContent = coordXYPaused ? "Continuar" : "Pausar";
+  }
+  function resetCoordXYScoreState() {
+    clearCoordXYAuto();
+    clearCoordXYUnlock();
+    coordXYOk = 0;
+    coordXYBad = 0;
+    coordXYPaused = false;
+    coordXYWon = false;
+    syncCoordXYScores();
+    syncCoordXYPauseBtn();
+  }
+  function toggleCoordXYPause() {
+    if (coordXYWon) return;
+    coordXYPaused = !coordXYPaused;
+    syncCoordXYPauseBtn();
+    if (coordXYPaused) {
+      clearCoordXYAuto();
+      setNarration("Pausa · tocá <strong>Continuar</strong> para seguir.");
+    } else if (coordEvalLocked && coordPredCorrect) {
+      newCoordXYChallenge(true);
+    } else if (coordChallengeXLab != null) {
+      setNarration("Elegí <strong>todas las opciones posibles</strong> para <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>.");
+    }
+    syncCanvasCursor();
+  }
+  function scheduleCoordXYNext() {
+    clearCoordXYAuto();
+    if (coordXYPaused || coordXYWon) return;
+    coordXYAutoTimer = setTimeout(function () {
+      coordXYAutoTimer = null;
+      if (coordXYPaused || coordXYWon || mode !== "drawCoord" || coordScreen !== 4) return;
+      newCoordXYChallenge(true);
+    }, 1100);
+  }
+  function unlockCoordXYRetry() {
+    clearCoordXYUnlock();
+    if (mode !== "drawCoord" || coordScreen !== 4 || coordXYWon) return;
+    clearUserGuess();
+    coordEvalLocked = false;
+    coordPredCorrect = false;
+    coordXYQuadPicks = new Set();
+    coordXYSignPicks = new Set();
+    if (coordXYReveal) coordXYReveal.textContent = "—";
+    buildCoordXYQuadChips();
+    buildCoordXYSignChips();
+    updateCoordXYPanel();
+    if (coordChallengeXLab != null) {
+      setNarration("Reintentá: elegí <strong>todas las opciones posibles</strong> para <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>.");
+    }
+    syncCanvasCursor();
+    draw();
+  }
+  function scheduleCoordXYUnlock() {
+    clearCoordXYUnlock();
+    coordXYUnlockTimer = setTimeout(function () {
+      coordXYUnlockTimer = null;
+      unlockCoordXYRetry();
+    }, 2100);
   }
   function resetCoordPredXScoreState() {
     clearCoordPredXAuto();
@@ -1961,38 +2051,79 @@
       lower: { x, y: -yAbs },
     };
   }
-  function updateCoordXYPanel() {
-    const parts = [];
-    if (coordXYQuadPick != null) parts.push("cuadrante <strong>" + QUAD_ROMAN[coordXYQuadPick] + "</strong>");
-    if (coordXYSignPick != null) {
-      parts.push("sen <strong style='color:#34d399'>" + (coordXYSignPick === "+" ? "+" : "−") + "</strong>");
+  function expectedCoordXYSets(xLab) {
+    const c = SYM_NUM[xLab];
+    if (!Number.isFinite(c)) return null;
+    // Interior |X|<1 only (axes excluded by randomCoordXYAngle)
+    if (c > 0) return { quads: new Set([1, 4]), signs: new Set(["+", "-"]) };
+    if (c < 0) return { quads: new Set([2, 3]), signs: new Set(["+", "-"]) };
+    return null;
+  }
+  function setsEqualSimple(a, b) {
+    if (!a || !b || a.size !== b.size) return false;
+    for (const v of a) if (!b.has(v)) return false;
+    return true;
+  }
+  function formatCoordXYPairs(xLab) {
+    const exp = expectedCoordXYSets(xLab);
+    if (!exp) return "";
+    const c = SYM_NUM[xLab];
+    const pairBits = [];
+    if (c > 0) {
+      pairBits.push("<strong>I</strong> con sen<strong style='color:#34d399'>+</strong>");
+      pairBits.push("<strong>IV</strong> con sen<strong style='color:#34d399'>−</strong>");
+    } else {
+      pairBits.push("<strong>II</strong> con sen<strong style='color:#34d399'>+</strong>");
+      pairBits.push("<strong>III</strong> con sen<strong style='color:#34d399'>−</strong>");
     }
-    coordXYUser.innerHTML = parts.length ? parts.join(" · ") : "elegí cuadrante I–IV o sen ±";
-    coordXYVerifyBtn.disabled = coordEvalLocked || (coordXYQuadPick == null && coordXYSignPick == null);
+    return pairBits.join(" · ");
+  }
+  function formatCoordXYReveal(xLab) {
+    const peers = anglesForXLab(xLab).slice().sort((a, b) => a - b);
+    const pairs = peers.map(d => exactPairHtml(d)).join(" y ");
+    const sol = formatCoordXYPairs(xLab);
+    return (sol ? sol + "<br>" : "") + (pairs || "—");
+  }
+  function coordXYDiffMsg(picked, expected, labelFn) {
+    const missing = [...expected].filter(v => !picked.has(v)).map(labelFn);
+    const excess = [...picked].filter(v => !expected.has(v)).map(labelFn);
+    const bits = [];
+    if (missing.length) bits.push("faltan " + missing.join(", "));
+    if (excess.length) bits.push("sobran " + excess.join(", "));
+    return bits.join("; ");
+  }
+  function updateCoordXYPanel() {
+    const qParts = [...coordXYQuadPicks].sort((a, b) => a - b).map(q => "<strong>" + QUAD_ROMAN[q] + "</strong>");
+    const sParts = [...coordXYSignPicks].sort().map(s =>
+      "sen <strong style='color:#34d399'>" + (s === "+" ? "+" : "−") + "</strong>"
+    );
+    const parts = qParts.concat(sParts);
+    coordXYUser.innerHTML = parts.length ? parts.join(" · ") : "elegí todos los cuadrantes y signos posibles";
+    const lockedOut = coordEvalLocked || coordXYPaused || coordXYWon;
+    coordXYVerifyBtn.disabled = lockedOut || (coordXYQuadPicks.size === 0 && coordXYSignPicks.size === 0);
   }
   function buildCoordXYQuadChips() {
     coordXYQuadChips.innerHTML = "";
+    const disabled = coordEvalLocked || coordXYPaused || coordXYWon;
     for (const q of [1, 2, 3, 4]) {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "chip";
       b.textContent = QUAD_ROMAN[q];
-      b.disabled = coordEvalLocked;
-      if (coordXYQuadPick === q) b.classList.add("picked");
+      b.disabled = disabled;
+      if (coordXYQuadPicks.has(q)) b.classList.add("picked");
       b.addEventListener("click", () => {
-        if (coordEvalLocked) return;
-        coordXYQuadPick = (coordXYQuadPick === q) ? null : q;
-        // map optional sign from quadrant for this |cos|
-        if (coordXYQuadPick != null) {
-          coordXYSignPick = (coordXYQuadPick === 1 || coordXYQuadPick === 2) ? "+" : "-";
-        }
+        if (coordEvalLocked || coordXYPaused || coordXYWon) return;
+        if (coordXYQuadPicks.has(q)) coordXYQuadPicks.delete(q);
+        else coordXYQuadPicks.add(q);
         buildCoordXYQuadChips();
-        buildCoordXYSignChips();
         updateCoordXYPanel();
         setNarration(
-          coordXYQuadPick != null
-            ? ("Elegiste cuadrante <strong>" + QUAD_ROMAN[coordXYQuadPick] + "</strong>. Tocá <strong>Verificar</strong>.")
-            : ("Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, ¿cuadrante o signo de sen?")
+          coordXYQuadPicks.size || coordXYSignPicks.size
+            ? ("Selección: " + [...coordXYQuadPicks].sort((a,b)=>a-b).map(x => QUAD_ROMAN[x]).join(", ") +
+               (coordXYSignPicks.size ? (" · sen " + [...coordXYSignPicks].sort().map(s => s === "+" ? "+" : "−").join("/")) : "") +
+               ". Tocá <strong>Verificar</strong> cuando estén todas.")
+            : ("Elegí <strong>todas las opciones posibles</strong> para <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>.")
         );
         draw();
       });
@@ -2001,31 +2132,26 @@
   }
   function buildCoordXYSignChips() {
     coordXYSignChips.innerHTML = "";
+    const disabled = coordEvalLocked || coordXYPaused || coordXYWon;
     for (const s of ["+", "-"]) {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "chip";
       b.textContent = "sen " + (s === "+" ? "+" : "−");
-      b.disabled = coordEvalLocked;
-      if (coordXYSignPick === s) b.classList.add("picked");
+      b.disabled = disabled;
+      if (coordXYSignPicks.has(s)) b.classList.add("picked");
       b.addEventListener("click", () => {
-        if (coordEvalLocked) return;
-        coordXYSignPick = (coordXYSignPick === s) ? null : s;
-        // map sign → likely quadrants for this cos (optional sync of primary)
-        if (coordXYSignPick != null && coordChallengeXLab != null) {
-          const c = SYM_NUM[coordChallengeXLab];
-          if (Number.isFinite(c)) {
-            if (coordXYSignPick === "+") coordXYQuadPick = c >= 0 ? 1 : 2;
-            else coordXYQuadPick = c >= 0 ? 4 : 3;
-          }
-        }
-        buildCoordXYQuadChips();
+        if (coordEvalLocked || coordXYPaused || coordXYWon) return;
+        if (coordXYSignPicks.has(s)) coordXYSignPicks.delete(s);
+        else coordXYSignPicks.add(s);
         buildCoordXYSignChips();
         updateCoordXYPanel();
         setNarration(
-          coordXYSignPick != null
-            ? ("Elegiste <strong style='color:#34d399'>sen " + (coordXYSignPick === "+" ? "+" : "−") + "</strong>. Tocá <strong>Verificar</strong>.")
-            : ("Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, ¿cuadrante o signo de sen?")
+          coordXYQuadPicks.size || coordXYSignPicks.size
+            ? ("Selección: " + [...coordXYQuadPicks].sort((a,b)=>a-b).map(x => QUAD_ROMAN[x]).join(", ") +
+               (coordXYSignPicks.size ? (" · sen " + [...coordXYSignPicks].sort().map(ss => ss === "+" ? "+" : "−").join("/")) : "") +
+               ". Tocá <strong>Verificar</strong> cuando estén todas.")
+            : ("Elegí <strong>todas las opciones posibles</strong> para <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>.")
         );
         draw();
       });
@@ -2039,83 +2165,61 @@
     return pool[Math.floor(Math.random() * pool.length)];
   }
   function newCoordXYChallenge(announce) {
+    clearCoordXYAuto();
+    clearCoordXYUnlock();
     const prevDeg = coordChallengeDeg;
+    const prevX = coordChallengeXLab;
     clearCoordEval();
     coordChallengeDeg = randomCoordXYAngle(announce !== false ? prevDeg : null);
     const e = EXACT[coordChallengeDeg];
     coordChallengeXLab = e.x;
     coordChallengeYLab = e.y;
-    coordXYQuadPick = null;
-    coordXYSignPick = null;
+    // Prefer a different X label when advancing
+    if (announce !== false && prevX != null && coordChallengeXLab === prevX) {
+      for (let i = 0; i < 8; i++) {
+        const alt = randomCoordXYAngle(coordChallengeDeg);
+        if (EXACT[alt].x !== prevX) {
+          coordChallengeDeg = alt;
+          coordChallengeXLab = EXACT[alt].x;
+          coordChallengeYLab = EXACT[alt].y;
+          break;
+        }
+      }
+    }
+    coordXYQuadPicks = new Set();
+    coordXYSignPicks = new Set();
     coordXYXChallenge.innerHTML = '<span style="color:#ff5c5c">' + coordChallengeXLab + '</span>';
     coordXYReveal.textContent = "—";
+    syncCoordXYScores();
+    syncCoordXYPauseBtn();
     buildCoordXYQuadChips();
     buildCoordXYSignChips();
     updateCoordXYPanel();
     if (announce !== false) {
       setNarration(
-        "Nuevo X: <strong style='color:#ff5c5c'>" + coordChallengeXLab + "</strong>. ¿Cuadrante I–IV o signo de sen?"
+        "Nuevo X: <strong style='color:#ff5c5c'>" + coordChallengeXLab + "</strong>. Elegí <strong>todas las opciones posibles</strong>."
       );
     } else {
       setNarration(
-        "Dado <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>, ¿cuadrante <strong>I–IV</strong> o signo de <strong style='color:#34d399'>sen</strong>? (sin ver el punto)"
+        "Elegí <strong>todas las opciones posibles</strong> para <strong style='color:#ff5c5c'>X = " + coordChallengeXLab + "</strong>."
       );
     }
+    syncCanvasCursor();
     draw();
   }
   function coordXYPickOk() {
-    if (coordChallengeDeg == null || !EXACT[coordChallengeDeg]) return false;
-    const truthQ = quadrantOfDeg(coordChallengeDeg);
-    const yLab = EXACT[coordChallengeDeg].y;
-    const yPos = yPositiveLab(yLab);
-    const yNeg = String(yLab).startsWith("−");
-    const hasQ = coordXYQuadPick != null;
-    const hasS = coordXYSignPick != null;
-    if (!hasQ && !hasS) return false;
-    let ok = true;
-    if (hasQ) ok = ok && (coordXYQuadPick === truthQ);
-    if (hasS) {
-      const signOk = (coordXYSignPick === "+" && yPos) || (coordXYSignPick === "-" && yNeg);
-      ok = ok && signOk;
-    }
-    return ok;
-  }
-  function wrongIntersectionForXYPick() {
-    const ints = chordIntersectionsForX(coordChallengeXLab);
-    if (!ints) return null;
-    // Intersection implied by the pick (upper for + / I–II, lower for − / III–IV)
-    let wantUpper = null;
-    if (coordXYSignPick != null) wantUpper = coordXYSignPick === "+";
-    else if (coordXYQuadPick != null) wantUpper = (coordXYQuadPick === 1 || coordXYQuadPick === 2);
-    if (wantUpper == null) wantUpper = true;
-    const truthUpper = yPositiveLab(coordChallengeYLab);
-    // Blink at the wrong intersection: if pick already matches truth Y, use the other one
-    const blinkUpper = (wantUpper === truthUpper) ? !truthUpper : wantUpper;
-    const pt = blinkUpper ? ints.upper : ints.lower;
-    const peers = anglesForXLab(coordChallengeXLab);
-    let yOut = null;
-    for (const d of peers) {
-      const ey = EXACT[d].y;
-      if (blinkUpper && yPositiveLab(ey)) { yOut = ey; break; }
-      if (!blinkUpper && String(ey).startsWith("−")) { yOut = ey; break; }
-    }
-    if (!yOut) {
-      // Synthesize signed magnitude from truth |y|
-      const mag = String(coordChallengeYLab || "").replace(/^−/, "") || fmt3(Math.abs(pt.y));
-      yOut = blinkUpper ? mag : ("−" + mag);
-    }
-    return { x: pt.x, y: pt.y, xLab: coordChallengeXLab, yLab: yOut };
+    const exp = expectedCoordXYSets(coordChallengeXLab);
+    if (!exp) return false;
+    return setsEqualSimple(coordXYQuadPicks, exp.quads) && setsEqualSimple(coordXYSignPicks, exp.signs);
   }
   function verifyCoordXY() {
     if (coordScreen !== 4 || coordEvalLocked) return;
+    if (coordXYPaused || coordXYWon) return;
     if (coordChallengeDeg == null || !EXACT[coordChallengeDeg]) return;
-    if (coordXYQuadPick == null && coordXYSignPick == null) return;
+    if (coordXYQuadPicks.size === 0 && coordXYSignPicks.size === 0) return;
+    const exp = expectedCoordXYSets(coordChallengeXLab);
+    if (!exp) return;
     coordEvalLocked = true;
-    const e = EXACT[coordChallengeDeg];
-    const truthQ = quadrantOfDeg(coordChallengeDeg);
-    coordXYReveal.innerHTML =
-      exactPairHtml(coordChallengeDeg) +
-      (truthQ ? (" · cuadrante <strong>" + QUAD_ROMAN[truthQ] + "</strong>") : "");
     buildCoordXYQuadChips();
     buildCoordXYSignChips();
     updateCoordXYPanel();
@@ -2123,25 +2227,37 @@
     if (ok) {
       coordPredCorrect = true;
       clearUserGuess();
-      setNarration(
-        "✓ Correcto: " + exactPairHtml(coordChallengeDeg) +
-        (truthQ ? (" en cuadrante <strong>" + QUAD_ROMAN[truthQ] + "</strong>") : "") + ".",
-        "ok"
-      );
+      coordXYReveal.innerHTML = formatCoordXYReveal(coordChallengeXLab);
+      coordXYOk++;
+      syncCoordXYScores();
+      const sol = formatCoordXYPairs(coordChallengeXLab);
+      if (coordXYOk >= COORD_PRED_WIN) {
+        coordXYWon = true;
+        clearCoordXYAuto();
+        setNarration("¡Ganaste! <strong>20 éxitos</strong> · " + sol, "ok");
+      } else {
+        setNarration("✓ Correcto: " + sol + " · " + formatCoordXYReveal(coordChallengeXLab).split("<br>").pop(), "ok");
+        scheduleCoordXYNext();
+      }
     } else {
       coordPredCorrect = false;
-      const wrong = wrongIntersectionForXYPick();
-      if (wrong) startWrongBlink(wrong.xLab, wrong.yLab, wrong.x, wrong.y);
-      const pickBits = [];
-      if (coordXYQuadPick != null) pickBits.push(QUAD_ROMAN[coordXYQuadPick]);
-      if (coordXYSignPick != null) pickBits.push("sen " + (coordXYSignPick === "+" ? "+" : "−"));
+      coordXYReveal.textContent = "—";
+      const ints = chordIntersectionsForX(coordChallengeXLab);
+      if (ints) startWrongBlink(coordChallengeXLab, "0", ints.x, 0);
+      if (userGuess) userGuess.verticalChord = true;
+      coordXYBad++;
+      syncCoordXYScores();
+      const qMsg = coordXYDiffMsg(coordXYQuadPicks, exp.quads, q => QUAD_ROMAN[q]);
+      const sMsg = coordXYDiffMsg(coordXYSignPicks, exp.signs, s => "sen " + (s === "+" ? "+" : "−"));
+      const bits = [qMsg, sMsg].filter(Boolean);
       setNarration(
-        "✗ Era " + exactPairHtml(coordChallengeDeg) +
-        (truthQ ? (" · cuadrante <strong>" + QUAD_ROMAN[truthQ] + "</strong>") : "") +
-        ". Tu elección <span style='color:#FFBF00'>" + pickBits.join(" · ") + "</span> parpadea en la intersección incorrecta.",
+        "✗ Incorrecto" + (bits.length ? (" · " + bits.join(" · ")) : "") +
+        ". Reintentá el mismo X.",
         "bad"
       );
+      scheduleCoordXYUnlock();
     }
+    syncCanvasCursor();
     draw();
   }
 
@@ -2162,7 +2278,7 @@
       clearCoordPredTimers();
       newCoordThetaChallenge(true);
     } else if (coordScreen === 4) {
-      clearCoordPredTimers();
+      resetCoordXYScoreState();
       newCoordXYChallenge(true);
     } else {
       newCoordPredChallenge(true);
@@ -3197,10 +3313,15 @@
           visible: true,
         });
       }
-      // After verify: reveal correct point + pair guides
-      if (coordEvalLocked && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
-        drawGuide(coordChallengeDeg, L, !!coordPredCorrect);
-        drawPoint(coordChallengeDeg, L, !!coordPredCorrect);
+      // After verify OK: reveal BOTH chord intersections (pair solutions)
+      if (coordEvalLocked && coordPredCorrect && coordChallengeXLab) {
+        const peers = anglesForXLab(coordChallengeXLab);
+        for (const deg of peers) {
+          drawGuide(deg, L, true);
+          drawPoint(deg, L, true);
+        }
+      } else if (coordEvalLocked && coordChallengeDeg != null && EXACT[coordChallengeDeg]) {
+        // Wrong / locked: keep chord only (no leak of single solution)
       }
       return;
     }
@@ -4480,7 +4601,7 @@
   coordThetaOtroBtn.addEventListener("click", () => newCoordThetaChallenge(true));
   coordThetaResetBtn.addEventListener("click", resetDrawCoord);
   coordXYVerifyBtn.addEventListener("click", verifyCoordXY);
-  coordXYOtroBtn.addEventListener("click", () => newCoordXYChallenge(true));
+  coordXYOtroBtn.addEventListener("click", () => toggleCoordXYPause());
   coordXYResetBtn.addEventListener("click", resetDrawCoord);
 
 
