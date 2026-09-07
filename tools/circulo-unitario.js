@@ -53,6 +53,7 @@
   const anglePlaceResetBtn = document.getElementById("anglePlaceResetBtn");
   const anglePlaceScoreOk = document.getElementById("anglePlaceScoreOk");
   const anglePlaceScoreBad = document.getElementById("anglePlaceScoreBad");
+  const anglePlaceWinBox = document.getElementById("anglePlaceWinBox");
   const angleNameChips = document.getElementById("angleNameChips");
   const angleNameReveal = document.getElementById("angleNameReveal");
   const angleNameVerifyBtn = document.getElementById("angleNameVerifyBtn");
@@ -107,6 +108,7 @@
   const coordPredResetBtn = document.getElementById("coordPredResetBtn");
   const coordPredScoreOk = document.getElementById("coordPredScoreOk");
   const coordPredScoreBad = document.getElementById("coordPredScoreBad");
+  const coordPredXWinBox = document.getElementById("coordPredXWinBox");
   const coordPredYChallenge = document.getElementById("coordPredYChallenge");
   const coordPredYChips = document.getElementById("coordPredYChips");
   const coordPredYUser = document.getElementById("coordPredYUser");
@@ -116,6 +118,7 @@
   const coordPredYResetBtn = document.getElementById("coordPredYResetBtn");
   const coordPredYScoreOk = document.getElementById("coordPredYScoreOk");
   const coordPredYScoreBad = document.getElementById("coordPredYScoreBad");
+  const coordPredYWinBox = document.getElementById("coordPredYWinBox");
   const stepButtons = [...document.querySelectorAll("[data-step]")];
   const modeButtons = [...document.querySelectorAll("[data-mode]")];
 
@@ -518,9 +521,19 @@
       if (anglePlaceScoreBad) anglePlaceScoreBad.innerHTML = "Errores <strong>" + anglePlaceBad + "</strong>";
     }
   }
-  function syncAnglePlacePauseBtn() {
+  function syncAnglePlaceWinUI() {
+    if (anglePlaceWinBox) anglePlaceWinBox.classList.toggle("visible", !!anglePlaceWon);
     if (!anglePlaceOtroBtn) return;
-    anglePlaceOtroBtn.textContent = anglePlacePaused ? "Continuar" : "Pausar";
+    if (anglePlaceWon) {
+      anglePlaceOtroBtn.textContent = "Seguir jugando";
+      if (anglePlaceResetBtn) anglePlaceResetBtn.textContent = "Reiniciar";
+    } else {
+      anglePlaceOtroBtn.textContent = anglePlacePaused ? "Continuar" : "Pausar";
+      if (anglePlaceResetBtn) anglePlaceResetBtn.textContent = "Reset";
+    }
+  }
+  function syncAnglePlacePauseBtn() {
+    syncAnglePlaceWinUI();
   }
   function resetAnglePlaceScoreState() {
     clearAnglePlaceAuto();
@@ -529,12 +542,22 @@
     anglePlacePaused = false;
     anglePlaceWon = false;
     syncAnglePlaceScores();
-    syncAnglePlacePauseBtn();
+    syncAnglePlaceWinUI();
+  }
+  function continueAnglePlaceAfterWin() {
+    anglePlaceWon = false;
+    anglePlacePaused = false;
+    syncAnglePlaceWinUI();
+    setNarration("Seguís jugando · nuevo ángulo. Marcador se mantiene.", "ok");
+    newAnglePlaceChallenge(true);
   }
   function toggleAnglePlacePause() {
-    if (anglePlaceWon) return;
+    if (anglePlaceWon) {
+      continueAnglePlaceAfterWin();
+      return;
+    }
     anglePlacePaused = !anglePlacePaused;
-    syncAnglePlacePauseBtn();
+    syncAnglePlaceWinUI();
     if (anglePlacePaused) {
       clearAnglePlaceAuto();
       setNarration("Pausa · tocá <strong>Continuar</strong> para seguir.");
@@ -624,7 +647,11 @@
       if (anglePlaceOk >= ANGLE_PLACE_WIN) {
         anglePlaceWon = true;
         clearAnglePlaceAuto();
-        setNarration("¡Ganaste! <strong>20 aciertos</strong>", "ok");
+        syncAnglePlaceWinUI();
+        setNarration(
+          "¡Ganaste! <strong>20 aciertos</strong>. Tocá <strong>Seguir jugando</strong> o <strong>Reiniciar</strong>.",
+          "ok"
+        );
       } else {
         setNarration(
           "✓ Correcto: colocaste <strong>" + userDeg + "°</strong>. " + pairLabel(userDeg),
@@ -971,14 +998,30 @@
     if (coordPredYScoreOk) coordPredYScoreOk.innerHTML = "Éxitos <strong>" + coordPredYOk + "</strong>";
     if (coordPredYScoreBad) coordPredYScoreBad.innerHTML = "Fracasos <strong>" + coordPredYBad + "</strong>";
   }
-  function syncCoordPredXPauseBtn() {
+  function syncCoordPredXWinUI() {
+    if (coordPredXWinBox) coordPredXWinBox.classList.toggle("visible", !!coordPredXWon);
     if (!coordPredOtroBtn) return;
-    coordPredOtroBtn.textContent = coordPredXPaused ? "Continuar" : "Pausar";
+    if (coordPredXWon) {
+      coordPredOtroBtn.textContent = "Seguir jugando";
+      if (coordPredResetBtn) coordPredResetBtn.textContent = "Reiniciar";
+    } else {
+      coordPredOtroBtn.textContent = coordPredXPaused ? "Continuar" : "Pausar";
+      if (coordPredResetBtn) coordPredResetBtn.textContent = "Reset";
+    }
   }
-  function syncCoordPredYPauseBtn() {
+  function syncCoordPredYWinUI() {
+    if (coordPredYWinBox) coordPredYWinBox.classList.toggle("visible", !!coordPredYWon);
     if (!coordPredYOtroBtn) return;
-    coordPredYOtroBtn.textContent = coordPredYPaused ? "Continuar" : "Pausar";
+    if (coordPredYWon) {
+      coordPredYOtroBtn.textContent = "Seguir jugando";
+      if (coordPredYResetBtn) coordPredYResetBtn.textContent = "Reiniciar";
+    } else {
+      coordPredYOtroBtn.textContent = coordPredYPaused ? "Continuar" : "Pausar";
+      if (coordPredYResetBtn) coordPredYResetBtn.textContent = "Reset";
+    }
   }
+  function syncCoordPredXPauseBtn() { syncCoordPredXWinUI(); }
+  function syncCoordPredYPauseBtn() { syncCoordPredYWinUI(); }
   function clearCoordXYAuto() {
     if (coordXYAutoTimer) {
       clearTimeout(coordXYAutoTimer);
@@ -1077,10 +1120,27 @@
     syncCoordPredYScores();
     syncCoordPredYPauseBtn();
   }
+  function continueCoordPredXAfterWin() {
+    coordPredXWon = false;
+    coordPredXPaused = false;
+    syncCoordPredXWinUI();
+    setNarration("Seguís jugando · nuevo ángulo. Marcador se mantiene.", "ok");
+    newCoordPredChallenge(true);
+  }
+  function continueCoordPredYAfterWin() {
+    coordPredYWon = false;
+    coordPredYPaused = false;
+    syncCoordPredYWinUI();
+    setNarration("Seguís jugando · nuevo ángulo. Marcador se mantiene.", "ok");
+    newCoordPredYChallenge(true);
+  }
   function toggleCoordPredXPause() {
-    if (coordPredXWon) return;
+    if (coordPredXWon) {
+      continueCoordPredXAfterWin();
+      return;
+    }
     coordPredXPaused = !coordPredXPaused;
-    syncCoordPredXPauseBtn();
+    syncCoordPredXWinUI();
     if (coordPredXPaused) {
       clearCoordPredXAuto();
       setNarration("Pausa · tocá <strong>Continuar</strong> para seguir.");
@@ -1092,9 +1152,12 @@
     syncCanvasCursor();
   }
   function toggleCoordPredYPause() {
-    if (coordPredYWon) return;
+    if (coordPredYWon) {
+      continueCoordPredYAfterWin();
+      return;
+    }
     coordPredYPaused = !coordPredYPaused;
-    syncCoordPredYPauseBtn();
+    syncCoordPredYWinUI();
     if (coordPredYPaused) {
       clearCoordPredYAuto();
       setNarration("Pausa · tocá <strong>Continuar</strong> para seguir.");
@@ -1226,7 +1289,11 @@
       if (coordPredXOk >= COORD_PRED_WIN) {
         coordPredXWon = true;
         clearCoordPredXAuto();
-        setNarration("¡Ganaste! <strong>20 éxitos</strong>", "ok");
+        syncCoordPredXWinUI();
+        setNarration(
+          "¡Ganaste! <strong>20 éxitos</strong>. Tocá <strong>Seguir jugando</strong> o <strong>Reiniciar</strong>.",
+          "ok"
+        );
       } else {
         setNarration(
           "✓ Correcto: cos(" + coordChallengeDeg + "°) = <strong style='color:#ff5c5c'>" + truth + "</strong>. Otro ángulo en <strong>3 s</strong>…",
@@ -1269,7 +1336,11 @@
       if (coordPredYOk >= COORD_PRED_WIN) {
         coordPredYWon = true;
         clearCoordPredYAuto();
-        setNarration("¡Ganaste! <strong>20 éxitos</strong>", "ok");
+        syncCoordPredYWinUI();
+        setNarration(
+          "¡Ganaste! <strong>20 éxitos</strong>. Tocá <strong>Seguir jugando</strong> o <strong>Reiniciar</strong>.",
+          "ok"
+        );
       } else {
         setNarration(
           "✓ Correcto: sen(" + coordChallengeDeg + "°) = <strong style='color:#34d399'>" + truth + "</strong>. Otro ángulo en <strong>3 s</strong>…",
