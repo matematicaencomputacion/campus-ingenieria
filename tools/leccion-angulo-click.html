@@ -174,11 +174,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
       <span class="score round" id="scoreRound">Ronda <strong>1</strong></span>
       <span class="score streak" id="scoreStreak">Racha <strong>0</strong></span>
+      <span class="mode-chip" id="modeChip" title="Hasta 10 aciertos hay ayuda visual">Modo ensayo</span>
     </div>
   </header>
 
   <p class="prompt" id="prompt">Tocá en el círculo el punto que corresponde al ángulo <strong>θ</strong> mostrado.</p>
-  <p class="hint">12 notables cada 30°. Los ejes (0°/90°/180°/270°) tienen centro hueco. Tenés unos segundos por pregunta.</p>
+  <p class="hint">12 notables cada 30°. Modo ensayo (rayo punteado) hasta 10 aciertos; después solo ves la flecha al acertar.</p>
 
   <div class="card">
     <div class="graph-wrap" id="graphWrap">
@@ -239,14 +240,55 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     streak: document.getElementById("scoreStreak")
   };
 
-  var state = { ok: 0, bad: 0, round: 1, streak: 0, target: null, locked: false };
+  var ENSAYO_UNTIL = 10;
+  var state = { ok: 0, bad: 0, round: 1, streak: 0, target: null, locked: false, ensayo: true };
   var shakeDeg = null, shakeUntil = 0, flashDeg = null, flashUntil = 0;
+  var victoryRayUntil = 0;
+  var modeChip = document.getElementById("modeChip");
+  var modeLeaving = false;
   var timerId = null, deadline = 0, timeLimit = 10;
   var paused = false, pauseLeftMs = 0;
   var pauseBtn = document.getElementById("pauseBtn");
   var pausedBanner = document.getElementById("pausedBanner");
   var nodes = [];
   var raf = null;
+
+
+  function inEnsayo() { return !!state.ensayo; }
+
+  function syncModeChip() {
+    if (!modeChip) return;
+    if (state.ensayo) {
+      modeChip.classList.remove("off");
+      modeChip.textContent = "Modo ensayo · " + state.ok + "/" + ENSAYO_UNTIL;
+    } else if (!modeLeaving) {
+      modeChip.classList.add("off");
+    }
+  }
+
+  function leaveEnsayoWithPips(thenFn) {
+    if (!state.ensayo || modeLeaving) { if (thenFn) thenFn(); return; }
+    modeLeaving = true;
+    state.ensayo = false;
+    if (modeChip) {
+      modeChip.classList.remove("off");
+      modeChip.textContent = "¡Fin del ensayo!";
+    }
+    var n = 0;
+    var id = setInterval(function () {
+      n++;
+      if (modeChip) modeChip.classList.toggle("pip", n % 2 === 1);
+      if (n >= 6) {
+        clearInterval(id);
+        modeLeaving = false;
+        if (modeChip) {
+          modeChip.classList.remove("pip");
+          modeChip.classList.add("off");
+        }
+        if (thenFn) thenFn();
+      }
+    }, 220);
+  }
 
   function syncScores() {
     if (GK.scoreChips) GK.scoreChips(scoreEls, state);
@@ -256,6 +298,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       scoreEls.round.innerHTML = "Ronda <strong>" + state.round + "</strong>";
       scoreEls.streak.innerHTML = "Racha <strong>" + state.streak + "</strong>";
     }
+    syncModeChip();
   }
 
   function locusKey(deg) {
@@ -397,14 +440,21 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.ok++;
     state.streak++;
     state.round++;
+    victoryRayUntil = performance.now() + 1100;
     syncScores();
     setPrompt("¡Correcto! <strong>θ = " + state.target + "°</strong>", "ok");
     if (GK.ensureAudio) GK.ensureAudio();
     if (GK.playOkChime) GK.playOkChime();
     if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
     if (GK.fireConfetti) GK.fireConfetti(confettiCanvas);
+    draw();
     var prev = state.target;
-    setTimeout(function () { nextRound(prev); }, 900);
+    function goNext() { setTimeout(function () { nextRound(prev); }, 200); }
+    if (state.ok === ENSAYO_UNTIL && state.ensayo) {
+      leaveEnsayoWithPips(goNext);
+    } else {
+      setTimeout(function () { nextRound(prev); }, 1100);
+    }
   }
 
   function onWrong(deg) {
@@ -512,19 +562,50 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.fillText("IV", cx + qOff, cy + qOff);
     ctx.restore();
 
-    // faint ray to target (subtle cue for easy mode — always light)
+    // Modo ensayo: rayo punteado de ayuda. Post-ensayo: solo flecha al acertar.
     if (state.target != null) {
       var trad = state.target * Math.PI / 180;
-      ctx.save();
-      ctx.strokeStyle = "rgba(255,191,0,0.18)";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6, 8]);
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + R * Math.cos(trad), cy - R * Math.sin(trad));
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.restore();
+      var tx = cx + R * Math.cos(trad);
+      var ty = cy - R * Math.sin(trad);
+      var showVictory = performance.now() < victoryRayUntil;
+      if (inEnsayo() && !showVictory) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,191,0,0.55)";
+        ctx.lineWidth = 2.2;
+        ctx.setLineDash([7, 7]);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(tx, ty);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      } else if (showVictory) {
+        ctx.save();
+        ctx.strokeStyle = "#FFBF00";
+        ctx.lineWidth = 3.2;
+        ctx.lineCap = "round";
+        ctx.shadowColor = "rgba(255,191,0,0.55)";
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(tx, ty);
+        ctx.stroke();
+        var ang = Math.atan2(ty - cy, tx - cx);
+        var ex = tx + 16 * Math.cos(ang);
+        var ey = ty + 16 * Math.sin(ang);
+        ctx.beginPath();
+        ctx.moveTo(ex, ey);
+        ctx.lineTo(ex - 14 * Math.cos(ang) + 8 * Math.sin(ang), ey - 14 * Math.sin(ang) - 8 * Math.cos(ang));
+        ctx.lineTo(ex - 14 * Math.cos(ang) - 8 * Math.sin(ang), ey - 14 * Math.sin(ang) + 8 * Math.cos(ang));
+        ctx.closePath();
+        ctx.fillStyle = "#FFBF00";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "#e9eef7";
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
     var now = performance.now();
@@ -645,7 +726,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     if (pausedBanner) pausedBanner.classList.remove("on");
     if (pauseBtn) pauseBtn.textContent = "Pausa";
     stopTimer();
-    state = { ok: 0, bad: 0, round: 1, streak: 0, target: null, locked: false };
+    state = { ok: 0, bad: 0, round: 1, streak: 0, target: null, locked: false, ensayo: true };
+    victoryRayUntil = 0;
+    modeLeaving = false;
+    if (modeChip) { modeChip.classList.remove("off", "pip"); modeChip.textContent = "Modo ensayo"; }
     shakeDeg = flashDeg = null;
     syncScores();
     rebuildNodes();
