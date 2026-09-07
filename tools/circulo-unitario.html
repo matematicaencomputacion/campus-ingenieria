@@ -79,6 +79,7 @@
       font-size: 0.82rem; color: var(--muted);
     }
     a.back { color: var(--accent); font-size: 0.82rem; text-decoration: none; }
+    .score-row { margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .score { font-size: 0.8rem; color: var(--muted); }
     .score strong { color: var(--ink); }
     .score.ok, .score.bad {
@@ -367,7 +368,7 @@
         <div id="angleScreen1" class="hidden">
           <h2>Evaluar · Colocar θ</h2>
           <p class="hint" style="margin-bottom:10px;">Colocá el punto en la circunferencia para el ángulo pedido. Snap cada 15°. Se verifica al soltar.</p>
-          <div class="score" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;">
+          <div class="score-row" aria-label="Marcador">
             <span class="score ok" id="anglePlaceScoreOk">Aciertos <strong>0</strong></span>
             <span class="score bad" id="anglePlaceScoreBad">Errores <strong>0</strong></span>
           </div>
@@ -469,7 +470,7 @@
         <div id="coordScreen1" class="hidden">
           <h2>Evaluar · Predecir X</h2>
           <p class="hint" style="margin-bottom:10px;">Dado θ, elegí <strong>cos θ</strong> (X) arrastrando en el eje X (snap magnético) o con un chip. Verificar al soltar o con el botón.</p>
-          <div class="score" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;">
+          <div class="score-row" aria-label="Marcador">
             <span class="score ok" id="coordPredScoreOk">Éxitos <strong>0</strong></span>
             <span class="score bad" id="coordPredScoreBad">Fracasos <strong>0</strong></span>
           </div>
@@ -499,7 +500,7 @@
         <div id="coordScreen2" class="hidden">
           <h2>Evaluar · Predecir Y</h2>
           <p class="hint" style="margin-bottom:10px;">Dado θ, elegí <strong>sen θ</strong> (Y) arrastrando en el eje Y (snap magnético) o con un chip. Verificar al soltar o con el botón.</p>
-          <div class="score" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;">
+          <div class="score-row" aria-label="Marcador">
             <span class="score ok" id="coordPredYScoreOk">Éxitos <strong>0</strong></span>
             <span class="score bad" id="coordPredYScoreBad">Fracasos <strong>0</strong></span>
           </div>
@@ -555,7 +556,7 @@
         <div id="coordScreen4" class="hidden">
           <h2>Evaluar · X → Y± / cuadrante</h2>
           <p class="hint" style="margin-bottom:10px;">Elegí <strong>todas las opciones posibles</strong> para ese valor de cos θ.</p>
-          <div class="score" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;">
+          <div class="score-row" aria-label="Marcador">
             <span class="score ok" id="coordXYScoreOk">Éxitos <strong>0</strong></span>
             <span class="score bad" id="coordXYScoreBad">Fracasos <strong>0</strong></span>
           </div>
@@ -589,8 +590,8 @@
     </div>
   </div>
 
-<script src="game-kit.js?v=20260907"></script>
-<script src="circulo-unitario.js?v=20260907"></script>
+<script src="game-kit.js?v=20260907b"></script>
+<script src="circulo-unitario.js?v=20260907b"></script>
 
 </body>
 </html>
