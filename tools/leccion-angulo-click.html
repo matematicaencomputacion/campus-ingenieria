@@ -147,6 +147,24 @@ canvas#c {
   box-shadow: 0 0 12px rgba(255,191,0,.45);
 }
 .hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
+.step-control {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 12px;
+  padding: 8px 12px;
+}
+.step-control .lab { font-size: 0.82rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.step-control input[type="range"] {
+  width: min(220px, 42vw); accent-color: #FFBF00; cursor: pointer;
+}
+.step-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.step-pills button {
+  border: 1px solid #2a3548; background: #151d2a; color: var(--muted);
+  border-radius: 999px; padding: 6px 12px; font: inherit; font-weight: 700;
+  font-size: 0.82rem; cursor: pointer;
+}
+.step-pills button.on {
+  background: rgba(255,191,0,0.22); border-color: #FFBF00; color: #FFBF00;
+}
 a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 @keyframes shakeX {
   0%,100% { transform: translateX(0); }
@@ -179,7 +197,16 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   </header>
 
   <p class="prompt" id="prompt">Tocá en el círculo el punto que corresponde al ángulo <strong>θ</strong> mostrado.</p>
-  <p class="hint">12 notables cada 30°. Modo ensayo (rayo punteado) hasta 10 aciertos; después solo ves la flecha al acertar.</p>
+  <p class="hint" id="hintEl">Notables cada 30°. Modo ensayo (rayo punteado) hasta 10 aciertos; después solo ves la flecha al acertar.</p>
+  <div class="step-control" aria-label="Paso del círculo">
+    <span class="lab">Ángulo</span>
+    <input type="range" id="stepRange" min="0" max="2" step="1" value="0" aria-valuetext="30 grados" />
+    <div class="step-pills" id="stepPills">
+      <button type="button" data-step="30" class="on">30°</button>
+      <button type="button" data-step="45">45°</button>
+      <button type="button" data-step="90">90°</button>
+    </div>
+  </div>
 
   <div class="card">
     <div class="graph-wrap" id="graphWrap">
@@ -219,8 +246,54 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 (function () {
   "use strict";
   var GK = window.CampusGameKit || {};
-  var DEGS = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+  var STEP_OPTS = [30, 45, 90];
+  var stepDeg = 30;
+  var DEGS = [];
   var TIME_MIN = 8, TIME_MAX = 12;
+  var hintEl = document.getElementById("hintEl");
+  var stepRange = document.getElementById("stepRange");
+  var stepPills = document.getElementById("stepPills");
+
+  function buildDegs(step) {
+    var out = [];
+    for (var d = 0; d < 360; d += step) out.push(d);
+    return out;
+  }
+  function syncStepUI() {
+    var idx = STEP_OPTS.indexOf(stepDeg);
+    if (idx < 0) idx = 0;
+    if (stepRange) {
+      stepRange.value = String(idx);
+      stepRange.setAttribute("aria-valuetext", stepDeg + " grados");
+    }
+    if (stepPills) {
+      Array.prototype.forEach.call(stepPills.querySelectorAll("button"), function (b) {
+        b.classList.toggle("on", Number(b.getAttribute("data-step")) === stepDeg);
+      });
+    }
+    if (hintEl) {
+      hintEl.textContent = "Notables cada " + stepDeg + "° (" + DEGS.length + " nodos). Modo ensayo hasta 10 aciertos; después solo ves la flecha al acertar.";
+    }
+  }
+  function applyStep(step, softScores) {
+    step = Number(step);
+    if (STEP_OPTS.indexOf(step) < 0) step = 30;
+    stepDeg = step;
+    DEGS = buildDegs(stepDeg);
+    syncStepUI();
+    rebuildNodes();
+    // nueva ronda con el nuevo conjunto; scores opcionales
+    if (keepScores) {
+      stopTimer();
+      state.locked = false;
+      victoryRayUntil = 0;
+      nextRound(null);
+    } else {
+      restart();
+    }
+    draw();
+  }
+  DEGS = buildDegs(stepDeg);
   var HIT_R = 18;
 
   var canvas = document.getElementById("c");
@@ -766,6 +839,20 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     draw();
   }
 
+
+  if (stepRange) {
+    stepRange.addEventListener("input", function () {
+      var step = STEP_OPTS[Number(stepRange.value) | 0] || 30;
+      applyStep(step, true);
+    });
+  }
+  if (stepPills) {
+    stepPills.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button[data-step]");
+      if (!b) return;
+      applyStep(Number(b.getAttribute("data-step")), true);
+    });
+  }
   canvas.addEventListener("pointerdown", onPointer);
   pauseBtn.addEventListener("click", function () {
     if (GK.ensureAudio) GK.ensureAudio();
@@ -777,6 +864,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   });
   window.addEventListener("resize", fitCanvas);
 
+  syncStepUI();
   fitCanvas();
   syncScores();
   nextRound(null);
