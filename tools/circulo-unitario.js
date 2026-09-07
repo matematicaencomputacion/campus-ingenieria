@@ -1112,7 +1112,7 @@
       coordPredXAutoTimer = null;
       if (coordPredXPaused || coordPredXWon || mode !== "drawCoord" || coordScreen !== 1) return;
       newCoordPredChallenge(true);
-    }, 1100);
+    }, 3000);
   }
   function scheduleCoordPredYNext() {
     clearCoordPredYAuto();
@@ -1121,7 +1121,7 @@
       coordPredYAutoTimer = null;
       if (coordPredYPaused || coordPredYWon || mode !== "drawCoord" || coordScreen !== 2) return;
       newCoordPredYChallenge(true);
-    }, 1100);
+    }, 3000);
   }
   function unlockCoordPredXRetry() {
     clearCoordPredXUnlock();
@@ -1229,7 +1229,7 @@
         setNarration("¡Ganaste! <strong>20 éxitos</strong>", "ok");
       } else {
         setNarration(
-          "✓ Correcto: cos(" + coordChallengeDeg + "°) = <strong style='color:#ff5c5c'>" + truth + "</strong>.",
+          "✓ Correcto: cos(" + coordChallengeDeg + "°) = <strong style='color:#ff5c5c'>" + truth + "</strong>. Otro ángulo en <strong>3 s</strong>…",
           "ok"
         );
         scheduleCoordPredXNext();
@@ -1272,7 +1272,7 @@
         setNarration("¡Ganaste! <strong>20 éxitos</strong>", "ok");
       } else {
         setNarration(
-          "✓ Correcto: sen(" + coordChallengeDeg + "°) = <strong style='color:#34d399'>" + truth + "</strong>.",
+          "✓ Correcto: sen(" + coordChallengeDeg + "°) = <strong style='color:#34d399'>" + truth + "</strong>. Otro ángulo en <strong>3 s</strong>…",
           "ok"
         );
         scheduleCoordPredYNext();
