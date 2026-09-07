@@ -291,7 +291,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var MUTED = "#8b9bb4";
   var AXIS = "#93c5fd";
   var PURPLE = "#a78bfa";
-  var PARA_STROKE = "#000000";
+  var PARA_STROKE = "#ff4d4d";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -810,8 +810,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.stroke();
     }
     ctx.save();
-    strokePts("rgba(248,250,252,0.35)", 6);
-    strokePts(PARA_STROKE, 3.2);
+    strokePts("rgba(255,77,77,0.35)", 7);
+    strokePts(PARA_STROKE, 3.6);
     ctx.restore();
   }
 
