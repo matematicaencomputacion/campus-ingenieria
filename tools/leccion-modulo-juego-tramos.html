@@ -263,7 +263,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         </div>
         <div class="expr-row phase-ask">
           <span class="mode-tag" id="modeTag">Tramos</span>
-          <p class="hint-mini" id="sideHint">Marcá tramos f(x)<0</p>
+          <p class="hint-mini" id="sideHint">Tramos f&lt;0 · entre ceros</p>
           <div class="chips" style="margin-top:8px" id="chipBox"></div>
         </div>
       </aside>
@@ -561,28 +561,99 @@ var GK = window.CampusGameKit || {};
     return fam;
   }
 
-  /** Stretches by consecutive lattice points of same sign (y<0 vs y≥0). */
+  /** Zeros of f (and domain breaks) — tramos f<0 se delimitan por ceros, no por puntos de retícula. */
+  function findZeros(fam) {
+    var zs = [];
+    if (!fam) return zs;
+    if (fam.kind === "linear") {
+      if (Math.abs(fam.m) > 1e-12) zs.push(-fam.b / fam.m);
+    } else if (fam.kind === "quadratic") {
+      var a = fam.v / (fam.h * fam.h);
+      if (Math.abs(fam.yp) < 1e-12) zs.push(fam.xp);
+      else if (a * fam.yp < 0) {
+        var d = Math.sqrt(-fam.yp / a);
+        zs.push(fam.xp - d, fam.xp + d);
+      }
+    } else if (fam.kind === "sqrt") {
+      if (Math.abs(fam.v) > 1e-12 && -fam.yp / fam.v >= -1e-12) {
+        var s = Math.max(0, -fam.yp / fam.v);
+        zs.push(fam.xa + fam.h * s * s);
+      }
+    } else if (fam.kind === "exp") {
+      if (Math.abs(fam.v) > 1e-12 && -fam.ya / fam.v > 0) {
+        var r = -fam.ya / fam.v;
+        zs.push(fam.xp + fam.h * Math.log(r) / Math.log(fam.base));
+      }
+    } else if (fam.kind === "log") {
+      zs.push(1);
+    }
+    return zs.filter(function (z) { return isFinite(z); });
+  }
+  function domainBreaks(fam) {
+    if (!fam) return [];
+    if (fam.kind === "hyperbola") return [0];
+    if (fam.kind === "log") return [0];
+    if (fam.kind === "sqrt") return [fam.xa];
+    return [];
+  }
+  function uniqSorted(arr, eps) {
+    eps = eps == null ? 1e-9 : eps;
+    var a = arr.slice().filter(function (x) { return isFinite(x); }).sort(function (u, v) { return u - v; });
+    var out = [];
+    for (var i = 0; i < a.length; i++) {
+      if (!out.length || Math.abs(a[i] - out[out.length - 1]) > eps) out.push(a[i]);
+    }
+    return out;
+  }
+  function fmtInterval(lo, hi, openLo, openHi) {
+    if (Math.abs(hi - lo) < 1e-9) return "x = " + fmtNum(lo);
+    var L = openLo ? "(" : "[";
+    var R = openHi ? ")" : "]";
+    return L + fmtNum(lo) + ", " + fmtNum(hi) + R;
+  }
+  /** Tramos entre ceros / rupturas de dominio. f=0 NO es f<0. */
   function buildStretches(fam) {
     var pts = (fam.points || []).slice().sort(function (a, b) { return a.x - b.x; });
-    var stretches = [], cur = null, i;
-    for (i = 0; i < pts.length; i++) {
-      var p = pts[i];
-      var neg = needsMirror(p);
-      if (!cur || cur.needMirror !== neg) {
-        if (cur) stretches.push(cur);
-        cur = { needMirror: neg, points: [p], lo: p.x, hi: p.x };
-      } else {
-        cur.points.push(p);
-        cur.hi = p.x;
-      }
+    var xmin = XMIN, xmax = XMAX;
+    if (pts.length) {
+      xmin = Math.min(xmin, pts[0].x - 0.5);
+      xmax = Math.max(xmax, pts[pts.length - 1].x + 0.5);
     }
-    if (cur) stretches.push(cur);
+    var zeros = findZeros(fam);
+    var breaks = domainBreaks(fam);
+    var crit = uniqSorted(zeros.concat(breaks).filter(function (x) { return x > xmin - 1e-9 && x < xmax + 1e-9; }));
+    var edges = uniqSorted([xmin].concat(crit).concat([xmax]));
+    var stretches = [];
+    var zi;
+    for (var i = 0; i < edges.length - 1; i++) {
+      var a = edges[i], b = edges[i + 1];
+      if (b - a < 1e-9) continue;
+      var mid = (a + b) / 2;
+      var y = fOf(fam, mid);
+      if (y == null || !isFinite(y)) continue;
+      var isBreak = breaks.some(function (t) { return Math.abs(t - a) < 1e-9 || Math.abs(t - b) < 1e-9; });
+      var needMirror = y < -1e-12;
+      /* open at zeros and breaks: f=0 is not negative */
+      var openLo = zeros.some(function (z) { return Math.abs(z - a) < 1e-9; }) || breaks.some(function (t) { return Math.abs(t - a) < 1e-9; });
+      var openHi = zeros.some(function (z) { return Math.abs(z - b) < 1e-9; }) || breaks.some(function (t) { return Math.abs(t - b) < 1e-9; });
+      if (Math.abs(a - xmin) < 1e-9) openLo = true;
+      if (Math.abs(b - xmax) < 1e-9) openHi = true;
+      stretches.push({
+        needMirror: needMirror,
+        lo: a, hi: b,
+        openLo: openLo, openHi: openHi,
+        zeros: zeros.slice(),
+        points: pts.filter(function (p) { return p.x > a - 1e-9 && p.x < b + 1e-9; }),
+        mid: mid, yMid: y
+      });
+    }
     stretches.forEach(function (s, idx) {
       s.id = idx;
-      if (s.lo === s.hi) s.label = "x = " + fmtNum(s.lo);
-      else s.label = fmtNum(s.lo) + " ≤ x ≤ " + fmtNum(s.hi);
-      s.signLabel = s.needMirror ? "f < 0 · espejar" : "f ≥ 0 · se queda";
+      s.label = fmtInterval(s.lo, s.hi, s.openLo, s.openHi);
+      if (s.needMirror) s.signLabel = "f < 0 · espejar · entre ceros";
+      else s.signLabel = "f ≥ 0 · se queda";
     });
+    fam._zeros = zeros;
     return stretches;
   }
 
@@ -802,13 +873,46 @@ var state = { ok:0,bad:0,round:1,fam:null,stretches:[],picked:{},locked:false,pa
     state.reveal = false;
     fitFamily(state.fam);
   }
+  function drawZeros(){
+    var zs = (state.fam && state.fam._zeros) || findZeros(state.fam) || [];
+    zs.forEach(function(z){
+      if (z < XMIN || z > XMAX) return;
+      var y = fOf(state.fam, z);
+      if (y == null || !isFinite(y)) y = 0;
+      var p = worldToScreen(z, 0);
+      ctx.save();
+      ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(p.x, PAD.t); ctx.lineTo(p.x, canvas.height - PAD.b); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = "#fde68a"; ctx.fill();
+      ctx.fillStyle = "#0f172a"; ctx.font = "800 11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      ctx.fillText("0", p.x, p.y - 8);
+      ctx.restore();
+    });
+  }
+  function drawStretchBand(s, picked){
+    if (!s) return;
+    var a = worldToScreen(s.lo, 0), b = worldToScreen(s.hi, 0);
+    var top = PAD.t, bottom = canvas.height - PAD.b;
+    ctx.save();
+    ctx.fillStyle = picked ? (s.needMirror ? "rgba(255,123,123,0.18)" : "rgba(90,212,168,0.12)") : "rgba(148,163,184,0.08)";
+    ctx.fillRect(Math.min(a.x, b.x), top, Math.abs(b.x - a.x), bottom - top);
+    ctx.restore();
+  }
   function draw(){
     drawGrid();
+    (state.stretches || []).forEach(function(s){
+      if (state.picked[s.id] || state.reveal) drawStretchBand(s, true);
+    });
     drawCurveFam(state.fam, "orig", 0.4, CURVE_ORIG);
+    drawZeros();
     if (state.reveal) drawCurveFam(state.fam, "negOnly", 0.95, NEG_HL);
     (state.fam.points || []).forEach(function(p){
+      var sid = stretchIdOf(p);
       if (needsMirror(p)) {
-        var on = state.reveal || state.picked[stretchIdOf(p)] ;
+        var on = state.reveal || state.picked[sid];
         drawPoint(p.x, p.y, fmtPt(p), on ? NEG_HL : ORIG, on ? "rgba(255,123,123,0.4)" : AMBER_GLOW);
         if (state.reveal) drawAbsSegment(p);
       } else {
@@ -820,12 +924,14 @@ var state = { ok:0,bad:0,round:1,fam:null,stretches:[],picked:{},locked:false,pa
   function stretchIdOf(p){
     for (var i = 0; i < state.stretches.length; i++) {
       var s = state.stretches[i];
-      if (s.points.some(function(q){ return nearPt(q, p, 0.01); })) return s.id;
+      var loOk = s.openLo ? (p.x > s.lo + 1e-9) : (p.x >= s.lo - 1e-9);
+      var hiOk = s.openHi ? (p.x < s.hi - 1e-9) : (p.x <= s.hi + 1e-9);
+      if (loOk && hiOk) return s.id;
     }
     return -1;
   }
   function renderChips(){
-    var html = '<p class="row-label">Marcá los tramos con f(x)&lt;0 (zona caqui)</p><div class="stretch-list" id="stretchList"></div>';
+    var html = '<p class="row-label">Marcá tramos f(x)&lt;0 · delimitados por <strong>ceros</strong> (f=0 no es f&lt;0)</p><div class="stretch-list" id="stretchList"></div>';
     html += '<button type="button" class="btn primary" id="checkBtn" style="margin:8px 0 0 6px">Comprobar</button>';
     chipBox.innerHTML = html;
     var list = document.getElementById("stretchList");
@@ -880,10 +986,10 @@ var state = { ok:0,bad:0,round:1,fam:null,stretches:[],picked:{},locked:false,pa
     if (!keepScores) { state.ok=0; state.bad=0; state.round=1; state.familyIdx=0; }
     state.won = false; victoryBanner.classList.remove("on");
     exprFormula.innerHTML = formulaHTML(state.fam, false) + ' <span style="color:var(--muted)">→</span> <span class="hl-abs">' + formulaHTML(state.fam, true).replace(/^y = /, "") + "</span>";
-    sideHint.textContent = "¿Cuáles tramos van debajo del eje X?";
+    sideHint.textContent = "¿Entre qué ceros está f&lt;0?";
     if (modeTagEl) modeTagEl.textContent = "Tramos";
     syncScores();
-    setPrompt("Marcá los tramos con <span class=\"hl-orig\">f(x)&lt;0</span> (zona <span class=\"hl-khaki\">caqui</span>) · esos necesitan espejo · <span class=\"hl-orig\">f≥0 se queda</span>.", "attention");
+    setPrompt("Marcá tramos <span class=\"hl-orig\">f(x)&lt;0</span> · se delimitan por los <strong>ceros</strong> (f=0 no cuenta) · zona <span class=\"hl-khaki\">caqui</span>.", "attention");
     renderChips(); draw();
   }
   function nextRound(){ state.round++; syncScores(); startRound(true); }
