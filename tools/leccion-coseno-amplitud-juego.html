@@ -87,6 +87,26 @@ canvas#c {
 .lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
 .lesson-nav.next .chev { border-left: 18px solid var(--mast); }
 .lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+
+.sound-meter {
+  margin: 10px 0 0; display: flex; align-items: flex-end; justify-content: flex-end;
+  gap: 5px; min-height: 28px; padding: 6px 10px;
+  color: var(--muted); font-size: 0.8rem; font-weight: 700;
+  user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px;
+  width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar {
+  display: inline-block; width: 5px; height: 8px; border-radius: 2px;
+  background: #3b4a63; transition: height .08s ease, background .08s ease;
+}
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+
 .locus-strip {
   margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;
   justify-content: flex-end; align-items: center;
@@ -154,6 +174,15 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <canvas id="confetti" width="1200" height="560" aria-hidden="true"></canvas>
       <div class="round-banner" id="roundBanner" aria-live="polite"></div>
     </div>
+    <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
     <div class="locus-strip" id="locusStrip" aria-label="Cuadrante o eje activo">
       <span class="locus" data-locus="q1">I</span>
       <span class="locus" data-locus="q2">II</span>
@@ -186,6 +215,38 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   const roundBanner = document.getElementById("roundBanner");
   const confettiCanvas = document.getElementById("confetti");
   const confettiCtx = confettiCanvas.getContext("2d");
+
+  const soundMeter = document.getElementById("soundMeter");
+  const soundMeterLevel = document.getElementById("soundMeterLevel");
+  const soundBars = soundMeter ? Array.from(soundMeter.querySelectorAll(".sound-bar")) : [];
+  let soundMeterTimer = null;
+  function pulseSoundMeter(kind) {
+    if (!soundMeter || !soundBars.length) return;
+    if (soundMeterTimer) clearInterval(soundMeterTimer);
+    soundMeter.classList.add("live");
+    soundMeter.classList.toggle("ok", kind === "ok");
+    soundMeter.classList.toggle("bad", kind === "bad");
+    soundMeterLevel.textContent = kind === "ok" ? "Sonido: chime" : (kind === "bad" ? "Sonido: buzz" : "Sonido: on");
+    let n = 0;
+    const heights = kind === "ok"
+      ? [8, 14, 20, 16, 10]
+      : [16, 10, 18, 8, 14];
+    soundMeterTimer = setInterval(() => {
+      n++;
+      soundBars.forEach((bar, i) => {
+        const wobble = ((n + i * 2) % 5);
+        bar.style.height = (heights[i] + wobble * 2) + "px";
+      });
+      if (n >= 12) {
+        clearInterval(soundMeterTimer);
+        soundMeterTimer = null;
+        soundBars.forEach((bar) => { bar.style.height = "6px"; });
+        soundMeter.classList.remove("live", "ok", "bad");
+        soundMeterLevel.textContent = "Sonido: off";
+      }
+    }, 45);
+  }
+
 
   let A = 1;
   let gameOk = 0, gameBad = 0, ronda = 1;
@@ -315,6 +376,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
   function playErrorSound() {
     const ac = ensureAudio();
+    pulseSoundMeter("bad");
     if (!ac) return;
     const t0 = ac.currentTime;
     const bufLen = Math.floor(ac.sampleRate * 0.16);
@@ -349,6 +411,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
   function playOkChime() {
     const ac = ensureAudio();
+    pulseSoundMeter("ok");
     if (!ac) return;
     const t0 = ac.currentTime;
     [523.25, 659.25, 783.99].forEach((f, i) => {
