@@ -548,7 +548,8 @@ var GK = window.CampusGameKit || {};
   }
   function fitFamily(fam) {
     var pts = (fam.points || []).slice();
-    for (var i = 0; i < pts.length; i++) pts.push(mirrorPt(pts[i]));
+    var nPts = pts.length;
+    for (var i = 0; i < nPts; i++) pts.push(mirrorPt(pts[i]));
     clampWorldPts(pts, 1.5);
   }
 
