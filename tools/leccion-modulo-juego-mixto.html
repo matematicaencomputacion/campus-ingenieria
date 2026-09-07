@@ -561,28 +561,99 @@ var GK = window.CampusGameKit || {};
     return fam;
   }
 
-  /** Stretches by consecutive lattice points of same sign (y<0 vs y≥0). */
+  /** Zeros of f (and domain breaks) — tramos f<0 se delimitan por ceros, no por puntos de retícula. */
+  function findZeros(fam) {
+    var zs = [];
+    if (!fam) return zs;
+    if (fam.kind === "linear") {
+      if (Math.abs(fam.m) > 1e-12) zs.push(-fam.b / fam.m);
+    } else if (fam.kind === "quadratic") {
+      var a = fam.v / (fam.h * fam.h);
+      if (Math.abs(fam.yp) < 1e-12) zs.push(fam.xp);
+      else if (a * fam.yp < 0) {
+        var d = Math.sqrt(-fam.yp / a);
+        zs.push(fam.xp - d, fam.xp + d);
+      }
+    } else if (fam.kind === "sqrt") {
+      if (Math.abs(fam.v) > 1e-12 && -fam.yp / fam.v >= -1e-12) {
+        var s = Math.max(0, -fam.yp / fam.v);
+        zs.push(fam.xa + fam.h * s * s);
+      }
+    } else if (fam.kind === "exp") {
+      if (Math.abs(fam.v) > 1e-12 && -fam.ya / fam.v > 0) {
+        var r = -fam.ya / fam.v;
+        zs.push(fam.xp + fam.h * Math.log(r) / Math.log(fam.base));
+      }
+    } else if (fam.kind === "log") {
+      zs.push(1);
+    }
+    return zs.filter(function (z) { return isFinite(z); });
+  }
+  function domainBreaks(fam) {
+    if (!fam) return [];
+    if (fam.kind === "hyperbola") return [0];
+    if (fam.kind === "log") return [0];
+    if (fam.kind === "sqrt") return [fam.xa];
+    return [];
+  }
+  function uniqSorted(arr, eps) {
+    eps = eps == null ? 1e-9 : eps;
+    var a = arr.slice().filter(function (x) { return isFinite(x); }).sort(function (u, v) { return u - v; });
+    var out = [];
+    for (var i = 0; i < a.length; i++) {
+      if (!out.length || Math.abs(a[i] - out[out.length - 1]) > eps) out.push(a[i]);
+    }
+    return out;
+  }
+  function fmtInterval(lo, hi, openLo, openHi) {
+    if (Math.abs(hi - lo) < 1e-9) return "x = " + fmtNum(lo);
+    var L = openLo ? "(" : "[";
+    var R = openHi ? ")" : "]";
+    return L + fmtNum(lo) + ", " + fmtNum(hi) + R;
+  }
+  /** Tramos entre ceros / rupturas de dominio. f=0 NO es f<0. */
   function buildStretches(fam) {
     var pts = (fam.points || []).slice().sort(function (a, b) { return a.x - b.x; });
-    var stretches = [], cur = null, i;
-    for (i = 0; i < pts.length; i++) {
-      var p = pts[i];
-      var neg = needsMirror(p);
-      if (!cur || cur.needMirror !== neg) {
-        if (cur) stretches.push(cur);
-        cur = { needMirror: neg, points: [p], lo: p.x, hi: p.x };
-      } else {
-        cur.points.push(p);
-        cur.hi = p.x;
-      }
+    var xmin = XMIN, xmax = XMAX;
+    if (pts.length) {
+      xmin = Math.min(xmin, pts[0].x - 0.5);
+      xmax = Math.max(xmax, pts[pts.length - 1].x + 0.5);
     }
-    if (cur) stretches.push(cur);
+    var zeros = findZeros(fam);
+    var breaks = domainBreaks(fam);
+    var crit = uniqSorted(zeros.concat(breaks).filter(function (x) { return x > xmin - 1e-9 && x < xmax + 1e-9; }));
+    var edges = uniqSorted([xmin].concat(crit).concat([xmax]));
+    var stretches = [];
+    var zi;
+    for (var i = 0; i < edges.length - 1; i++) {
+      var a = edges[i], b = edges[i + 1];
+      if (b - a < 1e-9) continue;
+      var mid = (a + b) / 2;
+      var y = fOf(fam, mid);
+      if (y == null || !isFinite(y)) continue;
+      var isBreak = breaks.some(function (t) { return Math.abs(t - a) < 1e-9 || Math.abs(t - b) < 1e-9; });
+      var needMirror = y < -1e-12;
+      /* open at zeros and breaks: f=0 is not negative */
+      var openLo = zeros.some(function (z) { return Math.abs(z - a) < 1e-9; }) || breaks.some(function (t) { return Math.abs(t - a) < 1e-9; });
+      var openHi = zeros.some(function (z) { return Math.abs(z - b) < 1e-9; }) || breaks.some(function (t) { return Math.abs(t - b) < 1e-9; });
+      if (Math.abs(a - xmin) < 1e-9) openLo = true;
+      if (Math.abs(b - xmax) < 1e-9) openHi = true;
+      stretches.push({
+        needMirror: needMirror,
+        lo: a, hi: b,
+        openLo: openLo, openHi: openHi,
+        zeros: zeros.slice(),
+        points: pts.filter(function (p) { return p.x > a - 1e-9 && p.x < b + 1e-9; }),
+        mid: mid, yMid: y
+      });
+    }
     stretches.forEach(function (s, idx) {
       s.id = idx;
-      if (s.lo === s.hi) s.label = "x = " + fmtNum(s.lo);
-      else s.label = fmtNum(s.lo) + " ≤ x ≤ " + fmtNum(s.hi);
-      s.signLabel = s.needMirror ? "f < 0 · espejar" : "f ≥ 0 · se queda";
+      s.label = fmtInterval(s.lo, s.hi, s.openLo, s.openHi);
+      if (s.needMirror) s.signLabel = "f < 0 · espejar · entre ceros";
+      else s.signLabel = "f ≥ 0 · se queda";
     });
+    fam._zeros = zeros;
     return stretches;
   }
 
@@ -793,6 +864,17 @@ var MODES = ["tramos","punto","curva","tabla","impostor"];
     locked:false,paused:false,won:false,
     speedFactor:1,timers:[],reveal:false,hover:null,placed:null,previewIdx:null,activeRow:0,familyIdx:0
   };
+  
+  function stretchIdOf(p){
+    for (var i = 0; i < state.stretches.length; i++) {
+      var s = state.stretches[i];
+      var loOk = s.openLo ? (p.x > s.lo + 1e-9) : (p.x >= s.lo - 1e-9);
+      var hiOk = s.openHi ? (p.x < s.hi - 1e-9) : (p.x <= s.hi + 1e-9);
+      if (loOk && hiOk) return s.id;
+    }
+    return -1;
+  }
+
   function buildRound(){
     state.mode = MODES[(Math.random() * MODES.length) | 0];
     state.reveal = false; state.hover = null; state.placed = null; state.previewIdx = null; state.picked = {};
@@ -842,6 +924,7 @@ var MODES = ["tramos","punto","curva","tabla","impostor"];
   function draw(){
     drawGrid();
     drawCurveFam(state.fam, "orig", 0.35, CURVE_ORIG);
+    if (state.mode === "tramos") drawZeros();
     if (state.mode === "punto") {
       drawPoint(state.A.x, state.A.y, "A "+fmtPt(state.A), NEG_HL, "rgba(255,123,123,0.4)");
       if (state.reveal) { drawAbsSegment(state.A); drawPoint(state.Ap.x,state.Ap.y,"A′",OK,"rgba(90,212,168,0.4)"); drawCurveFam(state.fam,"abs",0.85,CURVE_ABS); }
@@ -878,7 +961,7 @@ var MODES = ["tramos","punto","curva","tabla","impostor"];
   function renderUI(){
     if (modeTagEl) modeTagEl.textContent = ({tramos:"Tramos",punto:"Punto",curva:"Curva",impostor:"Impostor",tabla:"Tabla"})[state.mode];
     sideHint.textContent = ({
-      tramos:"Marcá tramos f<0", punto:"Tocá A′=(x,|y|)", curva:"Elegí |f|",
+      tramos:"Tramos f&lt;0 · entre ceros", punto:"Tocá A′=(x,|y|)", curva:"Elegí |f|",
       impostor:"Tocá el impostor", tabla:"Completá |f(x)|"
     })[state.mode];
     exprFormula.innerHTML = formulaHTML(state.fam, false);
