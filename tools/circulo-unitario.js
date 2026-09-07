@@ -170,6 +170,20 @@
   let challengeDeg = null;
   let pickCos = null, pickSin = null, verified = false;
   let okCount = 0, nCount = 0;
+  let predictAutoTimer = null;
+  const PREDICT_WIN = 20;
+  function clearPredictAuto() {
+    if (predictAutoTimer) { clearTimeout(predictAutoTimer); predictAutoTimer = null; }
+  }
+  function schedulePredictNext() {
+    clearPredictAuto();
+    if (okCount >= PREDICT_WIN) return;
+    predictAutoTimer = setTimeout(function () {
+      predictAutoTimer = null;
+      if (mode !== "predict") return;
+      newChallenge(true);
+    }, 3000);
+  }
 
   // drawAngle state
   const ANGLE_SNAP_DEG = 15;
@@ -3627,6 +3641,7 @@
     verifyBtn.disabled = verified || pickCos == null || pickSin == null || challengeDeg == null;
   }
   function newChallenge(preferUnused) {
+    clearPredictAuto();
     const angs = anglesForStep(step);
     let pool = preferUnused ? angs.filter(d => !revealed.includes(d)) : angs.slice();
     if (!pool.length) pool = angs.slice();
@@ -3656,22 +3671,35 @@
     if (ok) {
       clearUserGuess();
       draw();
-      setNarration(
-        "✓ Correcto: <strong>" + pairLabel(challengeDeg) + "</strong>. " +
-        "Proyección <span style='color:#ff5c5c'>roja → X</span>; <span style='color:#34d399'>verde → Y</span>. Queda permanente.",
-        "ok"
-      );
+      if (okCount >= PREDICT_WIN) {
+        setNarration(
+          "✓ Correcto: <strong>" + pairLabel(challengeDeg) + "</strong>. " +
+          "¡Ganaste! <strong>" + PREDICT_WIN + "</strong> aciertos.",
+          "ok"
+        );
+      } else {
+        setNarration(
+          "✓ Correcto: <strong>" + pairLabel(challengeDeg) + "</strong>. " +
+          "Proyección <span style='color:#ff5c5c'>roja → X</span>; <span style='color:#34d399'>verde → Y</span>. Queda permanente. " +
+          "Otro ángulo en <strong>3 s</strong>…",
+          "ok"
+        );
+        schedulePredictNext();
+      }
     } else {
       // show correct + amber blink of user's chosen (X,Y) with axis guides
       startWrongBlink(pickCos, pickSin);
       setNarration(
         "✗ Era <strong>" + pairLabel(challengeDeg) + "</strong>. " +
-        "Tu elección <span style='color:#FFBF00'>(" + pickCos + ", " + pickSin + ")</span> parpadea en ámbar con líneas a X e Y.",
+        "Tu elección <span style='color:#FFBF00'>(" + pickCos + ", " + pickSin + ")</span> parpadea en ámbar con líneas a X e Y. " +
+        "Otro ángulo en <strong>3 s</strong>…",
         "bad"
       );
+      schedulePredictNext();
     }
   }
   function resetPredict() {
+    clearPredictAuto();
     clearUserGuess();
     revealed = []; selected = null; okCount = 0; nCount = 0;
     scoreOk.textContent = "0"; scoreN.textContent = "0";
