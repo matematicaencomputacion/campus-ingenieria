@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 30 · Exponencial · play</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #c084fc; --border: #243044;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+  --ok: #5ad4a8; --amber: #FFBF00; --teal: #34d399; --pink: #f472b6;
+  --dot: #a78bfa; --run: #60a5fa; --rise: #34d399;
+  --row: #1a2435; --row-border: #2a3a52;
+  --point: #f59e0b;
+  --floor: #94a3b8;
+  --curve-r: #ff4d4d;
+  --curve-l: #60a5fa;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.88rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink);
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.amber { background: var(--amber); color: #0b1018; }
+button.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548; color: var(--mast);
+  border-color: rgba(110,168,254,0.45);
+}
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
+}
+.main-stage {
+  display: grid;
+  grid-template-columns: minmax(280px, 300px) 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+@media (max-width: 820px) {
+  .main-stage { grid-template-columns: 1fr; }
+}
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.expr-panel.locked { pointer-events: none; opacity: 0.55; }
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.slider-ya::before { background: var(--floor); }
+.expr-row.slider-xp::before { background: #f59e0b; }
+.expr-row.slider-v::before { background: var(--rise); }
+.expr-row.slider-h::before { background: var(--run); }
+.expr-row.slider-b::before { background: #ff4d4d; }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.82rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.55;
+}
+.expr-formula .pow {
+  display: inline-block; vertical-align: middle; text-align: center;
+  line-height: 1.05; margin: 0 0.08em;
+}
+.expr-formula .pow .base { display: block; }
+.expr-formula .pow .exp {
+  display: block; font-size: 0.72em; color: var(--run); border-top: 1px solid transparent;
+  margin-top: -2px;
+}
+.slider-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 8px;
+  margin-bottom: 6px; padding-left: 6px;
+}
+.slider-val {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 1.05rem;
+}
+.slider-val .eq { color: var(--muted); font-weight: 600; }
+.slider-hint { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+.slider-ya .slider-val { color: var(--floor); }
+.slider-xp .slider-val { color: #f59e0b; }
+.slider-v .slider-val { color: var(--rise); }
+.slider-h .slider-val { color: var(--run); }
+.slider-b .slider-val { color: #ff4d4d; }
+input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+  border-radius: 999px; background: #2a3a52; outline: none; cursor: pointer; margin: 4px 0 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--mast); border: 2px solid #e9eef7;
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.25); cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; background: var(--mast);
+  border: 2px solid #e9eef7; box-shadow: 0 0 0 3px rgba(96,165,250,0.25); cursor: pointer;
+}
+.range-ends {
+  display: flex; justify-content: space-between; font-size: 0.68rem;
+  color: var(--muted); font-family: ui-monospace, Menlo, monospace; padding: 0 1px;
+}
+@keyframes bipFlash {
+  0%, 100% {
+    background: var(--row);
+    border-color: var(--row-border);
+    box-shadow: none;
+  }
+  8%, 38%, 68% {
+    background: rgba(255, 191, 0, 0.38);
+    border-color: #FFBF00;
+    box-shadow: 0 0 18px rgba(255, 191, 0, 0.55);
+  }
+  23%, 53%, 83% {
+    background: rgba(210, 180, 100, 0.22);
+    border-color: rgba(255, 191, 0, 0.45);
+    box-shadow: 0 0 10px rgba(255, 191, 0, 0.28);
+  }
+}
+.expr-row.bip {
+  animation: bipFlash 1.1s ease-in-out 1;
+}
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--canvas-bg);
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.work-panel {
+  display: none; margin-top: 8px; padding: 10px 14px; border-radius: 10px;
+  background: rgba(18, 26, 39, 0.95); border: 1px solid rgba(192,132,252,0.45);
+  font-family: ui-monospace, Menlo, monospace; font-size: 1.05rem; font-weight: 700;
+  color: var(--ink); min-height: 2.2em; line-height: 1.55;
+}
+.work-panel.on { display: block; }
+.work-panel .hl { color: var(--amber); }
+.work-panel .hl-ya { color: #94a3b8; }
+.work-panel .hl-xp { color: #f59e0b; }
+.work-panel .hl-v { color: var(--rise); }
+.work-panel .hl-h { color: var(--run); }
+.work-panel .hl-b { color: #ff4d4d; }
+.caption {
+  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
+}
+.caption strong { color: var(--ink); }
+.caption .hl { color: var(--amber); font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-ya { color: #94a3b8; }
+.caption .hl-xp { color: #f59e0b; }
+.caption .hl-v { color: var(--rise); }
+.caption .hl-h { color: var(--run); }
+.caption .hl-b { color: #ff4d4d; }
+.caption .hl-r { color: #ff4d4d; }
+.caption .hl-l { color: #60a5fa; }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 6px 0 0; line-height: 1.4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 4px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 4px 8px; border-radius: 999px; background: #121a27;
+  border: 1px solid var(--row-border); color: var(--point);
+  transition: opacity .2s ease;
+}
+.chip.dim { opacity: 0.32; filter: grayscale(0.35); }
+.chip.red { color: #ff4d4d; border-color: rgba(255,77,77,0.45); }
+.chip.blue { color: #60a5fa; border-color: rgba(96,165,250,0.45); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 30</span> · Exponencial · play
+        <span class="sub">piso · P · ×b / ÷b</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="playBtn">▶ Play</button>
+      <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
+      <button type="button" class="btn" id="restartBtn">Reiniciar</button>
+      <span class="score" id="loopEl">Bucle <strong>0</strong></span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" id="exprPanel" aria-label="Parámetros">
+        <div class="expr-row">
+          <div class="expr-formula" id="exprFormula">f(x) = v · b<sup>((x − x<sub>p</sub>)/h)</sup> + y<sub>a</sub></div>
+        </div>
+        <div class="expr-row slider-ya" id="rowYa">
+          <div class="slider-head">
+            <span class="slider-val">y<sub>a</sub> <span class="eq">=</span> <span id="yaLabel">0</span></span>
+            <span class="slider-hint">piso · asíntota horizontal</span>
+          </div>
+          <input type="range" id="yaSlider" min="-2" max="2" step="1" value="0" aria-label="piso ya" />
+          <div class="range-ends"><span>−2</span><span>2</span></div>
+        </div>
+        <div class="expr-row slider-xp" id="rowXp">
+          <div class="slider-head">
+            <span class="slider-val">x<sub>p</sub> <span class="eq">=</span> <span id="xpLabel">0</span></span>
+            <span class="slider-hint">abscisa del punto de referencia</span>
+          </div>
+          <input type="range" id="xpSlider" min="-2" max="2" step="1" value="0" aria-label="abscisa xp" />
+          <div class="range-ends"><span>−2</span><span>2</span></div>
+        </div>
+        <div class="expr-row slider-v" id="rowV">
+          <div class="slider-head">
+            <span class="slider-val">v <span class="eq">=</span> <span id="vLabel">0</span></span>
+            <span class="slider-hint">altura sobre el piso en x<sub>p</sub></span>
+          </div>
+          <input type="range" id="vSlider" min="-2" max="2" step="1" value="0" aria-label="tamaño inicial v" />
+          <div class="range-ends"><span>−2</span><span>2</span></div>
+        </div>
+        <div class="expr-row slider-h" id="rowH">
+          <div class="slider-head">
+            <span class="slider-val">h <span class="eq">=</span> <span id="hLabel">0</span></span>
+            <span class="slider-hint">paso horizontal (&gt;0)</span>
+          </div>
+          <input type="range" id="hSlider" min="0" max="3" step="1" value="0" aria-label="paso horizontal h" />
+          <div class="range-ends"><span>0</span><span>3</span></div>
+        </div>
+        <div class="expr-row slider-b" id="rowB">
+          <div class="slider-head">
+            <span class="slider-val">b <span class="eq">=</span> <span id="bLabel">—</span></span>
+            <span class="slider-hint">base · b&gt;0, b≠1</span>
+          </div>
+          <input type="range" id="bSlider" min="0" max="3" step="1" value="0" aria-label="base b" />
+          <div class="range-ends"><span>2</span><span>e · 1.5 · 10</span></div>
+        </div>
+        <div class="expr-row">
+          <div class="chips">
+            <span class="chip dim" id="chipFloor">y = y<sub>a</sub></span>
+            <span class="chip dim" id="chipP">P = (—, —)</span>
+            <span class="chip dim red" id="chipR1">R1 · ×b</span>
+            <span class="chip dim red" id="chipR2">R2 · ×b²</span>
+            <span class="chip dim blue" id="chipL1">L1 · ÷b</span>
+          </div>
+        </div>
+      </aside>
+
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-simetria-juego-puntos.html" title="Lección 29: Simetría · juego · puntos" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="#" aria-disabled="true" title="Fin de la serie" aria-label="Lección siguiente deshabilitada"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="1200" height="760" aria-label="Exponencial · play · piso · ×b / ÷b"></canvas>
+      </div>
+    </div>
+    <div class="work-panel" id="workPanel" aria-live="polite"></div>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · primero el piso (asíntota), luego P, después caminar ×b / ÷b.</p>
+    <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
+    <p class="hint">f(x)=v·b<sup>((x−x<sub>p</sub>)/h)</sup>+y<sub>a</sub> · no cruza el piso · cada +h multiplica la altura-sobre-piso por b · −h divide · sin vértice: estrellas = piso + P · derecha <span style="color:#ff4d4d">×b</span> · izquierda <span style="color:#60a5fa">÷b</span></p>
+  </div>
+</div>
+
+<script src="game-kit.js?v=20260907"></script>
+<script>
+(function () {
+  "use strict";
+
+  var GK = window.CampusGameKit || {};
+  var E = Math.E; /* ≈ 2.718 */
+  var FIXED = { ya: 0, xp: 0, v: 1, h: 1, b: 2 };
+  var AMBER = "#f59e0b";
+  var RUN = "#60a5fa";
+  var RISE = "#34d399";
+  var MUTED = "#8b9bb4";
+  var FLOOR = "#94a3b8";
+  var CURVE_R = "#ff4d4d";
+  var CURVE_L = "#60a5fa";
+  var B_PRESETS = [2, 1.5, 10, E]; /* slider indices 0..3 */
+
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var playBtn = document.getElementById("playBtn");
+  var stopBtn = document.getElementById("stopBtn");
+  var slowBtn = document.getElementById("slowBtn");
+  var restartBtn = document.getElementById("restartBtn");
+  var loopEl = document.getElementById("loopEl");
+  var captionEl = document.getElementById("caption");
+  var workPanel = document.getElementById("workPanel");
+  var exprPanel = document.getElementById("exprPanel");
+  var soundMeter = document.getElementById("soundMeter");
+
+  var yaSlider = document.getElementById("yaSlider");
+  var xpSlider = document.getElementById("xpSlider");
+  var vSlider = document.getElementById("vSlider");
+  var hSlider = document.getElementById("hSlider");
+  var bSlider = document.getElementById("bSlider");
+  var yaLabel = document.getElementById("yaLabel");
+  var xpLabel = document.getElementById("xpLabel");
+  var vLabel = document.getElementById("vLabel");
+  var hLabel = document.getElementById("hLabel");
+  var bLabel = document.getElementById("bLabel");
+  var rowYaEl = document.getElementById("rowYa");
+  var rowXpEl = document.getElementById("rowXp");
+  var rowVEl = document.getElementById("rowV");
+  var rowHEl = document.getElementById("rowH");
+  var rowBEl = document.getElementById("rowB");
+  var chipFloor = document.getElementById("chipFloor");
+  var chipP = document.getElementById("chipP");
+  var chipR1 = document.getElementById("chipR1");
+  var chipR2 = document.getElementById("chipR2");
+  var chipL1 = document.getElementById("chipL1");
+  var exprFormula = document.getElementById("exprFormula");
+
+  var XMIN = -4, XMAX = 4, YMIN = -2, YMAX = 10;
+  var PAD = { l: 56, r: 28, t: 28, b: 42 };
+
+  var state = {
+    playing: false,
+    loop: 0,
+    anim: null,
+    raf: 0,
+    timers: [],
+    bipTimers: [],
+    token: 0,
+    slow: false,
+    lastKey: null,
+    first5Schedule: null
+  };
+
+  function fmtNum(n) {
+    if (Object.is(n, -0) || Math.abs(n) < 1e-12) return "0";
+    if (typeof n === "number" && Math.abs(n - Math.round(n)) < 1e-9) {
+      return String(Math.round(n)).replace("-", "−");
+    }
+    var s = (Math.round(n * 1000) / 1000).toString();
+    return s.replace("-", "−");
+  }
+
+  function fmtBase(b) {
+    if (Math.abs(b - E) < 1e-9) return "e";
+    if (Math.abs(b - 1.5) < 1e-9) return "1.5";
+    if (Math.abs(b - 10) < 1e-9) return "10";
+    if (Math.abs(b - 2) < 1e-9) return "2";
+    return fmtNum(b);
+  }
+
+  function fmtBaseCaption(b) {
+    if (Math.abs(b - E) < 1e-9) return "e≈2.718";
+    return fmtBase(b);
+  }
+
+  var formulaReveal = { ya: false, xp: false, v: false, h: false, b: false };
+
+  function formulaHTML(rev) {
+    rev = rev || formulaReveal;
+    var vPart = rev.v ? fmtNum(FIXED.v) : "v";
+    var bPart = rev.b ? fmtBase(FIXED.b) : "b";
+    var xpPart;
+    if (rev.xp) {
+      var xp = FIXED.xp;
+      if (xp === 0) xpPart = "x";
+      else if (xp > 0) xpPart = "(x − " + fmtNum(xp) + ")";
+      else xpPart = "(x + " + fmtNum(-xp) + ")";
+    } else {
+      xpPart = "(x − x<sub>p</sub>)";
+    }
+    var hPart = rev.h ? fmtNum(FIXED.h) : "h";
+    var expPart = "(" + xpPart + "/" + hPart + ")";
+    var yaPart;
+    if (rev.ya) {
+      var ya = FIXED.ya;
+      if (ya === 0) yaPart = "";
+      else if (ya > 0) yaPart = " + " + fmtNum(ya);
+      else yaPart = " − " + fmtNum(-ya);
+    } else {
+      yaPart = " + y<sub>a</sub>";
+    }
+    return "f(x) = " + vPart + " · " + bPart + "<sup>" + expPart + "</sup>" + yaPart;
+  }
+
+  function syncFormula(patch) {
+    if (patch) {
+      Object.keys(patch).forEach(function (k) { formulaReveal[k] = !!patch[k]; });
+    }
+    if (exprFormula) exprFormula.innerHTML = formulaHTML(formulaReveal);
+  }
+
+  function resetFormulaReveal() {
+    formulaReveal = { ya: false, xp: false, v: false, h: false, b: false };
+    syncFormula();
+  }
+
+  function setWork(html) {
+    if (!workPanel) return;
+    if (html == null || html === "") {
+      workPanel.classList.remove("on");
+      workPanel.innerHTML = "";
+      return;
+    }
+    workPanel.innerHTML = html;
+    workPanel.classList.add("on");
+  }
+
+  function setCaption(html) { captionEl.innerHTML = html; }
+
+  function setLoop(n) {
+    state.loop = n;
+    loopEl.innerHTML = "Bucle <strong>" + n + "</strong>";
+  }
+
+  function worldToScreen(x, y) {
+    var w = canvas.width - PAD.l - PAD.r;
+    var hh = canvas.height - PAD.t - PAD.b;
+    return {
+      x: PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w,
+      y: PAD.t + ((YMAX - y) / (YMAX - YMIN)) * hh
+    };
+  }
+
+  function clearBip() {
+    document.querySelectorAll(".expr-row.bip").forEach(function (el) {
+      el.classList.remove("bip");
+    });
+    (state.bipTimers || []).forEach(function (id) { clearTimeout(id); });
+    state.bipTimers = [];
+  }
+
+  function softBipTicks() {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!state._bipCtx) state._bipCtx = new AC();
+      var ac = state._bipCtx;
+      if (ac.state === "suspended") ac.resume();
+      var t0 = ac.currentTime;
+      for (var i = 0; i < 3; i++) {
+        var osc = ac.createOscillator();
+        var g = ac.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        var t = t0 + i * 0.22;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.035, t + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+        osc.connect(g); g.connect(ac.destination);
+        osc.start(t); osc.stop(t + 0.1);
+      }
+    } catch (e) {}
+    try { if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok"); } catch (e2) {}
+  }
+
+  function bipRow(el) {
+    if (!el) return;
+    clearBip();
+    el.classList.remove("bip");
+    void el.offsetWidth;
+    el.classList.add("bip");
+    softBipTicks();
+    var finish = function () {
+      el.classList.remove("bip");
+      el.removeEventListener("animationend", finish);
+    };
+    el.addEventListener("animationend", finish);
+    state.bipTimers.push(setTimeout(finish, 1200));
+  }
+
+  function clearTimers() {
+    state.timers.forEach(function (id) { clearTimeout(id); });
+    state.timers = [];
+    if (state.raf) { cancelAnimationFrame(state.raf); state.raf = 0; }
+    clearBip();
+  }
+
+  function speedFactor() { return state.slow ? 2 : 1; }
+
+  var YA_POOL = [-1, 0, 1, 2];
+  var XP_POOL = [-1, 0, 1];
+  var H_POOL = [1, 2];
+  var V_POOL = [1, 2, -1, -2];
+  var B_POOL = [2, 1.5, 10, E];
+
+  function shuffleInPlace(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function pickAvoid(pool, avoid) {
+    var opts = [];
+    for (var i = 0; i < pool.length; i++) {
+      if (avoid == null || pool[i] !== avoid) opts.push(pool[i]);
+    }
+    if (!opts.length) opts = pool.slice();
+    return opts[Math.floor(Math.random() * opts.length)];
+  }
+
+  function buildFirst5Schedule() {
+    /* xp=0, ya=0, h=1, v=1; vary b among {2, 1.5, 10, e, 2} — start with b=2 */
+    var bases = [2, 1.5, 10, E, 2];
+    var rest = bases.slice(1);
+    shuffleInPlace(rest);
+    return [{ b: 2 }].concat(rest.map(function (b) { return { b: b }; }));
+  }
+
+  function fExp(x, p) {
+    p = p || FIXED;
+    var hh = p.h || 1;
+    var exp = (x - p.xp) / hh;
+    return p.v * Math.pow(p.b, exp) + p.ya;
+  }
+
+  function fitWorldToParams(p) {
+    var xp = p.xp, ya = p.ya, h = Math.abs(p.h) || 1, v = p.v, b = p.b;
+    var xSpan = Math.max(Math.abs(xp) + 3 * h, 4);
+    XMIN = -Math.ceil(xSpan + 0.5);
+    XMAX = Math.ceil(xSpan + 0.5);
+
+    var ys = [ya, ya + v];
+    var steps = [-1, 1, 2];
+    for (var i = 0; i < steps.length; i++) {
+      var y = fExp(xp + steps[i] * h, p);
+      if (Number.isFinite(y)) ys.push(y);
+    }
+    /* sample curve a bit further for fit */
+    for (var k = 0; k <= 8; k++) {
+      var xx = xp + (k - 2) * h;
+      var yy = fExp(xx, p);
+      if (Number.isFinite(yy) && Math.abs(yy - ya) < 200) ys.push(yy);
+    }
+
+    var yMin = Math.min.apply(null, ys);
+    var yMax = Math.max.apply(null, ys);
+    /* keep asymptote readable with margin */
+    if (v >= 0) {
+      YMIN = Math.min(ya - 1.2, yMin - 0.5);
+      YMAX = Math.max(ya + 2, yMax + 1);
+    } else {
+      /* curve below floor: asymptote near top, room below */
+      YMAX = Math.max(ya + 1.5, yMax + 0.8);
+      YMIN = Math.min(ya - 1, yMin - 1);
+    }
+    if (YMAX - YMIN < 4) {
+      var mid = (YMAX + YMIN) / 2;
+      YMIN = mid - 2;
+      YMAX = mid + 2;
+    }
+  }
+
+  function pickParamsForLoop(loop) {
+    var ya, xp, v, h, b;
+    if (loop <= 5) {
+      ya = 0; xp = 0; h = 1; v = 1;
+      if (!state.first5Schedule || !state.first5Schedule.length) {
+        state.first5Schedule = buildFirst5Schedule();
+      }
+      var pair = state.first5Schedule[loop - 1] || { b: 2 };
+      b = pair.b;
+    } else {
+      ya = pickAvoid(YA_POOL, state.lastKey && state.lastKey.ya);
+      xp = XP_POOL[Math.floor(Math.random() * XP_POOL.length)];
+      h = pickAvoid(H_POOL, state.lastKey && state.lastKey.h);
+      v = pickAvoid(V_POOL, state.lastKey && state.lastKey.v);
+      b = pickAvoid(B_POOL, state.lastKey && state.lastKey.b);
+      if (state.lastKey && h === state.lastKey.h && v === state.lastKey.v && b === state.lastKey.b) {
+        b = pickAvoid(B_POOL, b);
+      }
+    }
+    FIXED.ya = ya;
+    FIXED.xp = xp;
+    FIXED.v = v;
+    FIXED.h = h;
+    FIXED.b = b;
+    state.lastKey = { ya: ya, xp: xp, v: v, h: h, b: b };
+    fitWorldToParams(FIXED);
+  }
+
+  function paramsCaptionBits() {
+    return "P(<span class=\"hl hl-xp\">" + fmtNum(FIXED.xp) + "</span>, <span class=\"hl hl-v\">" + fmtNum(FIXED.ya + FIXED.v) + "</span>) · <span class=\"hl hl-ya\">y<sub>a</sub>=" + fmtNum(FIXED.ya) + "</span> · <span class=\"hl hl-h\">h=" + fmtNum(FIXED.h) + "</span> · <span class=\"hl hl-v\">v=" + fmtNum(FIXED.v) + "</span> · <span class=\"hl hl-b\">b=" + fmtBaseCaption(FIXED.b) + "</span>";
+  }
+
+  function later(ms, fn) {
+    var id = setTimeout(fn, ms * speedFactor());
+    state.timers.push(id);
+    return id;
+  }
+
+  function syncSlowBtn() {
+    if (!slowBtn) return;
+    slowBtn.setAttribute("aria-pressed", state.slow ? "true" : "false");
+    if (state.slow) {
+      slowBtn.classList.add("amber");
+      slowBtn.textContent = "Lento ✓";
+    } else {
+      slowBtn.classList.remove("amber");
+      slowBtn.textContent = "Lento";
+    }
+  }
+
+  function updateButtons() {
+    playBtn.disabled = state.playing;
+    stopBtn.disabled = !state.playing;
+    if (state.playing) exprPanel.classList.add("locked");
+    else exprPanel.classList.remove("locked");
+    yaSlider.disabled = state.playing;
+    xpSlider.disabled = state.playing;
+    vSlider.disabled = state.playing;
+    hSlider.disabled = state.playing;
+    bSlider.disabled = state.playing;
+  }
+
+  function bIndexOf(b) {
+    for (var i = 0; i < B_PRESETS.length; i++) {
+      if (Math.abs(B_PRESETS[i] - b) < 1e-9) return i;
+    }
+    return 0;
+  }
+
+  function resetSlidersToZero() {
+    yaSlider.value = "0";
+    xpSlider.value = "0";
+    vSlider.value = "0";
+    hSlider.value = "0";
+    bSlider.value = "0";
+    yaLabel.textContent = "0";
+    xpLabel.textContent = "0";
+    vLabel.textContent = "0";
+    hLabel.textContent = "0";
+    bLabel.textContent = "—";
+  }
+
+  function refreshChips(sc) {
+    var ya = FIXED.ya, xp = FIXED.xp, v = FIXED.v, h = FIXED.h, b = FIXED.b;
+    if (!sc || !sc.showFloor) {
+      chipFloor.innerHTML = "y = y<sub>a</sub>";
+      chipFloor.classList.add("dim");
+    } else {
+      chipFloor.textContent = "y = " + fmtNum(ya);
+      chipFloor.classList.remove("dim");
+    }
+    if (!sc || !sc.showP) {
+      chipP.textContent = "P = (—, —)";
+      chipP.classList.add("dim");
+    } else {
+      chipP.textContent = "P = (" + fmtNum(xp) + ", " + fmtNum(ya + v) + ")";
+      chipP.classList.remove("dim");
+    }
+    if (!sc || !sc.showR1) {
+      chipR1.textContent = "R1 · ×b";
+      chipR1.classList.add("dim");
+    } else {
+      chipR1.textContent = "R1(" + fmtNum(xp + h) + ", " + fmtNum(ya + v * b) + ")";
+      chipR1.classList.remove("dim");
+    }
+    if (!sc || !sc.showR2) {
+      chipR2.textContent = "R2 · ×b²";
+      chipR2.classList.add("dim");
+    } else {
+      chipR2.textContent = "R2(" + fmtNum(xp + 2 * h) + ", " + fmtNum(ya + v * b * b) + ")";
+      chipR2.classList.remove("dim");
+    }
+    if (!sc || !sc.showL1) {
+      chipL1.textContent = "L1 · ÷b";
+      chipL1.classList.add("dim");
+    } else {
+      chipL1.textContent = "L1(" + fmtNum(xp - h) + ", " + fmtNum(ya + v / b) + ")";
+      chipL1.classList.remove("dim");
+    }
+  }
+
+  function emptyScene() {
+    return {
+      showFloor: false,
+      floorBlink: 1,
+      showP: false,
+      showXpGuide: false,
+      hRight1: 0, riseR1: 0,
+      hRight2: 0, riseR2: 0,
+      hLeft1: 0, fallL1: 0,
+      showR1: false, showR2: false, showL1: false,
+      showCurve: false,
+      showMultLabel: 0,
+      t: 0
+    };
+  }
+
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    for (var xi = Math.ceil(XMIN); xi <= Math.floor(XMAX); xi++) {
+      var p0 = worldToScreen(xi, YMIN), p1 = worldToScreen(xi, YMAX);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    for (var yi = Math.ceil(YMIN); yi <= Math.floor(YMAX); yi++) {
+      var q0 = worldToScreen(XMIN, yi), q1 = worldToScreen(XMAX, yi);
+      ctx.beginPath(); ctx.moveTo(q0.x, q0.y); ctx.lineTo(q1.x, q1.y); ctx.stroke();
+    }
+    var ox = worldToScreen(0, 0);
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(PAD.l, ox.y); ctx.lineTo(canvas.width - PAD.r, ox.y);
+    ctx.moveTo(ox.x, PAD.t); ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.stroke();
+    ctx.fillStyle = MUTED;
+    ctx.font = "600 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (var xt = Math.ceil(XMIN); xt <= Math.floor(XMAX); xt++) {
+      if (xt === 0) continue;
+      var sx = worldToScreen(xt, 0);
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath(); ctx.moveTo(sx.x, sx.y - 4); ctx.lineTo(sx.x, sx.y + 4); ctx.stroke();
+      ctx.fillText(String(xt), sx.x, sx.y + 8);
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (var yt = Math.ceil(YMIN); yt <= Math.floor(YMAX); yt++) {
+      if (yt === 0) continue;
+      var sy = worldToScreen(0, yt);
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath(); ctx.moveTo(sy.x - 4, sy.y); ctx.lineTo(sy.x + 4, sy.y); ctx.stroke();
+      ctx.fillText(fmtNum(yt), sy.x - 8, sy.y);
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.fillText("0", ox.x - 8, ox.y + 6);
+    ctx.fillStyle = "#93c5fd";
+    ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("x", canvas.width - PAD.r - 14, ox.y - 8);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("y", ox.x + 10, PAD.t + 4);
+  }
+
+  function drawFloor(ya, alpha) {
+    var left = worldToScreen(XMIN, ya);
+    var right = worldToScreen(XMAX, ya);
+    var a = alpha == null ? 1 : alpha;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0.15, Math.min(1, a));
+    ctx.strokeStyle = FLOOR;
+    ctx.lineWidth = 2.4;
+    ctx.setLineDash([8, 7]);
+    ctx.shadowColor = "rgba(148,163,184,0.55)";
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.moveTo(left.x, left.y);
+    ctx.lineTo(right.x, right.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = FLOOR;
+    ctx.font = "700 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("piso y = " + fmtNum(ya), PAD.l + 10, left.y - 8);
+    ctx.restore();
+  }
+
+  function drawXpGuide(xp) {
+    var top = worldToScreen(xp, YMAX);
+    var bot = worldToScreen(xp, YMIN);
+    ctx.save();
+    ctx.globalAlpha = 0.45;
+    ctx.strokeStyle = AMBER;
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    ctx.moveTo(top.x, top.y);
+    ctx.lineTo(bot.x, bot.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawPoint(x, y, label, color, radius, ring) {
+    var p = worldToScreen(x, y);
+    var r = radius || 7;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r + 5, 0, Math.PI * 2);
+    ctx.fillStyle = color === CURVE_L ? "rgba(96,165,250,0.28)"
+      : (color === CURVE_R ? "rgba(255,77,77,0.28)" : "rgba(245,158,11,0.35)");
+    ctx.fill();
+    if (ring) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r + 4, 0, Math.PI * 2);
+      ctx.strokeStyle = "#fef3c7";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = color || AMBER;
+    ctx.fill();
+    ctx.strokeStyle = "#fef3c7";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    if (label) {
+      ctx.fillStyle = "#fef3c7";
+      ctx.font = "800 14px Segoe UI, system-ui, sans-serif";
+      ctx.textBaseline = "bottom";
+      ctx.textAlign = "left";
+      ctx.fillText(label, p.x + 12, p.y - 10);
+    }
+    ctx.restore();
+  }
+
+  function drawArrow(x0, y0, x1, y1, color, width) {
+    var a = worldToScreen(x0, y0);
+    var b = worldToScreen(x1, y1);
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var len = Math.hypot(dx, dy) || 1;
+    var ux = dx / len, uy = dy / len;
+    var head = 12;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = width || 3.2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x - ux * 6, b.y - uy * 6);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x - ux * head - uy * head * 0.45, b.y - uy * head + ux * head * 0.45);
+    ctx.lineTo(b.x - ux * head + uy * head * 0.45, b.y - uy * head - ux * head * 0.45);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function strokePoly(pts, color, width) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    var first = true;
+    for (var j = 0; j < pts.length; j++) {
+      var p = pts[j];
+      if (!p) { first = true; continue; }
+      if (first) { ctx.moveTo(p.x, p.y); first = false; }
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+  }
+
+  /* Two-color exponential: left of xp (÷b) in blue, right of xp (×b) in red */
+  function drawExponential(xp, ya, h, v, b) {
+    var leftPts = [];
+    var rightPts = [];
+    var n = 280;
+    for (var i = 0; i <= n; i++) {
+      var x = XMIN + (XMAX - XMIN) * (i / n);
+      var y = v * Math.pow(b, (x - xp) / (h || 1)) + ya;
+      if (!Number.isFinite(y) || y < YMIN - 1 || y > YMAX + 1) {
+        if (x <= xp) leftPts.push(null);
+        else rightPts.push(null);
+        continue;
+      }
+      var scr = worldToScreen(x, y);
+      if (x < xp - 1e-9) leftPts.push(scr);
+      else if (x > xp + 1e-9) rightPts.push(scr);
+      else {
+        /* junction at P: belong to both polylines */
+        leftPts.push(scr);
+        rightPts.push(scr);
+      }
+    }
+    /* ensure junction point on both sides */
+    var yP = ya + v;
+    if (Number.isFinite(yP)) {
+      var jp = worldToScreen(xp, yP);
+      if (leftPts.length && leftPts[leftPts.length - 1]) {
+        /* ok */
+      } else {
+        leftPts.push(jp);
+      }
+      if (!rightPts.length || !rightPts[0]) {
+        rightPts.unshift(jp);
+      }
+    }
+    ctx.save();
+    strokePoly(leftPts, "rgba(96,165,250,0.35)", 7);
+    strokePoly(leftPts, CURVE_L, 3.6);
+    strokePoly(rightPts, "rgba(255,77,77,0.35)", 7);
+    strokePoly(rightPts, CURVE_R, 3.6);
+    ctx.restore();
+  }
+
+  function paintScene(sc) {
+    drawGrid();
+    if (!sc) return;
+    var ya = FIXED.ya, xp = FIXED.xp, v = FIXED.v, h = FIXED.h, b = FIXED.b;
+    var yP = ya + v;
+    var yR1 = ya + v * b;
+    var yR2 = ya + v * b * b;
+    var yL1 = ya + v / b;
+
+    if (sc.showFloor) drawFloor(ya, sc.floorBlink);
+    if (sc.showXpGuide || sc.showP) drawXpGuide(xp);
+
+    if (sc.showCurve) drawExponential(xp, ya, h, v, b);
+
+    /* Right step 1: +h then height to ya+v·b */
+    if (sc.hRight1 > 0) {
+      var p = Math.min(1, sc.hRight1);
+      drawArrow(xp, yP, xp + h * p, yP, AMBER, 3.2);
+    }
+    if (sc.riseR1 > 0) {
+      var p1 = Math.min(1, sc.riseR1);
+      drawArrow(xp + h, yP, xp + h, yP + (yR1 - yP) * p1, CURVE_R, 3.2);
+    }
+    /* Right step 2 */
+    if (sc.hRight2 > 0) {
+      var p2 = Math.min(1, sc.hRight2);
+      drawArrow(xp + h, yR1, xp + h + h * p2, yR1, AMBER, 3.2);
+    }
+    if (sc.riseR2 > 0) {
+      var p3 = Math.min(1, sc.riseR2);
+      drawArrow(xp + 2 * h, yR1, xp + 2 * h, yR1 + (yR2 - yR1) * p3, CURVE_R, 3.2);
+    }
+    /* Left step: −h then height to ya+v/b */
+    if (sc.hLeft1 > 0) {
+      var p4 = Math.min(1, sc.hLeft1);
+      drawArrow(xp, yP, xp - h * p4, yP, AMBER, 3.2);
+    }
+    if (sc.fallL1 > 0) {
+      var p5 = Math.min(1, sc.fallL1);
+      drawArrow(xp - h, yP, xp - h, yP + (yL1 - yP) * p5, CURVE_L, 3.2);
+    }
+
+    if (sc.showMultLabel >= 1 && sc.showR1) {
+      var mid = worldToScreen(xp + h, (yP + yR1) / 2);
+      ctx.save();
+      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = CURVE_R;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("×" + fmtBase(b), mid.x + 12, mid.y);
+      ctx.restore();
+    }
+    if (sc.showMultLabel >= 2 && sc.showR2) {
+      var mid2 = worldToScreen(xp + 2 * h, (yR1 + yR2) / 2);
+      ctx.save();
+      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = CURVE_R;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("×" + fmtBase(b), mid2.x + 12, mid2.y);
+      ctx.restore();
+    }
+    if (sc.showMultLabel >= 3 && sc.showL1) {
+      var mid3 = worldToScreen(xp - h, (yP + yL1) / 2);
+      ctx.save();
+      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = CURVE_L;
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText("÷" + fmtBase(b), mid3.x - 12, mid3.y);
+      ctx.restore();
+    }
+
+    if (sc.showP) {
+      drawPoint(xp, yP, "P(" + fmtNum(xp) + ", " + fmtNum(yP) + ")", AMBER, 8, true);
+    }
+    if (sc.showR1) {
+      drawPoint(xp + h, yR1, "R1(" + fmtNum(xp + h) + ", " + fmtNum(yR1) + ")", CURVE_R);
+    }
+    if (sc.showR2) {
+      drawPoint(xp + 2 * h, yR2, "R2(" + fmtNum(xp + 2 * h) + ", " + fmtNum(yR2) + ")", CURVE_R);
+    }
+    if (sc.showL1) {
+      drawPoint(xp - h, yL1, "L1(" + fmtNum(xp - h) + ", " + fmtNum(yL1) + ")", CURVE_L);
+    }
+
+    refreshChips(sc);
+  }
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function animateSlider(slider, labelEl, fromVal, toVal, ms, token, done, fmtFn) {
+    if (token !== state.token) return;
+    var dur = (ms || 550) * speedFactor();
+    var fmt = fmtFn || fmtNum;
+    if (fromVal === toVal) {
+      slider.step = "1";
+      slider.value = String(toVal);
+      labelEl.textContent = fmt(toVal);
+      later(40, function () { if (done) done(); });
+      return;
+    }
+    slider.step = "any";
+    var t0 = performance.now();
+    function tick(now) {
+      if (token !== state.token) {
+        slider.step = "1";
+        return;
+      }
+      var u = Math.min(1, (now - t0) / dur);
+      var val = fromVal + (toVal - fromVal) * easeOut(u);
+      slider.value = String(val);
+      labelEl.textContent = fmt(Math.round(val * 1000) / 1000);
+      if (u < 1) state.raf = requestAnimationFrame(tick);
+      else {
+        slider.step = "1";
+        slider.value = String(toVal);
+        labelEl.textContent = fmt(toVal);
+        if (done) done();
+      }
+    }
+    state.raf = requestAnimationFrame(tick);
+  }
+
+  function animateProgress(key, ms, token, onDone) {
+    var t0 = performance.now();
+    var dur = ms * speedFactor();
+    function tick(now) {
+      if (token !== state.token) return;
+      var u = Math.min(1, (now - t0) / dur);
+      state.anim[key] = easeOut(u);
+      paintScene(state.anim);
+      if (u < 1) state.raf = requestAnimationFrame(tick);
+      else {
+        state.anim[key] = 1;
+        paintScene(state.anim);
+        if (onDone) onDone();
+      }
+    }
+    state.raf = requestAnimationFrame(tick);
+  }
+
+  function runLoop(token) {
+    pickParamsForLoop(state.loop);
+    resetSlidersToZero();
+    var sc = emptyScene();
+    state.anim = sc;
+    paintScene(sc);
+    resetFormulaReveal();
+    setWork("");
+    setCaption("Bucle <strong>" + state.loop + "</strong> · " + paramsCaptionBits());
+
+    var ya = FIXED.ya, xp = FIXED.xp, v = FIXED.v, h = FIXED.h, b = FIXED.b;
+    var yP = ya + v;
+    var yR1 = ya + v * b;
+    var yR2 = ya + v * b * b;
+    var yL1 = ya + v / b;
+
+    /* 1 — piso / asíntota horizontal primero (OpenStax: asymptote first) */
+    function step1() {
+      if (token !== state.token) return;
+      setCaption("Bucle <strong>" + state.loop + "</strong> · primero el <span class=\"hl hl-ya\">piso y = " + fmtNum(ya) + "</span> · asíntota horizontal (la curva nunca la cruza)");
+      setWork("Piso · <span class=\"hl-ya\">y<sub>a</sub> = " + fmtNum(ya) + "</span> · asíntota horizontal");
+      sc.showFloor = true;
+      sc.floorBlink = 1;
+      paintScene(sc);
+      animateSlider(yaSlider, yaLabel, 0, ya, 400, token, function () {
+        if (token !== state.token) return;
+        syncFormula({ ya: true });
+        bipRow(rowYaEl);
+        var blinks = 0;
+        function doBlink() {
+          if (token !== state.token) return;
+          if (blinks >= 3) {
+            sc.floorBlink = 1;
+            paintScene(sc);
+            later(500, step2);
+            return;
+          }
+          sc.floorBlink = 0.2;
+          paintScene(sc);
+          later(160, function () {
+            if (token !== state.token) return;
+            sc.floorBlink = 1;
+            paintScene(sc);
+            blinks++;
+            later(180, doBlink);
+          });
+        }
+        later(200, doBlink);
+      });
+    }
+
+    /* 2 — punto ámbar P = (xp, ya+v); sustituir xp, v (ya ya revelado) */
+    function step2() {
+      if (token !== state.token) return;
+      setCaption("Punto de referencia <span class=\"hl hl-xp\">P(" + fmtNum(xp) + ", " + fmtNum(yP) + ")</span> · altura sobre el piso <span class=\"hl hl-v\">v = " + fmtNum(v) + "</span> · sin vértice: estrellas = piso + P");
+      setWork("P · (<span class=\"hl-xp\">" + fmtNum(xp) + "</span>, <span class=\"hl-ya\">" + fmtNum(ya) + "</span> + <span class=\"hl-v\">" + fmtNum(v) + "</span>)");
+      animateSlider(xpSlider, xpLabel, 0, xp, 400, token, function () {
+        if (token !== state.token) return;
+        syncFormula({ xp: true });
+        bipRow(rowXpEl);
+        later(400, function () {
+          if (token !== state.token) return;
+          animateSlider(vSlider, vLabel, 0, v, 450, token, function () {
+            if (token !== state.token) return;
+            syncFormula({ v: true });
+            bipRow(rowVEl);
+            sc.showP = true;
+            sc.showXpGuide = true;
+            paintScene(sc);
+            later(900, stepH);
+          });
+        });
+      });
+    }
+
+    /* h + b revealed before walking */
+    function stepH() {
+      if (token !== state.token) return;
+      setCaption("Paso horizontal <span class=\"hl hl-h\">h = " + fmtNum(h) + "</span> · base <span class=\"hl hl-b\">b = " + fmtBaseCaption(b) + "</span> · cada +h multiplica la altura-sobre-piso por b");
+      setWork("h = <span class=\"hl-h\">" + fmtNum(h) + "</span> · b = <span class=\"hl-b\">" + fmtBase(b) + "</span>");
+      animateSlider(hSlider, hLabel, 0, h, 450, token, function () {
+        if (token !== state.token) return;
+        syncFormula({ h: true });
+        bipRow(rowHEl);
+        later(350, function () {
+          if (token !== state.token) return;
+          var bi = bIndexOf(b);
+          animateSlider(bSlider, bLabel, 0, bi, 500, token, function () {
+            if (token !== state.token) return;
+            bLabel.textContent = fmtBase(b);
+            syncFormula({ b: true });
+            bipRow(rowBEl);
+            later(700, stepR1);
+          }, function (idx) {
+            var i = Math.max(0, Math.min(3, Math.round(idx)));
+            return fmtBase(B_PRESETS[i]);
+          });
+        });
+      });
+    }
+
+    /* 3 — un paso a la derecha: +h → R1 = (xp+h, ya+v·b) · «×b» */
+    function stepR1() {
+      if (token !== state.token) return;
+      setCaption("<span class=\"hl hl-r\">→ derecha</span> · +h · altura-sobre-piso × <span class=\"hl hl-b\">b</span> → R1(<span class=\"hl\">" + fmtNum(xp + h) + "</span>, <span class=\"hl\">" + fmtNum(yR1) + "</span>) · «×" + fmtBase(b) + "»");
+      setWork("R1 · <span class=\"hl-h\">+" + fmtNum(h) + "</span> · <span class=\"hl-b\">×" + fmtBase(b) + "</span> → (" + fmtNum(xp + h) + ", " + fmtNum(yR1) + ")");
+      animateProgress("hRight1", 650, token, function () {
+        if (token !== state.token) return;
+        animateProgress("riseR1", 700, token, function () {
+          if (token !== state.token) return;
+          sc.showR1 = true;
+          sc.showMultLabel = 1;
+          paintScene(sc);
+          later(900, stepR2);
+        });
+      });
+    }
+
+    /* 4 — dos pasos: R2 = (xp+2h, ya+v·b²) */
+    function stepR2() {
+      if (token !== state.token) return;
+      setCaption("<span class=\"hl hl-r\">→ derecha</span> · otro +h · otra vez ×b → R2 · altura <span class=\"hl hl-b\">v·b²</span> · lejos del piso los saltos crecen (mismo h)");
+      setWork("R2 · <span class=\"hl-b\">×" + fmtBase(b) + "</span> otra vez → (" + fmtNum(xp + 2 * h) + ", " + fmtNum(yR2) + ")");
+      animateProgress("hRight2", 650, token, function () {
+        if (token !== state.token) return;
+        animateProgress("riseR2", 750, token, function () {
+          if (token !== state.token) return;
+          sc.showR2 = true;
+          sc.showMultLabel = 2;
+          paintScene(sc);
+          later(900, stepL1);
+        });
+      });
+    }
+
+    /* 5 — un paso a la izquierda: L1 = (xp−h, ya+v/b) · «÷b» */
+    function stepL1() {
+      if (token !== state.token) return;
+      setCaption("<span class=\"hl hl-l\">← izquierda</span> · −h · altura-sobre-piso ÷ <span class=\"hl hl-b\">b</span> → L1(<span class=\"hl\">" + fmtNum(xp - h) + "</span>, <span class=\"hl\">" + fmtNum(yL1) + "</span>) · «÷" + fmtBase(b) + "» · cerca del piso casi plana");
+      setWork("L1 · <span class=\"hl-h\">−" + fmtNum(h) + "</span> · <span class=\"hl-b\">÷" + fmtBase(b) + "</span> → (" + fmtNum(xp - h) + ", " + fmtNum(yL1) + ")");
+      animateProgress("hLeft1", 650, token, function () {
+        if (token !== state.token) return;
+        animateProgress("fallL1", 700, token, function () {
+          if (token !== state.token) return;
+          sc.showL1 = true;
+          sc.showMultLabel = 3;
+          paintScene(sc);
+          later(900, stepCurve);
+        });
+      });
+    }
+
+    /* 6 — trazo de la curva (dos colores desde xp) · nunca cruza el piso */
+    function stepCurve() {
+      if (token !== state.token) return;
+      setCaption("<strong>STOP</strong> · curva · <span class=\"hl hl-r\">derecha ×b</span> · <span class=\"hl hl-l\">izquierda ÷b</span> · nunca cruza el piso y<sub>a</sub> · " + paramsCaptionBits());
+      setWork("STOP · P + R1 + R2 + L1 · no cruza <span class=\"hl-ya\">y = " + fmtNum(ya) + "</span>");
+      sc.showCurve = true;
+      paintScene(sc);
+      try { if (GK.playOkChime) GK.playOkChime(); } catch (e) {}
+      try { if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok"); } catch (e2) {}
+      later(1600, function () {
+        if (token !== state.token) return;
+        setCaption("Más adelante el logaritmo preguntará: si la altura se multiplicó por la base, ¿cuántos pasos h di?");
+        later(3400, function () {
+          if (token !== state.token) return;
+          if (!state.playing) return;
+          setCaption("Pausa 5 s · próximos parámetros…");
+          setWork("");
+          later(5000, function () {
+            if (token !== state.token) return;
+            if (!state.playing) return;
+            setLoop(state.loop + 1);
+            clearTimers();
+            state.token++;
+            runLoop(state.token);
+          });
+        });
+      });
+    }
+
+    step1();
+  }
+
+  function startPlay() {
+    clearTimers();
+    state.playing = true;
+    state.token++;
+    state.first5Schedule = buildFirst5Schedule();
+    state.lastKey = null;
+    setLoop(1);
+    updateButtons();
+    runLoop(state.token);
+  }
+
+  function stopPlay() {
+    state.playing = false;
+    clearTimers();
+    state.token++;
+    updateButtons();
+    setCaption("Más adelante el logaritmo preguntará: si la altura se multiplicó por la base, ¿cuántos pasos h di?");
+    paintScene(state.anim);
+  }
+
+  function restart() {
+    clearTimers();
+    state.playing = false;
+    state.token++;
+    state.first5Schedule = null;
+    state.lastKey = null;
+    FIXED.ya = 0; FIXED.xp = 0; FIXED.v = 1; FIXED.h = 1; FIXED.b = 2;
+    fitWorldToParams(FIXED);
+    setLoop(0);
+    updateButtons();
+    resetSlidersToZero();
+    state.anim = emptyScene();
+    setWork("");
+    resetFormulaReveal();
+    setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> · primero el piso, luego P · bucles 1–5 en (0,0) con b∈{2, 1.5, 10, e}.");
+    paintScene(state.anim);
+    refreshChips(state.anim);
+  }
+
+  playBtn.addEventListener("click", function () {
+    if (state.playing) return;
+    startPlay();
+  });
+  stopBtn.addEventListener("click", stopPlay);
+  slowBtn.addEventListener("click", function () {
+    state.slow = !state.slow;
+    syncSlowBtn();
+  });
+  restartBtn.addEventListener("click", restart);
+
+  updateButtons();
+  resetSlidersToZero();
+  state.anim = emptyScene();
+  paintScene(state.anim);
+  refreshChips(state.anim);
+})();
+</script>
+</body>
+</html>
