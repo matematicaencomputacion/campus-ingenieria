@@ -1007,47 +1007,22 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.restore();
     }
 
-    /* V = vertical floor labels */
-    if (sc.showVLabel >= 1 && sc.v1 >= 1) {
-      var midV1 = worldToScreen(xa + h, yp + v / 2);
+    /* variable v on each vertical floor */
+    var vLab = "v";
+    function paintVLab(wx, wy) {
+      var mid = worldToScreen(wx, wy);
       ctx.save();
-      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.font = "800 16px ui-monospace, Menlo, monospace";
       ctx.fillStyle = rc;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText("V", midV1.x + 12, midV1.y);
+      ctx.fillText(vLab, mid.x + 12, mid.y);
       ctx.restore();
     }
-    if (sc.showVLabel >= 2 && sc.v2 >= 1) {
-      var midV2 = worldToScreen(r2.x, r1.y + v / 2);
-      ctx.save();
-      ctx.font = "800 15px ui-monospace, Menlo, monospace";
-      ctx.fillStyle = rc;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText("V", midV2.x + 12, midV2.y);
-      ctx.restore();
-    }
-    if (sc.showVLabel >= 3 && sc.v3 >= 1) {
-      var midV3 = worldToScreen(r3.x, r2.y + v / 2);
-      ctx.save();
-      ctx.font = "800 15px ui-monospace, Menlo, monospace";
-      ctx.fillStyle = rc;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText("V", midV3.x + 12, midV3.y);
-      ctx.restore();
-    }
-    if (nMax >= 4 && sc.showVLabel >= 4 && sc.v4 >= 1) {
-      var midV4 = worldToScreen(r4.x, r3.y + v / 2);
-      ctx.save();
-      ctx.font = "800 15px ui-monospace, Menlo, monospace";
-      ctx.fillStyle = rc;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText("V", midV4.x + 12, midV4.y);
-      ctx.restore();
-    }
+    if (sc.showVLabel >= 1 && sc.v1 >= 1) paintVLab(xa + h, yp + v / 2);
+    if (sc.showVLabel >= 2 && sc.v2 >= 1) paintVLab(r2.x, r1.y + v / 2);
+    if (sc.showVLabel >= 3 && sc.v3 >= 1) paintVLab(r3.x, r2.y + v / 2);
+    if (nMax >= 4 && sc.showVLabel >= 4 && sc.v4 >= 1) paintVLab(r4.x, r3.y + v / 2);
 
     var ptColor = sc.showPurple ? PURPLE : AMBER;
     if (sc.showP) {
