@@ -114,7 +114,7 @@ canvas#c {
 .lesson-nav.next .chev { border-left: 18px solid var(--mast); }
 .lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
 .sound-meter {
-  margin: 10px 0 0; display: flex; align-items: flex-end; justify-content: flex-end;
+  margin: 0; display: flex; align-items: flex-end; justify-content: flex-end;
   gap: 5px; min-height: 28px; padding: 6px 10px;
   color: var(--muted); font-size: 0.8rem; font-weight: 700;
   user-select: none;
@@ -131,8 +131,18 @@ canvas#c {
 .sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
 .sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
 .sound-meter.live .sound-meter-level { color: var(--ink); }
+.bottom-bar {
+  margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px 12px;
+  align-items: center; justify-content: space-between;
+}
+.bottom-bar-left { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-width: 0; }
+.bottom-bar-right { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
+.hint.compact {
+  font-size: 0.72rem; color: var(--muted); margin: 0; line-height: 1.25;
+  max-width: 16rem;
+}
 .locus-strip {
-  margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 0; display: flex; flex-wrap: wrap; gap: 6px;
   justify-content: flex-end; align-items: center;
 }
 .locus-strip .locus {
@@ -147,17 +157,19 @@ canvas#c {
   box-shadow: 0 0 12px rgba(255,191,0,.45);
 }
 .hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
-#stepSelectorWrap { margin: 0; }
+#stepSelectorWrap {
+  margin: 0; display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
 #stepSelectorWrap .paso-label {
-  margin-bottom: 6px; font-size: 0.82rem; font-weight: 700; color: var(--muted);
+  margin: 0; font-size: 0.72rem; font-weight: 700; color: var(--muted); white-space: nowrap;
 }
 .seg {
   display: inline-flex; flex-wrap: wrap; background: #101826; border: 1px solid #2a3548;
-  border-radius: 999px; padding: 3px; gap: 2px;
+  border-radius: 999px; padding: 2px; gap: 1px;
 }
 .seg button {
   border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 650;
-  padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  padding: 5px 10px; border-radius: 999px; cursor: pointer; font-size: 0.78rem;
 }
 .seg button.active { background: var(--mast); color: #0b1018; }
 .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -193,15 +205,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   </header>
 
   <p class="prompt" id="prompt">Tocá en el círculo el punto que corresponde al ángulo <strong>θ</strong> mostrado.</p>
-  <p class="hint" id="hintEl">Notables cada 30°. Modo ensayo (rayo punteado) hasta 10 aciertos; después solo ves la flecha al acertar.</p>
-  <div id="stepSelectorWrap">
-    <div class="paso-label">Paso angular</div>
-    <div class="seg" id="stepSeg" role="group" aria-label="Paso angular">
-      <button type="button" data-step="30" class="active">30°</button>
-      <button type="button" data-step="45">45°</button>
-      <button type="button" data-step="90">90°</button>
-    </div>
-  </div>
 
   <div class="card">
     <div class="graph-wrap" id="graphWrap">
@@ -216,22 +219,37 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <canvas id="c" width="1200" height="620" aria-label="Círculo unitario · click en el ángulo"></canvas>
       <canvas id="confetti" width="1200" height="620" aria-hidden="true"></canvas>
     </div>
-    <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
-      <span class="sound-meter-label" aria-hidden="true">♪</span>
-      <span class="sound-bar" data-i="0"></span>
-      <span class="sound-bar" data-i="1"></span>
-      <span class="sound-bar" data-i="2"></span>
-      <span class="sound-bar" data-i="3"></span>
-      <span class="sound-bar" data-i="4"></span>
-      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
-    </div>
-    <div class="locus-strip" id="locusStrip" aria-label="Cuadrante o eje activo">
-      <span class="locus" data-locus="q1">I</span>
-      <span class="locus" data-locus="q2">II</span>
-      <span class="locus" data-locus="q3">III</span>
-      <span class="locus" data-locus="q4">IV</span>
-      <span class="locus" data-locus="x">eje X</span>
-      <span class="locus" data-locus="y">eje Y</span>
+    <div class="bottom-bar">
+      <div class="bottom-bar-left">
+        <p class="hint compact" id="hintEl">Notables cada 30° · ensayo 10 aciertos</p>
+        <div id="stepSelectorWrap">
+          <span class="paso-label">Paso angular</span>
+          <div class="seg" id="stepSeg" role="group" aria-label="Paso angular">
+            <button type="button" data-step="30" class="active">30°</button>
+            <button type="button" data-step="45">45°</button>
+            <button type="button" data-step="90">90°</button>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-bar-right">
+        <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
+          <span class="sound-meter-label" aria-hidden="true">♪</span>
+          <span class="sound-bar" data-i="0"></span>
+          <span class="sound-bar" data-i="1"></span>
+          <span class="sound-bar" data-i="2"></span>
+          <span class="sound-bar" data-i="3"></span>
+          <span class="sound-bar" data-i="4"></span>
+          <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+        </div>
+        <div class="locus-strip" id="locusStrip" aria-label="Cuadrante o eje activo">
+          <span class="locus" data-locus="q1">I</span>
+          <span class="locus" data-locus="q2">II</span>
+          <span class="locus" data-locus="q3">III</span>
+          <span class="locus" data-locus="q4">IV</span>
+          <span class="locus" data-locus="x">eje X</span>
+          <span class="locus" data-locus="y">eje Y</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -259,7 +277,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       b.classList.toggle("active", Number(b.getAttribute("data-step")) === stepDeg);
     });
     if (hintEl) {
-      hintEl.textContent = "Notables cada " + stepDeg + "° (" + DEGS.length + " nodos). Modo ensayo hasta 10 aciertos; después solo ves la flecha al acertar.";
+      hintEl.textContent = "Notables cada " + stepDeg + "° (" + DEGS.length + ") · ensayo 10 aciertos";
     }
   }
   function applyStep(step, softScores) {
