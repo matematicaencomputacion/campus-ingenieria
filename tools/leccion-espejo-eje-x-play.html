@@ -605,7 +605,8 @@ h1 .lesson-num { color: #38bdf8; }
     state.fam=makeFamily(kind);
     state.reflected=0; state.showMirrorCurve=false; state.spin=null;
     var all=(state.fam.points||[]).slice();
-    all.forEach(function(p){ all.push(mirrorPt(p)); });
+    var nAll = all.length;
+    for (var ai = 0; ai < nAll; ai++) all.push(mirrorPt(all[ai]));
     clampWorldPts(all,1.5);
     exprFormula.innerHTML=formulaHTML(state.fam,false);
     exprMirror.innerHTML=formulaHTML(state.fam,true);
