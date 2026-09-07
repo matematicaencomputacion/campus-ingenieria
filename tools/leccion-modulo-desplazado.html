@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 7 Función módulo</title>
+<title>Lección 7 Función módulo desplazado</title>
 <style>
 
 :root {
@@ -204,25 +204,32 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
 <div class="wrap">
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 7</span> Función módulo</h1>
-      <p class="sub">f(x)=|mx+b| · forma de V · Dom ℝ · Im [0,+∞)</p>
+      <h1><span class="lesson-num">Lección 7</span> Función módulo desplazado</h1>
+      <p class="sub">f(x)=|m(x−h)|+k · forma de V · Dom ℝ · Im [k,+∞)</p>
     </div>
   </header>
   <div class="card">
     <div class="params">
 
       <div class="param">
-        <label for="slope">Pendiente <em>m</em></label>
+        <label for="slope">Escala <em>m</em></label>
         <div class="row">
           <input id="slope" type="range" min="-3" max="3" step="0.5" value="1" />
           <span class="val" id="slopeVal">1</span>
         </div>
       </div>
       <div class="param">
-        <label for="intercept">Ordenada <em>b</em></label>
+        <label for="shiftH">Desplazamiento horizontal <em>h</em></label>
         <div class="row">
-          <input id="intercept" type="range" min="-6" max="6" step="0.5" value="-2" />
-          <span class="val" id="interceptVal">−2</span>
+          <input id="shiftH" type="range" min="-3" max="3" step="0.5" value="1" />
+          <span class="val" id="shiftHVal">1</span>
+        </div>
+      </div>
+      <div class="param">
+        <label for="shiftK">Desplazamiento vertical <em>k</em></label>
+        <div class="row">
+          <input id="shiftK" type="range" min="-3" max="3" step="0.5" value="0" />
+          <span class="val" id="shiftKVal">0</span>
         </div>
       </div>
       
@@ -249,7 +256,7 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
     </div>
     <div class="badge-row">
       <span class="badge" id="badgeKink"><span class="k">codo (raíz)</span> <span class="v">—</span></span>
-      <span class="badge" id="badgeIm"><span class="k">imagen natural</span> <span class="v">[0, +∞)</span></span>
+      <span class="badge" id="badgeIm"><span class="k">imagen natural</span> <span class="v">[k, +∞)</span></span>
     </div>
     <div class="expr">
       <span class="dot" aria-hidden="true"></span>
@@ -259,13 +266,13 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
         <button class="play" id="playBtn" type="button" disabled>▶ Play tabla</button>
         <button class="ghost" id="resetBtn" type="button">Reset</button>
       </div>
-      <p class="narration" id="narration">Ajustá <strong>m</strong> y <strong>b</strong>, cargá f = |mx+b| y dale Play.</p>
+      <p class="narration" id="narration">Ajustá <strong>m</strong>, <strong>h</strong> y <strong>k</strong>, cargá f = |m(x−h)|+k y dale Play.</p>
     </div>
   </div>
   <div class="stage">
     <div class="card">
       <div class="graph-wrap">
-        <a class="lesson-nav prev" href="leccion-exponencial.html" title="Lección 6: Función exponencial" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a><a class="lesson-nav next" href="leccion-modulo-desplazado.html" title="Lección 7: Función módulo desplazado" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav prev" href="leccion-modulo.html" title="Lección 7: Función módulo" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a><a class="lesson-nav next" href="leccion-cubica.html" title="Lección 8: Función cúbica" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
         <canvas id="c" width="1000" height="680" aria-label="Gráfica"></canvas>
         <div class="slider-rail" aria-hidden="true"><div class="tri" id="tri"></div></div>
       </div>
@@ -289,11 +296,14 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
 (() => {
 
   const DOM_DEFAULT_LO = -4, DOM_DEFAULT_HI = 5;
-  let lesson = { latex: "f(x) = |x − 2|", m: 1, b: -2, sayLoad: "", sayPlay: "" };
+  let lesson = { latex: "f(x) = |x − 1|", m: 1, h: 1, k: 0, sayLoad: "", sayPlay: "" };
   const slopeEl = document.getElementById("slope");
-  const interceptEl = document.getElementById("intercept");
+  const shiftHEl = document.getElementById("shiftH");
+  const shiftKEl = document.getElementById("shiftK");
   const slopeVal = document.getElementById("slopeVal");
-  const interceptVal = document.getElementById("interceptVal");
+  const shiftHVal = document.getElementById("shiftHVal");
+  const shiftKVal = document.getElementById("shiftKVal");
+  const badgeIm = document.getElementById("badgeIm");
   const domLoEl = document.getElementById("domLo");
   const domHiEl = document.getElementById("domHi");
   const domLoVal = document.getElementById("domLoVal");
@@ -551,47 +561,68 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
   }
 
 
-  function linearInner(m, b) {
-    m = Number(m); b = Number(b);
-    let left;
-    if (Math.abs(m) < EPS) left = "";
-    else if (m === 1) left = "x";
-    else if (m === -1) left = "−x";
-    else left = prettyNum(m) + "x";
-    if (Math.abs(m) < EPS) return prettyNum(b);
-    if (Math.abs(b) < EPS) return left;
-    return left + (b > 0 ? " + " : " − ") + prettyNum(Math.abs(b));
+  function argText(h) {
+    if (Math.abs(h) < EPS) return "x";
+    return h > 0 ? ("x − " + prettyNum(h)) : ("x + " + prettyNum(-h));
   }
-  function latexFrom(m, b) { return "f(x) = |" + linearInner(m, b) + "|"; }
-  function kinkOf(m, b) {
-    m = Number(m); b = Number(b);
-    if (Math.abs(m) < EPS) return null;
-    return -b / m;
+  function latexFrom(m, h, k) {
+    m = Number(m); h = Number(h); k = Number(k);
+    let inside;
+    if (Math.abs(m) < EPS) inside = "0";
+    else if (Math.abs(m - 1) < EPS) inside = argText(h);
+    else if (Math.abs(m + 1) < EPS) inside = "−(" + argText(h) + ")";
+    else inside = prettyNum(m) + "(" + argText(h) + ")";
+    let out = "f(x) = |" + inside + "|";
+    if (Math.abs(k) >= EPS) out += (k > 0 ? " + " : " − ") + prettyNum(Math.abs(k));
+    return out;
+  }
+  function kinkOf(m, h) {
+    m = Number(m); h = Number(h);
+    if (Math.abs(m) < EPS) return null; // constant |0|+k
+    return h;
   }
   function effectiveDomain(uLo, uHi) { return { lo: uLo, hi: uHi }; }
-  function f(x) { return Math.abs(lesson.m * x + lesson.b); }
+  function f(x) { return Math.abs(lesson.m * (x - lesson.h)) + lesson.k; }
   function fmtExpr(x) {
     const xs = x < 0 ? "(" + x + ")" : String(x);
-    return "|" + lesson.m + "·" + xs + (lesson.b >= 0 ? "+" : "") + lesson.b + "|";
+    const u = x - lesson.h;
+    const us = u < 0 ? "(" + prettyNum(u) + ")" : prettyNum(u);
+    let core = "|" + prettyNum(lesson.m) + "·" + us + "|";
+    if (Math.abs(lesson.k) >= EPS) core += (lesson.k > 0 ? "+" : "") + prettyNum(lesson.k);
+    return core;
   }
   function fmtExprHtml(x) {
     const xs = '<span class="x-red">' + (x < 0 ? "(" + x + ")" : x) + "</span>";
-    return "|" + lesson.m + " · " + xs + (lesson.b >= 0 ? " + " : " − ") + Math.abs(lesson.b) + "|";
+    const h = lesson.h;
+    const arg = Math.abs(h) < EPS ? xs : (h > 0 ? (xs + " − " + prettyNum(h)) : (xs + " + " + prettyNum(-h)));
+    let core;
+    if (Math.abs(lesson.m - 1) < EPS) core = "|" + arg + "|";
+    else if (Math.abs(lesson.m + 1) < EPS) core = "|−(" + arg + ")|";
+    else core = "|" + prettyNum(lesson.m) + "(" + arg + ")|";
+    if (Math.abs(lesson.k) >= EPS) core += (lesson.k > 0 ? " + " : " − ") + prettyNum(Math.abs(lesson.k));
+    return core;
   }
   function applyParamsToLesson() {
-    const m = Number(slopeEl.value), b = Number(interceptEl.value);
+    const m = Number(slopeEl.value);
+    const h = Number(shiftHEl.value);
+    const k = Number(shiftKEl.value);
     const { lo, hi } = domainBounds();
     slopeVal.textContent = prettyNum(m);
-    interceptVal.textContent = prettyNum(b);
-    const k = kinkOf(m, b);
-    badgeKink.querySelector(".v").textContent = k == null ? "—" : "x = " + prettyNum(Number(k.toFixed(3)));
+    shiftHVal.textContent = prettyNum(h);
+    shiftKVal.textContent = prettyNum(k);
+    const kink = kinkOf(m, h);
+    badgeKink.querySelector(".v").textContent = kink == null ? "—" : "x = " + prettyNum(Number(kink.toFixed(3)));
+    if (badgeIm) {
+      badgeIm.querySelector(".v").textContent = Math.abs(k) < EPS ? "[0, +∞)" : ("[" + prettyNum(k) + ", +∞)");
+    }
     if (typeof syncDomainUI === "function") syncDomainUI();
+    const imTxt = Math.abs(k) < EPS ? "[0,+∞)" : ("[" + prettyNum(k) + ",+∞)");
     lesson = {
-      ...lesson, m, b, latex: latexFrom(m, b),
-      sayLoad: "Armamos <strong>" + latexFrom(m, b) + "</strong> (V). Dominio <strong>ℝ</strong>, imagen <strong>[0,+∞)</strong>" +
-        (k != null ? ", codo en <strong>x = " + prettyNum(Number(k.toFixed(2))) + "</strong>" : "") +
+      ...lesson, m, h, k, latex: latexFrom(m, h, k),
+      sayLoad: "Armamos <strong>" + latexFrom(m, h, k) + "</strong> (V desplazada). Dominio <strong>ℝ</strong>, imagen <strong>" + imTxt + "</strong>" +
+        (kink != null ? ", codo en <strong>x = " + prettyNum(Number(kink.toFixed(2))) + "</strong>" : "") +
         ". Restricción <strong>[" + prettyNum(lo) + ", " + prettyNum(hi) + "]</strong>.",
-      sayPlay: "El mástil barre enteros. En el codo la derivada cambia: forma de V."
+      sayPlay: "El mástil barre enteros. Codo en x = h; la V se escala con |m| y sube/baja con k."
     };
   }
 
@@ -640,11 +671,11 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
     return out.filter((_, i) => i % step === 0);
   }
   function imageOnDomain(lo, hi) {
-    // |mx+b| on [lo,hi]: min is 0 if kink inside, else min of endpoints; max is max of endpoints
-    const k = kinkOf(lesson.m, lesson.b);
+    // |m(x-h)|+k on [lo,hi]: min is k if kink inside, else min of endpoints; max is max of endpoints
+    const kink = kinkOf(lesson.m, lesson.h);
     const ys = [f(lo), f(hi)];
     let minY = Math.min(...ys), maxY = Math.max(...ys);
-    if (k != null && k >= lo - EPS && k <= hi + EPS) minY = 0;
+    if (kink != null && kink >= lo - EPS && kink <= hi + EPS) minY = lesson.k;
     return { min: minY, max: maxY, toInf: false };
   }
   function draw() {
@@ -653,6 +684,26 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
     const w = canvas.width, h = canvas.height;
     if (loaded) {
       ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+      // guides: vertical x=h, horizontal y=k
+      {
+        const hh = lesson.h, kk = lesson.k;
+        if (hh >= XMIN && hh <= XMAX) {
+          const [vx] = toCanvas(hh, 0);
+          ctx.save();
+          ctx.strokeStyle = "rgba(34,211,238,0.75)";
+          ctx.lineWidth = 1.6; ctx.setLineDash([6, 6]);
+          ctx.beginPath(); ctx.moveTo(vx, 0); ctx.lineTo(vx, h); ctx.stroke();
+          ctx.setLineDash([]); ctx.restore();
+        }
+        if (kk >= YMIN && kk <= YMAX) {
+          const [, hy] = toCanvas(0, kk);
+          ctx.save();
+          ctx.strokeStyle = "rgba(251,191,36,0.85)";
+          ctx.lineWidth = 1.6; ctx.setLineDash([6, 6]);
+          ctx.beginPath(); ctx.moveTo(0, hy); ctx.lineTo(w, hy); ctx.stroke();
+          ctx.setLineDash([]); ctx.restore();
+        }
+      }
       if (!finalClean) {
         const pts = sampleCurve(XMIN, XMAX, 240, f);
         strokePoly(pts, { strokeStyle: "rgba(255,92,92,0.85)", lineWidth: 2, dash: [7, 6] });
@@ -665,7 +716,7 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
         const [ax] = toCanvas(xA, 0), [bx] = toCanvas(xB, 0);
         ctx.fillStyle = "rgba(255,92,92,0.07)";
         ctx.fillRect(Math.min(ax, bx), 0, Math.abs(bx - ax), h);
-        const k = kinkOf(lesson.m, lesson.b);
+        const k = kinkOf(lesson.m, lesson.h);
         if (k != null && k >= xA && k <= xB) {
           const [kx, ky] = toCanvas(k, 0);
           ctx.fillStyle = "#e879f9";
@@ -786,7 +837,7 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
     cancelAnim(); loaded = false; clearOutputs();
     fnBox.innerHTML = '<span style="color:var(--muted)">Cargar f</span>';
     playBtn.disabled = true; loadBtn.disabled = false;
-    setNarration("Reset. Ajustá m y b, cargá f = |mx+b| y dale Play.");
+    setNarration("Reset. Ajustá m, h y k, cargá f = |m(x−h)|+k y dale Play.");
     draw();
   }
   function onParamInput() {
@@ -886,7 +937,8 @@ h1 .lesson-num { color: var(--accent); font-weight: 800; }
   });
 
   slopeEl.addEventListener("input", onParamInput);
-  interceptEl.addEventListener("input", onParamInput);
+  shiftHEl.addEventListener("input", onParamInput);
+  shiftKEl.addEventListener("input", onParamInput);
   loadBtn.addEventListener("click", loadFn);
   playBtn.addEventListener("click", playTable);
   resetBtn.addEventListener("click", resetAll);
