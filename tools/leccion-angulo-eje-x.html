@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 17 · Ángulo desde el eje X</title>
+<title>Lección 17 · Ángulo desde el semieje X</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -123,8 +123,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 17</span> Ángulo desde el eje X
-        <span class="sub">elegí el ángulo respecto al eje X+ (visual + voz)</span>
+      <h1><span class="lesson-num">Lección 17</span> Ángulo desde el semieje X
+        <span class="sub">elegí el ángulo respecto al semisemieje X+ (visual + voz)</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -134,7 +134,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   </header>
 
   <div class="pills-row" id="pillsRow" aria-label="Ángulos preestablecidos">
-    <span class="label">Presets</span>
+    <span class="label">Notables</span>
   </div>
   <p class="voice-status" id="voiceStatus" aria-live="polite"></p>
   <p class="hint" id="voiceHint">Arrastrá el rayo, tocá el círculo o usá una pastilla. También podés hablar el ángulo (ej. «noventa» o «135»).</p>
@@ -143,7 +143,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="graph-wrap" id="graphWrap">
       <a class="lesson-nav prev" href="leccion-coseno-amplitud-juego.html" title="Lección 16: Coseno · amplitud · juego" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
       <span class="lesson-nav next" style="opacity:0.2;pointer-events:none" aria-disabled="true" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
-      <canvas id="c" width="1200" height="620" aria-label="Ángulo desde el eje X positivo"></canvas>
+      <canvas id="c" width="1200" height="620" aria-label="Ángulo desde el semieje X positivo"></canvas>
     </div>
     <div class="readout" id="readout">
       <div class="kv"><span class="k">θ</span><span class="v amber" id="degOut">0°</span></div>
@@ -166,7 +166,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 (function () {
   "use strict";
 
-  const PRESETS = [80, 45, 90, 120, 135, 150];
+  const PRESETS = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
   const AMBER = "#FFBF00";
   const MAST = "#60a5fa";
   const TEAL = "#34d399";
@@ -197,14 +197,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     "treinta": 30,
     "cuarenta y cinco": 45, "cuarentaicinco": 45, "quarenta y cinco": 45,
     "sesenta": 60,
-    "ochenta": 80,
     "noventa": 90,
-    "ciento veinte": 120, "cientoveinte": 120, "ciento veinte grados": 120,
+    "ciento veinte": 120, "cientoveinte": 120,
     "ciento treinta y cinco": 135, "cientotreintaycinco": 135,
     "ciento cincuenta": 150, "cientocincuenta": 150,
-    "ciento ochenta": 180,
-    "doscientos setenta": 270,
-    "trescientos sesenta": 360
+    "ciento ochenta": 180, "cientoochenta": 180,
+    "doscientos diez": 210, "doscientosdiez": 210,
+    "doscientos veinticinco": 225, "doscientosveinticinco": 225,
+    "doscientos cuarenta": 240, "doscientoscuarenta": 240,
+    "doscientos setenta": 270, "doscientossetenta": 270,
+    "trescientos": 300, "trescientos grados": 300,
+    "trescientos quince": 315, "trescientosquince": 315,
+    "trescientos treinta": 330, "trescientostreinta": 330,
+    "trescientos sesenta": 360, "trescientossesenta": 360, "trescientos sesenta grados": 360
   };
 
   const canvas = document.getElementById("c");
@@ -219,7 +224,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   const sinOut = document.getElementById("sinOut");
   const cosOut = document.getElementById("cosOut");
 
-  let thetaDeg = 45;
+  let thetaDeg = 0;
   let dragging = false;
   let recognition = null;
   let listening = false;
@@ -398,7 +403,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.fillStyle = AMBER;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
-    ctx.fillText("eje X+", tipX - 70, tipY - 12);
+    ctx.fillText("semieje X+", tipX - 70, tipY - 12);
     ctx.fillStyle = "#94a3b8";
     ctx.textAlign = "left";
     ctx.fillText("X", w - axPad - 8, cy + 22);
@@ -623,7 +628,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     speakBtn.classList.toggle("listening", on);
     speakBtn.textContent = on ? "● Escuchando…" : "🎙 Hablar ángulo";
     voiceStatus.className = "voice-status" + (on ? " live" : "");
-    voiceStatus.textContent = on ? "Decí el ángulo… (ej. ochenta, noventa, 135)" : "";
+    voiceStatus.textContent = on ? "Decí el ángulo… (ej. treinta, noventa, 180)" : "";
   }
 
   function initSpeech() {
@@ -670,7 +675,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         voiceStatus.textContent = "Escuché «" + heard.trim() + "» → " + Math.round(normDeg(best)) + "°";
       } else {
         voiceStatus.className = "voice-status bad";
-        voiceStatus.textContent = "No reconocí el ángulo en «" + (heard || "?").trim() + "». Probá: ochenta, noventa, 135…";
+        voiceStatus.textContent = "No reconocí el ángulo en «" + (heard || "?").trim() + "». Probá: treinta, noventa, 180…";
       }
     };
     return rec;
