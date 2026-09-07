@@ -21,6 +21,26 @@ Solo el árbol público del repo (raíz + `tools/*.html` + `resources/`).
 - Usuario con permiso de escritura en `/var/www/campus/` (o `sudo`).
 - No tocar certbot/LE ni el redirect HTTP→HTTPS en este paso.
 
+
+## Regla anti-borrado (2026-09-07)
+
+**No usar `rsync --delete`** hasta que el repo tenga *todo* lo que está en live en `/var/www/campus/`.
+
+Motivo: slides solo-live (p. ej. construcciones / desplazados) se borran del docroot si el mirror de Git aún no los incluye.
+
+### Deploy recomendado (paths del PR)
+
+```bash
+# Solo los archivos del slide/PR — sin --delete
+rsync -avz   tools/leccion-SENO-O-COSENO.html   USER@ingenieria.wechat.com.ar:/var/www/campus/tools/
+```
+
+Si hace falta `sudo` en destino: `--rsync-path='sudo rsync'`.
+
+### Sync masivo
+
+Solo cuando repo ⊇ live (o con lista explícita de includes). Si hay slides nuevos solo en live, @Prototipador avisa **antes** del sync masivo.
+
 ## Procedimiento (rsync desde un checkout limpio)
 
 ```bash
@@ -28,7 +48,9 @@ Solo el árbol público del repo (raíz + `tools/*.html` + `resources/`).
 git clone https://github.com/matematicaencomputacion/campus-ingenieria.git
 cd campus-ingenieria
 
-rsync -avz --delete \
+rsync -avz \
+  # OJO: no agregar --delete hasta alinear repo↔live
+  # --delete \
   --exclude '.git/' \
   --exclude '.github/' \
   --exclude 'shots/' \
