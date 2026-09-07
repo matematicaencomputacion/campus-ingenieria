@@ -541,16 +541,20 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function buildFirstSchedule() {
-    /* several loops at P=(0,0); h∈{1,2,3}, v∈{1,2,−1,1/2} */
+    /* several loops at P=(0,0); v covers [-2,6] including tall floors */
     var pairs = [
       { h: 1, v: 1 },
       { h: 2, v: 1 },
-      { h: 3, v: 1 },
       { h: 1, v: 2 },
+      { h: 1, v: 3 },
+      { h: 1, v: 4 },
+      { h: 1, v: 5 },
+      { h: 1, v: 6 },
+      { h: 2, v: 3 },
       { h: 2, v: -1 },
+      { h: 1, v: -2 },
       { h: 1, v: 0.5 },
-      { h: 3, v: -1 },
-      { h: 2, v: 0.5 }
+      { h: 3, v: 2 }
     ];
     return shuffleInPlace(pairs);
   }
