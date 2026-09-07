@@ -149,7 +149,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <span class="label">Notables</span>
   </div>
   <p class="voice-status" id="voiceStatus" aria-live="polite"></p>
-  <p class="hint" id="voiceHint">Decí el ángulo del Pac-Man respecto al semieje X+ para eliminarlo. Crece al cruzar ejes. Arrastrá el rayo, usá pastillas o hablá el ángulo (ej. «noventa» o «135»).</p>
+  <p class="hint" id="voiceHint">El rayo solo se activa 3 s al tocar una pastilla o hablar el ángulo. Los Pac-Man van lento (¹⁄₁₀). Crece al cruzar ejes.</p>
 
   <div class="card">
     <div class="graph-wrap" id="graphWrap">
@@ -187,8 +187,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   const PAC_YELLOW = "#FFD54A";
   const PAC_OUT = "#E6A800";
 
-  const OMEGA_MIN = 45;
-  const OMEGA_MAX = 65;
+  const OMEGA_MIN = 4.5;
+  const OMEGA_MAX = 6.5;
   const SPAWN_MS = 2800;
   const MAX_ALIVE = 5;
   const BASE_HALF = 10;
@@ -232,7 +232,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   const aliveOut = document.getElementById("aliveOut");
   const omegaOut = document.getElementById("omegaOut");
 
-  let thetaDeg = 45;
+  let thetaDeg = 0;
+  let rayActiveUntil = 0; // ms timestamp; ray only lethal while active
+  const RAY_MS = 3000;
   let dragging = false;
   let recognition = null;
   let listening = false;
@@ -256,8 +258,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     b.dataset.deg = String(d);
     b.textContent = d + "°";
     b.addEventListener("click", () => {
-      setAngle(d, true);
-      tryHit(false);
+      fireShot(d, false);
     });
     pillsRow.appendChild(b);
   });
@@ -330,7 +331,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function updateUI() {
     const d = normDeg(thetaDeg);
     const show = Math.abs(d - Math.round(d)) < 0.05 ? Math.round(d) : Math.round(d * 10) / 10;
-    degOut.textContent = show + "°";
+    degOut.textContent = isRayActive() ? (show + "°") : "—";
     radOut.textContent = radLabel(d);
     killsOut.textContent = String(kills);
     missOut.textContent = String(misses);
@@ -470,8 +471,25 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     updateUI();
   }
 
+  function isRayActive() {
+    return performance.now() < rayActiveUntil;
+  }
+
+  function fireShot(deg, fromVoice) {
+    ensureAudio();
+    thetaDeg = normDeg(Math.round(deg));
+    rayActiveUntil = performance.now() + RAY_MS;
+    hitCooldown.clear();
+    voiceStatus.className = "voice-status";
+    voiceStatus.textContent = "Rayo activo " + Math.round(thetaDeg) + "° · 3 s";
+    updateUI();
+    continuousHit();
+    return isRayActive();
+  }
+
   function tryHit(fromVoiceOrPill) {
     ensureAudio();
+    if (!isRayActive()) return false;
     const ray = normDeg(thetaDeg);
     let hitAny = false;
     const snapshot = pacs.slice();
@@ -492,6 +510,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function continuousHit() {
+    if (!isRayActive()) return;
     const ray = normDeg(thetaDeg);
     const snapshot = pacs.slice();
     for (const p of snapshot) {
@@ -640,72 +659,75 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.fillText("IV", cx + qOff, cy + qOff);
     ctx.restore();
 
-    // player wedge arc
+    // player wedge + ray only while shot is active (3 s)
+    const rayOn = isRayActive();
     const a = (normDeg(thetaDeg) * Math.PI) / 180;
     const px = cx + R * Math.cos(a);
     const py = cy - R * Math.sin(a);
     const arcR = R * 0.26;
     const td = normDeg(thetaDeg);
-    ctx.save();
-    if (td > 0.05) {
+    if (rayOn) {
+      const left = Math.max(0, (rayActiveUntil - performance.now()) / RAY_MS);
+      ctx.save();
+      if (td > 0.05) {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + arcR, cy);
+        if (td >= 359.5) ctx.arc(cx, cy, arcR, 0, Math.PI * 2, true);
+        else ctx.arc(cx, cy, arcR, 0, -a, true);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255,191,0," + (0.18 + 0.2 * left) + ")";
+        ctx.fill();
+        ctx.strokeStyle = AMBER;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        if (td >= 359.5) ctx.arc(cx, cy, arcR, 0, Math.PI * 2, true);
+        else ctx.arc(cx, cy, arcR, 0, -a, true);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = "#e9eef7";
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.55 + 0.45 * left;
+      ctx.lineCap = "round";
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + arcR, cy);
-      if (td >= 359.5) ctx.arc(cx, cy, arcR, 0, Math.PI * 2, true);
-      else ctx.arc(cx, cy, arcR, 0, -a, true);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(255,191,0,0.22)";
-      ctx.fill();
-      ctx.strokeStyle = AMBER;
+      ctx.lineTo(px, py);
+      ctx.stroke();
+      const ex = cx + (R + 22) * Math.cos(a);
+      const ey = cy - (R + 22) * Math.sin(a);
+      ctx.strokeStyle = "rgba(233,238,247,0.55)";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      if (td >= 359.5) ctx.arc(cx, cy, arcR, 0, Math.PI * 2, true);
-      else ctx.arc(cx, cy, arcR, 0, -a, true);
+      ctx.moveTo(px, py);
+      ctx.lineTo(ex, ey);
       ctx.stroke();
-    }
-    ctx.restore();
+      const ang = Math.atan2(ey - cy, ex - cx);
+      ctx.fillStyle = "#e9eef7";
+      ctx.beginPath();
+      ctx.moveTo(ex, ey);
+      ctx.lineTo(ex - 12 * Math.cos(ang) + 7 * Math.sin(ang), ey - 12 * Math.sin(ang) - 7 * Math.cos(ang));
+      ctx.lineTo(ex - 12 * Math.cos(ang) - 7 * Math.sin(ang), ey - 12 * Math.sin(ang) + 7 * Math.cos(ang));
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(px, py, 7, 0, Math.PI * 2);
+      ctx.fillStyle = AMBER;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#0b1018";
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#e9eef7";
+      ctx.fill();
+      ctx.restore();
 
-    // player ray
-    ctx.save();
-    ctx.strokeStyle = "#e9eef7";
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(px, py);
-    ctx.stroke();
-    const ex = cx + (R + 22) * Math.cos(a);
-    const ey = cy - (R + 22) * Math.sin(a);
-    ctx.strokeStyle = "rgba(233,238,247,0.55)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(px, py);
-    ctx.lineTo(ex, ey);
-    ctx.stroke();
-    const ang = Math.atan2(ey - cy, ex - cx);
-    ctx.fillStyle = "#e9eef7";
-    ctx.beginPath();
-    ctx.moveTo(ex, ey);
-    ctx.lineTo(ex - 12 * Math.cos(ang) + 7 * Math.sin(ang), ey - 12 * Math.sin(ang) - 7 * Math.cos(ang));
-    ctx.lineTo(ex - 12 * Math.cos(ang) - 7 * Math.sin(ang), ey - 12 * Math.sin(ang) + 7 * Math.cos(ang));
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(px, py, 7, 0, Math.PI * 2);
-    ctx.fillStyle = AMBER;
-    ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#0b1018";
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#e9eef7";
-    ctx.fill();
-    ctx.restore();
-
-    // θ label
-    ctx.save();
-    const mid = a / 2;
+      // θ label while active
+      ctx.save();
+      const mid = a / 2;
     const labelR = arcR + 26;
     const lx = cx + labelR * Math.cos(mid);
     const ly = cy - labelR * Math.sin(mid);
@@ -716,8 +738,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.textBaseline = "middle";
     ctx.shadowColor = "rgba(0,0,0,0.55)";
     ctx.shadowBlur = 8;
-    ctx.fillText("θ = " + show + "°", lx, ly);
-    ctx.restore();
+      ctx.fillText("θ = " + show + "°", lx, ly);
+      ctx.restore();
+    }
 
     const mouth = 0.5 + 0.5 * Math.sin(mouthPhase);
     for (const p of pacs) drawPacMan(cx, cy, R, p, mouth);
@@ -794,18 +817,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function onPointerDown(e) {
     e.preventDefault();
     ensureAudio();
-    canvas.setPointerCapture(e.pointerId);
-    dragging = true;
-    setAngle(canvasToAngle(e.clientX, e.clientY), false);
+    // El rayo no se apunta por arrastre: solo pastilla o voz (activo 3 s).
+    voiceStatus.className = "voice-status";
+    voiceStatus.textContent = "Usá una pastilla o Hablar — el rayo dura 3 s.";
   }
-  function onPointerMove(e) {
-    if (!dragging) return;
-    setAngle(canvasToAngle(e.clientX, e.clientY), false);
-  }
-  function onPointerUp(e) {
-    dragging = false;
-    try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
-  }
+  function onPointerMove(e) { /* no-op */ }
+  function onPointerUp(e) { dragging = false; }
 
   canvas.addEventListener("pointerdown", onPointerDown);
   canvas.addEventListener("pointermove", onPointerMove);
@@ -879,7 +896,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       voiceHint.classList.add("warn");
-      voiceHint.textContent = "Tu navegador no soporta reconocimiento de voz. Usá las pastillas o arrastrá el rayo. Decí el ángulo del Pac-Man respecto al semieje X+ para eliminarlo. Crece al cruzar ejes.";
+      voiceHint.textContent = "Tu navegador no soporta voz. Usá las pastillas: el rayo queda 3 s. Los Pac-Man crecen al cruzar ejes.";
       speakBtn.disabled = true;
       speakBtn.title = "Voz no disponible";
       return null;
@@ -895,7 +912,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       setListening(false);
       if (ev.error === "not-allowed" || ev.error === "service-not-allowed") {
         voiceStatus.className = "voice-status bad";
-        voiceStatus.textContent = "Micrófono bloqueado. Usá pastillas o arrastre.";
+        voiceStatus.textContent = "Micrófono bloqueado. Usá pastillas (rayo 3 s).";
       } else if (ev.error !== "aborted" && ev.error !== "no-speech") {
         voiceStatus.className = "voice-status bad";
         voiceStatus.textContent = "No se pudo escuchar. Probá de nuevo o usá pastillas.";
@@ -914,12 +931,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         if (best != null) break;
       }
       if (best != null) {
-        setAngle(best, true);
-        const hit = tryHit(true);
-        if (hit) {
-          voiceStatus.className = "voice-status ok";
-          voiceStatus.textContent = "¡Boom! «" + heard.trim() + "» → " + Math.round(normDeg(best)) + "°";
-        }
+        fireShot(best, true);
+        voiceStatus.className = "voice-status";
+        voiceStatus.textContent = "Rayo activo " + Math.round(normDeg(best)) + "° · 3 s («" + heard.trim() + "»)";
       } else {
         voiceStatus.className = "voice-status bad";
         voiceStatus.textContent = "No reconocí el ángulo en «" + (heard || "?").trim() + "». Probá: treinta, noventa, 180…";
