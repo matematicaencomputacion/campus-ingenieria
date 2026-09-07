@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 40 · Simetría · juego · mixto</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #f59e0b; --border: #243044;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #34d399;
+  --dot: #a78bfa; --run: #60a5fa; --rise: #34d399; --xp: #f59e0b; --pink: #f472b6;
+  --row: #121a27; --row-border: #2a3548;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.88rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn, a.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.amber, a.btn.amber { background: var(--amber); color: #0b1018; }
+button.btn.ok { background: var(--ok); color: #0b1018; }
+button.btn.on { background: var(--amber); color: #0b1018; box-shadow: 0 0 10px rgba(255,191,0,.35); }
+button.btn.pause-on { background: #3b4a63; box-shadow: 0 0 0 2px rgba(139,155,180,0.35); }
+button.btn:hover, a.btn:hover { filter: brightness(1.08); }
+button.btn:disabled, a.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548;
+}
+.score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+.score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+.score.round { color: var(--mast); border-color: rgba(110,168,254,0.45); }
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
+}
+.main-stage {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+@media (max-width: 820px) { .main-stage { grid-template-columns: 1fr; } }
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.expr-panel.locked { pointer-events: none; opacity: 0.55; }
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.phase-ask::before { background: var(--amber); }
+.expr-row.phase-r::before { background: var(--rise); }
+.expr-row.phase-l::before { background: var(--dot); }
+.expr-row.check-row::before { background: var(--ok); }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.9rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.5;
+}
+.expr-formula .hl-xp { color: var(--xp); }
+.expr-formula .hl-yp { color: var(--dot); }
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace;
+  font-weight: 800;
+}
+.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.88em; }
+.frac .num { color: var(--rise); border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.frac .den { color: var(--run); padding-top: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.74rem; font-weight: 700;
+  padding: 5px 9px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27;
+  color: var(--ink);
+}
+.chip.dim { color: #4a5a72; }
+.chip.ok { border-color: rgba(90,212,168,0.5); color: var(--ok); }
+.chip.p { color: var(--xp); border-color: rgba(245,158,11,0.45); }
+.chip.r { color: var(--rise); border-color: rgba(52,211,153,0.4); }
+.chip.l { color: var(--dot); border-color: rgba(167,139,250,0.45); }
+.chip.sel { border-color: rgba(255,191,0,0.7); color: var(--amber); background: rgba(255,191,0,0.1); }
+.chip-btn {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.95rem; font-weight: 800;
+  padding: 10px 16px; border-radius: 10px; border: 1px solid #2a3548; background: #1a2435;
+  color: var(--ink); cursor: pointer;
+}
+.chip-btn:hover { filter: brightness(1.1); border-color: var(--mast); }
+.chip-btn.picked { border-color: var(--amber); color: var(--amber); background: rgba(255,191,0,0.12); box-shadow: 0 0 0 2px rgba(255,191,0,0.25); }
+.chip-btn.correct { border-color: var(--ok); color: var(--ok); background: rgba(90,212,168,0.12); }
+.chip-btn.wrong { border-color: var(--bad); color: var(--bad); background: rgba(255,123,123,0.1); }
+.chip-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; padding-left: 6px; }
+.row-label {
+  font-size: 0.78rem; color: var(--muted); font-weight: 650; padding-left: 6px; margin-bottom: 4px;
+}
+.row-label strong { color: var(--ink); }
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--canvas-bg); touch-action: none;
+}
+canvas#c.clickable { cursor: crosshair; }
+#confetti {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 5; border-radius: 10px; background: transparent;
+}
+.paused-banner, .victory-banner {
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  background: rgba(12,17,24,0.62); border-radius: 10px; z-index: 6;
+  font-size: 1.55rem; font-weight: 800; color: var(--amber); letter-spacing: 0.04em;
+  text-align: center; padding: 16px;
+}
+.paused-banner.on, .victory-banner.on { display: flex; }
+.victory-banner { color: var(--ok); pointer-events: auto; }
+.victory-banner .sub-v { font-size: 0.95rem; font-weight: 650; color: var(--muted); letter-spacing: 0; }
+.victory-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 7; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.prompt {
+  margin: 0 0 8px; font-size: 0.95rem; color: var(--muted); line-height: 1.45; min-height: 1.4em;
+}
+.prompt strong { color: var(--ink); }
+.prompt .hl-p { color: var(--xp); }
+.prompt .hl-r { color: var(--rise); }
+.prompt .hl-l { color: var(--dot); }
+.prompt .hl-v { color: var(--rise); }
+.prompt.ok { color: var(--ok); }
+.prompt.bad { color: #f5e6a8; }
+.prompt.attention {
+  background: rgba(210, 180, 100, 0.22);
+  border: 1px solid rgba(255, 191, 0, 0.45);
+  border-radius: 10px; padding: 8px 12px;
+  box-shadow: 0 0 14px rgba(255, 191, 0, 0.28);
+}
+.bottom-bar {
+  margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px 12px;
+  align-items: center; justify-content: space-between;
+}
+.hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
+.sound-meter {
+  margin: 0; display: flex; align-items: flex-end; justify-content: flex-end;
+  gap: 5px; min-height: 28px; padding: 6px 10px;
+  color: var(--muted); font-size: 0.8rem; font-weight: 700;
+  user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px;
+  width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar {
+  display: inline-block; width: 5px; height: 8px; border-radius: 2px;
+  background: #3b4a63; transition: height .08s ease, background .08s ease;
+}
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+@keyframes flashOk {
+  0%,100% { box-shadow: none; }
+  30%,70% { box-shadow: inset 0 0 0 3px rgba(90,212,168,.7); }
+}
+@keyframes flashBad {
+  0%,100% { box-shadow: none; }
+  30%,70% { box-shadow: inset 0 0 0 3px rgba(255,123,123,.7); }
+}
+.graph-wrap.flash-ok { animation: flashOk .45s ease; }
+.graph-wrap.flash-bad { animation: flashBad .45s ease; }
+.table-y {
+  width: 100%; border-collapse: collapse; font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.85rem; margin-top: 4px;
+}
+.table-y th, .table-y td {
+  border: 1px solid var(--row-border); padding: 6px 8px; text-align: center;
+}
+.table-y th { color: var(--muted); font-weight: 650; background: #0f1623; }
+.table-y td.x-cell { color: var(--run); font-weight: 700; }
+.table-y td.y-cell { color: var(--rise); }
+.table-y input.y-in {
+  width: 4.2em; padding: 4px 6px; border-radius: 6px; border: 1px solid #2a3548;
+  background: #0c1118; color: var(--ink); font: inherit; font-weight: 800; text-align: center;
+}
+.table-y input.y-in:focus { outline: 2px solid rgba(96,165,250,0.5); }
+.pad-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding-left: 6px; margin-top: 6px;
+}
+.pad-btn {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 0.9rem;
+  padding: 8px 4px; border-radius: 8px; border: 1px solid #2a3548; background: #1a2435;
+  color: var(--ink); cursor: pointer;
+}
+.pad-btn:hover { border-color: var(--mast); }
+.pad-btn.neg { color: var(--bad); }
+.progress-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.85rem; font-weight: 700; color: var(--muted);
+  padding-left: 6px;
+}
+.progress-chip strong { color: var(--amber); font-family: ui-monospace, Menlo, monospace; }
+.hint-mini {
+  margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4;
+}
+
+.arrow-board {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-left: 6px;
+}
+.arrow-card {
+  border: 2px solid #2a3548; border-radius: 12px; background: #121a27;
+  padding: 12px 8px; cursor: pointer; text-align: center;
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 1.05rem;
+  color: var(--ink); user-select: none; min-height: 72px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+}
+.arrow-card .kind { font-size: 0.68rem; font-weight: 700; color: var(--muted); letter-spacing: 0.04em; }
+.arrow-card.h { border-color: rgba(96,165,250,0.45); color: var(--run); }
+.arrow-card.v { border-color: rgba(52,211,153,0.45); color: var(--rise); }
+.arrow-card:hover { filter: brightness(1.06); }
+.arrow-card.picked { background: rgba(96,165,250,0.16); border-color: var(--mast); }
+.arrow-card.done-ok { background: rgba(90,212,168,0.14); border-color: var(--ok); color: var(--ok); pointer-events: none; }
+.arrow-card.buzz { border-color: var(--bad); }
+.seq-bar { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; min-height: 34px; align-items: center; }
+.seq-slot {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.74rem; font-weight: 800;
+  padding: 5px 9px; border-radius: 999px; border: 1px dashed #2a3548; color: var(--muted);
+}
+.seq-slot.filled { border-style: solid; color: var(--ink); background: #1a2435; }
+.seq-slot.filled.h { color: var(--run); border-color: rgba(96,165,250,0.5); }
+.seq-slot.filled.v { color: var(--rise); border-color: rgba(52,211,153,0.5); }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.4); color: var(--mast);
+  margin-left: 6px;
+}
+.prompt .hl-h { color: var(--run); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-xp { color: var(--xp); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-yp { color: var(--dot); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 40</span> · Simetría · juego
+        <span class="sub">mixto</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn" id="slowBtn" title="Duplica las pausas entre rondas">Lento</button>
+      <button type="button" class="btn" id="pauseBtn">Pausar</button>
+      <button type="button" class="btn primary" id="restartBtn">Reiniciar</button>
+      <span class="score ok" id="scoreOk">Éxitos <strong>0</strong></span>
+      <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
+      <span class="score round" id="scoreRound">Ronda <strong>1</strong></span>
+    </div>
+  </header>
+
+  <p class="prompt attention" id="prompt">Modo mixto: cada ronda elige un mini-desafío al azar.</p>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" id="exprPanel" aria-label="Panel de juego">
+        <div class="expr-row">
+          <div class="expr-formula" id="exprFormula">Modo mixto</div>
+        </div>
+        <div class="expr-row">
+          <span class="mode-tag" id="modeTag">Mixto</span>
+          <p class="hint-mini" id="sideHint">Cada ronda cambia el tipo</p>
+          <p class="hint-mini" id="placeHint" style="display:none;color:var(--amber)"></p>
+        </div>
+        <div class="expr-row phase-ask">
+          <div class="row-label">Respuesta</div>
+          <div class="chip-grid" id="chipGrid"></div>
+        </div>
+      </aside>
+
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-simetria-juego-zoom.html" title="Lección 39: Simetría · juego · zoom mental" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-exponencial-play.html" title="Lección 30: Exponencial · play · piso · P · ×b / ÷b" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <div class="paused-banner" id="pausedBanner">PAUSA</div>
+        <div class="victory-banner" id="victoryBanner">
+          <div>¡Ganador!</div>
+          <div class="sub-v">20 éxitos · simetría · mixto</div>
+          <div class="victory-actions">
+            <button type="button" class="btn primary" id="victoryContinue">Seguir jugando</button>
+            <button type="button" class="btn amber" id="victoryRestart">Reiniciar</button>
+          </div>
+        </div>
+        <canvas id="c" width="1200" height="720" class="clickable" aria-label="Plano · modo mixto"></canvas>
+        <canvas id="confetti" width="1200" height="720" aria-hidden="true"></canvas>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <p class="hint">Al azar: impar · espejo · fórmula · signo · tabla · h · impostor · mismo marcador win@20</p>
+      <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
+        <span class="sound-meter-label" aria-hidden="true">♪</span>
+        <span class="sound-bar" data-i="0"></span>
+        <span class="sound-bar" data-i="1"></span>
+        <span class="sound-bar" data-i="2"></span>
+        <span class="sound-bar" data-i="3"></span>
+        <span class="sound-bar" data-i="4"></span>
+        <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="game-kit.js?v=20260907"></script>
+<script>
+(function () {
+  "use strict";
+var GK = window.CampusGameKit || {};
+  var WIN_AT = 20;
+  var AMBER = "#f59e0b";
+  var AMBER_GLOW = "rgba(245,158,11,0.4)";
+  var TEAL = "#34d399";
+  var TEAL_GLOW = "rgba(52,211,153,0.4)";
+  var PURPLE = "#a78bfa";
+  var PURPLE_GLOW = "rgba(167,139,250,0.4)";
+  var MUTED = "#8b9bb4";
+  var OK = "#5ad4a8";
+  var BAD = "#ff7b7b";
+  var AXIS = "#93c5fd";
+  var PARA = "#ff4d4d";
+  var RUN = "#60a5fa";
+  var RISE = "#34d399";
+
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var confettiCanvas = document.getElementById("confetti");
+  var graphWrap = document.getElementById("graphWrap");
+  var promptEl = document.getElementById("prompt");
+  var soundMeter = document.getElementById("soundMeter");
+  var pauseBtn = document.getElementById("pauseBtn");
+  var restartBtn = document.getElementById("restartBtn");
+  var slowBtn = document.getElementById("slowBtn");
+  var pausedBanner = document.getElementById("pausedBanner");
+  var victoryBanner = document.getElementById("victoryBanner");
+  var victoryRestart = document.getElementById("victoryRestart");
+  var victoryContinue = document.getElementById("victoryContinue");
+  var scoreOk = document.getElementById("scoreOk");
+  var scoreBad = document.getElementById("scoreBad");
+  var scoreRound = document.getElementById("scoreRound");
+
+  var XMIN = -8, XMAX = 10, YMIN = -4, YMAX = 12;
+  var PAD = { l: 56, r: 28, t: 28, b: 42 };
+
+  function delay(ms) { return ms * (state.speedFactor || 1); }
+  function clearTimers() {
+    state.timers.forEach(function (id) { clearTimeout(id); });
+    state.timers = [];
+  }
+  function later(ms, fn) {
+    var id = setTimeout(fn, delay(ms));
+    state.timers.push(id);
+    return id;
+  }
+  function fmtNum(n) {
+    if (Object.is(n, -0) || Math.abs(n) < 1e-12) return "0";
+    return String(n).replace("-", "−");
+  }
+  function fracHTML(v, h) {
+    return '<span class="frac" title="v/h²"><span class="num">' + fmtNum(v) +
+      '</span><span class="den">' + fmtNum(h) + "²" + '</span></span>';
+  }
+  function formulaHTML(xp, yp, h, v) {
+    var fr = fracHTML(v, h);
+    var body;
+    if (xp === 0) body = "x²";
+    else if (xp > 0) body = "(x − <span class=\"hl-xp\">" + fmtNum(xp) + "</span>)²";
+    else body = "(x + <span class=\"hl-xp\">" + fmtNum(-xp) + "</span>)²";
+    var ypPart;
+    if (yp === 0) ypPart = "";
+    else if (yp > 0) ypPart = " + <span class=\"hl-yp\">" + fmtNum(yp) + "</span>";
+    else ypPart = " − <span class=\"hl-yp\">" + fmtNum(-yp) + "</span>";
+    return "f(x) = " + fr + "·" + body + ypPart;
+  }
+  function fitWorld(p) {
+    var xp = p.xp, yp = p.yp, h = Math.abs(p.h) || 1, v = p.v;
+    var xL = xp - 3 * h, xR = xp + 3 * h;
+    XMIN = Math.min(xL, -1) - 1;
+    XMAX = Math.max(xR, 1) + 1;
+    if (v >= 0) {
+      YMIN = Math.min(yp - 1, -1);
+      YMAX = Math.max(yp + 9 * v + 1, yp + 2, 4);
+    } else {
+      YMAX = yp + 2;
+      YMIN = yp + 9 * v - 1;
+    }
+  }
+  function pickParams() {
+    var tries = 0;
+    var V_POOL = [1, 2, -1, -2];
+    while (tries++ < 500) {
+      var xp = -2 + Math.floor(Math.random() * 5);
+      var yp = -2 + Math.floor(Math.random() * 5);
+      var h = 1 + Math.floor(Math.random() * 5);
+      var v = V_POOL[Math.floor(Math.random() * V_POOL.length)];
+      var pts = [
+        { x: xp, y: yp },
+        { x: xp + h, y: yp + v },
+        { x: xp + 2 * h, y: yp + 4 * v },
+        { x: xp + 3 * h, y: yp + 9 * v },
+        { x: xp - h, y: yp + v },
+        { x: xp - 2 * h, y: yp + 4 * v },
+        { x: xp - 3 * h, y: yp + 9 * v }
+      ];
+      var ok = true;
+      for (var i = 0; i < pts.length; i++) {
+        if (Math.abs(pts[i].x) > 14 || Math.abs(pts[i].y) > 22) { ok = false; break; }
+      }
+      if (!ok) continue;
+      return { xp: xp, yp: yp, h: h, v: v };
+    }
+    return { xp: 0, yp: 0, h: 2, v: 1 };
+  }
+  function Rn(p, n) { return { x: p.xp + n * p.h, y: p.yp + n * n * p.v }; }
+  function Ln(p, n) { return { x: p.xp - n * p.h, y: p.yp + n * n * p.v }; }
+  function worldToScreen(x, y) {
+    var w = canvas.width - PAD.l - PAD.r;
+    var hh = canvas.height - PAD.t - PAD.b;
+    return {
+      x: PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w,
+      y: PAD.t + ((YMAX - y) / (YMAX - YMIN)) * hh
+    };
+  }
+  function screenToWorld(sx, sy) {
+    var w = canvas.width - PAD.l - PAD.r;
+    var hh = canvas.height - PAD.t - PAD.b;
+    return {
+      x: XMIN + ((sx - PAD.l) / w) * (XMAX - XMIN),
+      y: YMAX - ((sy - PAD.t) / hh) * (YMAX - YMIN)
+    };
+  }
+  function eventToCanvas(ev) {
+    var rect = canvas.getBoundingClientRect();
+    var scaleX = canvas.width / rect.width;
+    var scaleY = canvas.height / rect.height;
+    var clientX = (ev.touches && ev.touches[0]) ? ev.touches[0].clientX : ev.clientX;
+    var clientY = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+  function snapLattice(wx, wy) {
+    var xi = Math.round(wx);
+    var yi = Math.round(wy);
+    xi = Math.max(Math.ceil(XMIN), Math.min(Math.floor(XMAX), xi));
+    yi = Math.max(Math.ceil(YMIN), Math.min(Math.floor(YMAX), yi));
+    return { x: xi, y: yi };
+  }
+  function syncScores() {
+    scoreOk.innerHTML = "Éxitos <strong>" + state.ok + "</strong>";
+    scoreBad.innerHTML = "Errores <strong>" + state.bad + "</strong>";
+    scoreRound.innerHTML = "Ronda <strong>" + state.round + "</strong>";
+  }
+  function setPrompt(html, cls) {
+    promptEl.className = "prompt" + (cls ? (" " + cls) : "");
+    promptEl.innerHTML = html;
+  }
+  function pulseOk() {
+    if (GK.playOkChime) GK.playOkChime();
+    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    graphWrap.classList.remove("flash-ok", "flash-bad");
+    void graphWrap.offsetWidth;
+    graphWrap.classList.add("flash-ok");
+  }
+  function pulseBad() {
+    if (GK.playErrorBuzz) GK.playErrorBuzz();
+    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "bad");
+    graphWrap.classList.remove("flash-ok", "flash-bad");
+    void graphWrap.offsetWidth;
+    graphWrap.classList.add("flash-bad");
+  }
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    for (var xi = Math.ceil(XMIN); xi <= Math.floor(XMAX); xi++) {
+      var p0 = worldToScreen(xi, YMIN), p1 = worldToScreen(xi, YMAX);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    for (var yi = Math.ceil(YMIN); yi <= Math.floor(YMAX); yi++) {
+      var q0 = worldToScreen(XMIN, yi), q1 = worldToScreen(XMAX, yi);
+      ctx.beginPath(); ctx.moveTo(q0.x, q0.y); ctx.lineTo(q1.x, q1.y); ctx.stroke();
+    }
+    var ox = worldToScreen(0, 0);
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(PAD.l, ox.y); ctx.lineTo(canvas.width - PAD.r, ox.y);
+    ctx.moveTo(ox.x, PAD.t); ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.stroke();
+    ctx.fillStyle = MUTED;
+    ctx.font = "600 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (var xt = Math.ceil(XMIN); xt <= Math.floor(XMAX); xt++) {
+      if (xt === 0) continue;
+      var sx = worldToScreen(xt, 0);
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath(); ctx.moveTo(sx.x, sx.y - 4); ctx.lineTo(sx.x, sx.y + 4); ctx.stroke();
+      ctx.fillText(String(xt), sx.x, sx.y + 8);
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (var yt = Math.ceil(YMIN); yt <= Math.floor(YMAX); yt++) {
+      if (yt === 0) continue;
+      var sy = worldToScreen(0, yt);
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath(); ctx.moveTo(sy.x - 4, sy.y); ctx.lineTo(sy.x + 4, sy.y); ctx.stroke();
+      ctx.fillText(fmtNum(yt), sy.x - 8, sy.y);
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.fillText("0", ox.x - 8, ox.y + 6);
+    ctx.fillStyle = "#93c5fd";
+    ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("x", canvas.width - PAD.r - 14, ox.y - 8);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("y", ox.x + 10, PAD.t + 4);
+  }
+  function drawAxis(xp) {
+    var top = worldToScreen(xp, YMAX);
+    var bot = worldToScreen(xp, YMIN);
+    ctx.save();
+    ctx.strokeStyle = AXIS;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([7, 7]);
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.moveTo(top.x, top.y);
+    ctx.lineTo(bot.x, bot.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = AXIS;
+    ctx.font = "700 12px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("eje x = " + fmtNum(xp), top.x + 8, PAD.t + 6);
+    ctx.restore();
+  }
+  function drawPoint(x, y, label, color, glow) {
+    var p = worldToScreen(x, y);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = glow || AMBER_GLOW;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = color || AMBER;
+    ctx.fill();
+    ctx.strokeStyle = "#fef3c7";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    if (label) {
+      ctx.fillStyle = "#fef3c7";
+      ctx.font = "800 14px Segoe UI, system-ui, sans-serif";
+      ctx.textBaseline = "bottom";
+      var lx = p.x + 12, ly = p.y - 10;
+      if (lx > canvas.width - 90) lx = p.x - 12;
+      if (ly < 22) ly = p.y + 22;
+      ctx.textAlign = lx < p.x ? "right" : "left";
+      ctx.fillText(label, lx, ly);
+    }
+    ctx.restore();
+  }
+  function drawParabola(p, alpha) {
+    var hh = p.h || 1;
+    var ratio = p.v / (hh * hh);
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.strokeStyle = "rgba(255,77,77,0.35)";
+    ctx.lineWidth = 7;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    var first = true;
+    for (var i = 0; i <= 200; i++) {
+      var x = XMIN + (XMAX - XMIN) * (i / 200);
+      var y = ratio * (x - p.xp) * (x - p.xp) + p.yp;
+      if (y < YMIN - 0.5 || y > YMAX + 0.5) { first = true; continue; }
+      var s = worldToScreen(x, y);
+      if (first) { ctx.moveTo(s.x, s.y); first = false; }
+      else ctx.lineTo(s.x, s.y);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = PARA;
+    ctx.lineWidth = 3.2;
+    first = true;
+    ctx.beginPath();
+    for (var j = 0; j <= 200; j++) {
+      var x2 = XMIN + (XMAX - XMIN) * (j / 200);
+      var y2 = ratio * (x2 - p.xp) * (x2 - p.xp) + p.yp;
+      if (y2 < YMIN - 0.5 || y2 > YMAX + 0.5) { first = true; continue; }
+      var s2 = worldToScreen(x2, y2);
+      if (first) { ctx.moveTo(s2.x, s2.y); first = false; }
+      else ctx.lineTo(s2.x, s2.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+  function drawLGuide(ax, ay, hx, hy) {
+    var dx = hx - ax, dy = hy - ay;
+    var a0 = worldToScreen(ax, ay);
+    var corner = worldToScreen(hx, ay);
+    var a1 = worldToScreen(hx, hy);
+    ctx.save();
+    ctx.strokeStyle = "rgba(96,165,250,0.95)";
+    ctx.lineWidth = 2.4;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath(); ctx.moveTo(a0.x, a0.y); ctx.lineTo(corner.x, corner.y); ctx.stroke();
+    ctx.strokeStyle = "rgba(52,211,153,0.95)";
+    ctx.beginPath(); ctx.moveTo(corner.x, corner.y); ctx.lineTo(a1.x, a1.y); ctx.stroke();
+    ctx.setLineDash([]);
+    if (dx !== 0) {
+      var stepX = dx > 0 ? 1 : -1;
+      ctx.strokeStyle = "rgba(96,165,250,0.75)";
+      ctx.lineWidth = 1.5;
+      for (var ix = 1; ix <= Math.abs(dx); ix++) {
+        var tx = worldToScreen(ax + stepX * ix, ay);
+        ctx.beginPath(); ctx.moveTo(tx.x, tx.y - 5); ctx.lineTo(tx.x, tx.y + 5); ctx.stroke();
+      }
+    }
+    if (dy !== 0) {
+      var stepY = dy > 0 ? 1 : -1;
+      ctx.strokeStyle = "rgba(52,211,153,0.75)";
+      ctx.lineWidth = 1.5;
+      for (var iy = 1; iy <= Math.abs(dy); iy++) {
+        var ty = worldToScreen(hx, ay + stepY * iy);
+        ctx.beginPath(); ctx.moveTo(ty.x - 5, ty.y); ctx.lineTo(ty.x + 5, ty.y); ctx.stroke();
+      }
+    }
+    ctx.font = "800 14px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#93c5fd";
+    var midH = worldToScreen((ax + hx) / 2, ay);
+    ctx.fillText("Δx=" + fmtNum(dx), midH.x, midH.y + (dy >= 0 ? 16 : -14));
+    ctx.fillStyle = "#6ee7b7";
+    var midV = worldToScreen(hx, (ay + hy) / 2);
+    ctx.textAlign = "left";
+    ctx.fillText("Δy=" + fmtNum(dy), midV.x + 10, midV.y);
+    ctx.restore();
+  }
+  function showVictory(sub) {
+    state.won = true;
+    state.locked = true;
+    victoryBanner.classList.add("on");
+    if (GK.fireConfetti) {
+      GK.fireConfetti(confettiCanvas);
+      later(400, function () { if (GK.fireConfetti) GK.fireConfetti(confettiCanvas); });
+      later(800, function () { if (GK.fireConfetti) GK.fireConfetti(confettiCanvas); });
+    }
+    if (GK.playExplosion) GK.playExplosion();
+    else if (GK.playOkChime) GK.playOkChime();
+    setPrompt("¡Ganador! 20 éxitos. <strong>Seguir</strong> o <strong>Reiniciar</strong>.", "ok");
+  }
+  function togglePause() {
+    if (state.won) return;
+    state.paused = !state.paused;
+    pausedBanner.classList.toggle("on", state.paused);
+    pauseBtn.textContent = state.paused ? "Continuar" : "Pausar";
+    pauseBtn.classList.toggle("pause-on", state.paused);
+    if (state.paused) setPrompt("Pausa · tocá <strong>Continuar</strong> para seguir.", "");
+  }
+  function toggleSlow() {
+    if (state.speedFactor === 1) {
+      state.speedFactor = 2;
+      slowBtn.classList.add("on");
+      slowBtn.setAttribute("aria-pressed", "true");
+    } else {
+      state.speedFactor = 1;
+      slowBtn.classList.remove("on");
+      slowBtn.setAttribute("aria-pressed", "false");
+    }
+  }
+  function resizeConfetti() {
+    if (!confettiCanvas || !graphWrap) return;
+    confettiCanvas.width = graphWrap.clientWidth || canvas.width;
+    confettiCanvas.height = graphWrap.clientHeight || canvas.height;
+  }
+  function wireChrome(restartFn, keepFn) {
+    pauseBtn.addEventListener("click", togglePause);
+    restartBtn.addEventListener("click", restartFn);
+    if (victoryRestart) victoryRestart.addEventListener("click", restartFn);
+    if (victoryContinue) victoryContinue.addEventListener("click", keepFn);
+    if (slowBtn) {
+      slowBtn.addEventListener("click", toggleSlow);
+      slowBtn.setAttribute("aria-pressed", "false");
+    }
+    window.addEventListener("resize", function () { resizeConfetti(); draw(); });
+    resizeConfetti();
+  }
+
+
+  var exprFormula = document.getElementById("exprFormula");
+  var modeTag = document.getElementById("modeTag");
+  var sideHint = document.getElementById("sideHint");
+  var placeHint = document.getElementById("placeHint");
+  var chipGrid = document.getElementById("chipGrid");
+
+  var MODES = ["impar", "espejo", "formula", "signo", "tabla", "hdist", "impostor"];
+
+  var state = {
+    ok: 0, bad: 0, round: 1,
+    params: { xp: 0, yp: 0, h: 2, v: 1 },
+    locked: false, paused: false, won: false,
+    speedFactor: 1, timers: [],
+    mode: "impar", answer: null, clickTarget: null,
+    impostorPts: null, reveal: false, hover: null
+  };
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = (Math.random() * (i + 1)) | 0;
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function uniquePool(pool, n, exclude) {
+    var out = [], seen = {};
+    if (exclude != null) seen[exclude] = 1;
+    var tries = 0;
+    while (out.length < n && tries++ < 200) {
+      var v = pool[(Math.random() * pool.length) | 0];
+      if (seen[v]) continue;
+      seen[v] = 1; out.push(v);
+    }
+    return out;
+  }
+  function clearChips() { chipGrid.innerHTML = ""; }
+  function makeChips(options, formatter, onPick) {
+    clearChips();
+    options.forEach(function (val) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip-btn";
+      b.textContent = formatter(val);
+      b.dataset.val = String(val);
+      b.addEventListener("click", function () { onPick(val, b); });
+      chipGrid.appendChild(b);
+    });
+  }
+  function markChips(correctVal, wrongBtn) {
+    Array.prototype.forEach.call(chipGrid.querySelectorAll(".chip-btn"), function (el) {
+      el.disabled = true;
+      if (String(correctVal) === el.dataset.val || Number(el.dataset.val) === correctVal) el.classList.add("correct");
+      if (el === wrongBtn) el.classList.add("wrong");
+    });
+  }
+  function finishOk(msg) {
+    state.ok++; syncScores(); pulseOk();
+    if (GK.fireConfetti) GK.fireConfetti(confettiCanvas);
+    setPrompt(msg, "ok");
+    if (state.ok >= WIN_AT) { later(600, showVictory); return; }
+    later(1000, nextRound);
+  }
+  function finishBad(msg) {
+    state.bad++; syncScores(); pulseBad();
+    setPrompt(msg, "bad");
+    later(1300, function () { if (!state.won) nextRound(); });
+  }
+
+  function draw() {
+    drawGrid();
+    var p = state.params;
+    if (state.mode === "impostor" && state.impostorPts) {
+      if (state.reveal) { drawAxis(p.xp); drawParabola(p, 0.85); }
+      state.impostorPts.forEach(function (pt) {
+        var color = AMBER, glow = AMBER_GLOW;
+        if (state.reveal) {
+          color = pt.impostor ? BAD : OK;
+          glow = pt.impostor ? "rgba(255,123,123,0.45)" : "rgba(90,212,168,0.4)";
+        }
+        drawPoint(pt.x, pt.y, pt.label, color, glow);
+      });
+      return;
+    }
+    if (state.mode === "espejo" && state.clickTarget) {
+      drawAxis(p.xp);
+      var n = state.clickTarget.n;
+      var r = Rn(p, n);
+      drawPoint(p.xp, p.yp, "P", AMBER, AMBER_GLOW);
+      drawPoint(r.x, r.y, "R" + n, TEAL, TEAL_GLOW);
+      if (state.locked) {
+        drawPoint(state.clickTarget.x, state.clickTarget.y, "L" + n, OK, "rgba(90,212,168,0.4)");
+      }
+      if (state.hover && !state.locked) {
+        drawPoint(state.hover.x, state.hover.y, "?", MUTED, "rgba(139,155,180,0.35)");
+      }
+      return;
+    }
+    if (state.mode === "signo" || state.mode === "formula" || state.mode === "tabla" || state.mode === "hdist" || state.mode === "impar") {
+      drawAxis(p.xp);
+      drawPoint(p.xp, p.yp, "P", AMBER, AMBER_GLOW);
+      if (state._showPts) {
+        state._showPts.forEach(function (pt) {
+          drawPoint(pt.x, pt.y, pt.label, TEAL, TEAL_GLOW);
+        });
+      }
+      if (state.mode === "impar" && !state._showPts) {
+        ctx.save();
+        ctx.fillStyle = MUTED;
+        ctx.font = "700 22px Segoe UI, system-ui, sans-serif";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("H · V×1 · H · V×3 · H · V×5", canvas.width / 2, canvas.height / 2);
+        ctx.restore();
+      }
+    }
+  }
+
+  function setupImpar() {
+    state.mode = "impar"; state._showPts = null; state.clickTarget = null;
+    placeHint.style.display = "none";
+    modeTag.textContent = "Impar · 1·3·5";
+    var odds = [1, 3, 5];
+    var cur = odds[(Math.random() * 3) | 0];
+    var idx = odds.indexOf(cur);
+    var ans = idx < 2 ? odds[idx + 1] : 7;
+    state.answer = ans;
+    state.params = pickParams(); fitWorld(state.params);
+    exprFormula.innerHTML = "Secuencia vertical: V×1, V×3, V×5, …";
+    sideHint.textContent = "Después de V×" + cur + " viene…";
+    setPrompt("Tras <strong>V×" + cur + "</strong>, ¿cuál es el siguiente factor impar?", "attention");
+    var pool = shuffle(uniquePool([1,3,5,7,9], 3, ans).concat([ans]));
+    makeChips(pool, function (v) { return "V×" + v; }, function (val, btn) {
+      if (state.paused || state.locked || state.won) return;
+      if (GK.ensureAudio) GK.ensureAudio();
+      state.locked = true;
+      markChips(ans, val === ans ? null : btn);
+      if (val === ans) finishOk("Sí · los verticales llevan impares.");
+      else finishBad("Era V×" + ans + ".");
+    });
+    draw();
+  }
+
+  function setupEspejo() {
+    state.mode = "espejo"; clearChips();
+    placeHint.style.display = "block";
+    placeHint.textContent = "Click en la retícula para colocar el espejo L";
+    modeTag.textContent = "Espejo simple";
+    var p = pickParams(); state.params = p; fitWorld(p);
+    var n = 1 + ((Math.random() * 3) | 0);
+    var r = Rn(p, n);
+    state.clickTarget = { x: p.xp - n * p.h, y: r.y, n: n };
+    state._showPts = null;
+    exprFormula.innerHTML = "Espejá R" + n + " → L" + n + " respecto del eje";
+    sideHint.textContent = "L" + n + " = (xp − " + n + "h, misma y)";
+    setPrompt("Colocá el espejo <strong class=\"hl-l\">L" + n + "</strong> de R" + n + ".", "attention");
+    draw();
+  }
+
+  function setupFormula() {
+    state.mode = "formula"; state.clickTarget = null; placeHint.style.display = "none";
+    modeTag.textContent = "Fórmula · un parámetro";
+    var p = pickParams(); state.params = p; fitWorld(p);
+    var which = ["xp", "yp", "h", "v"][(Math.random() * 4) | 0];
+    var ans = p[which];
+    state.answer = ans;
+    var label = which === "xp" ? "xₚ" : (which === "yp" ? "yₚ" : which);
+    exprFormula.innerHTML = formulaHTML(p.xp, p.yp, p.h, p.v) + " · falta leer <strong>" + label + "</strong>";
+    // blank display
+    if (which === "h") {
+      exprFormula.innerHTML = "f(x) = <span class=\"frac\"><span class=\"num\">" + fmtNum(p.v) + "</span><span class=\"den\">?²</span></span>·…" ;
+    } else if (which === "v") {
+      exprFormula.innerHTML = "f(x) = <span class=\"frac\"><span class=\"num\">?</span><span class=\"den\">" + fmtNum(p.h) + "²</span></span>·…";
+    } else if (which === "xp") {
+      exprFormula.innerHTML = "f(x) = … (x − <span class=\"hl-xp\">?</span>)² …";
+    } else {
+      exprFormula.innerHTML = "f(x) = … + <span class=\"hl-yp\">?</span>";
+    }
+    sideHint.textContent = "Leé P y R1 en el gráfico";
+    state._showPts = [{ x: Rn(p, 1).x, y: Rn(p, 1).y, label: "R1" }];
+    setPrompt("¿Cuánto vale <strong>" + label + "</strong>?", "attention");
+    var pool;
+    if (which === "h") pool = shuffle(uniquePool([1,2,3,4,5], 3, ans).concat([ans]));
+    else if (which === "v") pool = shuffle(uniquePool([-2,-1,1,2], 3, ans).concat([ans]));
+    else pool = shuffle(uniquePool([-2,-1,0,1,2], 3, ans).concat([ans]));
+    makeChips(pool, function (v) { return label + " = " + fmtNum(v); }, function (val, btn) {
+      if (state.paused || state.locked || state.won) return;
+      if (GK.ensureAudio) GK.ensureAudio();
+      state.locked = true;
+      markChips(ans, val === ans ? null : btn);
+      if (val === ans) finishOk("Bien · " + label + " = " + fmtNum(ans) + ".");
+      else finishBad("Era " + label + " = " + fmtNum(ans) + ".");
+    });
+    draw();
+  }
+
+  function setupSigno() {
+    state.mode = "signo"; state.clickTarget = null; placeHint.style.display = "none";
+    modeTag.textContent = "Signo de v";
+    var p = pickParams(); state.params = p; fitWorld(p);
+    state.answer = p.v > 0 ? "up" : "down";
+    exprFormula.innerHTML = "Mirá la rama · el signo de v decide la apertura";
+    sideHint.textContent = "v > 0 arriba · v < 0 abajo";
+    state._showPts = [1,2,3].map(function (n) {
+      var r = Rn(p, n); return { x: r.x, y: r.y, label: "R" + n };
+    });
+    setPrompt("¿La parábola abre hacia <strong>arriba</strong> o hacia <strong>abajo</strong>?", "attention");
+    clearChips();
+    ["up", "down"].forEach(function (val) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip-btn";
+      b.textContent = val === "up" ? "↑ arriba (v>0)" : "↓ abajo (v<0)";
+      b.dataset.val = val;
+      b.addEventListener("click", function () {
+        if (state.paused || state.locked || state.won) return;
+        if (GK.ensureAudio) GK.ensureAudio();
+        state.locked = true;
+        markChips(state.answer, val === state.answer ? null : b);
+        if (val === state.answer) finishOk("Sí · v = " + fmtNum(p.v) + ".");
+        else finishBad("Era " + (state.answer === "up" ? "arriba" : "abajo") + " · v = " + fmtNum(p.v) + ".");
+      });
+      chipGrid.appendChild(b);
+    });
+    draw();
+  }
+
+  function setupTabla() {
+    state.mode = "tabla"; state.clickTarget = null; placeHint.style.display = "none";
+    modeTag.textContent = "Tabla · una celda";
+    var p = pickParams(); state.params = p; fitWorld(p);
+    var n = 1 + ((Math.random() * 3) | 0);
+    var ask = Math.random() < 0.5 ? "x" : "y";
+    var r = Rn(p, n);
+    state.answer = ask === "x" ? r.x : r.y;
+    exprFormula.innerHTML = "R<sub>" + n + "</sub> = (xp+" + n + "h, yp+" + (n * n) + "v)";
+    sideHint.innerHTML = "xp=" + fmtNum(p.xp) + " · yp=" + fmtNum(p.yp) + " · h=" + fmtNum(p.h) + " · v=" + fmtNum(p.v);
+    state._showPts = null;
+    setPrompt("Completá la celda: coordenada <strong>" + ask + "</strong> de R<sub>" + n + "</sub>.", "attention");
+    var candidates = ask === "x"
+      ? [r.x - 2, r.x - 1, r.x + 1, r.x + 2, p.xp, p.xp + p.h]
+      : [r.y - 2, r.y - 1, r.y + 1, r.y + 2, p.yp, p.yp + p.v];
+    var pool = shuffle(uniquePool(candidates, 3, state.answer).concat([state.answer]));
+    makeChips(pool, function (v) { return ask + " = " + fmtNum(v); }, function (val, btn) {
+      if (state.paused || state.locked || state.won) return;
+      if (GK.ensureAudio) GK.ensureAudio();
+      state.locked = true;
+      markChips(state.answer, val === state.answer ? null : btn);
+      if (val === state.answer) finishOk("Celda ok · R" + n + " = (" + fmtNum(r.x) + ", " + fmtNum(r.y) + ").");
+      else finishBad("Era " + ask + " = " + fmtNum(state.answer) + ".");
+    });
+    draw();
+  }
+
+  function setupHdist() {
+    state.mode = "hdist"; state.clickTarget = null; placeHint.style.display = "none";
+    modeTag.textContent = "Distancia h";
+    var p = pickParams(); state.params = p; fitWorld(p);
+    var n = (Math.random() * 2) | 0;
+    var a = Rn(p, n), b = Rn(p, n + 1);
+    state.answer = p.h;
+    exprFormula.innerHTML = "|Δx| entre puntos consecutivos = h";
+    sideHint.textContent = (n === 0 ? "P" : ("R" + n)) + " → R" + (n + 1);
+    state._showPts = [
+      { x: a.x, y: a.y, label: n === 0 ? "P" : ("R" + n) },
+      { x: b.x, y: b.y, label: "R" + (n + 1) }
+    ];
+    // don't double-draw P
+    if (n === 0) state._showPts = [{ x: b.x, y: b.y, label: "R1" }];
+    setPrompt("¿Cuánto vale <span class=\"hl-h\">h</span>?", "attention");
+    var pool = shuffle(uniquePool([1,2,3,4,5], 3, p.h).concat([p.h]));
+    makeChips(pool, function (v) { return "h = " + fmtNum(v); }, function (val, btn) {
+      if (state.paused || state.locked || state.won) return;
+      if (GK.ensureAudio) GK.ensureAudio();
+      state.locked = true;
+      markChips(p.h, val === p.h ? null : btn);
+      if (val === p.h) finishOk("h = " + fmtNum(p.h) + ".");
+      else finishBad("Era h = " + fmtNum(p.h) + ".");
+    });
+    draw();
+  }
+
+  function setupImpostor() {
+    state.mode = "impostor"; clearChips();
+    placeHint.style.display = "block";
+    placeHint.textContent = "Click en el punto impostor";
+    modeTag.textContent = "Caza el impostor";
+    var p = pickParams(); state.params = p; fitWorld(p);
+    var ns = shuffle([0, 1, 2, -1, -2]).slice(0, 3);
+    var real = ns.map(function (n) {
+      var r = Rn(p, n);
+      return { x: r.x, y: r.y, label: n === 0 ? "P" : (n > 0 ? ("R" + n) : ("L" + (-n))), impostor: false };
+    });
+    var base = real[0];
+    var imp = { x: base.x + 1, y: base.y + (Math.random() < 0.5 ? 1 : -1), label: "?", impostor: true };
+    var letters = shuffle(["A", "B", "C", "D"]);
+    var all = shuffle(real.concat([imp]));
+    all.forEach(function (pt, i) { pt.label = letters[i]; });
+    state.impostorPts = all; state.reveal = false; state.clickTarget = null; state._showPts = null;
+    exprFormula.innerHTML = formulaHTML(p.xp, p.yp, p.h, p.v);
+    sideHint.textContent = "3 reales + 1 falso";
+    setPrompt("¿Cuál punto <strong>no</strong> pertenece a la parábola?", "attention");
+    draw();
+  }
+
+  function onCanvasClick(ev) {
+    if (state.paused || state.locked || state.won) return;
+    if (GK.ensureAudio) GK.ensureAudio();
+    var cxy = eventToCanvas(ev);
+    if (state.mode === "espejo" && state.clickTarget) {
+      var w = screenToWorld(cxy.x, cxy.y);
+      var pt = snapLattice(w.x, w.y);
+      state.locked = true;
+      var t = state.clickTarget;
+      if (pt.x === t.x && pt.y === t.y) {
+        draw();
+        finishOk("Espejo correcto · L" + t.n + " = (" + fmtNum(t.x) + ", " + fmtNum(t.y) + ").");
+      } else {
+        state.hover = pt;
+        draw();
+        drawPoint(pt.x, pt.y, "×", BAD, "rgba(255,123,123,0.4)");
+        finishBad("L" + t.n + " iba en (" + fmtNum(t.x) + ", " + fmtNum(t.y) + ").");
+      }
+      return;
+    }
+    if (state.mode === "impostor" && state.impostorPts) {
+      var hit = null;
+      for (var i = 0; i < state.impostorPts.length; i++) {
+        var pt2 = state.impostorPts[i];
+        var s = worldToScreen(pt2.x, pt2.y);
+        var dx = s.x - cxy.x, dy = s.y - cxy.y;
+        if (dx * dx + dy * dy <= 20 * 20) { hit = pt2; break; }
+      }
+      if (!hit) return;
+      state.locked = true; state.reveal = true; draw();
+      var impLab = (state.impostorPts.filter(function (p) { return p.impostor; })[0] || {}).label;
+      if (hit.impostor) finishOk("Impostor " + hit.label + " cazado.");
+      else finishBad("El impostor era " + impLab + ".");
+    }
+  }
+
+  function onMove(ev) {
+    if (state.mode !== "espejo" || state.locked || state.paused || state.won) return;
+    var cxy = eventToCanvas(ev);
+    var w = screenToWorld(cxy.x, cxy.y);
+    state.hover = snapLattice(w.x, w.y);
+    draw();
+  }
+
+  function startRound(keepScores) {
+    clearTimers();
+    state.locked = false; state.clickTarget = null; state.impostorPts = null;
+    state.reveal = false; state.hover = null; state._showPts = null;
+    if (!keepScores) { state.ok = 0; state.bad = 0; state.round = 1; }
+    state.won = false;
+    victoryBanner.classList.remove("on");
+    pausedBanner.classList.toggle("on", state.paused);
+    syncScores();
+    var mode = MODES[(Math.random() * MODES.length) | 0];
+    if (mode === "impar") setupImpar();
+    else if (mode === "espejo") setupEspejo();
+    else if (mode === "formula") setupFormula();
+    else if (mode === "signo") setupSigno();
+    else if (mode === "tabla") setupTabla();
+    else if (mode === "hdist") setupHdist();
+    else setupImpostor();
+  }
+  function nextRound() { state.round++; syncScores(); startRound(true); }
+  function restart() {
+    state.paused = false; pauseBtn.textContent = "Pausar";
+    pauseBtn.classList.remove("pause-on"); pausedBanner.classList.remove("on");
+    startRound(false);
+  }
+  function keepPlaying() {
+    state.won = false; state.paused = false;
+    pauseBtn.textContent = "Pausar"; pauseBtn.classList.remove("pause-on");
+    pausedBanner.classList.remove("on"); victoryBanner.classList.remove("on");
+    state.ok = 0; syncScores(); nextRound();
+  }
+  canvas.addEventListener("click", onCanvasClick);
+  canvas.addEventListener("mousemove", onMove);
+  canvas.addEventListener("touchstart", function (ev) { ev.preventDefault(); onCanvasClick(ev); }, { passive: false });
+  wireChrome(restart, keepPlaying);
+  startRound(false);
+
+})();
+</script>
+</body>
+</html>
