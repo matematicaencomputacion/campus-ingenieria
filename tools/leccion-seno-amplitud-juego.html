@@ -56,7 +56,21 @@ canvas#c {
 }
 .prompt strong { color: var(--ink); }
 .prompt.ok { color: var(--ok); }
-.prompt.bad { color: var(--bad); }
+.prompt.bad { color: #f5e6a8; }
+.prompt.attention {
+  background: rgba(210, 180, 100, 0.22);
+  border: 1px solid rgba(255, 191, 0, 0.45);
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 0 14px rgba(255, 191, 0, 0.28);
+}
+.prompt.attention-on {
+  background: rgba(255, 191, 0, 0.38);
+  border-color: #FFBF00;
+  box-shadow: 0 0 18px rgba(255, 191, 0, 0.55);
+  color: #0b1018;
+}
+.prompt.attention-on strong { color: #0b1018; }
 .lesson-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
   z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
@@ -208,29 +222,39 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   let soundMeterTimer = null;
   function pulseSoundMeter(kind) {
     if (!soundMeter || !soundBars.length) return;
-    if (soundMeterTimer) clearInterval(soundMeterTimer);
+    if (soundMeterTimer) { clearInterval(soundMeterTimer); soundMeterTimer = null; }
     soundMeter.classList.add("live");
     soundMeter.classList.toggle("ok", kind === "ok");
     soundMeter.classList.toggle("bad", kind === "bad");
     soundMeterLevel.textContent = kind === "ok" ? "Sonido: chime" : (kind === "bad" ? "Sonido: buzz" : "Sonido: on");
+    // 3 bip visibles (on/off/on/off/on) ~ como la alerta ×3
     let n = 0;
-    const heights = kind === "ok"
-      ? [8, 14, 20, 16, 10]
-      : [16, 10, 18, 8, 14];
+    const peak = kind === "ok" ? [10, 16, 22, 16, 10] : [18, 12, 22, 10, 16];
+    function paint(on) {
+      soundBars.forEach((bar, i) => {
+        bar.style.height = (on ? peak[i] : 6) + "px";
+        bar.style.opacity = on ? "1" : "0.35";
+      });
+      soundMeter.classList.toggle("live", on);
+    }
+    paint(true);
     soundMeterTimer = setInterval(() => {
       n++;
-      soundBars.forEach((bar, i) => {
-        const wobble = ((n + i * 2) % 5);
-        bar.style.height = (heights[i] + wobble * 2) + "px";
-      });
-      if (n >= 12) {
+      // odd n = off, even = on; stop after 3 full on-pulses => n=5 ends on third on then settle
+      const on = (n % 2 === 0);
+      paint(on || n >= 5);
+      if (n >= 5) {
         clearInterval(soundMeterTimer);
         soundMeterTimer = null;
-        soundBars.forEach((bar) => { bar.style.height = "6px"; });
-        soundMeter.classList.remove("live", "ok", "bad");
-        soundMeterLevel.textContent = "Sonido: off";
+        // leave lit briefly then off
+        setTimeout(() => {
+          paint(false);
+          soundMeter.classList.remove("live", "ok", "bad");
+          soundBars.forEach((bar) => { bar.style.height = "8px"; bar.style.opacity = "1"; });
+          soundMeterLevel.textContent = "Sonido: off";
+        }, 280);
       }
-    }, 45);
+    }, 220);
   }
 
 
@@ -266,9 +290,35 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
     return a;
   }
+  let promptFlash = null;
+  function stopPromptFlash() {
+    if (promptFlash && promptFlash.timer) clearInterval(promptFlash.timer);
+    promptFlash = null;
+    promptEl.classList.remove("attention", "attention-on");
+  }
+  function flashPromptAttention() {
+    stopPromptFlash();
+    promptEl.classList.add("attention", "attention-on");
+    let n = 0;
+    promptFlash = { timer: setInterval(() => {
+      n++;
+      const on = (n % 2 === 1);
+      promptEl.classList.toggle("attention-on", on);
+      if (n >= 6) {
+        clearInterval(promptFlash.timer);
+        promptFlash = null;
+        promptEl.classList.add("attention", "attention-on");
+      }
+    }, 220) };
+  }
   function setPrompt(html, cls) {
+    if (cls !== "bad") stopPromptFlash();
     promptEl.className = "prompt" + (cls ? " " + cls : "");
     promptEl.innerHTML = html;
+    if (cls === "bad") {
+      promptEl.classList.add("attention");
+      flashPromptAttention();
+    }
   }
   function syncScores() {
     scoreOkEl.innerHTML = "Aciertos <strong>" + gameOk + "</strong>";
