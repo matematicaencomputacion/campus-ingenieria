@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 21 · Recta · play</title>
+<title>Lección 21 · Recta · play · ordenada-horizontal-vertical = ordenada-pendiente</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -234,7 +234,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <header>
     <div>
       <h1><span class="lesson-num">Lección 21</span> · Recta · play
-        <span class="sub">corrimientos h y v desde b</span>
+        <span class="sub">ordenada-horizontal-vertical = ordenada-pendiente</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -262,18 +262,18 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         </div>
         <div class="expr-row slider-h" id="rowH">
           <div class="slider-head">
-            <span class="slider-val">h <span class="eq">=</span> <span id="hLabel">4</span></span>
+            <span class="slider-val">h <span class="eq">=</span> <span id="hLabel">0</span></span>
             <span class="slider-hint">desplazamiento horizontal</span>
           </div>
-          <input type="range" id="hSlider" min="1" max="5" step="1" value="4" aria-label="desplazamiento horizontal h" />
+          <input type="range" id="hSlider" min="0" max="5" step="1" value="0" aria-label="desplazamiento horizontal h" />
           <div class="range-ends"><span>1</span><span>5</span></div>
         </div>
         <div class="expr-row slider-v" id="rowV">
           <div class="slider-head">
-            <span class="slider-val">v <span class="eq">=</span> <span id="vLabel">5</span></span>
+            <span class="slider-val">v <span class="eq">=</span> <span id="vLabel">0</span></span>
             <span class="slider-hint">desplazamiento vertical</span>
           </div>
-          <input type="range" id="vSlider" min="-5" max="5" step="1" value="5" aria-label="desplazamiento vertical v" />
+          <input type="range" id="vSlider" min="-5" max="5" step="1" value="0" aria-label="desplazamiento vertical v" />
           <div class="range-ends"><span>−5</span><span>5</span></div>
         </div>
         <div class="expr-row table-row">
@@ -282,13 +282,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
               <tr><th>x₁</th><th><span class="dot" aria-hidden="true"></span>f(x₁)</th></tr>
             </thead>
             <tbody>
-              <tr id="tableRowA"><td id="tX0">0</td><td id="tY0">0</td></tr>
-              <tr id="tableRowB"><td id="tXh">4</td><td id="tYh">5</td></tr>
+              <tr id="tableRowA"><td id="tX0">0</td><td id="tY0">—</td></tr>
+              <tr id="tableRowB"><td id="tXh">—</td><td id="tYh">—</td></tr>
             </tbody>
           </table>
           <div class="chips">
-            <span class="chip" id="chipA">A = (0, 0)</span>
-            <span class="chip" id="chipB">B = (4, 5)</span>
+            <span class="chip" id="chipA">A = (—, —)</span>
+            <span class="chip" id="chipB">B = (—, —)</span>
           </div>
         </div>
       </aside>
@@ -1292,10 +1292,18 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     setRound(0);
     updateButtons();
     doneBanner.classList.remove("on");
-    state.params = { b: 0, h: 4, v: 5 };
-    syncSlidersFromParams();
-    setCaption("Explorá con los sliders o presioná <strong>▶ Play</strong> para 20 presentaciones animadas.");
-    drawFullStatic();
+    state.params = { b: 0, h: 0, v: 0 };
+    state.reveal = { x0: false, y0: false, xh: false, yh: false };
+    resetSlidersToZero();
+    refreshExprUI();
+    setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> — cada uno se mueve al dibujar, o explorá a mano.");
+    state.anim = {
+      b: 0, h: 0, v: 0, t: 0,
+      highlightB: false, showA: false, showDottedH: false,
+      hProgress: 0, vProgress: 0, showB: false,
+      showTriangle: false, showLabels: false, showLine: false, showLegend: false
+    };
+    paintScene(state.anim);
   }
 
   bSlider.addEventListener("input", function () { onSliderInput("b"); });
@@ -1320,10 +1328,20 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   restartBtn.addEventListener("click", restart);
   repeatBtn.addEventListener("click", function () { startPlay(0); });
 
-  // Initial: default b=0, h=4, v=5 — full figure + sliders match
+  // Initial: all selectors at 0, empty axes — Play moves them in sequence
+  state.params = { b: 0, h: 0, v: 0 };
+  state.reveal = { x0: false, y0: false, xh: false, yh: false };
   updateButtons();
-  syncSlidersFromParams();
-  drawFullStatic();
+  resetSlidersToZero();
+  refreshExprUI();
+  state.anim = {
+    b: 0, h: 0, v: 0, t: 0,
+    highlightB: false, showA: false, showDottedH: false,
+    hProgress: 0, vProgress: 0, showB: false,
+    showTriangle: false, showLabels: false, showLine: false, showLegend: false
+  };
+  setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> — cada uno se mueve al dibujar, o explorá a mano.");
+  paintScene(state.anim);
 })();
 </script>
 </body>
