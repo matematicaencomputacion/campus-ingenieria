@@ -44,6 +44,13 @@ button.btn:hover { filter: brightness(1.08); }
   background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
 }
 .graph-wrap { position: relative; }
+.paused-banner {
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  background: rgba(12,17,24,0.55); border-radius: 10px; z-index: 5;
+  font-size: 1.6rem; font-weight: 800; color: var(--amber); letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.paused-banner.on { display: flex; }
 canvas#c {
   width: 100%; height: auto; display: block; border-radius: 10px;
   background: var(--canvas-bg); touch-action: none; cursor: pointer;
@@ -53,15 +60,18 @@ canvas#c {
   pointer-events: none; z-index: 5; border-radius: 10px; background: transparent;
 }
 .target-badge {
-  position: absolute; left: 14px; top: 12px; z-index: 4;
-  background: rgba(18,26,39,0.92); border: 1px solid rgba(192,132,252,0.55);
-  border-radius: 12px; padding: 10px 16px;
+  position: absolute; left: 50%; top: 40%; z-index: 4;
+  transform: translate(-50%, -50%);
+  background: rgba(18,26,39,0.78); border: 1px solid rgba(192,132,252,0.55);
+  border-radius: 12px; padding: 8px 14px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.35);
   pointer-events: none;
+  text-align: center;
+  min-width: 7.5rem;
 }
 .target-badge .k { display: block; color: var(--muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; }
 .target-badge .v {
-  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 1.85rem;
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 1.55rem;
   color: var(--amber); line-height: 1.15;
 }
 .target-badge .timer {
@@ -158,6 +168,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </h1>
     </div>
     <div class="toolbar">
+      <button type="button" class="btn" id="pauseBtn">Pausa</button>
       <button type="button" class="btn primary" id="restartBtn">Reiniciar</button>
       <span class="score ok" id="scoreOk">Aciertos <strong>0</strong></span>
       <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
@@ -178,6 +189,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <span class="v" id="targetDeg">θ = —</span>
         <div class="timer" id="timerEl">⏱ —</div>
       </div>
+      <div class="paused-banner" id="pausedBanner">PAUSA</div>
       <canvas id="c" width="1200" height="620" aria-label="Círculo unitario · click en el ángulo"></canvas>
       <canvas id="confetti" width="1200" height="620" aria-hidden="true"></canvas>
     </div>
@@ -230,6 +242,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var state = { ok: 0, bad: 0, round: 1, streak: 0, target: null, locked: false };
   var shakeDeg = null, shakeUntil = 0, flashDeg = null, flashUntil = 0;
   var timerId = null, deadline = 0, timeLimit = 10;
+  var paused = false, pauseLeftMs = 0;
+  var pauseBtn = document.getElementById("pauseBtn");
+  var pausedBanner = document.getElementById("pausedBanner");
   var nodes = [];
   var raf = null;
 
@@ -310,6 +325,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function startTimer() {
+    if (paused) return;
     stopTimer();
     timeLimit = TIME_MIN + ((Math.random() * (TIME_MAX - TIME_MIN + 1)) | 0);
     deadline = performance.now() + timeLimit * 1000;
@@ -322,6 +338,42 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       }
     }, 100);
   }
+
+  function resumeTimerFromPause() {
+    stopTimer();
+    deadline = performance.now() + pauseLeftMs;
+    updateTimerUI();
+    timerId = setInterval(function () {
+      updateTimerUI();
+      if (performance.now() >= deadline) {
+        stopTimer();
+        if (!state.locked) onTimeout();
+      }
+    }, 100);
+  }
+
+  function setPaused(on) {
+    if (on) {
+      if (paused) return;
+      pauseLeftMs = Math.max(0, deadline - performance.now());
+      stopTimer();
+      paused = true;
+      state.locked = true;
+      if (pausedBanner) pausedBanner.classList.add("on");
+      if (pauseBtn) pauseBtn.textContent = "Continuar";
+    } else {
+      var was = paused;
+      paused = false;
+      state.locked = false;
+      if (pausedBanner) pausedBanner.classList.remove("on");
+      if (pauseBtn) pauseBtn.textContent = "Pausa";
+      if (was && pauseLeftMs > 0) {
+        resumeTimerFromPause();
+      }
+    }
+  }
+
+  function togglePause() { setPaused(!paused); }
 
   function pickTarget(avoid) {
     var pool = DEGS.filter(function (d) { return d !== avoid; });
@@ -577,7 +629,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function onPointer(ev) {
-    if (state.locked) return;
+    if (paused || state.locked) return;
     if (GK.ensureAudio) GK.ensureAudio();
     var p = canvasPos(ev);
     var hit = hitTest(p.x, p.y);
@@ -588,12 +640,31 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function restart() {
+    paused = false;
+    pauseLeftMs = 0;
+    if (pausedBanner) pausedBanner.classList.remove("on");
+    if (pauseBtn) pauseBtn.textContent = "Pausa";
     stopTimer();
     state = { ok: 0, bad: 0, round: 1, streak: 0, target: null, locked: false };
     shakeDeg = flashDeg = null;
     syncScores();
     rebuildNodes();
     nextRound(null);
+  }
+
+
+  function placeTargetBadge() {
+    var badge = document.getElementById("targetBadge");
+    if (!badge || !canvas) return;
+    var L = layout();
+    var sx = (canvas.clientWidth || canvas.width) / canvas.width;
+    var sy = (canvas.clientHeight || canvas.height) / canvas.height;
+    // Mitad del radio sobre el semieje Y+ (entre origen y 90°)
+    var x = L.cx * sx;
+    var y = (L.cy - L.R * 0.5) * sy;
+    badge.style.left = x + "px";
+    badge.style.top = y + "px";
+    badge.style.transform = "translate(-50%, -50%)";
   }
 
   function fitCanvas() {
@@ -607,10 +678,15 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       confettiCanvas.height = canvas.height;
     }
     rebuildNodes();
+    placeTargetBadge();
     draw();
   }
 
   canvas.addEventListener("pointerdown", onPointer);
+  pauseBtn.addEventListener("click", function () {
+    if (GK.ensureAudio) GK.ensureAudio();
+    togglePause();
+  });
   document.getElementById("restartBtn").addEventListener("click", function () {
     if (GK.ensureAudio) GK.ensureAudio();
     restart();
