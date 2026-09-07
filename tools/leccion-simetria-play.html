@@ -70,9 +70,9 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .expr-row.slider-xp::before { background: #f59e0b; }
 .expr-row.slider-yp::before { background: var(--dot); }
 .expr-row.slider-h::before { background: var(--run); }
-.expr-row.slider-b::before { background: var(--rise); }
+.expr-row.slider-v::before { background: var(--rise); }
 .expr-formula {
-  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.92rem;
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.88rem;
   color: var(--ink); padding-left: 6px; line-height: 1.45;
 }
 .slider-head {
@@ -87,7 +87,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .slider-xp .slider-val { color: #f59e0b; }
 .slider-yp .slider-val { color: var(--dot); }
 .slider-h .slider-val { color: var(--run); }
-.slider-b .slider-val { color: var(--rise); }
+.slider-v .slider-val { color: var(--rise); }
 input[type="range"] {
   -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
   border-radius: 999px; background: #2a3a52; outline: none; cursor: pointer; margin: 4px 0 2px;
@@ -157,7 +157,7 @@ canvas#c {
 .work-panel .hl-xp { color: #f59e0b; }
 .work-panel .hl-yp { color: var(--dot); }
 .work-panel .hl-h { color: var(--run); }
-.work-panel .hl-b { color: var(--rise); }
+.work-panel .hl-v { color: var(--rise); }
 .caption {
   margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
 }
@@ -166,17 +166,18 @@ canvas#c {
 .caption .hl-xp { color: #f59e0b; }
 .caption .hl-yp { color: var(--dot); }
 .caption .hl-h { color: var(--run); }
-.caption .hl-b { color: var(--rise); }
+.caption .hl-v { color: var(--rise); }
 a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .hint { font-size: 0.8rem; color: var(--muted); margin: 6px 0 0; line-height: 1.4; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 4px; }
 .chip {
-  font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem; font-weight: 700;
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
   padding: 4px 8px; border-radius: 999px; background: #121a27;
   border: 1px solid var(--row-border); color: var(--point);
   transition: opacity .2s ease;
 }
 .chip.dim { opacity: 0.32; filter: grayscale(0.35); }
+.chip.purple { color: var(--dot); border-color: rgba(167,139,250,0.45); }
 </style>
 </head>
 <body>
@@ -185,7 +186,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <header>
     <div>
       <h1><span class="lesson-num">Lección 27</span> · Simetría · play
-        <span class="sub">eje · punto · h · b · extensión</span>
+        <span class="sub">cuadrática · odd rises 1·3·5</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -201,7 +202,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" id="exprPanel" aria-label="Parámetros">
         <div class="expr-row">
-          <div class="expr-formula" id="exprFormula">Simetría · eje x = x<sub>p</sub></div>
+          <div class="expr-formula" id="exprFormula">f(x) = (v/h)(x − x<sub>p</sub>)² + y<sub>p</sub></div>
         </div>
         <div class="expr-row slider-xp" id="rowXp">
           <div class="slider-head">
@@ -214,32 +215,33 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="expr-row slider-yp" id="rowYp">
           <div class="slider-head">
             <span class="slider-val">y<sub>p</sub> <span class="eq">=</span> <span id="ypLabel">0</span></span>
-            <span class="slider-hint">altura del punto</span>
+            <span class="slider-hint">altura del vértice</span>
           </div>
-          <input type="range" id="ypSlider" min="-2" max="2" step="1" value="0" aria-label="ordenada del punto yp" />
+          <input type="range" id="ypSlider" min="-2" max="2" step="1" value="0" aria-label="ordenada del vértice yp" />
           <div class="range-ends"><span>−2</span><span>2</span></div>
         </div>
         <div class="expr-row slider-h" id="rowH">
           <div class="slider-head">
             <span class="slider-val">h <span class="eq">=</span> <span id="hLabel">0</span></span>
-            <span class="slider-hint">desplazamiento horizontal</span>
+            <span class="slider-hint">paso horizontal</span>
           </div>
-          <input type="range" id="hSlider" min="0" max="3" step="1" value="0" aria-label="desplazamiento horizontal h" />
+          <input type="range" id="hSlider" min="0" max="3" step="1" value="0" aria-label="paso horizontal h" />
           <div class="range-ends"><span>0</span><span>3</span></div>
         </div>
-        <div class="expr-row slider-b" id="rowB">
+        <div class="expr-row slider-v" id="rowV">
           <div class="slider-head">
-            <span class="slider-val">b <span class="eq">=</span> <span id="bLabel">0</span></span>
-            <span class="slider-hint">desplazamiento vertical</span>
+            <span class="slider-val">v <span class="eq">=</span> <span id="vLabel">0</span></span>
+            <span class="slider-hint">unidad vertical</span>
           </div>
-          <input type="range" id="bSlider" min="0" max="3" step="1" value="0" aria-label="desplazamiento vertical b" />
+          <input type="range" id="vSlider" min="0" max="3" step="1" value="0" aria-label="unidad vertical v" />
           <div class="range-ends"><span>0</span><span>3</span></div>
         </div>
         <div class="expr-row">
           <div class="chips">
             <span class="chip dim" id="chipP">P = (—, —)</span>
-            <span class="chip dim" id="chipL">L = (—, —)</span>
-            <span class="chip dim" id="chipR">R = (—, —)</span>
+            <span class="chip dim" id="chip1">±1 → (—, —)</span>
+            <span class="chip dim" id="chip2">±2 → (—, —)</span>
+            <span class="chip dim" id="chip3">±3 → (—, —)</span>
           </div>
         </div>
       </aside>
@@ -247,11 +249,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <div class="graph-wrap" id="graphWrap">
         <a class="lesson-nav prev" href="leccion-lineal-juego-punto-sliders.html" title="Lección 26: Recta · juego · punto-horizontal-vertical (deslizadores)" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
         <a class="lesson-nav next" href="#" aria-disabled="true" title="Fin de la serie" aria-label="Lección siguiente deshabilitada"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="1200" height="680" aria-label="Simetría · play"></canvas>
+        <canvas id="c" width="1200" height="760" aria-label="Simetría · play · odd rises 1·3·5"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> para ver el bucle de simetría (5 pasos).</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> para ver el patrón cuadrático de subidas impares <strong>1, 3, 5</strong>.</p>
     <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -261,7 +263,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Valores fijos del play: x<sub>p</sub>=0, y<sub>p</sub>=0, h=1, b=1 · eje de simetría · flechas ±h · subida b · extensión horizontal</p>
+    <p class="hint">Valores fijos del play: x<sub>p</sub>=0, y<sub>p</sub>=0, h=1, v=1 · f(x)=(v/h)(x−x<sub>p</sub>)²+y<sub>p</sub> · patrón de subidas impares 1·3·5</p>
   </div>
 </div>
 
@@ -271,12 +273,14 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   "use strict";
 
   var GK = window.CampusGameKit || {};
-  var FIXED = { xp: 0, yp: 0, h: 1, b: 1 };
+  var FIXED = { xp: 0, yp: 0, h: 1, v: 1 };
   var AMBER = "#f59e0b";
   var RUN = "#60a5fa";
   var RISE = "#34d399";
   var MUTED = "#8b9bb4";
   var AXIS = "#93c5fd";
+  var PURPLE = "#a78bfa";
+  var PARA_STROKE = "#000000";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -293,21 +297,22 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var xpSlider = document.getElementById("xpSlider");
   var ypSlider = document.getElementById("ypSlider");
   var hSlider = document.getElementById("hSlider");
-  var bSlider = document.getElementById("bSlider");
+  var vSlider = document.getElementById("vSlider");
   var xpLabel = document.getElementById("xpLabel");
   var ypLabel = document.getElementById("ypLabel");
   var hLabel = document.getElementById("hLabel");
-  var bLabel = document.getElementById("bLabel");
+  var vLabel = document.getElementById("vLabel");
   var rowXpEl = document.getElementById("rowXp");
   var rowYpEl = document.getElementById("rowYp");
   var rowHEl = document.getElementById("rowH");
-  var rowBEl = document.getElementById("rowB");
+  var rowVEl = document.getElementById("rowV");
   var chipP = document.getElementById("chipP");
-  var chipL = document.getElementById("chipL");
-  var chipR = document.getElementById("chipR");
+  var chip1 = document.getElementById("chip1");
+  var chip2 = document.getElementById("chip2");
+  var chip3 = document.getElementById("chip3");
   var exprFormula = document.getElementById("exprFormula");
 
-  var XMIN = -4, XMAX = 4, YMIN = -2, YMAX = 4;
+  var XMIN = -4, XMAX = 4, YMIN = -1, YMAX = 10;
   var PAD = { l: 56, r: 28, t: 28, b: 42 };
 
   var state = {
@@ -435,42 +440,49 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     xpSlider.disabled = state.playing;
     ypSlider.disabled = state.playing;
     hSlider.disabled = state.playing;
-    bSlider.disabled = state.playing;
+    vSlider.disabled = state.playing;
   }
 
   function resetSlidersToZero() {
     xpSlider.value = "0";
     ypSlider.value = "0";
     hSlider.value = "0";
-    bSlider.value = "0";
+    vSlider.value = "0";
     xpLabel.textContent = "0";
     ypLabel.textContent = "0";
     hLabel.textContent = "0";
-    bLabel.textContent = "0";
+    vLabel.textContent = "0";
   }
 
   function refreshChips(sc) {
+    var xp = FIXED.xp, yp = FIXED.yp, h = FIXED.h, v = FIXED.v;
     if (!sc || !sc.showP) {
       chipP.textContent = "P = (—, —)";
       chipP.classList.add("dim");
     } else {
-      chipP.textContent = "P = (" + fmtNum(FIXED.xp) + ", " + fmtNum(FIXED.yp) + ")";
+      chipP.textContent = "P = (" + fmtNum(xp) + ", " + fmtNum(yp) + ")";
       chipP.classList.remove("dim");
     }
-    if (!sc || sc.hProgress < 1 || sc.bProgress < 1) {
-      chipL.textContent = "L = (—, —)";
-      chipR.textContent = "R = (—, —)";
-      chipL.classList.add("dim");
-      chipR.classList.add("dim");
-    } else {
-      var lx = FIXED.xp - FIXED.h;
-      var rx = FIXED.xp + FIXED.h;
-      var y = FIXED.yp + FIXED.b;
-      chipL.textContent = "L = (" + fmtNum(lx) + ", " + fmtNum(y) + ")";
-      chipR.textContent = "R = (" + fmtNum(rx) + ", " + fmtNum(y) + ")";
-      chipL.classList.remove("dim");
-      chipR.classList.remove("dim");
+
+    function setPair(chip, ready, n, yMul) {
+      if (!ready) {
+        chip.textContent = "±" + n + " → (—, —)";
+        chip.classList.add("dim");
+        chip.classList.remove("purple");
+      } else {
+        var lx = xp - n * h;
+        var rx = xp + n * h;
+        var y = yp + yMul * v;
+        chip.textContent = "L/R = (±" + fmtNum(n * h) + ", " + fmtNum(y) + ")";
+        chip.classList.remove("dim");
+        if (sc.showPurpleDots) chip.classList.add("purple");
+        else chip.classList.remove("purple");
+      }
     }
+
+    setPair(chip1, sc && sc.v1 >= 1, 1, 1);
+    setPair(chip2, sc && sc.v2 >= 1, 2, 4);
+    setPair(chip3, sc && sc.v3 >= 1, 3, 9);
   }
 
   function emptyScene() {
@@ -478,11 +490,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       showAxis: false,
       axisBlink: 1,
       showP: false,
-      hProgress: 0,
-      bProgress: 0,
-      outProgress: 0,
+      h1: 0, v1: 0,
+      h2: 0, v2: 0,
+      h3: 0, v3: 0,
       showHLabel: false,
-      showBLabel: false,
+      showVMult: 0,
+      showParabola: false,
+      showPurpleDots: false,
       t: 0
     };
   }
@@ -566,23 +580,24 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.restore();
   }
 
-  function drawPoint(x, y, label, color) {
+  function drawPoint(x, y, label, color, radius) {
     var p = worldToScreen(x, y);
+    var r = radius || 7;
     ctx.save();
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(245,158,11,0.35)";
+    ctx.arc(p.x, p.y, r + 5, 0, Math.PI * 2);
+    ctx.fillStyle = color === PURPLE ? "rgba(167,139,250,0.28)" : "rgba(245,158,11,0.35)";
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fillStyle = color || AMBER;
     ctx.fill();
-    ctx.strokeStyle = "#fef3c7";
+    ctx.strokeStyle = color === PURPLE ? "#ede9fe" : "#fef3c7";
     ctx.lineWidth = 2;
     ctx.stroke();
     if (label) {
-      ctx.fillStyle = "#fef3c7";
-      ctx.font = "800 15px Segoe UI, system-ui, sans-serif";
+      ctx.fillStyle = color === PURPLE ? "#ede9fe" : "#fef3c7";
+      ctx.font = "800 14px Segoe UI, system-ui, sans-serif";
       ctx.textBaseline = "bottom";
       ctx.textAlign = "left";
       ctx.fillText(label, p.x + 12, p.y - 10);
@@ -615,30 +630,89 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.restore();
   }
 
+  function drawParabola(xp, yp, h, v) {
+    var ratio = v / h;
+    var pts = [];
+    for (var i = 0; i <= 240; i++) {
+      var x = XMIN + (XMAX - XMIN) * (i / 240);
+      var y = ratio * (x - xp) * (x - xp) + yp;
+      if (y < YMIN - 0.5 || y > YMAX + 0.5) {
+        pts.push(null);
+        continue;
+      }
+      pts.push(worldToScreen(x, y));
+    }
+    function strokePts(color, width) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      var first = true;
+      for (var j = 0; j < pts.length; j++) {
+        var p = pts[j];
+        if (!p) { first = true; continue; }
+        if (first) { ctx.moveTo(p.x, p.y); first = false; }
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+    ctx.save();
+    strokePts("rgba(248,250,252,0.35)", 6);
+    strokePts(PARA_STROKE, 3.2);
+    ctx.restore();
+  }
+
   function paintScene(sc) {
     drawGrid();
     if (!sc) return;
-    var xp = FIXED.xp, yp = FIXED.yp, h = FIXED.h, b = FIXED.b;
+    var xp = FIXED.xp, yp = FIXED.yp, h = FIXED.h, v = FIXED.v;
+    var y1 = yp + 1 * v;
+    var y4 = yp + 4 * v;
+    var y9 = yp + 9 * v;
+
     if (sc.showAxis) drawAxis(xp, sc.axisBlink);
 
-    if (sc.hProgress > 0) {
-      var hp = Math.min(1, sc.hProgress);
-      drawArrow(xp, yp, xp - h * hp, yp, AMBER, 3.2);
-      drawArrow(xp, yp, xp + h * hp, yp, AMBER, 3.2);
+    if (sc.showParabola) drawParabola(xp, yp, h, v);
+
+    /* H1: ±h along y=yp */
+    if (sc.h1 > 0) {
+      var p = Math.min(1, sc.h1);
+      drawArrow(xp, yp, xp - h * p, yp, AMBER, 3.2);
+      drawArrow(xp, yp, xp + h * p, yp, AMBER, 3.2);
     }
-    if (sc.bProgress > 0) {
-      var bp = Math.min(1, sc.bProgress);
-      drawArrow(xp - h, yp, xp - h, yp + b * bp, RISE, 3.2);
-      drawArrow(xp + h, yp, xp + h, yp + b * bp, RISE, 3.2);
+    /* V1: up by 1·v at x=±h */
+    if (sc.v1 > 0) {
+      var p1 = Math.min(1, sc.v1);
+      drawArrow(xp - h, yp, xp - h, yp + 1 * v * p1, RISE, 3.2);
+      drawArrow(xp + h, yp, xp + h, yp + 1 * v * p1, RISE, 3.2);
     }
-    if (sc.outProgress > 0) {
-      var op = Math.min(1, sc.outProgress);
-      var yTop = yp + b;
-      drawArrow(xp - h, yTop, xp - h - h * op, yTop, AMBER, 3.2);
-      drawArrow(xp + h, yTop, xp + h + h * op, yTop, AMBER, 3.2);
+    /* H2: outward ±h at y=yp+1v */
+    if (sc.h2 > 0) {
+      var p2 = Math.min(1, sc.h2);
+      drawArrow(xp - h, y1, xp - h - h * p2, y1, AMBER, 3.2);
+      drawArrow(xp + h, y1, xp + h + h * p2, y1, AMBER, 3.2);
+    }
+    /* V2: up by 3·v at x=±2h */
+    if (sc.v2 > 0) {
+      var p3 = Math.min(1, sc.v2);
+      drawArrow(xp - 2 * h, y1, xp - 2 * h, y1 + 3 * v * p3, RISE, 3.2);
+      drawArrow(xp + 2 * h, y1, xp + 2 * h, y1 + 3 * v * p3, RISE, 3.2);
+    }
+    /* H3: outward ±h at y=yp+4v */
+    if (sc.h3 > 0) {
+      var p4 = Math.min(1, sc.h3);
+      drawArrow(xp - 2 * h, y4, xp - 2 * h - h * p4, y4, AMBER, 3.2);
+      drawArrow(xp + 2 * h, y4, xp + 2 * h + h * p4, y4, AMBER, 3.2);
+    }
+    /* V3: up by 5·v at x=±3h */
+    if (sc.v3 > 0) {
+      var p5 = Math.min(1, sc.v3);
+      drawArrow(xp - 3 * h, y4, xp - 3 * h, y4 + 5 * v * p5, RISE, 3.2);
+      drawArrow(xp + 3 * h, y4, xp + 3 * h, y4 + 5 * v * p5, RISE, 3.2);
     }
 
-    if (sc.showHLabel && sc.hProgress >= 1) {
+    if (sc.showHLabel && sc.h1 >= 1) {
       var midR = worldToScreen(xp + h / 2, yp);
       var midL = worldToScreen(xp - h / 2, yp);
       ctx.save();
@@ -646,35 +720,60 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.fillStyle = RUN;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
-      ctx.fillText("h = " + h, midR.x, midR.y + 10);
-      ctx.fillText("h = " + h, midL.x, midL.y + 10);
-      ctx.restore();
-    }
-    if (sc.showBLabel && sc.bProgress >= 1) {
-      var midVb = worldToScreen(xp + h, yp + b / 2);
-      var midVa = worldToScreen(xp - h, yp + b / 2);
-      ctx.save();
-      ctx.font = "800 15px ui-monospace, Menlo, monospace";
-      ctx.fillStyle = RISE;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText("b = " + b, midVb.x + 12, midVb.y);
-      ctx.textAlign = "right";
-      ctx.fillText("b = " + b, midVa.x - 12, midVa.y);
+      ctx.fillText("h", midR.x, midR.y + 10);
+      ctx.fillText("h", midL.x, midL.y + 10);
       ctx.restore();
     }
 
+    if (sc.showVMult >= 1 && sc.v1 >= 1) {
+      var midVb1 = worldToScreen(xp + h, yp + (1 * v) / 2);
+      ctx.save();
+      ctx.font = "800 14px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = RISE;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("×1", midVb1.x + 12, midVb1.y);
+      ctx.restore();
+    }
+    if (sc.showVMult >= 3 && sc.v2 >= 1) {
+      var midVb2 = worldToScreen(xp + 2 * h, y1 + (3 * v) / 2);
+      ctx.save();
+      ctx.font = "800 14px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = RISE;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("×3", midVb2.x + 12, midVb2.y);
+      ctx.restore();
+    }
+    if (sc.showVMult >= 5 && sc.v3 >= 1) {
+      var midVb3 = worldToScreen(xp + 3 * h, y4 + (5 * v) / 2);
+      ctx.save();
+      ctx.font = "800 14px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = RISE;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("×5", midVb3.x + 12, midVb3.y);
+      ctx.restore();
+    }
+
+    var ptColor = sc.showPurpleDots ? PURPLE : AMBER;
+
     if (sc.showP) {
-      drawPoint(xp, yp, "P(" + fmtNum(xp) + ", " + fmtNum(yp) + ")", AMBER);
+      drawPoint(xp, yp, "P(" + fmtNum(xp) + ", " + fmtNum(yp) + ")", ptColor);
     }
-    if (sc.bProgress >= 1) {
-      drawPoint(xp - h, yp + b, null, AMBER);
-      drawPoint(xp + h, yp + b, null, AMBER);
+    if (sc.v1 >= 1) {
+      drawPoint(xp - h, y1, null, ptColor);
+      drawPoint(xp + h, y1, "(" + fmtNum(xp + h) + ", " + fmtNum(y1) + ")", ptColor);
     }
-    if (sc.outProgress >= 1) {
-      drawPoint(xp - 2 * h, yp + b, "(" + fmtNum(xp - 2 * h) + ", " + fmtNum(yp + b) + ")", AMBER);
-      drawPoint(xp + 2 * h, yp + b, "(" + fmtNum(xp + 2 * h) + ", " + fmtNum(yp + b) + ")", AMBER);
+    if (sc.v2 >= 1) {
+      drawPoint(xp - 2 * h, y4, null, ptColor);
+      drawPoint(xp + 2 * h, y4, "(" + fmtNum(xp + 2 * h) + ", " + fmtNum(y4) + ")", ptColor);
     }
+    if (sc.v3 >= 1) {
+      drawPoint(xp - 3 * h, y9, null, ptColor);
+      drawPoint(xp + 3 * h, y9, "(" + fmtNum(xp + 3 * h) + ", " + fmtNum(y9) + ")", ptColor);
+    }
+
     refreshChips(sc);
   }
 
@@ -735,7 +834,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     var sc = emptyScene();
     state.anim = sc;
     paintScene(sc);
-    exprFormula.innerHTML = "Simetría · eje x = x<sub>p</sub>";
+    exprFormula.innerHTML = "f(x) = (v/h)(x − x<sub>p</sub>)² + y<sub>p</sub>";
     setWork("");
 
     /* 1 — eje de simetría, blink ×3 + bip */
@@ -772,73 +871,118 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       });
     }
 
-    /* 2 — punto ámbar en (0,0) */
+    /* 2 — vértice ámbar en (0,0) */
     function step2() {
       if (token !== state.token) return;
-      setCaption("Punto <span class=\"hl hl-xp\">P(" + fmtNum(FIXED.xp) + ", " + fmtNum(FIXED.yp) + ")</span> sobre el eje");
-      setWork("Punto · <span class=\"hl-xp\">(" + fmtNum(FIXED.xp) + ", " + fmtNum(FIXED.yp) + ")</span>");
+      setCaption("Vértice <span class=\"hl hl-xp\">P(" + fmtNum(FIXED.xp) + ", " + fmtNum(FIXED.yp) + ")</span> sobre el eje");
+      setWork("Vértice · <span class=\"hl-xp\">(" + fmtNum(FIXED.xp) + ", " + fmtNum(FIXED.yp) + ")</span>");
       sc.showP = true;
       paintScene(sc);
       animateSlider(ypSlider, ypLabel, 0, FIXED.yp, 400, token, function () {
         if (token !== state.token) return;
         bipRow(rowYpEl);
-        later(900, step3);
+        later(900, stepH1);
       });
     }
 
-    /* 3 — flechas horizontales ±h */
-    function step3() {
+    /* H1 — dual yellow ±h along y=yp */
+    function stepH1() {
       if (token !== state.token) return;
-      setCaption("Desplazamiento horizontal <span class=\"hl hl-h\">h = " + FIXED.h + "</span> · flechas ±h");
-      setWork("h · <span class=\"hl-h\">±" + FIXED.h + "</span> desde P → (" + fmtNum(FIXED.xp - FIXED.h) + ", " + fmtNum(FIXED.yp) + ") y (" + fmtNum(FIXED.xp + FIXED.h) + ", " + fmtNum(FIXED.yp) + ")");
+      setCaption("Paso horizontal <span class=\"hl hl-h\">h = " + FIXED.h + "</span> · flechas ±h desde el vértice");
+      setWork("H1 · <span class=\"hl-h\">±h</span> → (" + fmtNum(FIXED.xp - FIXED.h) + ", " + fmtNum(FIXED.yp) + ") y (" + fmtNum(FIXED.xp + FIXED.h) + ", " + fmtNum(FIXED.yp) + ")");
       animateSlider(hSlider, hLabel, 0, FIXED.h, 550, token, function () {
         if (token !== state.token) return;
         bipRow(rowHEl);
-        animateProgress("hProgress", 700, token, function () {
+        animateProgress("h1", 700, token, function () {
           if (token !== state.token) return;
           sc.showHLabel = true;
           paintScene(sc);
-          later(900, step4);
+          later(800, stepV1);
         });
       });
     }
 
-    /* 4 — flechas verticales +b */
-    function step4() {
+    /* V1 — dual teal up by 1·v */
+    function stepV1() {
       if (token !== state.token) return;
-      setCaption("Desplazamiento vertical <span class=\"hl hl-b\">b = " + FIXED.b + "</span> · flechas hacia arriba");
-      setWork("b · <span class=\"hl-b\">+" + FIXED.b + "</span> → (" + fmtNum(FIXED.xp - FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.b) + ") y (" + fmtNum(FIXED.xp + FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.b) + ")");
-      animateSlider(bSlider, bLabel, 0, FIXED.b, 550, token, function () {
+      setCaption("Subida vertical ×1 · <span class=\"hl hl-v\">1 · v</span> → (±h, y<sub>p</sub>+v)");
+      setWork("V1 · vertical <span class=\"hl-v\">×1</span> → (" + fmtNum(FIXED.xp - FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.v) + ") y (" + fmtNum(FIXED.xp + FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.v) + ")");
+      animateSlider(vSlider, vLabel, 0, FIXED.v, 550, token, function () {
         if (token !== state.token) return;
-        bipRow(rowBEl);
-        animateProgress("bProgress", 700, token, function () {
+        bipRow(rowVEl);
+        animateProgress("v1", 700, token, function () {
           if (token !== state.token) return;
-          sc.showBLabel = true;
+          sc.showVMult = 1;
           paintScene(sc);
-          later(900, step5);
+          later(900, stepH2);
         });
       });
     }
 
-    /* 5 — extensión outward ±h → (±2,1); STOP; pause; loop */
-    function step5() {
+    /* H2 — dual yellow outward ±h at y=yp+1v */
+    function stepH2() {
       if (token !== state.token) return;
-      setCaption("Extensión horizontal desde el eje · hacia <span class=\"hl\">(" + fmtNum(FIXED.xp - 2 * FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.b) + ")</span> y <span class=\"hl\">(" + fmtNum(FIXED.xp + 2 * FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.b) + ")</span>");
-      setWork("Extensión · <span class=\"hl\">±" + FIXED.h + "</span> más lejos del eje → STOP");
-      animateProgress("outProgress", 700, token, function () {
+      setCaption("Paso horizontal · flechas ±h hacia afuera → (±2h, y<sub>p</sub>+v)");
+      setWork("H2 · <span class=\"hl-h\">±h</span> → (" + fmtNum(FIXED.xp - 2 * FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.v) + ") y (" + fmtNum(FIXED.xp + 2 * FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.v) + ")");
+      animateProgress("h2", 700, token, function () {
         if (token !== state.token) return;
-        setCaption("<strong>STOP</strong> · fin del ciclo · reinicio del bucle…");
-        setWork("STOP · pausa breve · vuelve al paso 1");
-        try { if (GK.playOkChime) GK.playOkChime(); } catch (e) {}
-        try { if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok"); } catch (e2) {}
-        later(1400, function () {
-          if (token !== state.token) return;
-          if (!state.playing) return;
-          setLoop(state.loop + 1);
-          clearTimers();
-          state.token++;
-          runLoop(state.token);
-        });
+        later(700, stepV2);
+      });
+    }
+
+    /* V2 — dual teal up by 3·v */
+    function stepV2() {
+      if (token !== state.token) return;
+      setCaption("Subida vertical ×3 · <span class=\"hl hl-v\">3 · v</span> → (±2h, y<sub>p</sub>+4v)");
+      setWork("V2 · vertical <span class=\"hl-v\">×3</span> → (" + fmtNum(FIXED.xp - 2 * FIXED.h) + ", " + fmtNum(FIXED.yp + 4 * FIXED.v) + ") y (" + fmtNum(FIXED.xp + 2 * FIXED.h) + ", " + fmtNum(FIXED.yp + 4 * FIXED.v) + ")");
+      animateProgress("v2", 800, token, function () {
+        if (token !== state.token) return;
+        sc.showVMult = 3;
+        paintScene(sc);
+        later(900, stepH3);
+      });
+    }
+
+    /* H3 — dual yellow outward ±h at y=yp+4v */
+    function stepH3() {
+      if (token !== state.token) return;
+      setCaption("Paso horizontal · flechas ±h hacia afuera → (±3h, y<sub>p</sub>+4v)");
+      setWork("H3 · <span class=\"hl-h\">±h</span> → (" + fmtNum(FIXED.xp - 3 * FIXED.h) + ", " + fmtNum(FIXED.yp + 4 * FIXED.v) + ") y (" + fmtNum(FIXED.xp + 3 * FIXED.h) + ", " + fmtNum(FIXED.yp + 4 * FIXED.v) + ")");
+      animateProgress("h3", 700, token, function () {
+        if (token !== state.token) return;
+        later(700, stepV3);
+      });
+    }
+
+    /* V3 — dual teal up by 5·v, then STOP + parabola + purple dots */
+    function stepV3() {
+      if (token !== state.token) return;
+      setCaption("Subida vertical ×5 · <span class=\"hl hl-v\">5 · v</span> → (±3h, y<sub>p</sub>+9v) · patrón <strong>1, 3, 5</strong>");
+      setWork("V3 · vertical <span class=\"hl-v\">×5</span> → (" + fmtNum(FIXED.xp - 3 * FIXED.h) + ", " + fmtNum(FIXED.yp + 9 * FIXED.v) + ") y (" + fmtNum(FIXED.xp + 3 * FIXED.h) + ", " + fmtNum(FIXED.yp + 9 * FIXED.v) + ")");
+      animateProgress("v3", 900, token, function () {
+        if (token !== state.token) return;
+        sc.showVMult = 5;
+        paintScene(sc);
+        later(700, stepStop);
+      });
+    }
+
+    function stepStop() {
+      if (token !== state.token) return;
+      setCaption("<strong>STOP</strong> · parábola f(x)=(v/h)(x−x<sub>p</sub>)²+y<sub>p</sub> · puntos del patrón 1·3·5");
+      setWork("STOP · 7 puntos · P(0,0) · (±1,1) · (±2,4) · (±3,9)");
+      sc.showParabola = true;
+      sc.showPurpleDots = true;
+      paintScene(sc);
+      try { if (GK.playOkChime) GK.playOkChime(); } catch (e) {}
+      try { if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok"); } catch (e2) {}
+      later(1800, function () {
+        if (token !== state.token) return;
+        if (!state.playing) return;
+        setLoop(state.loop + 1);
+        clearTimers();
+        state.token++;
+        runLoop(state.token);
       });
     }
 
@@ -872,7 +1016,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     resetSlidersToZero();
     state.anim = emptyScene();
     setWork("");
-    setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> para el bucle de 5 pasos.");
+    exprFormula.innerHTML = "f(x) = (v/h)(x − x<sub>p</sub>)² + y<sub>p</sub>";
+    setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> para el patrón de subidas impares <strong>1, 3, 5</strong>.");
     paintScene(state.anim);
     refreshChips(state.anim);
   }
