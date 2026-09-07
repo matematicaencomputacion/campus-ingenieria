@@ -658,12 +658,113 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.restore();
   }
 
+  function lastPlacedAnchor() {
+    /* L guía desde el último punto ya colocado (hacia el hover) */
+    var key = state.phase;
+    if (key === "R1" && state.placed.P) {
+      return { x: state.params.xp, y: state.params.yp, label: "P" };
+    }
+    if (key === "R2" && state.placed.R1) {
+      var r1 = targetPoint("R1");
+      return { x: r1.x, y: r1.y, label: "R1" };
+    }
+    if (key === "R3" && state.placed.R2) {
+      var r2 = targetPoint("R2");
+      return { x: r2.x, y: r2.y, label: "R2" };
+    }
+    return null;
+  }
+
   function drawHover(pt) {
     if (!pt) return;
-    var p = worldToScreen(pt.x, pt.y);
+    var hover = worldToScreen(pt.x, pt.y);
+    var anchor = lastPlacedAnchor();
+
+    if (anchor) {
+      var ax = anchor.x, ay = anchor.y;
+      var hx = pt.x, hy = pt.y;
+      var dx = hx - ax;
+      var dy = hy - ay;
+      var a0 = worldToScreen(ax, ay);
+      var corner = worldToScreen(hx, ay); /* L: primero horizontal, luego vertical */
+      var a1 = worldToScreen(hx, hy);
+
+      ctx.save();
+      /* horizontal leg */
+      ctx.strokeStyle = "rgba(96,165,250,0.95)";
+      ctx.fillStyle = "rgba(96,165,250,0.95)";
+      ctx.lineWidth = 2.4;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(a0.x, a0.y);
+      ctx.lineTo(corner.x, corner.y);
+      ctx.stroke();
+      /* vertical leg */
+      ctx.strokeStyle = "rgba(52,211,153,0.95)";
+      ctx.fillStyle = "rgba(52,211,153,0.95)";
+      ctx.beginPath();
+      ctx.moveTo(corner.x, corner.y);
+      ctx.lineTo(a1.x, a1.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      /* tick marks each integer casilla on H */
+      ctx.lineWidth = 1.5;
+      if (dx !== 0) {
+        var stepX = dx > 0 ? 1 : -1;
+        ctx.strokeStyle = "rgba(96,165,250,0.75)";
+        for (var ix = 1; ix <= Math.abs(dx); ix++) {
+          var tx = worldToScreen(ax + stepX * ix, ay);
+          ctx.beginPath();
+          ctx.moveTo(tx.x, tx.y - 5);
+          ctx.lineTo(tx.x, tx.y + 5);
+          ctx.stroke();
+        }
+      }
+      if (dy !== 0) {
+        var stepY = dy > 0 ? 1 : -1;
+        ctx.strokeStyle = "rgba(52,211,153,0.75)";
+        for (var iy = 1; iy <= Math.abs(dy); iy++) {
+          var ty = worldToScreen(hx, ay + stepY * iy);
+          ctx.beginPath();
+          ctx.moveTo(ty.x - 5, ty.y);
+          ctx.lineTo(ty.x + 5, ty.y);
+          ctx.stroke();
+        }
+      }
+
+      /* labels: casillas H y V */
+      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.textBaseline = "middle";
+      var midH = worldToScreen((ax + hx) / 2, ay);
+      var midV = worldToScreen(hx, (ay + hy) / 2);
+      var hLab = "↔ " + fmtNum(Math.abs(dx)) + (Math.abs(dx) === 1 ? " casilla" : " casillas");
+      var vLab = "↕ " + fmtNum(Math.abs(dy)) + (Math.abs(dy) === 1 ? " casilla" : " casillas");
+      if (dx !== 0 || dy !== 0) {
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#93c5fd";
+        ctx.fillText(hLab, midH.x, midH.y + (dy >= 0 ? 16 : -14));
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#6ee7b7";
+        var vx = midV.x + 10;
+        if (vx > canvas.width - 120) {
+          ctx.textAlign = "right";
+          vx = midV.x - 10;
+        }
+        ctx.fillText(vLab, vx, midV.y);
+        /* delta chip near hover */
+        ctx.font = "800 14px Segoe UI, system-ui, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#fde68a";
+        var chip = "Δx=" + fmtNum(dx) + " · Δy=" + fmtNum(dy);
+        ctx.fillText(chip, hover.x + 14, hover.y - 14);
+      }
+      ctx.restore();
+    }
+
     ctx.save();
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+    ctx.arc(hover.x, hover.y, 9, 0, Math.PI * 2);
     ctx.strokeStyle = "rgba(255,191,0,0.7)";
     ctx.lineWidth = 2;
     ctx.setLineDash([4, 3]);
@@ -671,7 +772,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.setLineDash([]);
     ctx.fillStyle = "rgba(255,191,0,0.15)";
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+    ctx.arc(hover.x, hover.y, 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
