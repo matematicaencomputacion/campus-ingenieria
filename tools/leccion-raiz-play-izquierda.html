@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 50 · Raíz · play</title>
+<title>Lección 51 · Raíz · play · rama izquierda</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -205,8 +205,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 50</span> · Raíz · play
-        <span class="sub">parábola al revés · anchos 1·3·5</span>
+      <h1><span class="lesson-num">Lección 51</span> · Raíz · play · rama izquierda
+        <span class="sub">hacia la izquierda · anchos 1·3·5</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -227,7 +227,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="expr-row slider-xa" id="rowXa">
           <div class="slider-head">
             <span class="slider-val">x<sub>a</sub> <span class="eq">=</span> <span id="xaLabel">0</span></span>
-            <span class="slider-hint">muro · dominio x ≥ x<sub>a</sub></span>
+            <span class="slider-hint">muro · dominio x ≤ x<sub>a</sub></span>
           </div>
           <input type="range" id="xaSlider" min="-2" max="2" step="1" value="0" aria-label="abscisa del muro xa" />
           <div class="range-ends"><span>−2</span><span>2</span></div>
@@ -268,13 +268,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </aside>
 
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-exponencial-juego-mixto.html" title="Lección 49: Exponencial · juego · mixto" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-raiz-play-izquierda.html" title="Lección 51: Raíz · play · rama izquierda" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="1100" height="700" aria-label="Raíz cuadrada · play · anchos 1·3·5"></canvas>
+        <a class="lesson-nav prev" href="leccion-raiz-play.html" title="Lección 50: Raíz · play · muro · P · anchos 1·3·5" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-raiz-juego-origen.html" title="Lección 52: Raíz · juego · colocar el origen" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="1100" height="700" aria-label="Raíz cuadrada · play · rama izquierda · anchos 1·3·5"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> para ver la raíz como parábola leída al revés · anchos impares <strong>1·3·5</strong>.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> para ver la raíz <strong>hacia la izquierda</strong> · anchos impares <strong>1·3·5</strong>.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -284,7 +284,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">La raíz es la parábola leída al revés: los impares <strong>1·3·5</strong> de la cuadrática se vuelven <strong>anchos horizontales</strong>. Pisos iguales (+v) · aterrizajes en x = x<sub>a</sub> + n²·h · muro en x = x<sub>a</sub> (dominio x≥x<sub>a</sub>, no asíntota). f(x)=v√((x−x<sub>a</sub>)/h)+y<sub>p</sub> · arriba <span style="color:#ff4d4d">rojo</span> · abajo <span style="color:#60a5fa">azul</span></p>
+    <p class="hint">Rama izquierda: los impares <strong>1·3·5</strong> son <strong>anchos hacia la izquierda</strong>. Pisos iguales (+v) · aterrizajes Rn = (x<sub>a</sub> − n²·h, y<sub>p</sub> + n·v) · muro en x = x<sub>a</sub> (dominio x≤x<sub>a</sub>). f(x)=v√((x<sub>a</sub>−x)/h)+y<sub>p</sub> · arriba <span style="color:#ff4d4d">rojo</span> · abajo <span style="color:#60a5fa">azul</span></p>
   </div>
 </div>
 
@@ -336,7 +336,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var chip3 = document.getElementById("chip3");
   var exprFormula = document.getElementById("exprFormula");
 
-  var XMIN = -1, XMAX = 10, YMIN = -1, YMAX = 4;
+  var XMIN = -10, XMAX = 1, YMIN = -1, YMAX = 4;
   var PAD = { l: 52, r: 28, t: 28, b: 48 };
   var CELL_PX = 52;
 
@@ -377,17 +377,14 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     var xaInner;
     if (rev.xa) {
       var xa = FIXED.xa;
-      if (xa === 0) xaInner = "x";
-      else if (xa > 0) xaInner = "(x − " + fmtNum(xa) + ")";
-      else xaInner = "(x + " + fmtNum(-xa) + ")";
+      if (xa === 0) xaInner = "(−x)";
+      else if (xa > 0) xaInner = "(" + fmtNum(xa) + " − x)";
+      else xaInner = "(−" + fmtNum(-xa) + " − x)";
     } else {
-      xaInner = "(x − x<sub>a</sub>)";
+      xaInner = "(x<sub>a</sub> − x)";
     }
-    var rad = xaInner === "x"
-      ? (rev.h && FIXED.h === 1 ? "x" : (xaInner + " / " + hPart))
-      : (xaInner + " / " + hPart);
-    if (rev.h && FIXED.h === 1 && xaInner === "x") rad = "x";
-    else if (rev.h && FIXED.h === 1) rad = xaInner;
+    var rad = xaInner + " / " + hPart;
+    if (rev.h && FIXED.h === 1) rad = xaInner;
     var ypPart;
     if (rev.yp) {
       var yp = FIXED.yp;
@@ -572,10 +569,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function fitWorldToParams(p) {
     var xa = p.xa, yp = p.yp, h = Math.abs(p.h) || 1, v = p.v;
     var nMax = maxStepsForFit(h);
-    var xRight = xa + nMax * nMax * h;
-    /* empty column left of wall so muro is inset (esp. xa=0) */
-    XMIN = Math.min(xa - 1, -1);
-    XMAX = Math.max(xRight + 1, xa + 9 * h + 1, 4);
+    var xLeft = xa - nMax * nMax * h;
+    /* empty column RIGHT of wall so muro is inset (esp. xa=0) */
+    XMAX = Math.max(xa + 1, 1);
+    XMIN = Math.min(xLeft - 1, xa - 9 * h - 1, -4);
     if (v >= 0) {
       var yTop = yp + nMax * v;
       YMIN = Math.min(-1, yp - 1);
@@ -673,7 +670,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function landing(n) {
     return {
-      x: FIXED.xa + n * n * FIXED.h,
+      x: FIXED.xa - n * n * FIXED.h,
       y: FIXED.yp + n * FIXED.v
     };
   }
@@ -801,10 +798,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     var a = alpha == null ? 1 : alpha;
     ctx.save();
     ctx.globalAlpha = Math.max(0.15, Math.min(1, a));
-    /* soft forbidden band to the left */
-    var leftEdge = worldToScreen(XMIN, YMIN);
+    /* soft forbidden band to the RIGHT of wall */
     ctx.fillStyle = "rgba(148,163,184,0.08)";
-    ctx.fillRect(PAD.l, PAD.t, Math.max(0, top.x - PAD.l), canvas.height - PAD.t - PAD.b);
+    ctx.fillRect(top.x, PAD.t, Math.max(0, (canvas.width - PAD.r) - top.x), canvas.height - PAD.t - PAD.b);
     ctx.strokeStyle = WALL;
     ctx.lineWidth = 2.6;
     ctx.setLineDash([]);
@@ -817,11 +813,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.shadowBlur = 0;
     ctx.fillStyle = WALL;
     ctx.font = "700 13px ui-monospace, Menlo, monospace";
-    ctx.textAlign = "left";
+    ctx.textAlign = "right";
     ctx.textBaseline = "top";
-    ctx.fillText("muro x = " + fmtNum(xa), top.x + 10, PAD.t + 8);
+    ctx.fillText("muro x = " + fmtNum(xa), top.x - 10, PAD.t + 8);
     ctx.font = "600 11px ui-monospace, Menlo, monospace";
-    ctx.fillText("dominio x ≥ " + fmtNum(xa), top.x + 10, PAD.t + 26);
+    ctx.fillText("dominio x ≤ " + fmtNum(xa), top.x - 10, PAD.t + 26);
     ctx.restore();
   }
 
@@ -882,19 +878,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function fSqrt(x) {
-    /* f(x) = v · √((x − xa)/h) + yp  for x ≥ xa, h > 0 */
+    /* f(x) = v · √((xa − x)/h) + yp  for x ≤ xa, h > 0 */
     var xa = FIXED.xa, yp = FIXED.yp, h = FIXED.h || 1, v = FIXED.v;
-    if (x < xa - 1e-9) return null;
-    var t = (x - xa) / h;
-    if (t < 0) return null;
-    return v * Math.sqrt(t) + yp;
+    if (x > xa + 1e-9) return null;
+    var tt = (xa - x) / h;
+    if (tt < 0) return null;
+    return v * Math.sqrt(tt) + yp;
   }
 
   function drawCurve() {
     var pts = [];
     var steps = 280;
     for (var i = 0; i <= steps; i++) {
-      var x = FIXED.xa + (XMAX - FIXED.xa) * (i / steps);
+      var x = FIXED.xa - (FIXED.xa - XMIN) * (i / steps);
       var y = fSqrt(x);
       if (y == null || y < YMIN - 0.5 || y > YMAX + 0.5) {
         pts.push(null);
@@ -935,37 +931,37 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     if (sc.showWall) drawWall(xa, sc.wallBlink);
     if (sc.showCurve) drawCurve();
 
-    /* Step 1: +1h right, then +v */
+    /* Step 1: −1h left, then +v */
     if (sc.h1 > 0) {
       var p = Math.min(1, sc.h1);
-      drawArrow(xa, yp, xa + h * p, yp, AMBER, 3.2);
+      drawArrow(xa, yp, xa - h * p, yp, AMBER, 3.2);
     }
     if (sc.v1 > 0) {
       var p1 = Math.min(1, sc.v1);
-      drawArrow(xa + h, yp, xa + h, yp + v * p1, rc, 3.2);
+      drawArrow(xa - h, yp, xa - h, yp + v * p1, rc, 3.2);
     }
-    /* Step 2: +3h more, then +v */
+    /* Step 2: −3h more, then +v */
     if (sc.h2 > 0) {
       var p2 = Math.min(1, sc.h2);
-      drawArrow(r1.x, r1.y, r1.x + 3 * h * p2, r1.y, AMBER, 3.2);
+      drawArrow(r1.x, r1.y, r1.x - 3 * h * p2, r1.y, AMBER, 3.2);
     }
     if (sc.v2 > 0) {
       var p3 = Math.min(1, sc.v2);
       drawArrow(r2.x, r1.y, r2.x, r1.y + v * p3, rc, 3.2);
     }
-    /* Step 3: +5h more, then +v */
+    /* Step 3: −5h more, then +v */
     if (sc.h3 > 0) {
       var p4 = Math.min(1, sc.h3);
-      drawArrow(r2.x, r2.y, r2.x + 5 * h * p4, r2.y, AMBER, 3.2);
+      drawArrow(r2.x, r2.y, r2.x - 5 * h * p4, r2.y, AMBER, 3.2);
     }
     if (sc.v3 > 0) {
       var p5 = Math.min(1, sc.v3);
       drawArrow(r3.x, r2.y, r3.x, r2.y + v * p5, rc, 3.2);
     }
-    /* Step 4 optional: +7h, then +v */
+    /* Step 4 optional: −7h, then +v */
     if (nMax >= 4 && sc.h4 > 0) {
       var p6 = Math.min(1, sc.h4);
-      drawArrow(r3.x, r3.y, r3.x + 7 * h * p6, r3.y, AMBER, 3.2);
+      drawArrow(r3.x, r3.y, r3.x - 7 * h * p6, r3.y, AMBER, 3.2);
     }
     if (nMax >= 4 && sc.v4 > 0) {
       var p7 = Math.min(1, sc.v4);
@@ -974,7 +970,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
     /* labels for odd widths */
     if (sc.showHLabel >= 1 && sc.h1 >= 1) {
-      var mid1 = worldToScreen(xa + h / 2, yp);
+      var mid1 = worldToScreen(xa - h / 2, yp);
       ctx.save();
       ctx.font = "800 14px ui-monospace, Menlo, monospace";
       ctx.fillStyle = RUN;
@@ -984,7 +980,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.restore();
     }
     if (sc.showHLabel >= 3 && sc.h2 >= 1) {
-      var mid2 = worldToScreen(r1.x + (3 * h) / 2, r1.y);
+      var mid2 = worldToScreen(r1.x - (3 * h) / 2, r1.y);
       ctx.save();
       ctx.font = "800 14px ui-monospace, Menlo, monospace";
       ctx.fillStyle = RUN;
@@ -994,7 +990,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.restore();
     }
     if (sc.showHLabel >= 5 && sc.h3 >= 1) {
-      var mid3 = worldToScreen(r2.x + (5 * h) / 2, r2.y);
+      var mid3 = worldToScreen(r2.x - (5 * h) / 2, r2.y);
       ctx.save();
       ctx.font = "800 14px ui-monospace, Menlo, monospace";
       ctx.fillStyle = RUN;
@@ -1004,7 +1000,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.restore();
     }
     if (nMax >= 4 && sc.showHLabel >= 7 && sc.h4 >= 1) {
-      var mid4 = worldToScreen(r3.x + (7 * h) / 2, r3.y);
+      var mid4 = worldToScreen(r3.x - (7 * h) / 2, r3.y);
       ctx.save();
       ctx.font = "800 14px ui-monospace, Menlo, monospace";
       ctx.fillStyle = RUN;
@@ -1026,7 +1022,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.fillText(vLab, mid.x + 12, mid.y);
       ctx.restore();
     }
-    if (sc.showVLabel >= 1 && sc.v1 >= 1) paintVLab(xa + h, yp + v / 2);
+    if (sc.showVLabel >= 1 && sc.v1 >= 1) paintVLab(xa - h, yp + v / 2);
     if (sc.showVLabel >= 2 && sc.v2 >= 1) paintVLab(r2.x, r1.y + v / 2);
     if (sc.showVLabel >= 3 && sc.v3 >= 1) paintVLab(r3.x, r2.y + v / 2);
     if (nMax >= 4 && sc.showVLabel >= 4 && sc.v4 >= 1) paintVLab(r4.x, r3.y + v / 2);
@@ -1118,8 +1114,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     /* 1 — muro / borde xa */
     function stepWall() {
       if (token !== state.token) return;
-      setCaption("Bucle <strong>" + state.loop + "</strong> · muro <span class=\"hl hl-xa\">x = " + fmtNum(FIXED.xa) + "</span> · dominio x ≥ x<sub>a</sub> (borde, no asíntota)");
-      setWork("Muro · <span class=\"hl-xa\">x = x<sub>a</sub> = " + fmtNum(FIXED.xa) + "</span> · dominio x ≥ " + fmtNum(FIXED.xa));
+      setCaption("Bucle <strong>" + state.loop + "</strong> · muro <span class=\"hl hl-xa\">x = " + fmtNum(FIXED.xa) + "</span> · dominio x ≤ x<sub>a</sub> · <strong>hacia la izquierda</strong>");
+      setWork("Muro · <span class=\"hl-xa\">x = x<sub>a</sub> = " + fmtNum(FIXED.xa) + "</span> · dominio x ≤ " + fmtNum(FIXED.xa));
       sc.showWall = true;
       sc.wallBlink = 1;
       paintScene(sc);
@@ -1186,8 +1182,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     /* Walk steps */
     function stepH1() {
       if (token !== state.token) return;
-      setCaption("Ancho impar ×1 · <span class=\"hl hl-h\">+1·h</span> → (" + fmtNum(FIXED.xa + FIXED.h) + ", " + fmtNum(FIXED.yp) + ")");
-      setWork("H1 · horizontal <span class=\"hl-h\">+1·h</span>");
+      setCaption("Hacia la izquierda · ancho impar ×1 · <span class=\"hl hl-h\">−1·h</span> → (" + fmtNum(FIXED.xa - FIXED.h) + ", " + fmtNum(FIXED.yp) + ")");
+      setWork("H1 · izquierda <span class=\"hl-h\">−1·h</span>");
       animateProgress("h1", 700, token, function () {
         if (token !== state.token) return;
         sc.showHLabel = 1;
@@ -1211,8 +1207,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
     function stepH2() {
       if (token !== state.token) return;
-      setCaption("Ancho impar ×3 · <span class=\"hl hl-h\">+3·h</span> más → x = " + fmtNum(FIXED.xa + 4 * FIXED.h));
-      setWork("H2 · horizontal <span class=\"hl-h\">+3·h</span>");
+      setCaption("Hacia la izquierda · ancho impar ×3 · <span class=\"hl hl-h\">−3·h</span> más → x = " + fmtNum(FIXED.xa - 4 * FIXED.h));
+      setWork("H2 · izquierda <span class=\"hl-h\">−3·h</span>");
       animateProgress("h2", 750, token, function () {
         if (token !== state.token) return;
         sc.showHLabel = 3;
@@ -1236,8 +1232,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
     function stepH3() {
       if (token !== state.token) return;
-      setCaption("Ancho impar ×5 · <span class=\"hl hl-h\">+5·h</span> más → x = " + fmtNum(FIXED.xa + 9 * FIXED.h));
-      setWork("H3 · horizontal <span class=\"hl-h\">+5·h</span>");
+      setCaption("Hacia la izquierda · ancho impar ×5 · <span class=\"hl hl-h\">−5·h</span> más → x = " + fmtNum(FIXED.xa - 9 * FIXED.h));
+      setWork("H3 · izquierda <span class=\"hl-h\">−5·h</span>");
       animateProgress("h3", 800, token, function () {
         if (token !== state.token) return;
         sc.showHLabel = 5;
@@ -1262,8 +1258,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
     function stepH4() {
       if (token !== state.token) return;
-      setCaption("Ancho impar ×7 · <span class=\"hl hl-h\">+7·h</span> más → x = " + fmtNum(FIXED.xa + 16 * FIXED.h));
-      setWork("H4 · horizontal <span class=\"hl-h\">+7·h</span>");
+      setCaption("Hacia la izquierda · ancho impar ×7 · <span class=\"hl hl-h\">−7·h</span> más → x = " + fmtNum(FIXED.xa - 16 * FIXED.h));
+      setWork("H4 · izquierda <span class=\"hl-h\">−7·h</span>");
       animateProgress("h4", 800, token, function () {
         if (token !== state.token) return;
         sc.showHLabel = 7;
@@ -1287,8 +1283,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
     function stepStop() {
       if (token !== state.token) return;
-      setCaption("<strong>STOP</strong> · " + paramsCaptionBits() + " · <strong>pisos iguales · anchos 1·4·9·16 · extra = impares 1·3·5</strong>");
-      setWork("STOP · curva x ≥ " + fmtNum(FIXED.xa) + " · Rn = (x<sub>a</sub>+n²h, y<sub>p</sub>+n·v)");
+      setCaption("<strong>STOP</strong> · " + paramsCaptionBits() + " · <strong>hacia la izquierda · anchos 1·3·5</strong>");
+      setWork("STOP · curva x ≤ " + fmtNum(FIXED.xa) + " · Rn = (x<sub>a</sub>−n²h, y<sub>p</sub>+n·v)");
       sc.showCurve = true;
       sc.showPurple = true;
       paintScene(sc);
@@ -1349,7 +1345,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.anim = emptyScene();
     setWork("");
     resetFormulaReveal();
-    setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> · madre y=√x en P(0,0); luego h,v y muro al azar.");
+    setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> · rama izquierda · hacia la izquierda · anchos 1·3·5.");
     paintScene(state.anim);
     refreshChips(state.anim);
   }
