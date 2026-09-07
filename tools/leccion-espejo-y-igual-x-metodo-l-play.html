@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 85 · Espejo · y = x · play</title>
+<title>Lección 92 · Espejo · y = x · Método de la L</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -240,8 +240,8 @@ h1 .lesson-num { color: #38bdf8; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 85</span> · Espejo · y = x · play
-        <span class="sub">(x,y) → (y,x) · espejo y = x</span>
+      <h1><span class="lesson-num">Lección 92</span> · Espejo · y = x · Método de la L
+        <span class="sub">(x,y) → (y,x) · cae · gira 90° · L</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -260,23 +260,23 @@ h1 .lesson-num { color: #38bdf8; }
           <div class="expr-formula" id="exprFormula">y = f(x)</div>
         </div>
         <div class="expr-row">
-          <div class="expr-formula" id="exprMirror" style="color:#38bdf8">espejo y=x · (y,x)</div>
+          <div class="expr-formula" id="exprMirror" style="color:#38bdf8">Método de la L · (y,x)</div>
         </div>
         <div class="expr-row phase-ask">
           <span class="mode-tag" id="famTag">familia</span>
-          <p class="hint-mini" id="sideHint">intercambio de ejes · (x,y)↔(y,x)</p>
+          <p class="hint-mini" id="sideHint">Método de la L · cae hasta y=x · gira 90°</p>
           <div class="chips" style="margin-top:8px" id="chipBox"></div>
         </div>
       </aside>
 
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-espejo-eje-y-juego-mixto.html" title="Lección 84: Espejo · eje Y · juego · mixto" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-espejo-y-igual-x-metodo-l-play.html" title="Lección 92: Espejo · y = x · Método de la L" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="900" aria-label="Espejo · y = x · play"></canvas>
+        <a class="lesson-nav prev" href="leccion-espejo-y-igual-x-juego-mixto.html" title="Lección 91: Espejo · y = x · juego · mixto" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-cubica-play.html" title="Lección 93: Cúbica · play · y = x³ → ∛x" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="900" aria-label="Espejo · y = x · Método de la L"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · espejo sobre <span class="hl-axis">y = x</span> · <span class="hl-orig">(x,y)</span> → <span class="hl-mir">(y,x)</span> · ámbar = f · cyan = espejo · tabla x | f(x) | espejo (f(x), x) · preferí 2<sup>x</sup>.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · <strong>Método de la L</strong> · cae hasta <span class="hl-axis">y = x</span> · gira 90° · <span class="hl-orig">(x,y)</span> → <span class="hl-mir">(y,x)</span> · la trayectoria forma una L.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -286,7 +286,7 @@ h1 .lesson-num { color: #38bdf8; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint"><strong style="color:#FFBF00">y = x = espejo</strong> · punto (x,y) → (y,x) · gráfica y=f(x) → x=f(y) / f⁻¹ · puntos enteros · lineal · cuadrática · raíz · exp · log · hipérbola</p>
+    <p class="hint"><strong style="color:#FFBF00">Método de la L</strong> · cae (eje) hasta y=x · gira 90° · (x,y)→(y,x) · no es giro 180° perpendicular · lineal · cuadrática · raíz · exp · log · hipérbola</p>
   </div>
 </div>
 
@@ -298,7 +298,7 @@ h1 .lesson-num { color: #38bdf8; }
   var AMBER = "#f59e0b", AMBER_GLOW = "rgba(245,158,11,0.4)", MUTED = "#8b9bb4";
   var ORIG = "#f59e0b", MIR = "#38bdf8", MIR_GLOW = "rgba(56,189,248,0.4)";
   var AXIS_GLOW = "#FFBF00", CURVE_ORIG = "rgba(245,158,11,0.45)", CURVE_MIR = "#38bdf8";
-  var FAMILIES = ["linear","exp","quadratic","sqrt","log","hyperbola"]; /* exp early · prefer 2^x demo */
+  var FAMILIES = ["demoL","hyperbola","linear","exp","quadratic","sqrt","log"]; /* demoL + hipérbola first · L clara */
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -330,7 +330,18 @@ h1 .lesson-num { color: #38bdf8; }
   }
   function fmtPt(pt){ return "("+fmtNum(pt.x)+", "+fmtNum(pt.y)+")"; }
   function mirrorPt(pt){ return {x:pt.y,y:pt.x}; }
-  function footOnDiag(pt){ var m=(pt.x+pt.y)/2; return {x:m,y:m}; }
+  /** L-method foot: axis-aligned drop to y=x (NOT the perpendicular foot). */
+  function lInfo(pt){
+    var a=pt.x, b=pt.y;
+    if (Math.abs(a-b)<1e-9) return { F:{x:a,y:a}, mode:"on", sign:0 };
+    if (Math.abs(b) > Math.abs(a)) {
+      /* vertical drop · keep x=a → F=(a,a) · rotate CW (−π/2) */
+      return { F:{x:a,y:a}, mode:"vert", sign:-1 };
+    }
+    /* horizontal drop · keep y=b → F=(b,b) · rotate CCW (+π/2) */
+    return { F:{x:b,y:b}, mode:"horiz", sign:1 };
+  }
+  function footOnDiag(pt){ return lInfo(pt).F; }
   function fmtSlope(m){ if(Math.abs(m-Math.round(m))<1e-9) return fmtNum(m); var twice=m*2; if(Math.abs(twice-Math.round(twice))<1e-9){ var num=Math.round(twice),den=2,g=Math.abs(num)%2===0?2:1; num/=g; den/=g; return (num<0?"−":"")+Math.abs(num)+"/"+den; } return fmtNum(m); }
   function shuffle(arr){ var a=arr.slice(); for(var i=a.length-1;i>0;i--){ var j=(Math.random()*(i+1))|0; var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
   function pick(arr){ return arr[(Math.random()*arr.length)|0]; }
@@ -358,6 +369,7 @@ h1 .lesson-num { color: #38bdf8; }
     return {x:PAD.l+((x-XMIN)/(XMAX-XMIN))*w, y:PAD.t+((YMAX-y)/(YMAX-YMIN))*hh};
   }
   function fOf(fam,x){
+    if(fam.kind==="demoL") return null;
     if(fam.kind==="linear") return fam.m*x+fam.b;
     if(fam.kind==="quadratic") return (fam.v/(fam.h*fam.h))*(x-fam.xp)*(x-fam.xp)+fam.yp;
     if(fam.kind==="sqrt"){ var t=(x-fam.xa)/fam.h; if(t<-1e-12) return null; return fam.v*Math.sqrt(Math.max(0,t))+fam.yp; }
@@ -403,10 +415,14 @@ h1 .lesson-num { color: #38bdf8; }
       if(!mirrored) return "y = "+hy;
       return "y = <span class=\"hl-mir\">"+hy+"</span> · espejo y=x (igual)";
     }
+    if(fam.kind==="demoL"){
+      if(!mirrored) return "puntos · <span class=\"hl-orig\">Método de la L</span>";
+      return "<span class=\"hl-mir\">(x,y) → (y,x)</span> · Método de la L";
+    }
     return mirrored ? "<span class=\"hl-mir\">x = f(y)</span> · espejo y=x" : "y = f(x)";
   }
   function familyLabel(kind){
-    return ({linear:"lineal",quadratic:"cuadrática",sqrt:"raíz",exp:"exponencial",log:"logaritmo",hyperbola:"hipérbola"})[kind]||kind;
+    return ({demoL:"Método L · demo",linear:"lineal",quadratic:"cuadrática",sqrt:"raíz",exp:"exponencial",log:"logaritmo",hyperbola:"hipérbola"})[kind]||kind;
   }
   function makeLinear(){
     var o=pick([{m:1,b:0,xs:[-3,-1,0,2,3]},{m:2,b:-1,xs:[-2,-1,0,1,2]},{m:-1,b:2,xs:[-2,-1,0,1,3]},{m:1,b:-2,xs:[-1,0,1,2,3]},{m:-2,b:1,xs:[-2,-1,0,1,2]}]);
@@ -436,13 +452,24 @@ h1 .lesson-num { color: #38bdf8; }
     return {kind:"log",base:base,points:pts};
   }
   function makeHyperbola(){
-    var k=pick([6,12]);
+    var k=pick([12,12,6]); /* prefer 12 · (1,12),(3,4),… */
     var divs=[]; for(var d=1;d<=k;d++) if(k%d===0) divs.push(d);
     var pts=[];
     for(var i=0;i<divs.length;i++){ var x=divs[i],y=k/x; if(Math.max(x,y)<=12){ pts.push({x:x,y:y}); pts.push({x:-x,y:-y}); } }
     return {kind:"hyperbola",k:k,points:shuffle(pts).slice(0,6)};
   }
+  function makeDemoL(){
+    /* Puntos con L bien visible · mezcla vertical/horizontal */
+    var sets = [
+      [{x:1,y:12},{x:3,y:4},{x:2,y:6},{x:4,y:3}],
+      [{x:2,y:-1},{x:-2,y:-6},{x:1,y:5},{x:-3,y:1}],
+      [{x:1,y:12},{x:2,y:-1},{x:-2,y:-6},{x:3,y:4},{x:-1,y:4}],
+      [{x:5,y:1},{x:-4,y:-1},{x:0,y:3},{x:6,y:2}]
+    ];
+    return { kind:"demoL", points: pick(sets).slice() };
+  }
   function makeFamily(kind){
+    if(kind==="demoL") return makeDemoL();
     if(kind==="linear") return makeLinear();
     if(kind==="quadratic") return makeQuadratic();
     if(kind==="sqrt") return makeSqrt();
@@ -528,17 +555,15 @@ h1 .lesson-num { color: #38bdf8; }
     ctx.lineTo(b.x-ux*head+uy*head*0.45, b.y-uy*head-ux*head*0.45);
     ctx.closePath(); ctx.fill(); ctx.restore();
   }
-  /** Tip after rotating θ around foot F on y=x: θ=0 original, θ=π mirror (y,x). */
-  function spinTip(pt, theta) {
-    var F = footOnDiag(pt);
+  /** Tip after rotating θ (signed) about L-foot F: θ=0 at P, θ=sign·π/2 at P′. */
+  function spinTip(pt, F, theta) {
     var dx = pt.x - F.x, dy = pt.y - F.y;
     return {
       x: F.x + dx * Math.cos(theta) - dy * Math.sin(theta),
       y: F.y + dx * Math.sin(theta) + dy * Math.cos(theta)
     };
   }
-  function drawPivotFoot(pt) {
-    var F = footOnDiag(pt);
+  function drawPivotFoot(F) {
     var mid = worldToScreen(F.x, F.y);
     ctx.save();
     ctx.beginPath(); ctx.arc(mid.x, mid.y, 5, 0, Math.PI * 2);
@@ -546,29 +571,42 @@ h1 .lesson-num { color: #38bdf8; }
     ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 1.5; ctx.stroke();
     ctx.restore();
   }
-  function drawSpinSegment(pt, theta) {
-    var tip = spinTip(pt, theta);
-    var F = footOnDiag(pt);
-    var a = worldToScreen(F.x, F.y), b = worldToScreen(tip.x, tip.y);
+  function drawLGuide(pt, soft) {
+    var info = lInfo(pt);
+    if (info.mode === "on") return;
+    var q = mirrorPt(pt);
+    var F = info.F;
+    var a = worldToScreen(pt.x, pt.y), f = worldToScreen(F.x, F.y), b = worldToScreen(q.x, q.y);
     ctx.save();
-    ctx.strokeStyle = "rgba(255,191,0,0.9)"; ctx.lineWidth = 3; ctx.lineCap = "round";
+    ctx.strokeStyle = soft ? "rgba(56,189,248,0.4)" : "rgba(255,191,0,0.55)";
+    ctx.lineWidth = soft ? 1.6 : 2.2;
+    ctx.setLineDash([5, 5]);
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(f.x, f.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+  function drawSpinSegment(pt, F, theta) {
+    var tip = spinTip(pt, F, theta);
+    var a = worldToScreen(F.x, F.y), b = worldToScreen(tip.x, tip.y);
+    var p0 = worldToScreen(pt.x, pt.y);
+    ctx.save();
+    /* fixed leg of the L (already dropped) */
+    ctx.strokeStyle = "rgba(255,191,0,0.55)"; ctx.lineWidth = 2.5; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(a.x, a.y); ctx.stroke();
+    /* rotating leg */
+    ctx.strokeStyle = "rgba(255,191,0,0.95)"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
     ctx.beginPath(); ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
     ctx.fillStyle = ORIG; ctx.fill();
     ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 1.5; ctx.stroke();
     ctx.restore();
-    drawPivotFoot(pt);
+    drawPivotFoot(F);
   }
   function drawDoneMirror(pt) {
     var q = mirrorPt(pt);
-    var F = footOnDiag(pt);
-    var a = worldToScreen(pt.x, pt.y), b = worldToScreen(q.x, q.y);
-    ctx.save();
-    ctx.strokeStyle = "rgba(56,189,248,0.35)"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]);
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-    drawPivotFoot(pt);
+    drawLGuide(pt, true);
+    drawPivotFoot(lInfo(pt).F);
     drawPoint(q.x, q.y, fmtPt(q), MIR, MIR_GLOW);
   }
   function draw(){
@@ -586,7 +624,7 @@ h1 .lesson-num { color: #38bdf8; }
       var sp = state.spin;
       if (sp.phase === "drop") {
         var along = sp.t;
-        var F = footOnDiag(sp.pt);
+        var F = sp.F;
         var ix = sp.pt.x + (F.x - sp.pt.x) * along;
         var iy = sp.pt.y + (F.y - sp.pt.y) * along;
         var c = worldToScreen(sp.pt.x, sp.pt.y), d = worldToScreen(ix, iy);
@@ -594,9 +632,9 @@ h1 .lesson-num { color: #38bdf8; }
         ctx.strokeStyle = "rgba(255,191,0,0.95)"; ctx.lineWidth = 3; ctx.lineCap = "round";
         ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
         ctx.restore();
-        if (along > 0.92) drawPivotFoot(sp.pt);
+        if (along > 0.92) drawPivotFoot(F);
       } else if (sp.phase === "spin") {
-        drawSpinSegment(sp.pt, sp.theta);
+        drawSpinSegment(sp.pt, sp.F, sp.theta);
       }
     }
     if(state.showMirrorCurve) drawCurveFam(state.fam,true,0.95,CURVE_MIR);
@@ -635,17 +673,36 @@ h1 .lesson-num { color: #38bdf8; }
     exprMirror.innerHTML=formulaHTML(state.fam,true);
     famTag.textContent=familyLabel(state.fam.kind);
     renderMirrorTable(0);
-    sideHint.textContent="intercambio · (x,y)→(y,x) · espejo y=x";
+    sideHint.textContent="Método de la L · cae · gira 90° · (x,y)→(y,x)";
     setWork('<span class="hl-orig">original</span> · familia <span class="hl">'+familyLabel(state.fam.kind)+'</span>');
     setCaption("Bucle <strong>"+state.loop+"</strong> · <span class=\"hl\">"+familyLabel(state.fam.kind)+"</span> · curva original y puntos enteros");
     draw();
   }
   function easeInOut(u){ return u<0.5 ? 2*u*u : 1 - Math.pow(-2*u+2,2)/2; }
+  function finishReflect(pt, done) {
+    state.spin = null;
+    state.reflected++;
+    renderMirrorTable(state.reflected);
+    bip();
+    setWork(fmtPt(pt)+' → <span class="hl-mir">'+fmtPt(mirrorPt(pt))+'</span> · <span class="hl">Método de la L</span>');
+    setCaption('<span class="hl-orig">(x,y)</span> → <span class="hl-mir">(y,x)</span> · trayectoria en <strong>L</strong>');
+    draw();
+    later(750, function () { if (done) done(); });
+  }
   function animateSpinReflect(pt, done) {
     if (!state.playing) return;
-    state.spin = { pt: pt, phase: "drop", t: 0, theta: 0 };
-    setCaption('Segmento hasta la diagonal <span class="hl-axis">y = x</span> · pivote en el pie');
-    setWork(fmtPt(pt)+' → pie (<span class="hl-axis">'+fmtNum((pt.x+pt.y)/2)+', '+fmtNum((pt.x+pt.y)/2)+'</span>)');
+    var info = lInfo(pt);
+    if (info.mode === "on") {
+      setCaption('Ya está en <span class="hl-axis">y = x</span> · espejo trivial');
+      setWork(fmtPt(pt)+' · sobre la diagonal · <span class="hl-mir">'+fmtPt(mirrorPt(pt))+'</span>');
+      bip();
+      finishReflect(pt, done);
+      return;
+    }
+    var dropHow = info.mode === "vert" ? "cae vertical (x fijo)" : "cae horizontal (y fijo)";
+    state.spin = { pt: pt, phase: "drop", t: 0, theta: 0, F: info.F, mode: info.mode, sign: info.sign };
+    setCaption('<strong>Método de la L</strong> · '+dropHow+' hasta <span class="hl-axis">y = x</span>');
+    setWork(fmtPt(pt)+' → pie F(<span class="hl-axis">'+fmtNum(info.F.x)+', '+fmtNum(info.F.y)+'</span>) · '+dropHow);
     var dropMs = 550 * state.speedFactor;
     var t0 = performance.now();
     function dropTick(now) {
@@ -656,23 +713,20 @@ h1 .lesson-num { color: #38bdf8; }
       if (u < 1) { state.raf = requestAnimationFrame(dropTick); return; }
       state.spin.phase = "spin"; state.spin.theta = 0;
       bip();
-      setCaption('Giro <strong>180°</strong> con pivote en <span class="hl-axis">y = x</span>');
-      var spinMs = 1100 * state.speedFactor;
+      var dirTxt = info.sign < 0 ? "90° (horario)" : "90° (antihorario)";
+      setCaption('<strong>Método de la L</strong> · gira <strong>'+dirTxt+'</strong> · pivote en F');
+      setWork('gira 90° · F(<span class="hl-axis">'+fmtNum(info.F.x)+', '+fmtNum(info.F.y)+'</span>) · punta → <span class="hl-mir">'+fmtPt(mirrorPt(pt))+'</span>');
+      var spinMs = 900 * state.speedFactor;
       var t1 = performance.now();
       function spinTick(now2) {
         if (!state.playing || !state.spin) return;
         var u2 = Math.min(1, (now2 - t1) / spinMs);
-        state.spin.theta = Math.PI * easeInOut(u2);
+        state.spin.theta = info.sign * (Math.PI / 2) * easeInOut(u2);
         draw();
         if (u2 < 1) { state.raf = requestAnimationFrame(spinTick); return; }
-        state.spin = null;
-        state.reflected++;
-        renderMirrorTable(state.reflected);
-        bip();
-        setWork(fmtPt(pt)+' → <span class="hl-mir">'+fmtPt(mirrorPt(pt))+'</span> · ¡reflejado!');
-        setCaption('Punto espejo · <span class="hl-orig">(x,y)</span> → <span class="hl-mir">(y,x)</span>');
-        draw();
-        later(700, function () { if (done) done(); });
+        /* fire */
+        setCaption('<strong>Método de la L</strong> · ¡espejo! · <span class="hl-orig">(x,y)</span>→<span class="hl-mir">(y,x)</span>');
+        finishReflect(pt, done);
       }
       state.raf = requestAnimationFrame(spinTick);
     }
@@ -683,8 +737,8 @@ h1 .lesson-num { color: #38bdf8; }
     var n=(state.fam.points||[]).length;
     if(state.reflected >= n){
       state.showMirrorCurve=true; state.spin=null; draw(); bip();
-      setWork('<span class="hl-mir">espejo y=x</span> · intercambio completo');
-      setCaption('<span class="hl-axis">y = x</span> · <span class="hl-orig">(x,y)</span> → <span class="hl-mir">(y,x)</span>');
+      setWork('<span class="hl-mir">Método de la L</span> · intercambio completo');
+      setCaption('<strong>Método de la L</strong> · <span class="hl-axis">y = x</span> · <span class="hl-orig">(x,y)</span> → <span class="hl-mir">(y,x)</span>');
       later(5000, function(){ if(state.playing) runLoop(); });
       return;
     }
@@ -703,7 +757,7 @@ h1 .lesson-num { color: #38bdf8; }
     if(GK.ensureAudio) GK.ensureAudio();
     state.playing=true;
     playBtn.disabled=true; stopBtn.disabled=false;
-    if(!state.schedule.length){ state.schedule=FAMILIES.slice(); state.schedIdx=0; }
+    if(!state.schedule.length){ state.schedule=["demoL","hyperbola"].concat(shuffle(FAMILIES.filter(function(k){return k!=="demoL"&&k!=="hyperbola";}))); state.schedIdx=0; }
     runLoop();
   }
   function stopPlay(){
@@ -713,13 +767,13 @@ h1 .lesson-num { color: #38bdf8; }
   }
   function restart(){
     stopPlay();
-    state.loop=0; state.schedule=FAMILIES.slice(); state.schedIdx=0;
+    state.loop=0; state.schedule=["demoL","hyperbola"].concat(FAMILIES.filter(function(k){return k!=="demoL"&&k!=="hyperbola";})); state.schedIdx=0;
     state.fam=null; state.reflected=0; state.showMirrorCurve=false;
     loopEl.innerHTML="Bucle <strong>0</strong>";
-    exprFormula.textContent="y = f(x)"; exprMirror.textContent="espejo y=x · (y,x)";
+    exprFormula.textContent="y = f(x)"; exprMirror.textContent="Método de la L · (y,x)";
     famTag.textContent="familia"; chipBox.innerHTML=""; setWork("");
     XMIN=-8;XMAX=8;YMIN=-8;YMAX=8; CELL_PX=34; sizeCanvas(); drawGrid();
-    setCaption("Presioná <strong>▶ Play</strong> · espejo sobre <span class=\"hl-axis\">y = x</span> · <span class=\"hl-orig\">(x,y)</span> → <span class=\"hl-mir\">(y,x)</span>.");
+    setCaption("Presioná <strong>▶ Play</strong> · <strong>Método de la L</strong> · cae hasta <span class=\"hl-axis\">y = x</span> · gira 90° · <span class=\"hl-orig\">(x,y)</span> → <span class=\"hl-mir\">(y,x)</span>.");
   }
   function toggleSlow(){
     if(state.speedFactor===1){ state.speedFactor=2; slowBtn.classList.add("on"); slowBtn.setAttribute("aria-pressed","true"); }
