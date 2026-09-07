@@ -242,6 +242,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="toolbar">
       <button type="button" class="btn primary" id="playBtn">▶ Play</button>
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="nextBtn" disabled>Siguiente</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
       <span class="score" id="roundEl">Ronda <strong>0/20</strong></span>
@@ -305,7 +306,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
       <div class="graph-wrap" id="graphWrap">
         <a class="lesson-nav prev" href="leccion-lineal-play.html" title="Lección 21: Recta · play · ordenada-pendiente" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <span class="lesson-nav next" aria-disabled="true" title="Lección 23 · juego (próximamente)" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <a class="lesson-nav next" href="leccion-lineal-juego-ordenada.html" title="Lección 23: Recta · juego · ordenada" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
         <canvas id="c" width="1200" height="680" aria-label="Recta · forma punto-pendiente"></canvas>
       </div>
     </div>
@@ -338,6 +339,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var ctx = canvas.getContext("2d");
   var playBtn = document.getElementById("playBtn");
   var stopBtn = document.getElementById("stopBtn");
+  var slowBtn = document.getElementById("slowBtn");
   var nextBtn = document.getElementById("nextBtn");
   var restartBtn = document.getElementById("restartBtn");
   var repeatBtn = document.getElementById("repeatBtn");
@@ -374,6 +376,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     timers: [],
     bipTimers: [],
     token: 0,
+    slow: false,
     reveal: { xp: true, yp: true, xh: true, yh: true }
   };
 
@@ -581,10 +584,24 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     clearBip();
   }
 
+  function speedFactor() { return state.slow ? 2 : 1; }
+
   function later(ms, fn) {
-    var id = setTimeout(fn, ms);
+    var id = setTimeout(fn, ms * speedFactor());
     state.timers.push(id);
     return id;
+  }
+
+  function syncSlowBtn() {
+    if (!slowBtn) return;
+    slowBtn.setAttribute("aria-pressed", state.slow ? "true" : "false");
+    if (state.slow) {
+      slowBtn.classList.add("amber");
+      slowBtn.textContent = "Lento ✓";
+    } else {
+      slowBtn.classList.remove("amber");
+      slowBtn.textContent = "Lento";
+    }
   }
 
   function setCaption(html) { captionEl.innerHTML = html; }
@@ -1042,7 +1059,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function animateSlider(slider, labelEl, fromVal, toVal, ms, token, done) {
     if (token !== state.token) return;
-    var dur = ms || 550;
+    var dur = (ms || 550) * speedFactor();
     if (fromVal === toVal) {
       slider.step = "1";
       slider.value = String(toVal);
@@ -1100,7 +1117,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       function tickGuide(now) {
         if (token !== state.token) return;
         sc.t = now - tAnim0;
-        var u = Math.min(1, (now - tAnim0) / 550);
+        var u = Math.min(1, (now - tAnim0) / (550 * speedFactor()));
         sc.liveXp = 0 + (xp - 0) * easeOut(u);
         xpSlider.value = String(sc.liveXp);
         xpLabel.textContent = fmtNum(Math.round(sc.liveXp));
@@ -1128,7 +1145,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       sc.showP = true;
       sc.showXpGuide = true;
       var t0 = performance.now();
-      var dur = 550;
+      var dur = 550 * speedFactor();
       function tick(now) {
         if (token !== state.token) return;
         var u = Math.min(1, (now - t0) / dur);
@@ -1163,7 +1180,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         sc.showDottedH = true;
         setCaption("Corrimiento horizontal <span class=\"hl hl-h\">h = " + h + "</span>");
         var t0 = performance.now();
-        var dur = 1100;
+        var dur = 1100 * speedFactor();
         function tick(now) {
           if (token !== state.token) return;
           var u = Math.min(1, (now - t0) / dur);
@@ -1190,7 +1207,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         if (token !== state.token) return;
         setCaption("Corrimiento vertical <span class=\"hl hl-v\">v = " + fmtNum(v) + "</span> (" + dir + ") · punto <strong>B(" + fmtNum(xp + h) + ", " + fmtNum(yp + v) + ")</strong>");
         var t0 = performance.now();
-        var dur = 1100;
+        var dur = 1100 * speedFactor();
         function tick(now) {
           if (token !== state.token) return;
           var u = Math.min(1, (now - t0) / dur);
@@ -1398,6 +1415,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
   });
   stopBtn.addEventListener("click", stopPlay);
+  slowBtn.addEventListener("click", function () {
+    state.slow = !state.slow;
+    syncSlowBtn();
+  });
   nextBtn.addEventListener("click", skipNext);
   restartBtn.addEventListener("click", restart);
   repeatBtn.addEventListener("click", function () { startPlay(0); });
