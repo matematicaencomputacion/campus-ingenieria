@@ -157,6 +157,25 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .graph-wrap.flash-ok { animation: flashOk .45s ease; }
 .graph-wrap.flash-bad { animation: flashBad .45s ease; }
 
+
+.help-panel {
+  display: none; margin-top: 8px; padding: 10px 12px; border-radius: 10px;
+  background: #0c1420; border: 1px solid rgba(96,165,250,0.35);
+  font-size: 0.82rem; line-height: 1.45; color: var(--muted);
+}
+.help-panel.on { display: block; }
+.help-panel strong { color: var(--ink); }
+.help-panel .hl-h { color: var(--run); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.help-panel .hl-v { color: var(--rise); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.help-panel .hl-xa { color: #94a3b8; font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.help-panel .hl-yp { color: var(--dot); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.help-panel .eq-line {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: var(--ink);
+  margin: 6px 0 8px; font-size: 0.88rem;
+}
+button.btn.help-on {
+  background: rgba(96,165,250,0.25); box-shadow: 0 0 0 2px rgba(96,165,250,0.4);
+}
 </style>
 </head>
 <body>
@@ -172,6 +191,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="slowBtn" title="Duplica las pausas entre rondas">Lento</button>
       <button type="button" class="btn" id="pauseBtn">Pausar</button>
       <button type="button" class="btn primary" id="restartBtn">Reiniciar</button>
+      <button type="button" class="btn" id="helpBtn" title="Dónde están h y v en la fórmula" aria-expanded="false">Ayuda</button>
       <span class="score ok" id="scoreOk">Éxitos <strong>0</strong></span>
       <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
       <span class="score round" id="scoreRound">Ronda <strong>1</strong></span>
@@ -185,6 +205,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <aside class="expr-panel" id="exprPanel" aria-label="Panel de juego">
         <div class="expr-row">
           <div class="expr-formula" id="exprFormula">f(x) = …</div>
+          <div class="help-panel" id="helpPanel" role="region" aria-label="Ayuda h y v">
+            <div class="eq-line" id="helpEq"></div>
+            <div id="helpBody"></div>
+          </div>
         </div>
         <div class="expr-row phase-ask">
           <span class="mode-tag" id="modeTag">Dictado</span>
@@ -255,6 +279,10 @@ var GK = window.CampusGameKit || {};
   var sideHint = document.getElementById("sideHint");
   var chipBox = document.getElementById("chipBox");
   var modeTagEl = document.getElementById("modeTag");
+  var helpBtn = document.getElementById("helpBtn");
+  var helpPanel = document.getElementById("helpPanel");
+  var helpEq = document.getElementById("helpEq");
+  var helpBody = document.getElementById("helpBody");
 
   var XMIN = -4, XMAX = 10, YMIN = -2, YMAX = 6;
   var PAD = { l: 52, r: 28, t: 28, b: 42 };
@@ -539,11 +567,60 @@ var GK = window.CampusGameKit || {};
     };
   }
 
-var state = { ok:0,bad:0,round:1,p:null,n:1,locked:false,paused:false,won:false,speedFactor:1,timers:[],reveal:false };
+var state = { ok:0,bad:0,round:1,p:null,n:1,locked:false,paused:false,won:false,speedFactor:1,timers:[],reveal:false,help:false };
+
+  function updateHelp() {
+    if (!state.p) return;
+    var p = state.p;
+    var sign = p.side === "left" ? "−" : "+";
+    helpEq.innerHTML = formulaHTML(p);
+    helpBody.innerHTML =
+      '<p><span class="hl-h">h = ' + fmtNum(p.h) + '</span> · unidad <strong>horizontal</strong> (ancho del 1.er peldaño). ' +
+      'En la fórmula está <strong>dentro de la raíz</strong>, dividiendo: (x − xa) / <span class="hl-h">h</span>.</p>' +
+      '<p><span class="hl-v">v = ' + fmtNum(p.v) + '</span> · unidad <strong>vertical</strong> (piso). ' +
+      'En la fórmula es el <strong>coeficiente delante de la √</strong>: <span class="hl-v">v</span> · √(…).</p>' +
+      '<p>Aterrizaje: R<sub>n</sub> = (xa ' + sign + ' n²<span class="hl-h">h</span>, yp + n·<span class="hl-v">v</span>). ' +
+      'Con n=1: desde P andá <span class="hl-h">h</span> en x y <span class="hl-v">v</span> en y.</p>' +
+      '<p style="margin:0">En el gráfico (con Ayuda on): flecha ámbar = <span class="hl-h">h</span>, flecha de color = <span class="hl-v">v</span>.</p>';
+  }
+  function toggleHelp() {
+    state.help = !state.help;
+    helpPanel.classList.toggle("on", state.help);
+    helpBtn.classList.toggle("help-on", state.help);
+    helpBtn.setAttribute("aria-expanded", state.help ? "true" : "false");
+    helpBtn.textContent = state.help ? "Ayuda ✓" : "Ayuda";
+    if (state.help) updateHelp();
+    draw();
+  }
+  function drawHelpGuides() {
+    if (!state.help || !state.p) return;
+    var p = state.p;
+    var s = p.side === "left" ? -1 : 1;
+    var x1 = p.xa + s * p.h, y0 = p.yp, y1 = p.yp + p.v;
+    // h horizontal
+    var a = worldToScreen(p.xa, y0), b = worldToScreen(x1, y0);
+    ctx.save();
+    ctx.strokeStyle = RUN; ctx.lineWidth = 2.5; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = RUN; ctx.font = "800 14px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText("h", (a.x + b.x) / 2, a.y + 8);
+    // v vertical
+    var c = worldToScreen(x1, y0), d = worldToScreen(x1, y1);
+    ctx.strokeStyle = p.v < 0 ? RISE_DN : RISE_UP; ctx.lineWidth = 2.5; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = p.v < 0 ? RISE_DN : RISE_UP;
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillText("v", c.x + 10, (c.y + d.y) / 2);
+    ctx.restore();
+  }
+
   function buildRound(){ state.p=pickParams(); state.n=1+((Math.random()*3)|0); state.reveal=false; fitWorld(state.p,Math.max(3,state.n)); }
   function correctPt(){ return landing(state.p,state.n); }
   function draw(){
-    drawGrid(); drawWall(state.p); drawPoint(state.p.xa,state.p.yp,"P",AMBER);
+    drawGrid(); drawWall(state.p); drawHelpGuides(); drawPoint(state.p.xa,state.p.yp,"P",AMBER);
     if(state.reveal){ drawCurve(state.p,0.9); var t=correctPt(); drawPoint(t.x,t.y,"R"+state.n,OK,"rgba(90,212,168,0.4)"); }
   }
   function fmtPt(pt){ return "("+fmtNum(pt.x)+", "+fmtNum(pt.y)+")"; }
@@ -577,12 +654,14 @@ var state = { ok:0,bad:0,round:1,p:null,n:1,locked:false,paused:false,won:false,
     clearTimers(); buildRound(); state.locked=false;
     if(!keepScores){ state.ok=0; state.bad=0; state.round=1; }
     state.won=false; victoryBanner.classList.remove("on");
-    exprFormula.innerHTML=formulaHTML(state.p); sideHint.textContent="n = "+state.n+" · elegí el chip"; syncScores();
+    exprFormula.innerHTML=formulaHTML(state.p); if(state.help) updateHelp(); sideHint.textContent="n = "+state.n+" · elegí el chip"; syncScores();
     setPrompt('Dado <strong>n='+state.n+'</strong>, elegí <span class="hl-p">R'+state.n+'</span> · rama '+sideWord(state.p)+'.',"attention");
     renderChips(); draw();
   }
   function nextRound(){ state.round++; syncScores(); startRound(true); }
-  wireChrome(standardRestart(), standardKeep()); startRound(false);
+  wireChrome(standardRestart(), standardKeep());
+  if (helpBtn) helpBtn.addEventListener("click", function () { if (GK.ensureAudio) GK.ensureAudio(); toggleHelp(); });
+  startRound(false);
 
 })();
 </script>
