@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 28 · Simetría · juego · deslizadores</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #f59e0b; --border: #243044;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #34d399; --pink: #f472b6;
+  --dot: #a78bfa; --line: #f59e0b; --run: #60a5fa; --rise: #34d399;
+  --row: #1a2435; --row-border: #2a3a52; --xp: #f59e0b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.88rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn, a.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.amber, a.btn.amber { background: var(--amber); color: #0b1018; }
+button.btn.ok { background: var(--ok); color: #0b1018; }
+button.btn:hover, a.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+button.btn.slow-on { background: var(--amber); color: #0b1018; box-shadow: 0 0 0 2px rgba(255,191,0,0.35); }
+button.btn.pause-on { background: #3b4a63; box-shadow: 0 0 0 2px rgba(139,155,180,0.35); }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548;
+}
+.score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+.score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+.score.round { color: var(--mast); border-color: rgba(110,168,254,0.45); }
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
+}
+.main-stage {
+  display: grid;
+  grid-template-columns: minmax(280px, 300px) 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+@media (max-width: 820px) {
+  .main-stage { grid-template-columns: 1fr; }
+}
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.expr-panel.locked { pointer-events: none; opacity: 0.55; }
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.slider-xp::before { background: var(--xp); }
+.expr-row.slider-yp::before { background: var(--dot); }
+.expr-row.slider-h::before { background: var(--run); }
+.expr-row.slider-v::before { background: var(--rise); }
+.expr-row.table-row::before { background: var(--accent); }
+.expr-row.check-row::before { background: var(--ok); }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.88rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.45;
+}
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace;
+  font-weight: 800;
+}
+.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.92em; }
+.frac .num { color: var(--rise); border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.frac .den { color: var(--run); padding-top: 1px; }
+.expr-formula .frac .num, .expr-formula .frac .den { font-size: 0.95em; }
+.slider-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 8px;
+  margin-bottom: 6px; padding-left: 6px;
+}
+.slider-val {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 1.05rem;
+}
+.slider-val .eq { color: var(--muted); font-weight: 600; }
+.slider-hint { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+.slider-xp .slider-val { color: var(--xp); }
+.slider-yp .slider-val { color: var(--dot); }
+.slider-h .slider-val { color: var(--run); }
+.slider-v .slider-val { color: var(--rise); }
+input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+  border-radius: 999px; background: #2a3a52; outline: none; cursor: pointer; margin: 4px 0 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--mast); border: 2px solid #e9eef7;
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.25); cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; background: var(--mast);
+  border: 2px solid #e9eef7; box-shadow: 0 0 0 3px rgba(96,165,250,0.25); cursor: pointer;
+}
+.range-ends {
+  display: flex; justify-content: space-between; font-size: 0.68rem;
+  color: var(--muted); font-family: ui-monospace, Menlo, monospace; padding: 0 1px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 4px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.74rem; font-weight: 700;
+  padding: 4px 8px; border-radius: 999px; background: #121a27;
+  border: 1px solid var(--row-border); color: var(--xp);
+}
+.chip.target { color: #efe7ff; border-color: rgba(167,139,250,0.55); background: rgba(167,139,250,0.12); }
+.chip.dim { opacity: 0.55; }
+.check-row { display: flex; flex-direction: column; gap: 8px; }
+.check-row .btn { width: 100%; }
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--canvas-bg);
+}
+#confetti {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 5; border-radius: 10px; background: transparent;
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.prompt {
+  margin: 0; font-size: 0.95rem; color: var(--muted); line-height: 1.45; min-height: 1.4em;
+}
+.prompt strong { color: var(--ink); }
+.prompt.ok { color: var(--ok); }
+.prompt.bad { color: #f5e6a8; }
+.prompt .hl-xp { color: var(--xp); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-yp { color: var(--dot); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-h { color: var(--run); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-v { color: var(--rise); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-p { color: var(--dot); font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.win-banner {
+  display: none; margin-top: 8px; padding: 12px 16px; border-radius: 10px;
+  background: rgba(90,212,168,0.14); border: 1px solid rgba(90,212,168,0.5);
+  color: var(--ok); font-weight: 800; font-size: 1.05rem;
+  align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.win-banner.on { display: flex; }
+.win-banner .win-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.round-banner {
+  position: absolute; left: 50%; top: 14%; transform: translateX(-50%);
+  z-index: 8; pointer-events: none;
+  background: rgba(26,35,50,0.92); border: 1px solid rgba(90,212,168,0.55);
+  color: var(--ok); font-weight: 800; font-size: 1.05rem;
+  padding: 10px 18px; border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  opacity: 0; transition: opacity .2s;
+}
+.round-banner.show { opacity: 1; }
+.round-banner.bad {
+  border-color: rgba(255,123,123,0.55); color: var(--bad);
+}
+@keyframes shakeX {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.shake { animation: shakeX 0.42s ease; }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 6px 0 0; line-height: 1.4; }
+.sound-meter {
+  margin: 10px 0 0; display: flex; align-items: flex-end; justify-content: flex-end;
+  gap: 5px; min-height: 28px; padding: 6px 10px;
+  color: var(--muted); font-size: 0.8rem; font-weight: 700;
+  user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px;
+  width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar {
+  display: inline-block; width: 5px; height: 8px; border-radius: 2px;
+  background: #3b4a63; transition: height .08s ease, background .08s ease;
+}
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 28</span> · Simetría · juego
+        <span class="sub">deslizadores · vértice · h · v</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="restartBtn">Reiniciar</button>
+      <button type="button" class="btn" id="pauseBtn" aria-pressed="false" title="Pausa el juego">Pausa</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false" title="Duplica las pausas entre rondas y el feedback">Lento</button>
+      <span class="score ok" id="scoreOk">Aciertos <strong>0</strong></span>
+      <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
+      <span class="score round" id="scoreRound">Ronda <strong>1</strong></span>
+    </div>
+  </header>
+
+  <p class="prompt" id="prompt">Ajustá <strong>x<sub>p</sub></strong>, <strong>y<sub>p</sub></strong>, <strong>h</strong> y <strong>v</strong> para que la parábola ámbar coincida con los 7 puntos violetas. Luego <strong>Comprobar</strong>.</p>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" id="exprPanel" aria-label="Deslizadores parábola">
+        <div class="expr-row">
+          <div class="expr-formula" id="exprFormula">f(x) = <span class="frac" title="v/h²"><span class="num">v</span><span class="den">h²</span></span>·(x − x<sub>p</sub>)² + y<sub>p</sub></div>
+        </div>
+        <div class="expr-row slider-xp" id="rowXp">
+          <div class="slider-head">
+            <span class="slider-val">x<sub>p</sub> <span class="eq">=</span> <span id="xpLabel">0</span></span>
+            <span class="slider-hint">eje de simetría</span>
+          </div>
+          <input type="range" id="xpSlider" min="-2" max="2" step="1" value="0" aria-label="abscisa del eje xp" />
+          <div class="range-ends"><span>−2</span><span>2</span></div>
+        </div>
+        <div class="expr-row slider-yp" id="rowYp">
+          <div class="slider-head">
+            <span class="slider-val">y<sub>p</sub> <span class="eq">=</span> <span id="ypLabel">0</span></span>
+            <span class="slider-hint">altura del vértice</span>
+          </div>
+          <input type="range" id="ypSlider" min="-2" max="2" step="1" value="0" aria-label="ordenada del vértice yp" />
+          <div class="range-ends"><span>−2</span><span>2</span></div>
+        </div>
+        <div class="expr-row slider-h" id="rowH">
+          <div class="slider-head">
+            <span class="slider-val">h <span class="eq">=</span> <span id="hLabel">0</span></span>
+            <span class="slider-hint">paso horizontal</span>
+          </div>
+          <input type="range" id="hSlider" min="0" max="5" step="1" value="0" aria-label="paso horizontal h" />
+          <div class="range-ends"><span>0</span><span>5</span></div>
+        </div>
+        <div class="expr-row slider-v" id="rowV">
+          <div class="slider-head">
+            <span class="slider-val">v <span class="eq">=</span> <span id="vLabel">0</span></span>
+            <span class="slider-hint">unidad vertical (±)</span>
+          </div>
+          <input type="range" id="vSlider" min="-3" max="3" step="1" value="0" aria-label="unidad vertical v" />
+          <div class="range-ends"><span>−3</span><span>3</span></div>
+        </div>
+        <div class="expr-row table-row">
+          <div class="chips" aria-label="Objetivo">
+            <span class="chip target" id="chipTargetP">P = (—, —)</span>
+            <span class="chip target" id="chipTargetHV">h=— · v=—</span>
+          </div>
+          <div class="chips" aria-label="Modelo">
+            <span class="chip" id="chipModelP">P′ = (0, 0)</span>
+            <span class="chip dim" id="chipModelHV">h′=0 · v′=0</span>
+          </div>
+        </div>
+        <div class="expr-row check-row">
+          <button type="button" class="btn ok" id="checkBtn">Comprobar</button>
+        </div>
+      </aside>
+
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-simetria-play.html" title="Lección 27: Simetría · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-simetria-juego-puntos.html" title="Lección 29: Simetría · juego · puntos" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="1200" height="760" aria-label="Simetría · juego · deslizadores"></canvas>
+        <canvas id="confetti" width="1200" height="760" aria-hidden="true"></canvas>
+        <div class="round-banner" id="roundBanner" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="win-banner" id="winBanner">
+      <span>¡Ganador! · 20 aciertos.</span>
+      <div class="win-actions">
+        <a class="btn amber" id="winNextBtn" href="leccion-simetria-juego-puntos.html">Seguir</a>
+        <button type="button" class="btn primary" id="winRestartBtn">Reiniciar</button>
+      </div>
+    </div>
+    <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
+    <p class="hint">f(x)=(v/h²)(x−x<sub>p</sub>)²+y<sub>p</sub> · tras n pasos: y = y<sub>p</sub> + n²·v · h∈{1…5}, v∈{±1,±2,±3} · 7 puntos (vértice + 3 pares) · 20 aciertos para ganar</p>
+  </div>
+</div>
+
+<script src="game-kit.js?v=20260907"></script>
+<script>
+(function () {
+  "use strict";
+
+  var GK = window.CampusGameKit || {};
+  var WIN_AT = 20;
+  var PURPLE = "#a78bfa";
+  var PURPLE_GLOW = "rgba(167,139,250,0.45)";
+  var AMBER = "#f59e0b";
+  var RUN = "#60a5fa";
+  var RISE = "#34d399";
+  var MUTED = "#8b9bb4";
+  var AXIS = "#93c5fd";
+
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var confettiCanvas = document.getElementById("confetti");
+  var graphWrap = document.getElementById("graphWrap");
+  var xpSlider = document.getElementById("xpSlider");
+  var ypSlider = document.getElementById("ypSlider");
+  var hSlider = document.getElementById("hSlider");
+  var vSlider = document.getElementById("vSlider");
+  var xpLabel = document.getElementById("xpLabel");
+  var ypLabel = document.getElementById("ypLabel");
+  var hLabel = document.getElementById("hLabel");
+  var vLabel = document.getElementById("vLabel");
+  var exprFormula = document.getElementById("exprFormula");
+  var chipTargetP = document.getElementById("chipTargetP");
+  var chipTargetHV = document.getElementById("chipTargetHV");
+  var chipModelP = document.getElementById("chipModelP");
+  var chipModelHV = document.getElementById("chipModelHV");
+  var checkBtn = document.getElementById("checkBtn");
+  var restartBtn = document.getElementById("restartBtn");
+  var pauseBtn = document.getElementById("pauseBtn");
+  var slowBtn = document.getElementById("slowBtn");
+  var winRestartBtn = document.getElementById("winRestartBtn");
+  var speedFactor = 1;
+  function delay(ms) { return Math.round(ms * speedFactor); }
+  var scoreOkEl = document.getElementById("scoreOk");
+  var scoreBadEl = document.getElementById("scoreBad");
+  var scoreRoundEl = document.getElementById("scoreRound");
+  var promptEl = document.getElementById("prompt");
+  var winBanner = document.getElementById("winBanner");
+  var roundBanner = document.getElementById("roundBanner");
+  var soundMeter = document.getElementById("soundMeter");
+  var exprPanel = document.getElementById("exprPanel");
+
+  var XMIN = -4, XMAX = 4, YMIN = -1, YMAX = 10;
+  var PAD = { l: 56, r: 28, t: 28, b: 42 };
+
+  var H_POOL = [1, 2, 3, 4, 5];
+  var V_POOL = [1, 2, 3, -1, -2, -3];
+  var XP_POOL = [-2, -1, 0, 1, 2];
+  var YP_POOL = [-2, -1, 0, 1, 2];
+
+  var state = {
+    ok: 0,
+    bad: 0,
+    round: 1,
+    target: { xp: 1, yp: 0, h: 2, v: 1 },
+    locked: false,
+    won: false,
+    paused: false
+  };
+
+  function fmtNum(n) {
+    if (Object.is(n, -0) || Math.abs(n) < 1e-12) return "0";
+    return String(n).replace("-", "−");
+  }
+
+  function fracHTML(v, h) {
+    if (!h) {
+      return '<span class="frac" title="v/h²"><span class="num">' +
+        (v === 0 ? "v" : fmtNum(v)) + '</span><span class="den">h²</span></span>';
+    }
+    var num = fmtNum(v);
+    var den = fmtNum(h) + "²";
+    return '<span class="frac" title="v/h²"><span class="num">' + num +
+      '</span><span class="den">' + den + '</span></span>';
+  }
+
+  function formulaHTML(xp, yp, h, v) {
+    var fr = fracHTML(v, h);
+    var body;
+    if (xp === 0) body = "x²";
+    else if (xp > 0) body = "(x − " + fmtNum(xp) + ")²";
+    else body = "(x + " + fmtNum(-xp) + ")²";
+    var ypPart;
+    if (yp === 0) ypPart = "";
+    else if (yp > 0) ypPart = " + " + fmtNum(yp);
+    else ypPart = " − " + fmtNum(-yp);
+    if (!h) {
+      var xpSym = (xp === 0) ? "x<sub>p</sub>" : fmtNum(xp);
+      var bodySym = (xp === 0)
+        ? "(x − x<sub>p</sub>)²"
+        : (xp > 0 ? "(x − " + fmtNum(xp) + ")²" : "(x + " + fmtNum(-xp) + ")²");
+      var ypSym = (yp === 0) ? " + y<sub>p</sub>" : ypPart;
+      if (xp === 0 && yp === 0 && v === 0) {
+        return "f(x) = " + fr + "·(x − x<sub>p</sub>)² + y<sub>p</sub>";
+      }
+      return "f(x) = " + fr + "·" + bodySym + ypSym;
+    }
+    return "f(x) = " + fr + "·" + body + ypPart;
+  }
+
+  function fitWorldToParams(p) {
+    var xp = p.xp, yp = p.yp, h = Math.abs(p.h) || 1, v = p.v;
+    var xSpan = Math.max(Math.abs(xp) + 3 * h, 4);
+    XMIN = -Math.ceil(xSpan + 0.5);
+    XMAX = Math.ceil(xSpan + 0.5);
+    if (v >= 0) {
+      var yTop = yp + 9 * Math.max(v, 1);
+      YMIN = Math.min(-1, yp - 1);
+      YMAX = Math.max(yTop + 1, yp + 2, 10);
+    } else {
+      YMAX = yp + 2;
+      YMIN = yp + 9 * v - 1;
+    }
+  }
+
+  function pickParams(prev) {
+    var tries = 0;
+    while (tries++ < 400) {
+      var xp = XP_POOL[Math.floor(Math.random() * XP_POOL.length)];
+      var yp = YP_POOL[Math.floor(Math.random() * YP_POOL.length)];
+      var h = H_POOL[Math.floor(Math.random() * H_POOL.length)];
+      var v = V_POOL[Math.floor(Math.random() * V_POOL.length)];
+      /* avoid trivial zero-ish / instant match with sliders at 0 */
+      if (xp === 0 && yp === 0 && h === 0) continue;
+      if (v === 0) continue;
+      /* keep |yp + 9v| reasonable for canvas */
+      if (Math.abs(yp + 9 * v) > 28) continue;
+      if (h === 5 && Math.abs(v) === 3 && Math.abs(xp) >= 2) continue;
+      if (prev && prev.xp === xp && prev.yp === yp && prev.h === h && prev.v === v) continue;
+      return { xp: xp, yp: yp, h: h, v: v };
+    }
+    return { xp: 1, yp: 0, h: 2, v: 1 };
+  }
+
+  function landingY(yp, v, n) {
+    return yp + (n * n) * v;
+  }
+
+  function worldToScreen(x, y) {
+    var w = canvas.width - PAD.l - PAD.r;
+    var hh = canvas.height - PAD.t - PAD.b;
+    return {
+      x: PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w,
+      y: PAD.t + ((YMAX - y) / (YMAX - YMIN)) * hh
+    };
+  }
+
+  function readSliders() {
+    return {
+      xp: parseInt(xpSlider.value, 10) || 0,
+      yp: parseInt(ypSlider.value, 10) || 0,
+      h: parseInt(hSlider.value, 10) || 0,
+      v: parseInt(vSlider.value, 10) || 0
+    };
+  }
+
+  function resetSliders() {
+    xpSlider.value = "0";
+    ypSlider.value = "0";
+    hSlider.value = "0";
+    vSlider.value = "0";
+  }
+
+  function setPrompt(html, kind) {
+    promptEl.innerHTML = html;
+    promptEl.classList.remove("ok", "bad");
+    if (kind === "ok") promptEl.classList.add("ok");
+    if (kind === "bad") promptEl.classList.add("bad");
+  }
+
+  function updateScores() {
+    if (GK.scoreChips) {
+      GK.scoreChips(
+        { ok: scoreOkEl, bad: scoreBadEl, round: scoreRoundEl },
+        { ok: state.ok, bad: state.bad, round: state.round }
+      );
+    } else {
+      scoreOkEl.innerHTML = "Aciertos <strong>" + state.ok + "</strong>";
+      scoreBadEl.innerHTML = "Errores <strong>" + state.bad + "</strong>";
+      scoreRoundEl.innerHTML = "Ronda <strong>" + state.round + "</strong>";
+    }
+  }
+
+  function syncUI() {
+    var s = readSliders();
+    xpLabel.textContent = fmtNum(s.xp);
+    ypLabel.textContent = fmtNum(s.yp);
+    hLabel.textContent = fmtNum(s.h);
+    vLabel.textContent = fmtNum(s.v);
+    exprFormula.innerHTML = formulaHTML(s.xp, s.yp, s.h, s.v);
+    var t = state.target;
+    chipTargetP.textContent = "P = (" + fmtNum(t.xp) + ", " + fmtNum(t.yp) + ")";
+    chipTargetHV.textContent = "h=" + t.h + " · v=" + fmtNum(t.v);
+    chipModelP.textContent = "P′ = (" + fmtNum(s.xp) + ", " + fmtNum(s.yp) + ")";
+    chipModelHV.textContent = "h′=" + s.h + " · v′=" + fmtNum(s.v);
+    chipModelHV.classList.toggle("dim", s.h === 0 || s.v === 0);
+  }
+
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    for (var xi = Math.ceil(XMIN); xi <= Math.floor(XMAX); xi++) {
+      var p0 = worldToScreen(xi, YMIN), p1 = worldToScreen(xi, YMAX);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    for (var yi = Math.ceil(YMIN); yi <= Math.floor(YMAX); yi++) {
+      var q0 = worldToScreen(XMIN, yi), q1 = worldToScreen(XMAX, yi);
+      ctx.beginPath(); ctx.moveTo(q0.x, q0.y); ctx.lineTo(q1.x, q1.y); ctx.stroke();
+    }
+    var ox = worldToScreen(0, 0);
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(PAD.l, ox.y); ctx.lineTo(canvas.width - PAD.r, ox.y);
+    ctx.moveTo(ox.x, PAD.t); ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.stroke();
+    ctx.fillStyle = MUTED;
+    ctx.font = "600 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (var xt = Math.ceil(XMIN); xt <= Math.floor(XMAX); xt++) {
+      if (xt === 0) continue;
+      var sx = worldToScreen(xt, 0);
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath(); ctx.moveTo(sx.x, sx.y - 4); ctx.lineTo(sx.x, sx.y + 4); ctx.stroke();
+      ctx.fillText(String(xt), sx.x, sx.y + 8);
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (var yt = Math.ceil(YMIN); yt <= Math.floor(YMAX); yt++) {
+      if (yt === 0) continue;
+      var sy = worldToScreen(0, yt);
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath(); ctx.moveTo(sy.x - 4, sy.y); ctx.lineTo(sy.x + 4, sy.y); ctx.stroke();
+      ctx.fillText(fmtNum(yt), sy.x - 8, sy.y);
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.fillText("0", ox.x - 8, ox.y + 6);
+    ctx.fillStyle = "#93c5fd";
+    ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("x", canvas.width - PAD.r - 14, ox.y - 8);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("y", ox.x + 10, PAD.t + 4);
+  }
+
+  function drawAxis(xp, alpha) {
+    var top = worldToScreen(xp, YMAX);
+    var bot = worldToScreen(xp, YMIN);
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 0.55 : alpha;
+    ctx.strokeStyle = AXIS;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 5]);
+    ctx.beginPath();
+    ctx.moveTo(top.x, top.y);
+    ctx.lineTo(bot.x, bot.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = AXIS;
+    ctx.font = "700 12px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("eje x = " + fmtNum(xp), top.x + 8, PAD.t + 6);
+    ctx.restore();
+  }
+
+  function drawPoint(x, y, label, color, radius) {
+    var p = worldToScreen(x, y);
+    var fill = color || PURPLE;
+    var amber = (fill === AMBER || fill === "#FFBF00" || fill === "#f59e0b");
+    var glow = amber ? "rgba(245,158,11,0.38)" : PURPLE_GLOW;
+    var ring = amber ? "#fde68a" : "#efe7ff";
+    var ink = amber ? "#fde68a" : "#efe7ff";
+    var r = radius || 7;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r + 5, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = ring;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    if (label) {
+      ctx.fillStyle = ink;
+      ctx.font = "800 14px Segoe UI, system-ui, sans-serif";
+      ctx.textBaseline = "bottom";
+      var lx = p.x + 12, ly = p.y - 10;
+      if (lx > canvas.width - 140) lx = p.x - 12;
+      if (ly < 22) ly = p.y + 22;
+      ctx.textAlign = lx < p.x ? "right" : "left";
+      ctx.fillText(label, lx, ly);
+    }
+    ctx.restore();
+  }
+
+  function drawParabola(xp, yp, h, v, stroke, width, alpha) {
+    if (!h) return;
+    var ratio = v / (h * h);
+    var pts = [];
+    for (var i = 0; i <= 240; i++) {
+      var x = XMIN + (XMAX - XMIN) * (i / 240);
+      var y = ratio * (x - xp) * (x - xp) + yp;
+      if (y < YMIN - 0.5 || y > YMAX + 0.5) {
+        pts.push(null);
+        continue;
+      }
+      pts.push(worldToScreen(x, y));
+    }
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = width || 3.2;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    var first = true;
+    for (var j = 0; j < pts.length; j++) {
+      var p = pts[j];
+      if (!p) { first = true; continue; }
+      if (first) { ctx.moveTo(p.x, p.y); first = false; }
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawLandingPoints(xp, yp, h, v, color, withLabels) {
+    if (!h) {
+      drawPoint(xp, yp, withLabels ? "P′(" + fmtNum(xp) + ", " + fmtNum(yp) + ")" : null, color);
+      return;
+    }
+    drawPoint(xp, yp, withLabels ? "P(" + fmtNum(xp) + ", " + fmtNum(yp) + ")" : null, color);
+    for (var n = 1; n <= 3; n++) {
+      var y = landingY(yp, v, n);
+      var xr = xp + n * h;
+      var xl = xp - n * h;
+      drawPoint(xl, y, null, color, 6);
+      drawPoint(xr, y, withLabels ? "(" + fmtNum(xr) + ", " + fmtNum(y) + ")" : null, color, 6);
+    }
+  }
+
+  function draw() {
+    var t = state.target;
+    fitWorldToParams(t);
+    drawGrid();
+
+    /* faint target curve */
+    drawParabola(t.xp, t.yp, t.h, t.v, "rgba(167,139,250,0.35)", 2.4, 1);
+    drawAxis(t.xp, 0.35);
+    drawLandingPoints(t.xp, t.yp, t.h, t.v, PURPLE, true);
+
+    var s = readSliders();
+    if (s.h > 0) {
+      drawParabola(s.xp, s.yp, s.h, s.v, AMBER, 3.4, 0.95);
+      if (s.xp !== t.xp) drawAxis(s.xp, 0.45);
+      /* amber model landings (smaller) */
+      drawPoint(s.xp, s.yp, null, AMBER, 6);
+      if (s.v !== 0) {
+        for (var n = 1; n <= 3; n++) {
+          var y = landingY(s.yp, s.v, n);
+          drawPoint(s.xp + n * s.h, y, null, AMBER, 5);
+          drawPoint(s.xp - n * s.h, y, null, AMBER, 5);
+        }
+      }
+    } else {
+      drawPoint(s.xp, s.yp, "P′(" + fmtNum(s.xp) + ", " + fmtNum(s.yp) + ")", AMBER, 7);
+    }
+  }
+
+  function showBanner(text, kind) {
+    roundBanner.textContent = text;
+    roundBanner.classList.toggle("bad", kind === "bad");
+    roundBanner.classList.add("show");
+    setTimeout(function () { roundBanner.classList.remove("show"); }, delay(900));
+  }
+
+  function pulseFeedback(kind) {
+    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, kind === "ok" ? "ok" : "bad");
+    if (kind === "ok") {
+      if (GK.playOkChime) GK.playOkChime();
+      if (GK.fireConfetti) GK.fireConfetti(confettiCanvas);
+    } else {
+      if (GK.playErrorBuzz) GK.playErrorBuzz();
+      graphWrap.classList.remove("shake");
+      void graphWrap.offsetWidth;
+      graphWrap.classList.add("shake");
+    }
+  }
+
+  function newRound(keepScores) {
+    if (!keepScores) {
+      state.ok = 0;
+      state.bad = 0;
+      state.round = 1;
+    } else {
+      state.round += 1;
+    }
+    state.target = pickParams(state.target);
+    state.locked = false;
+    state.won = false;
+    state.paused = false;
+    if (pauseBtn) {
+      pauseBtn.classList.remove("pause-on");
+      pauseBtn.setAttribute("aria-pressed", "false");
+      pauseBtn.textContent = "Pausa";
+    }
+    winBanner.classList.remove("on");
+    exprPanel.classList.remove("locked");
+    checkBtn.disabled = false;
+    resetSliders();
+    syncUI();
+    updateScores();
+    setPrompt(
+      "Los <span class=\"hl-p\">7 puntos violetas</span> marcan la parábola objetivo. " +
+      "Ajustá <span class=\"hl-xp\">x<sub>p</sub></span>, <span class=\"hl-yp\">y<sub>p</sub></span>, " +
+      "<span class=\"hl-h\">h</span> y <span class=\"hl-v\">v</span> hasta coincidir, luego <strong>Comprobar</strong>."
+    );
+    draw();
+  }
+
+  function doWin() {
+    state.won = true;
+    state.locked = true;
+    exprPanel.classList.add("locked");
+    checkBtn.disabled = true;
+    winBanner.classList.add("on");
+    setPrompt("¡Ganador! Completaste <strong>20 aciertos</strong>. Tocá Seguir o Reiniciar.", "ok");
+    showBanner("¡Ganador! 20/20", "ok");
+    if (GK.playExplosion) GK.playExplosion();
+    if (GK.fireConfetti) GK.fireConfetti(confettiCanvas);
+  }
+
+  function check() {
+    if (state.locked || state.won || state.paused) return;
+    if (GK.ensureAudio) GK.ensureAudio();
+    var s = readSliders();
+    var t = state.target;
+    var match = (s.xp === t.xp && s.yp === t.yp && s.h === t.h && s.v === t.v);
+    if (match) {
+      state.ok += 1;
+      updateScores();
+      pulseFeedback("ok");
+      showBanner("¡Correcto!", "ok");
+      setPrompt(
+        "¡Bien! <span class=\"hl-xp\">x<sub>p</sub> = " + fmtNum(t.xp) + "</span>, " +
+        "<span class=\"hl-yp\">y<sub>p</sub> = " + fmtNum(t.yp) + "</span>, " +
+        "<span class=\"hl-h\">h = " + t.h + "</span>, " +
+        "<span class=\"hl-v\">v = " + fmtNum(t.v) + "</span>.",
+        "ok"
+      );
+      state.locked = true;
+      checkBtn.disabled = true;
+      if (state.ok >= WIN_AT) {
+        setTimeout(doWin, delay(650));
+      } else {
+        setTimeout(function () { newRound(true); }, delay(900));
+      }
+    } else {
+      state.bad += 1;
+      updateScores();
+      pulseFeedback("bad");
+      showBanner("Probá de nuevo", "bad");
+      setPrompt(
+        "Todavía no. Coincidí exacto: x<sub>p</sub>, y<sub>p</sub>, h y v (enteros). " +
+        "Recordá: tras n pasos, y = y<sub>p</sub> + n²·v.",
+        "bad"
+      );
+    }
+  }
+
+  function onSliderInput() {
+    if (state.won || state.paused) return;
+    syncUI();
+    draw();
+  }
+
+  function togglePause() {
+    if (state.won) return;
+    state.paused = !state.paused;
+    pauseBtn.classList.toggle("pause-on", state.paused);
+    pauseBtn.setAttribute("aria-pressed", state.paused ? "true" : "false");
+    pauseBtn.textContent = state.paused ? "Continuar" : "Pausa";
+    exprPanel.classList.toggle("locked", state.paused || state.locked);
+    checkBtn.disabled = state.paused || state.locked;
+    if (state.paused) {
+      setPrompt("Pausa · tocá <strong>Continuar</strong> para seguir.");
+    } else {
+      setPrompt(
+        "Los <span class=\"hl-p\">7 puntos violetas</span> marcan la parábola objetivo. " +
+        "Ajustá <span class=\"hl-xp\">x<sub>p</sub></span>, <span class=\"hl-yp\">y<sub>p</sub></span>, " +
+        "<span class=\"hl-h\">h</span> y <span class=\"hl-v\">v</span> hasta coincidir, luego <strong>Comprobar</strong>."
+      );
+    }
+  }
+
+  xpSlider.addEventListener("input", onSliderInput);
+  ypSlider.addEventListener("input", onSliderInput);
+  hSlider.addEventListener("input", onSliderInput);
+  vSlider.addEventListener("input", onSliderInput);
+
+  if (slowBtn) {
+    slowBtn.addEventListener("click", function () {
+      var on = speedFactor === 1;
+      speedFactor = on ? 2 : 1;
+      slowBtn.classList.toggle("slow-on", on);
+      slowBtn.setAttribute("aria-pressed", on ? "true" : "false");
+      slowBtn.title = on
+        ? "Modo lento activo (pausas ×2). Tocá para volver a normal."
+        : "Duplica las pausas entre rondas y el feedback";
+    });
+  }
+
+  if (pauseBtn) pauseBtn.addEventListener("click", togglePause);
+
+  checkBtn.addEventListener("click", check);
+  restartBtn.addEventListener("click", function () {
+    if (GK.ensureAudio) GK.ensureAudio();
+    newRound(false);
+  });
+  winRestartBtn.addEventListener("click", function () {
+    if (GK.ensureAudio) GK.ensureAudio();
+    newRound(false);
+  });
+
+  window.addEventListener("resize", function () { draw(); });
+
+  newRound(false);
+})();
+</script>
+</body>
+</html>
