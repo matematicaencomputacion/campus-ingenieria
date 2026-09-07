@@ -109,6 +109,7 @@ input[type="range"]::-moz-range-thumb {
   color: var(--muted); font-family: ui-monospace, Menlo, monospace; padding: 0 1px;
 }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 4px; }
+#chipModelA { color: #f59e0b; border-color: rgba(245,158,11,0.45); }
 .chip {
   font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem; font-weight: 700;
   padding: 4px 8px; border-radius: 999px; background: #121a27;
@@ -514,20 +515,25 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function drawPoint(x, y, label, color) {
     var p = worldToScreen(x, y);
+    var fill = color || PURPLE;
+    var amber = (fill === "#f59e0b" || fill === "#FFBF00");
+    var glow = amber ? "rgba(245,158,11,0.38)" : PURPLE_GLOW;
+    var ring = amber ? "#fde68a" : "#efe7ff";
+    var ink = amber ? "#fde68a" : "#efe7ff";
     ctx.save();
     ctx.beginPath();
     ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
-    ctx.fillStyle = PURPLE_GLOW;
+    ctx.fillStyle = glow;
     ctx.fill();
     ctx.beginPath();
     ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
-    ctx.fillStyle = color || PURPLE;
+    ctx.fillStyle = fill;
     ctx.fill();
-    ctx.strokeStyle = "#efe7ff";
+    ctx.strokeStyle = ring;
     ctx.lineWidth = 2;
     ctx.stroke();
     if (label) {
-      ctx.fillStyle = "#efe7ff";
+      ctx.fillStyle = ink;
       ctx.font = "800 15px Segoe UI, system-ui, sans-serif";
       ctx.textBaseline = "bottom";
       var lx = p.x + 12, ly = p.y - 10;
@@ -567,7 +573,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function drawStudentModel(b, h, v) {
     if (h === 0) {
       // only show intercept point hint while h=0
-      drawPoint(0, b, "A′(0, " + fmtNum(b) + ")", "#c4b5fd");
+      drawPoint(0, b, "A′(0, " + fmtNum(b) + ")", "#f59e0b");
       return;
     }
     var m = v / h;
@@ -618,7 +624,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.fillText("v = " + fmtNum(v), midV.x + 10, midV.y);
     ctx.restore();
 
-    drawPoint(0, b, null, "#c4b5fd");
+    drawPoint(0, b, null, "#f59e0b");
     drawPoint(h, b + v, null, "#c4b5fd");
   }
 
