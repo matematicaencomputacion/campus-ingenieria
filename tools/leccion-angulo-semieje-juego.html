@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 17 · Ángulo desde el semieje X</title>
+<title>Lección 18 · Ángulo desde el semieje X · juego</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -29,7 +29,9 @@ button.btn {
 }
 button.btn.primary { background: var(--mast); color: #0b1018; }
 button.btn.amber { background: var(--amber); color: #0b1018; }
+button.btn.ok { background: var(--ok); color: #0b1018; }
 button.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 button.btn.listening {
   background: var(--amber); color: #0b1018;
   box-shadow: 0 0 0 0 rgba(255,191,0,0.55);
@@ -102,6 +104,8 @@ canvas#c {
 .readout .v.amber { color: var(--amber); }
 .readout .v.teal { color: var(--teal); }
 .readout .v.pink { color: var(--pink); }
+.readout .v.ok { color: var(--ok); }
+.readout .v.bad { color: var(--bad); }
 .hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
 .hint.warn { color: #f5e6a8; }
 a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
@@ -116,6 +120,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .voice-status.live { color: var(--amber); font-weight: 700; }
 .voice-status.ok { color: var(--ok); }
 .voice-status.bad { color: #f5e6a8; }
+.paused-banner {
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  background: rgba(12,17,24,0.55); border-radius: 10px; z-index: 5;
+  font-size: 1.6rem; font-weight: 800; color: var(--amber); letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.paused-banner.on { display: flex; }
 </style>
 </head>
 <body>
@@ -123,13 +134,14 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 17</span> Ángulo desde el semieje X
-        <span class="sub">elegí el ángulo respecto al semisemieje X+ (visual + voz)</span>
+      <h1><span class="lesson-num">Lección 18</span> Ángulo desde el semieje X · juego
+        <span class="sub">eliminá Pac-Mans por ángulo desde el semieje X+</span>
       </h1>
     </div>
     <div class="toolbar">
       <button type="button" class="btn amber" id="speakBtn" title="Decí el ángulo en español">🎙 Hablar ángulo</button>
-      <button type="button" class="btn" id="resetBtn">0°</button>
+      <button type="button" class="btn" id="pauseBtn">Pausa</button>
+      <button type="button" class="btn primary" id="resetBtn">Reiniciar</button>
     </div>
   </header>
 
@@ -137,19 +149,22 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <span class="label">Notables</span>
   </div>
   <p class="voice-status" id="voiceStatus" aria-live="polite"></p>
-  <p class="hint" id="voiceHint">Arrastrá el rayo, tocá el círculo o usá una pastilla. También podés hablar el ángulo (ej. «noventa» o «135»).</p>
+  <p class="hint" id="voiceHint">Decí el ángulo del Pac-Man respecto al semieje X+ para eliminarlo. Crece al cruzar ejes. Arrastrá el rayo, usá pastillas o hablá el ángulo (ej. «noventa» o «135»).</p>
 
   <div class="card">
     <div class="graph-wrap" id="graphWrap">
-      <a class="lesson-nav prev" href="leccion-coseno-amplitud-juego.html" title="Lección 16: Coseno · amplitud · juego" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-      <a class="lesson-nav next" href="leccion-angulo-semieje-juego.html" title="Lección 18: Ángulo desde el semieje X · juego" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-      <canvas id="c" width="1200" height="620" aria-label="Ángulo desde el semieje X positivo"></canvas>
+      <a class="lesson-nav prev" href="leccion-angulo-eje-x.html" title="Lección 17: Ángulo desde el semieje X" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+      <span class="lesson-nav next" aria-disabled="true" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+      <div class="paused-banner" id="pausedBanner">PAUSA</div>
+      <canvas id="c" width="1200" height="620" aria-label="Juego de ángulos desde el semieje X+"></canvas>
     </div>
     <div class="readout" id="readout">
-      <div class="kv"><span class="k">θ</span><span class="v amber" id="degOut">0°</span></div>
+      <div class="kv"><span class="k">θ rayo</span><span class="v amber" id="degOut">0°</span></div>
       <div class="kv"><span class="k">rad</span><span class="v" id="radOut">0</span></div>
-      <div class="kv"><span class="k">sen θ</span><span class="v teal" id="sinOut">0</span></div>
-      <div class="kv"><span class="k">cos θ</span><span class="v pink" id="cosOut">1</span></div>
+      <div class="kv"><span class="k">bajas</span><span class="v ok" id="killsOut">0</span></div>
+      <div class="kv"><span class="k">fallos</span><span class="v bad" id="missOut">0</span></div>
+      <div class="kv"><span class="k">vivos</span><span class="v pink" id="aliveOut">0</span></div>
+      <div class="kv"><span class="k">ω</span><span class="v teal" id="omegaOut">55°/s</span></div>
     </div>
     <div class="locus-strip" id="locusStrip" aria-label="Cuadrante o eje activo">
       <span class="locus" data-locus="q1">I</span>
@@ -169,28 +184,17 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   const PRESETS = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
   const AMBER = "#FFBF00";
   const MAST = "#60a5fa";
-  const TEAL = "#34d399";
-  const PINK = "#f472b6";
+  const PAC_YELLOW = "#FFD54A";
+  const PAC_OUT = "#E6A800";
 
-  const EXACT = {
-    0:   { cos: "1", sin: "0" },
-    30:  { cos: "√3/2", sin: "1/2" },
-    45:  { cos: "√2/2", sin: "√2/2" },
-    60:  { cos: "1/2", sin: "√3/2" },
-    90:  { cos: "0", sin: "1" },
-    120: { cos: "−1/2", sin: "√3/2" },
-    135: { cos: "−√2/2", sin: "√2/2" },
-    150: { cos: "−√3/2", sin: "1/2" },
-    180: { cos: "−1", sin: "0" },
-    210: { cos: "−√3/2", sin: "−1/2" },
-    225: { cos: "−√2/2", sin: "−√2/2" },
-    240: { cos: "−1/2", sin: "−√3/2" },
-    270: { cos: "0", sin: "−1" },
-    300: { cos: "1/2", sin: "−√3/2" },
-    315: { cos: "√2/2", sin: "−√2/2" },
-    330: { cos: "√3/2", sin: "−1/2" },
-    360: { cos: "1", sin: "0" }
-  };
+  const OMEGA_MIN = 45;
+  const OMEGA_MAX = 65;
+  const SPAWN_MS = 2800;
+  const MAX_ALIVE = 5;
+  const BASE_HALF = 10;
+  const GROW_HALF = 2.2;
+  const MAX_SIZE = 6;
+  const AXES = [0, 90, 180, 270];
 
   const WORD_MAP = {
     "cero": 0, "zero": 0,
@@ -217,26 +221,44 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   const pillsRow = document.getElementById("pillsRow");
   const speakBtn = document.getElementById("speakBtn");
   const resetBtn = document.getElementById("resetBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
   const voiceStatus = document.getElementById("voiceStatus");
   const voiceHint = document.getElementById("voiceHint");
+  const pausedBanner = document.getElementById("pausedBanner");
   const degOut = document.getElementById("degOut");
   const radOut = document.getElementById("radOut");
-  const sinOut = document.getElementById("sinOut");
-  const cosOut = document.getElementById("cosOut");
+  const killsOut = document.getElementById("killsOut");
+  const missOut = document.getElementById("missOut");
+  const aliveOut = document.getElementById("aliveOut");
+  const omegaOut = document.getElementById("omegaOut");
 
-  let thetaDeg = 0;
+  let thetaDeg = 45;
   let dragging = false;
   let recognition = null;
   let listening = false;
+  let audioCtx = null;
 
-  // Build pills
+  let pacs = [];
+  let particles = [];
+  let nextId = 1;
+  let kills = 0;
+  let misses = 0;
+  let paused = false;
+  let lastTs = 0;
+  let spawnAcc = 0;
+  let mouthPhase = 0;
+  let hitCooldown = new Set();
+
   PRESETS.forEach((d) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "pill";
     b.dataset.deg = String(d);
     b.textContent = d + "°";
-    b.addEventListener("click", () => setAngle(d, true));
+    b.addEventListener("click", () => {
+      setAngle(d, true);
+      tryHit(false);
+    });
     pillsRow.appendChild(b);
   });
 
@@ -245,6 +267,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     if (x < 0) x += 360;
     if (Object.is(x, -0) || Math.abs(x) < 1e-9) x = 0;
     return x;
+  }
+
+  function angDist(a, b) {
+    let d = Math.abs(normDeg(a) - normDeg(b));
+    if (d > 180) d = 360 - d;
+    return d;
   }
 
   function roundNice(d) {
@@ -277,52 +305,26 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     });
   }
 
-  function fmtNum(n) {
-    const s = (Math.round(n * 1000) / 1000).toString();
-    return s.replace(/^-/, "−");
-  }
-
   function radLabel(deg) {
     const d = normDeg(deg);
     const specials = {
-      0: "0",
-      30: "π/6",
-      45: "π/4",
-      60: "π/3",
-      90: "π/2",
-      120: "2π/3",
-      135: "3π/4",
-      150: "5π/6",
-      180: "π",
-      210: "7π/6",
-      225: "5π/4",
-      240: "4π/3",
-      270: "3π/2",
-      300: "5π/3",
-      315: "7π/4",
-      330: "11π/6",
-      360: "2π"
+      0: "0", 30: "π/6", 45: "π/4", 60: "π/3", 90: "π/2",
+      120: "2π/3", 135: "3π/4", 150: "5π/6", 180: "π",
+      210: "7π/6", 225: "5π/4", 240: "4π/3", 270: "3π/2",
+      300: "5π/3", 315: "7π/4", 330: "11π/6", 360: "2π"
     };
     const k = Math.round(d);
     if (specials[k] != null && Math.abs(d - k) < 0.05) return specials[k];
-    return fmtNum((d * Math.PI) / 180);
+    return (Math.round((d * Math.PI) / 180 * 1000) / 1000).toString().replace(/^-/, "−");
   }
 
-  function trigLabels(deg) {
-    const d = normDeg(deg);
-    const k = Math.round(d);
-    if (EXACT[k] && Math.abs(d - k) < 0.05) return EXACT[k];
-    // nearest special within 0.5°
-    if (EXACT[k] && Math.abs(d - k) < 0.5) return EXACT[k];
-    const a = (d * Math.PI) / 180;
-    return { cos: fmtNum(Math.cos(a)), sin: fmtNum(Math.sin(a)) };
+  function halfWidth(p) {
+    return Math.min(22, BASE_HALF + (p.size - 1) * GROW_HALF);
   }
 
   function setAngle(deg, fromPill) {
-    thetaDeg = roundNice(deg);
-    if (fromPill) thetaDeg = normDeg(Math.round(deg));
+    thetaDeg = fromPill ? normDeg(Math.round(deg)) : roundNice(deg);
     updateUI();
-    draw();
   }
 
   function updateUI() {
@@ -330,9 +332,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     const show = Math.abs(d - Math.round(d)) < 0.05 ? Math.round(d) : Math.round(d * 10) / 10;
     degOut.textContent = show + "°";
     radOut.textContent = radLabel(d);
-    const t = trigLabels(d);
-    sinOut.textContent = t.sin;
-    cosOut.textContent = t.cos;
+    killsOut.textContent = String(kills);
+    missOut.textContent = String(misses);
+    aliveOut.textContent = String(pacs.length);
     syncPills();
     syncLocusStrip(locusKeyForDeg(d));
   }
@@ -344,11 +346,224 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     return { w, h, cx, cy, R };
   }
 
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playExplosion() {
+    const ac = ensureAudio();
+    if (!ac) return;
+    const t0 = ac.currentTime;
+    const bufLen = Math.floor(ac.sampleRate * 0.28);
+    const buffer = ac.createBuffer(1, bufLen, ac.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.pow(1 - i / bufLen, 1.8);
+      data[i] = (Math.random() * 2 - 1) * env * 0.85;
+    }
+    const noise = ac.createBufferSource();
+    noise.buffer = buffer;
+    const filter = ac.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(2200, t0);
+    filter.frequency.exponentialRampToValueAtTime(180, t0 + 0.25);
+    filter.Q.value = 0.7;
+    const gain = ac.createGain();
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.75, t0 + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28);
+    noise.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+    noise.start(t0); noise.stop(t0 + 0.3);
+
+    const boom = ac.createOscillator();
+    const bg = ac.createGain();
+    boom.type = "sine";
+    boom.frequency.setValueAtTime(95, t0);
+    boom.frequency.exponentialRampToValueAtTime(32, t0 + 0.32);
+    bg.gain.setValueAtTime(0.0001, t0);
+    bg.gain.exponentialRampToValueAtTime(0.55, t0 + 0.01);
+    bg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
+    boom.connect(bg); bg.connect(ac.destination);
+    boom.start(t0); boom.stop(t0 + 0.36);
+
+    const click = ac.createOscillator();
+    const cg = ac.createGain();
+    click.type = "square";
+    click.frequency.setValueAtTime(220, t0);
+    click.frequency.exponentialRampToValueAtTime(60, t0 + 0.08);
+    cg.gain.setValueAtTime(0.0001, t0);
+    cg.gain.exponentialRampToValueAtTime(0.22, t0 + 0.005);
+    cg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+    click.connect(cg); cg.connect(ac.destination);
+    click.start(t0); click.stop(t0 + 0.1);
+  }
+
+  function spawnParticles(cx, cy, x, y) {
+    const colors = [PAC_YELLOW, AMBER, "#ff7b7b", "#fff7cc", "#f59e0b", "#fb923c"];
+    for (let i = 0; i < 22; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 1.5 + Math.random() * 5.5;
+      particles.push({
+        x, y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp,
+        life: 28 + ((Math.random() * 22) | 0),
+        r: 2 + Math.random() * 3.5,
+        color: colors[(Math.random() * colors.length) | 0]
+      });
+    }
+  }
+
+  function countAxisCrossings(prev, curr, omega) {
+    let a0 = normDeg(prev);
+    let a1 = normDeg(curr);
+    let n = 0;
+    if (omega >= 0) {
+      if (a1 < a0) a1 += 360;
+      for (const ax of AXES) {
+        for (const t of [ax, ax + 360]) {
+          if (a0 < t && a1 >= t) n++;
+        }
+      }
+    } else {
+      if (a1 > a0) a0 += 360;
+      for (const ax of AXES) {
+        for (const t of [ax, ax + 360]) {
+          if (a1 < t && a0 >= t) n++;
+        }
+      }
+    }
+    return n;
+  }
+
+  function spawnPac(atAngle) {
+    if (pacs.length >= MAX_ALIVE) return;
+    const omega = (OMEGA_MIN + Math.random() * (OMEGA_MAX - OMEGA_MIN)) * (Math.random() < 0.5 ? 1 : -1);
+    const ang = atAngle != null ? normDeg(atAngle) : Math.random() * 360;
+    pacs.push({
+      id: nextId++,
+      angle: ang,
+      prevAngle: ang,
+      omega: omega,
+      size: 1,
+      born: performance.now()
+    });
+    omegaOut.textContent = Math.round(Math.abs(omega)) + "°/s";
+    updateUI();
+  }
+
+  function killPac(p) {
+    const { cx, cy, R } = layout();
+    const a = (normDeg(p.angle) * Math.PI) / 180;
+    const px = cx + R * Math.cos(a);
+    const py = cy - R * Math.sin(a);
+    spawnParticles(cx, cy, px, py);
+    playExplosion();
+    pacs = pacs.filter((x) => x.id !== p.id);
+    hitCooldown.delete(p.id);
+    kills++;
+    updateUI();
+  }
+
+  function tryHit(fromVoiceOrPill) {
+    ensureAudio();
+    const ray = normDeg(thetaDeg);
+    let hitAny = false;
+    const snapshot = pacs.slice();
+    for (const p of snapshot) {
+      if (!pacs.find((x) => x.id === p.id)) continue;
+      if (angDist(ray, p.angle) <= halfWidth(p)) {
+        killPac(p);
+        hitAny = true;
+      }
+    }
+    if (fromVoiceOrPill && !hitAny) {
+      misses++;
+      updateUI();
+      voiceStatus.className = "voice-status bad";
+      voiceStatus.textContent = "Fallaste: ningún Pac-Man en " + Math.round(ray) + "°.";
+    }
+    return hitAny;
+  }
+
+  function continuousHit() {
+    const ray = normDeg(thetaDeg);
+    const snapshot = pacs.slice();
+    for (const p of snapshot) {
+      if (!pacs.find((x) => x.id === p.id)) continue;
+      if (hitCooldown.has(p.id)) continue;
+      if (angDist(ray, p.angle) <= halfWidth(p)) {
+        hitCooldown.add(p.id);
+        killPac(p);
+      }
+    }
+  }
+
+  function drawPacMan(cx, cy, R, p, mouth) {
+    const ang = (normDeg(p.angle) * Math.PI) / 180;
+    const px = cx + R * Math.cos(ang);
+    const py = cy - R * Math.sin(ang);
+    const scale = 0.72 + (p.size - 1) * 0.14;
+    const rad = Math.max(14, R * 0.085 * scale);
+    // face tangent in travel direction
+    const face = p.omega >= 0 ? ang + Math.PI / 2 : ang - Math.PI / 2;
+    // canvas angle for arc: 0=+X, CW+ ; our math ang is CCW from +X
+    const faceCanvas = -face;
+    const open = 0.18 + mouth * 0.42;
+    const start = faceCanvas + open;
+    const end = faceCanvas + Math.PI * 2 - open;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.arc(px, py, rad, start, end, false);
+    ctx.closePath();
+    ctx.fillStyle = PAC_YELLOW;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = PAC_OUT;
+    ctx.stroke();
+
+    // eye
+    const eyeDist = rad * 0.42;
+    const eyeAng = face + (p.omega >= 0 ? -0.55 : 0.55);
+    const ex = px + eyeDist * Math.cos(eyeAng);
+    const ey = py - eyeDist * Math.sin(eyeAng);
+    ctx.beginPath();
+    ctx.arc(ex, ey, Math.max(2.2, rad * 0.14), 0, Math.PI * 2);
+    ctx.fillStyle = "#0b1018";
+    ctx.fill();
+
+    // angular hit arc hint on circle
+    const hw = halfWidth(p) * Math.PI / 180;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, -ang - hw, -ang + hw, false);
+    ctx.strokeStyle = "rgba(255,213,74,0.35)";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // size badge
+    if (p.size > 1) {
+      ctx.font = "800 11px Segoe UI, system-ui, sans-serif";
+      ctx.fillStyle = "#0b1018";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("×" + p.size, px, py + rad + 11);
+      ctx.fillStyle = AMBER;
+      ctx.fillText("×" + p.size, px, py + rad + 11);
+    }
+    ctx.restore();
+  }
+
   function draw() {
     const { w, h, cx, cy, R } = layout();
     ctx.clearRect(0, 0, w, h);
 
-    // subtle grid
     ctx.save();
     ctx.strokeStyle = "#1e293b";
     ctx.lineWidth = 1;
@@ -359,7 +574,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     for (let y = cy - step; y > 0; y -= step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
     ctx.restore();
 
-    // axes
     const axPad = 36;
     ctx.save();
     ctx.strokeStyle = "#64748b";
@@ -369,7 +583,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.moveTo(cx, axPad); ctx.lineTo(cx, h - axPad);
     ctx.stroke();
 
-    // strong positive X ray
     ctx.strokeStyle = AMBER;
     ctx.lineWidth = 3.5;
     ctx.lineCap = "round";
@@ -377,7 +590,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + R + 48, cy);
     ctx.stroke();
-    // arrowhead +X
     const tipX = cx + R + 48, tipY = cy;
     ctx.fillStyle = AMBER;
     ctx.beginPath();
@@ -387,9 +599,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.closePath();
     ctx.fill();
 
-    // Y arrow
-    ctx.strokeStyle = "#64748b";
-    ctx.lineWidth = 1.5;
     ctx.fillStyle = "#94a3b8";
     ctx.beginPath();
     ctx.moveTo(cx, axPad - 4);
@@ -398,32 +607,27 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.closePath();
     ctx.fill();
 
-    // labels
     ctx.font = "700 15px Segoe UI, system-ui, sans-serif";
     ctx.fillStyle = AMBER;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     ctx.fillText("semieje X+", tipX - 70, tipY - 12);
     ctx.fillStyle = "#94a3b8";
-    ctx.textAlign = "left";
     ctx.fillText("X", w - axPad - 8, cy + 22);
     ctx.textAlign = "right";
     ctx.fillText("Y", cx - 12, axPad + 4);
     ctx.restore();
 
-    // unit circle
     ctx.save();
     ctx.strokeStyle = MAST;
     ctx.lineWidth = 2.2;
     ctx.beginPath();
     ctx.arc(cx, cy, R, 0, Math.PI * 2);
     ctx.stroke();
-    // faint fill
     ctx.fillStyle = "rgba(96,165,250,0.04)";
     ctx.fill();
     ctx.restore();
 
-    // quadrant faint labels
     ctx.save();
     ctx.font = "700 18px Segoe UI, system-ui, sans-serif";
     ctx.fillStyle = "rgba(139,155,180,0.35)";
@@ -436,26 +640,21 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.fillText("IV", cx + qOff, cy + qOff);
     ctx.restore();
 
+    // player wedge arc
     const a = (normDeg(thetaDeg) * Math.PI) / 180;
-    // canvas y is down, so negate sin for screen
     const px = cx + R * Math.cos(a);
     const py = cy - R * Math.sin(a);
-
-    // arc from +X to ray (counterclockwise). Canvas angles: 0=+X, CW positive → use -a, anticlockwise.
-    const arcR = R * 0.28;
+    const arcR = R * 0.26;
     const td = normDeg(thetaDeg);
     ctx.save();
     if (td > 0.05) {
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(cx + arcR, cy);
-      if (td >= 359.5) {
-        ctx.arc(cx, cy, arcR, 0, Math.PI * 2, true);
-      } else {
-        ctx.arc(cx, cy, arcR, 0, -a, true);
-      }
+      if (td >= 359.5) ctx.arc(cx, cy, arcR, 0, Math.PI * 2, true);
+      else ctx.arc(cx, cy, arcR, 0, -a, true);
       ctx.closePath();
-      ctx.fillStyle = "rgba(255,191,0,0.28)";
+      ctx.fillStyle = "rgba(255,191,0,0.22)";
       ctx.fill();
       ctx.strokeStyle = AMBER;
       ctx.lineWidth = 2;
@@ -466,25 +665,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
     ctx.restore();
 
-    // θ label near arc midpoint
-    ctx.save();
-    const mid = a / 2;
-    const labelR = arcR + 28;
-    const lx = cx + labelR * Math.cos(mid);
-    const ly = cy - labelR * Math.sin(mid);
-    const show = Math.abs(normDeg(thetaDeg) - Math.round(normDeg(thetaDeg))) < 0.05
-      ? Math.round(normDeg(thetaDeg))
-      : Math.round(normDeg(thetaDeg) * 10) / 10;
-    ctx.font = "800 28px Segoe UI, system-ui, sans-serif";
-    ctx.fillStyle = AMBER;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.shadowColor = "rgba(0,0,0,0.55)";
-    ctx.shadowBlur = 8;
-    ctx.fillText("θ = " + show + "°", lx, ly);
-    ctx.restore();
-
-    // movable ray
+    // player ray
     ctx.save();
     ctx.strokeStyle = "#e9eef7";
     ctx.lineWidth = 3;
@@ -493,7 +674,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.moveTo(cx, cy);
     ctx.lineTo(px, py);
     ctx.stroke();
-    // extend a bit past circle
     const ex = cx + (R + 22) * Math.cos(a);
     const ey = cy - (R + 22) * Math.sin(a);
     ctx.strokeStyle = "rgba(233,238,247,0.55)";
@@ -502,7 +682,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.moveTo(px, py);
     ctx.lineTo(ex, ey);
     ctx.stroke();
-    // arrow on ray
     const ang = Math.atan2(ey - cy, ex - cx);
     ctx.fillStyle = "#e9eef7";
     ctx.beginPath();
@@ -511,46 +690,91 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.lineTo(ex - 12 * Math.cos(ang) - 7 * Math.sin(ang), ey - 12 * Math.sin(ang) + 7 * Math.cos(ang));
     ctx.closePath();
     ctx.fill();
-    ctx.restore();
-
-    // point on circle
-    ctx.save();
     ctx.beginPath();
-    ctx.arc(px, py, 8, 0, Math.PI * 2);
+    ctx.arc(px, py, 7, 0, Math.PI * 2);
     ctx.fillStyle = AMBER;
     ctx.fill();
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 2;
     ctx.strokeStyle = "#0b1018";
     ctx.stroke();
-    ctx.restore();
-
-    // origin
-    ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, 5, 0, Math.PI * 2);
     ctx.fillStyle = "#e9eef7";
     ctx.fill();
     ctx.restore();
 
-    // projections faint
+    // θ label
     ctx.save();
-    ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = "rgba(244,114,182,0.55)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(px, py); ctx.lineTo(px, cy);
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(52,211,153,0.55)";
-    ctx.beginPath();
-    ctx.moveTo(px, py); ctx.lineTo(cx, py);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    // ticks on axes
-    ctx.fillStyle = PINK;
-    ctx.beginPath(); ctx.arc(px, cy, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = TEAL;
-    ctx.beginPath(); ctx.arc(cx, py, 4, 0, Math.PI * 2); ctx.fill();
+    const mid = a / 2;
+    const labelR = arcR + 26;
+    const lx = cx + labelR * Math.cos(mid);
+    const ly = cy - labelR * Math.sin(mid);
+    const show = Math.abs(td - Math.round(td)) < 0.05 ? Math.round(td) : Math.round(td * 10) / 10;
+    ctx.font = "800 24px Segoe UI, system-ui, sans-serif";
+    ctx.fillStyle = AMBER;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 8;
+    ctx.fillText("θ = " + show + "°", lx, ly);
     ctx.restore();
+
+    const mouth = 0.5 + 0.5 * Math.sin(mouthPhase);
+    for (const p of pacs) drawPacMan(cx, cy, R, p, mouth);
+
+    // particles
+    for (const part of particles) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, part.life / 35);
+      ctx.fillStyle = part.color;
+      ctx.beginPath();
+      ctx.arc(part.x, part.y, part.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function tick(ts) {
+    if (!lastTs) lastTs = ts;
+    const dt = Math.min(0.05, (ts - lastTs) / 1000);
+    lastTs = ts;
+
+    if (!paused) {
+      mouthPhase += dt * 8;
+      spawnAcc += dt * 1000;
+      if (spawnAcc >= SPAWN_MS) {
+        spawnAcc = 0;
+        spawnPac();
+      }
+
+      for (const p of pacs) {
+        p.prevAngle = p.angle;
+        p.angle = normDeg(p.angle + p.omega * dt);
+        const crosses = countAxisCrossings(p.prevAngle, p.angle, p.omega);
+        if (crosses > 0 && p.size < MAX_SIZE) {
+          p.size = Math.min(MAX_SIZE, p.size + crosses);
+        }
+      }
+
+      for (const part of particles) {
+        part.x += part.vx;
+        part.y += part.vy;
+        part.vy += 0.12;
+        part.life--;
+      }
+      particles = particles.filter((p) => p.life > 0);
+
+      continuousHit();
+      // clear cooldown for pacs that moved away
+      for (const id of [...hitCooldown]) {
+        const p = pacs.find((x) => x.id === id);
+        if (!p || angDist(thetaDeg, p.angle) > halfWidth(p) + 2) hitCooldown.delete(id);
+      }
+      aliveOut.textContent = String(pacs.length);
+    }
+
+    draw();
+    requestAnimationFrame(tick);
   }
 
   function canvasToAngle(clientX, clientY) {
@@ -561,7 +785,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     const y = (clientY - rect.top) * sy;
     const { cx, cy } = layout();
     const dx = x - cx;
-    const dy = cy - y; // flip Y
+    const dy = cy - y;
     let deg = (Math.atan2(dy, dx) * 180) / Math.PI;
     if (deg < 0) deg += 360;
     return deg;
@@ -569,6 +793,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function onPointerDown(e) {
     e.preventDefault();
+    ensureAudio();
     canvas.setPointerCapture(e.pointerId);
     dragging = true;
     setAngle(canvasToAngle(e.clientX, e.clientY), false);
@@ -587,9 +812,31 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   canvas.addEventListener("pointerup", onPointerUp);
   canvas.addEventListener("pointercancel", onPointerUp);
 
-  resetBtn.addEventListener("click", () => setAngle(0, true));
+  function resetGame() {
+    ensureAudio();
+    pacs = [];
+    particles = [];
+    hitCooldown.clear();
+    kills = 0;
+    misses = 0;
+    spawnAcc = 0;
+    nextId = 1;
+    paused = false;
+    pauseBtn.textContent = "Pausa";
+    pausedBanner.classList.remove("on");
+    setAngle(45, true);
+    spawnPac(30);
+    spawnPac(200);
+    updateUI();
+  }
 
-  // —— Voice ——
+  resetBtn.addEventListener("click", resetGame);
+  pauseBtn.addEventListener("click", () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? "Continuar" : "Pausa";
+    pausedBanner.classList.toggle("on", paused);
+  });
+
   function normalizeSpeech(s) {
     return (s || "")
       .toLowerCase()
@@ -604,18 +851,15 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function parseAngleSpeech(raw) {
     const t = normalizeSpeech(raw);
     if (!t) return null;
-    // direct word map (longest first)
     const keys = Object.keys(WORD_MAP).sort((a, b) => b.length - a.length);
     for (const k of keys) {
       if (t === k || t.includes(k)) return WORD_MAP[k];
     }
-    // digits
     const m = t.match(/(\d{1,3})/);
     if (m) {
       const n = Number(m[1]);
       if (n >= 0 && n <= 360) return n;
     }
-    // compound: "ciento" + number words already covered; try "cuarentaicinco" style
     const compact = t.replace(/\s+/g, "");
     for (const k of keys) {
       if (compact.includes(k.replace(/\s+/g, ""))) return WORD_MAP[k];
@@ -628,14 +872,14 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     speakBtn.classList.toggle("listening", on);
     speakBtn.textContent = on ? "● Escuchando…" : "🎙 Hablar ángulo";
     voiceStatus.className = "voice-status" + (on ? " live" : "");
-    voiceStatus.textContent = on ? "Decí el ángulo… (ej. treinta, noventa, 180)" : "";
+    voiceStatus.textContent = on ? "Decí el ángulo del Pac-Man… (ej. treinta, noventa, 180)" : "";
   }
 
   function initSpeech() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       voiceHint.classList.add("warn");
-      voiceHint.textContent = "Tu navegador no soporta reconocimiento de voz. Usá las pastillas o arrastrá el rayo.";
+      voiceHint.textContent = "Tu navegador no soporta reconocimiento de voz. Usá las pastillas o arrastrá el rayo. Decí el ángulo del Pac-Man respecto al semieje X+ para eliminarlo. Crece al cruzar ejes.";
       speakBtn.disabled = true;
       speakBtn.title = "Voz no disponible";
       return null;
@@ -671,8 +915,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       }
       if (best != null) {
         setAngle(best, true);
-        voiceStatus.className = "voice-status ok";
-        voiceStatus.textContent = "Escuché «" + heard.trim() + "» → " + Math.round(normDeg(best)) + "°";
+        const hit = tryHit(true);
+        if (hit) {
+          voiceStatus.className = "voice-status ok";
+          voiceStatus.textContent = "¡Boom! «" + heard.trim() + "» → " + Math.round(normDeg(best)) + "°";
+        }
       } else {
         voiceStatus.className = "voice-status bad";
         voiceStatus.textContent = "No reconocí el ángulo en «" + (heard || "?").trim() + "». Probá: treinta, noventa, 180…";
@@ -685,6 +932,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   speakBtn.addEventListener("click", () => {
     if (!recognition) return;
+    ensureAudio();
     if (listening) {
       try { recognition.stop(); } catch (_) {}
       return;
@@ -693,7 +941,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       recognition.lang = "es-AR";
       recognition.start();
     } catch (err) {
-      // retry with es-ES
       try {
         recognition.lang = "es-ES";
         recognition.start();
@@ -704,7 +951,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
   });
 
-  setAngle(45, true);
+  resetGame();
+  requestAnimationFrame(tick);
 })();
 </script>
 </body>
