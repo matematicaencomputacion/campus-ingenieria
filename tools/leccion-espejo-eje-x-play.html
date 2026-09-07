@@ -318,7 +318,7 @@ h1 .lesson-num { color: #38bdf8; }
 
   var XMIN=-8,XMAX=8,YMIN=-8,YMAX=8;
   var PAD={l:48,r:28,t:28,b:48}, CELL_PX=34;
-  var state = { playing:false, loop:0, speedFactor:1, timers:[], fam:null, reflected:0, showMirrorCurve:false, schedule:[], schedIdx:0 };
+  var state = { playing:false, loop:0, speedFactor:1, timers:[], fam:null, reflected:0, showMirrorCurve:false, schedule:[], schedIdx:0, spin:null, raf:0 };
 
   function delay(ms){ return ms * (state.speedFactor||1); }
   function clearTimers(){ state.timers.forEach(function(id){ clearTimeout(id); }); state.timers=[]; }
@@ -514,15 +514,41 @@ h1 .lesson-num { color: #38bdf8; }
     ctx.lineTo(b.x-ux*head+uy*head*0.45, b.y-uy*head-ux*head*0.45);
     ctx.closePath(); ctx.fill(); ctx.restore();
   }
-  function drawMirrorSegment(pt){
-    var a=worldToScreen(pt.x,pt.y), b=worldToScreen(pt.x,-pt.y), mid=worldToScreen(pt.x,0);
+  /** Tip after rotating θ around foot (x,0): θ=0 original, θ=π mirror. */
+  function spinTip(pt, theta) {
+    var y = pt.y;
+    return { x: pt.x - y * Math.sin(theta), y: y * Math.cos(theta) };
+  }
+  function drawPivotFoot(x) {
+    var mid = worldToScreen(x, 0);
     ctx.save();
-    ctx.strokeStyle="rgba(255,191,0,0.55)"; ctx.lineWidth=1.8; ctx.setLineDash([5,5]);
-    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.beginPath(); ctx.arc(mid.x,mid.y,4,0,Math.PI*2); ctx.fillStyle=AXIS_GLOW; ctx.fill();
+    ctx.beginPath(); ctx.arc(mid.x, mid.y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = AXIS_GLOW; ctx.fill();
+    ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 1.5; ctx.stroke();
     ctx.restore();
-    drawArrow(pt.x,pt.y,pt.x,-pt.y,MIR);
+  }
+  function drawSpinSegment(pt, theta) {
+    var tip = spinTip(pt, theta);
+    var a = worldToScreen(pt.x, 0), b = worldToScreen(tip.x, tip.y);
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,191,0,0.9)"; ctx.lineWidth = 3; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = ORIG; ctx.fill();
+    ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+    drawPivotFoot(pt.x);
+  }
+  function drawDoneMirror(pt) {
+    var q = mirrorPt(pt);
+    var a = worldToScreen(pt.x, pt.y), b = worldToScreen(q.x, q.y);
+    ctx.save();
+    ctx.strokeStyle = "rgba(56,189,248,0.35)"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+    drawPivotFoot(pt.x);
+    drawPoint(q.x, q.y, fmtPt(q), MIR, MIR_GLOW);
   }
   function draw(){
     drawGrid();
@@ -532,14 +558,26 @@ h1 .lesson-num { color: #38bdf8; }
     for(var i=0;i<pts.length;i++){
       drawPoint(pts[i].x,pts[i].y,fmtPt(pts[i]),ORIG,AMBER_GLOW);
       if(i < state.reflected){
-        drawMirrorSegment(pts[i]);
-        var q=mirrorPt(pts[i]);
-        drawPoint(q.x,q.y,fmtPt(q),MIR,MIR_GLOW);
+        drawDoneMirror(pts[i]);
+      }
+    }
+    if (state.spin && state.spin.pt) {
+      var sp = state.spin;
+      if (sp.phase === "drop") {
+        var along = sp.t;
+        var yAlong = sp.pt.y * (1 - along);
+        var c = worldToScreen(sp.pt.x, sp.pt.y), d = worldToScreen(sp.pt.x, yAlong);
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,191,0,0.95)"; ctx.lineWidth = 3; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+        ctx.restore();
+        if (along > 0.92) drawPivotFoot(sp.pt.x);
+      } else if (sp.phase === "spin") {
+        drawSpinSegment(sp.pt, sp.theta);
       }
     }
     if(state.showMirrorCurve) drawCurveFam(state.fam,true,0.95,CURVE_MIR);
   }
-
 
   function renderMirrorTable(nDone){
     nDone = nDone || 0;
@@ -565,7 +603,7 @@ h1 .lesson-num { color: #38bdf8; }
   function prepFamily(){
     var kind=nextKind();
     state.fam=makeFamily(kind);
-    state.reflected=0; state.showMirrorCurve=false;
+    state.reflected=0; state.showMirrorCurve=false; state.spin=null;
     var all=(state.fam.points||[]).slice();
     all.forEach(function(p){ all.push(mirrorPt(p)); });
     clampWorldPts(all,1.5);
@@ -578,23 +616,56 @@ h1 .lesson-num { color: #38bdf8; }
     setCaption("Bucle <strong>"+state.loop+"</strong> · <span class=\"hl\">"+familyLabel(state.fam.kind)+"</span> · curva original y puntos enteros");
     draw();
   }
+  function easeInOut(u){ return u<0.5 ? 2*u*u : 1 - Math.pow(-2*u+2,2)/2; }
+  function animateSpinReflect(pt, done) {
+    if (!state.playing) return;
+    state.spin = { pt: pt, phase: "drop", t: 0, theta: 0 };
+    setCaption('Segmento vertical hasta el <span class="hl-axis">eje X</span> · pivote en el pie');
+    setWork(fmtPt(pt)+' → pie (<span class="hl-axis">'+fmtNum(pt.x)+', 0</span>)');
+    var dropMs = 550 * state.speedFactor;
+    var t0 = performance.now();
+    function dropTick(now) {
+      if (!state.playing || !state.spin) return;
+      var u = Math.min(1, (now - t0) / dropMs);
+      state.spin.t = easeInOut(u);
+      draw();
+      if (u < 1) { state.raf = requestAnimationFrame(dropTick); return; }
+      state.spin.phase = "spin"; state.spin.theta = 0;
+      bip();
+      setCaption('Giro <strong>180°</strong> con pivote en el <span class="hl-axis">eje X</span>');
+      var spinMs = 1100 * state.speedFactor;
+      var t1 = performance.now();
+      function spinTick(now2) {
+        if (!state.playing || !state.spin) return;
+        var u2 = Math.min(1, (now2 - t1) / spinMs);
+        state.spin.theta = Math.PI * easeInOut(u2);
+        draw();
+        if (u2 < 1) { state.raf = requestAnimationFrame(spinTick); return; }
+        state.spin = null;
+        state.reflected++;
+        renderMirrorTable(state.reflected);
+        bip();
+        setWork(fmtPt(pt)+' → <span class="hl-mir">'+fmtPt(mirrorPt(pt))+'</span> · ¡reflejado!');
+        setCaption('Punto espejo · <span class="hl-orig">(x,y)</span> → <span class="hl-mir">(x,−y)</span>');
+        draw();
+        later(700, function () { if (done) done(); });
+      }
+      state.raf = requestAnimationFrame(spinTick);
+    }
+    state.raf = requestAnimationFrame(dropTick);
+  }
   function reflectNext(){
     if(!state.playing) return;
     var n=(state.fam.points||[]).length;
     if(state.reflected >= n){
-      state.showMirrorCurve=true; draw(); bip();
+      state.showMirrorCurve=true; state.spin=null; draw(); bip();
       setWork('<span class="hl-mir">y = −f(x)</span> · espejo completo');
       setCaption('<span class="hl-axis">arriba del eje X ↔ abajo</span> · <span class="hl-orig">(x,y)</span> → <span class="hl-mir">(x,−y)</span>');
       later(5000, function(){ if(state.playing) runLoop(); });
       return;
     }
     var p=state.fam.points[state.reflected];
-    state.reflected++;
-    renderMirrorTable(state.reflected);
-    setWork(fmtPt(p)+' → <span class="hl-mir">'+fmtPt(mirrorPt(p))+'</span>');
-    setCaption("Reflejo <strong>"+state.reflected+"/"+n+"</strong> · segmento vertical por el <span class=\"hl-axis\">eje X</span>");
-    bip(); draw();
-    later(900, reflectNext);
+    animateSpinReflect(p, reflectNext);
   }
   function runLoop(){
     if(!state.playing) return;
@@ -612,7 +683,7 @@ h1 .lesson-num { color: #38bdf8; }
     runLoop();
   }
   function stopPlay(){
-    state.playing=false; clearTimers();
+    state.playing=false; state.spin=null; if(state.raf){cancelAnimationFrame(state.raf);state.raf=0;} clearTimers();
     playBtn.disabled=false; stopBtn.disabled=true;
     setCaption("Detenido · ▶ Play para continuar la serie de familias.");
   }
