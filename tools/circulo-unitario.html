@@ -81,6 +81,17 @@
     a.back { color: var(--accent); font-size: 0.82rem; text-decoration: none; }
     .score { font-size: 0.8rem; color: var(--muted); }
     .score strong { color: var(--ink); }
+    .score.ok, .score.bad {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 6px 10px; border-radius: 999px;
+      border: 1px solid #2a3548; background: #121a27;
+      font-size: 0.8rem; font-weight: 650;
+    }
+    .score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+    .score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+    .score.ok strong, .score.bad strong {
+      color: inherit; font-family: ui-monospace, Menlo, monospace;
+    }
     .hidden { display: none !important; }
     .legend table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
     .legend th, .legend td {
@@ -356,6 +367,10 @@
         <div id="angleScreen1" class="hidden">
           <h2>Evaluar · Colocar θ</h2>
           <p class="hint" style="margin-bottom:10px;">Colocá el punto en la circunferencia para el ángulo pedido. Snap cada 15°. Se verifica al soltar.</p>
+          <div class="score" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;">
+            <span class="score ok" id="anglePlaceScoreOk">Aciertos <strong>0</strong></span>
+            <span class="score bad" id="anglePlaceScoreBad">Errores <strong>0</strong></span>
+          </div>
           <div class="field">
             <label>Ángulo desafío θ</label>
             <div class="theta" id="anglePlaceChallenge">—</div>
@@ -365,7 +380,7 @@
             <div class="locked" id="anglePlaceUser">arrastrá el marcador</div>
           </div>
           <div class="toolbar">
-            <button class="btn primary" id="anglePlaceOtroBtn">Otro ángulo</button>
+            <button class="btn primary" id="anglePlaceOtroBtn">Pausar</button>
             <button class="btn" id="anglePlaceResetBtn">Reset</button>
           </div>
         </div>
@@ -617,6 +632,8 @@
   const anglePlaceUser = document.getElementById("anglePlaceUser");
   const anglePlaceOtroBtn = document.getElementById("anglePlaceOtroBtn");
   const anglePlaceResetBtn = document.getElementById("anglePlaceResetBtn");
+  const anglePlaceScoreOk = document.getElementById("anglePlaceScoreOk");
+  const anglePlaceScoreBad = document.getElementById("anglePlaceScoreBad");
   const angleNameChips = document.getElementById("angleNameChips");
   const angleNameReveal = document.getElementById("angleNameReveal");
   const angleNameVerifyBtn = document.getElementById("angleNameVerifyBtn");
@@ -745,6 +762,12 @@
   let anglePlaceActive = false; // screen1: marker shown after first drag
   let angleNamePick = null; // screen2 chip selection
   let anglePlaceCorrect = false;
+  const ANGLE_PLACE_WIN = 20;
+  let anglePlaceOk = 0;
+  let anglePlaceBad = 0;
+  let anglePlacePaused = false;
+  let anglePlaceWon = false;
+  let anglePlaceAutoTimer = null;
   let angleQuadrantPick = null; // screens 3–4: 1..4
   let angleQuadrantCorrect = false;
   let angleHighlightQ = null; // green wedge after verify
@@ -1013,12 +1036,68 @@
       syncAngleScreen();
       return;
     }
+    clearAnglePlaceAuto();
     clearAngleEval();
     angleScreen = n;
     angleChallengeDeg = null;
     if (mode === "drawAngle") syncAngleScreen();
   }
+  function clearAnglePlaceAuto() {
+    if (anglePlaceAutoTimer) {
+      clearTimeout(anglePlaceAutoTimer);
+      anglePlaceAutoTimer = null;
+    }
+  }
+  function syncAnglePlaceScores() {
+    const GK = window.CampusGameKit;
+    if (GK && GK.scoreChips) {
+      GK.scoreChips(
+        { ok: anglePlaceScoreOk, bad: anglePlaceScoreBad },
+        { ok: anglePlaceOk, bad: anglePlaceBad }
+      );
+    } else {
+      if (anglePlaceScoreOk) anglePlaceScoreOk.innerHTML = "Aciertos <strong>" + anglePlaceOk + "</strong>";
+      if (anglePlaceScoreBad) anglePlaceScoreBad.innerHTML = "Errores <strong>" + anglePlaceBad + "</strong>";
+    }
+  }
+  function syncAnglePlacePauseBtn() {
+    if (!anglePlaceOtroBtn) return;
+    anglePlaceOtroBtn.textContent = anglePlacePaused ? "Continuar" : "Pausar";
+  }
+  function resetAnglePlaceScoreState() {
+    clearAnglePlaceAuto();
+    anglePlaceOk = 0;
+    anglePlaceBad = 0;
+    anglePlacePaused = false;
+    anglePlaceWon = false;
+    syncAnglePlaceScores();
+    syncAnglePlacePauseBtn();
+  }
+  function toggleAnglePlacePause() {
+    if (anglePlaceWon) return;
+    anglePlacePaused = !anglePlacePaused;
+    syncAnglePlacePauseBtn();
+    if (anglePlacePaused) {
+      clearAnglePlaceAuto();
+      setNarration("Pausa · tocá <strong>Continuar</strong> para seguir.");
+    } else if (angleEvalLocked) {
+      newAnglePlaceChallenge(true);
+    } else if (angleChallengeDeg != null) {
+      setNarration("Colocá el ángulo <strong>" + angleChallengeDeg + "°</strong> sobre la circunferencia y soltá.");
+    }
+    syncCanvasCursor();
+  }
+  function scheduleAnglePlaceNext() {
+    clearAnglePlaceAuto();
+    if (anglePlacePaused || anglePlaceWon) return;
+    anglePlaceAutoTimer = setTimeout(function () {
+      anglePlaceAutoTimer = null;
+      if (anglePlacePaused || anglePlaceWon || mode !== "drawAngle" || angleScreen !== 1) return;
+      newAnglePlaceChallenge(true);
+    }, 1100);
+  }
   function newAnglePlaceChallenge(announce) {
+    clearAnglePlaceAuto();
     clearAngleEval();
     angleChallengeDeg = randomNotable(angleChallengeDeg);
     anglePlaceChallenge.textContent = angleChallengeDeg + "°";
@@ -1029,6 +1108,7 @@
     } else {
       setNarration("Colocá el ángulo <strong>" + angleChallengeDeg + "°</strong> sobre la circunferencia y soltá.");
     }
+    syncCanvasCursor();
     draw();
   }
   function newAngleNameChallenge(announce) {
@@ -1072,6 +1152,7 @@
   }
   function checkAnglePlaceOnRelease() {
     if (angleScreen !== 1 || angleEvalLocked || !anglePlaceActive) return;
+    if (anglePlacePaused || anglePlaceWon) return;
     const userDeg = nearestAngle15(drawAngleDeg);
     drawAngleDeg = userDeg;
     drawAngleSnapped = true;
@@ -1080,19 +1161,32 @@
     if (userDeg === angleChallengeDeg) {
       anglePlaceCorrect = true;
       clearUserGuess();
-      setNarration(
-        "✓ Correcto: colocaste <strong>" + userDeg + "°</strong>. " + pairLabel(userDeg),
-        "ok"
-      );
+      anglePlaceOk++;
+      syncAnglePlaceScores();
+      if (anglePlaceOk >= ANGLE_PLACE_WIN) {
+        anglePlaceWon = true;
+        clearAnglePlaceAuto();
+        setNarration("¡Ganaste! <strong>20 aciertos</strong>", "ok");
+      } else {
+        setNarration(
+          "✓ Correcto: colocaste <strong>" + userDeg + "°</strong>. " + pairLabel(userDeg),
+          "ok"
+        );
+        scheduleAnglePlaceNext();
+      }
     } else {
       anglePlaceCorrect = false;
       const lab = labelsForDeg(userDeg);
       startWrongBlink(lab.xLab, lab.yLab, lab.x, lab.y);
+      anglePlaceBad++;
+      syncAnglePlaceScores();
       setNarration(
         "✗ Era <strong>" + angleChallengeDeg + "°</strong>. Tu colocación <span style='color:#FFBF00'>" + userDeg + "°</span> parpadea en ámbar.",
         "bad"
       );
+      scheduleAnglePlaceNext();
     }
+    syncCanvasCursor();
     draw();
   }
   function verifyAngleName() {
@@ -1154,6 +1248,8 @@
     verifyQuadrantPick(angleQuadrantPick);
   }
   function resetDrawAngle() {
+    if (angleScreen === 1) resetAnglePlaceScoreState();
+    else clearAnglePlaceAuto();
     clearAngleEval();
     if (angleScreen === 0) {
       updateDrawAnglePanel();
@@ -1837,7 +1933,7 @@
     }
     if (mode === "drawAngle") {
       if (angleScreen === 0) isDraw = true;
-      else if (angleScreen === 1 && !angleEvalLocked) isDraw = true;
+      else if (angleScreen === 1 && !angleEvalLocked && !anglePlacePaused && !anglePlaceWon) isDraw = true;
       else isDraw = false;
     }
     canvas.classList.toggle("draw-mode", isDraw);
@@ -4036,7 +4132,7 @@
           if (q >= 1 && q <= 4) verifyQuadrantPick(q);
           return;
         }
-        if (angleScreen === 1 && angleEvalLocked) return;
+        if (angleScreen === 1 && (angleEvalLocked || anglePlacePaused || anglePlaceWon)) return;
       }
       if (mode === "drawCoord") {
         if (coordScreen === 3 || coordScreen === 4) return; // chips only
@@ -4137,7 +4233,7 @@
     if (mode !== "drawAngle") return;
     setAngleScreen(angleScreen + 1);
   });
-  anglePlaceOtroBtn.addEventListener("click", () => newAnglePlaceChallenge(true));
+  anglePlaceOtroBtn.addEventListener("click", () => toggleAnglePlacePause());
   anglePlaceResetBtn.addEventListener("click", resetDrawAngle);
   angleNameVerifyBtn.addEventListener("click", verifyAngleName);
   angleNameOtroBtn.addEventListener("click", () => newAngleNameChallenge(true));
