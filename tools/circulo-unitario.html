@@ -122,6 +122,19 @@
       opacity: 0.7;
     }
     .lesson-nav.tour:hover { opacity: 1; }
+
+    #soundMeterHost {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      z-index: 4;
+      pointer-events: none;
+    }
+    #soundMeterHost .campus-gk-meter,
+    #soundMeterHost .sound-meter {
+      margin: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -171,6 +184,7 @@
           <button type="button" id="coordNext" class="lesson-nav next hidden" title="Pantalla siguiente" aria-label="Pantalla siguiente"><span class="chev" aria-hidden="true"></span></button>
           <button type="button" id="tourPrev" class="lesson-nav prev tour hidden" title="Anterior" aria-label="Anterior"><span class="chev" aria-hidden="true"></span></button>
           <button type="button" id="tourNext" class="lesson-nav next tour hidden" title="Siguiente" aria-label="Siguiente"><span class="chev" aria-hidden="true"></span></button>
+          <div id="soundMeterHost" aria-hidden="false"></div>
         </div>
       </div>
 
@@ -548,8 +562,13 @@
     </div>
   </div>
 
+<script src="game-kit.js?v=20260907"></script>
 <script>
 (() => {
+  var soundMeterHost = document.getElementById("soundMeterHost");
+  if (window.CampusGameKit && window.CampusGameKit.mountSoundMeter && soundMeterHost) {
+    window.CampusGameKit.mountSoundMeter(soundMeterHost);
+  }
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d");
   const narration = document.getElementById("narration");
@@ -2078,6 +2097,12 @@
       playOkChime();
     } else if (cls === "bad") {
       playErrorSound();
+    }
+    if (cls === "ok" || cls === "bad") {
+      var GK = window.CampusGameKit;
+      if (GK && GK.pulseSoundMeter) {
+        GK.pulseSoundMeter(document.getElementById("soundMeter") || document.getElementById("soundMeterHost"), cls === "ok" ? "ok" : "bad");
+      }
     }
   }
   function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
