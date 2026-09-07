@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 43 · Exponencial · pares (x, bˣ) · b&gt;1</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #c084fc; --border: #243044;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+  --ok: #5ad4a8; --amber: #FFBF00; --teal: #34d399; --pink: #f472b6;
+  --dot: #a78bfa; --run: #60a5fa; --rise: #34d399;
+  --row: #1a2435; --row-border: #2a3a52;
+  --point: #f59e0b;
+  --curve: #ff4d4d;
+  --pair-r: #ff4d4d;
+  --pair-l: #60a5fa;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.88rem; margin-left: 0.45rem; font-weight: 400; }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
+}
+.main-stage {
+  display: grid;
+  grid-template-columns: minmax(260px, 290px) 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+@media (max-width: 820px) {
+  .main-stage { grid-template-columns: 1fr; }
+}
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.slider-b::before { background: #ff4d4d; }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 1.02rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.55;
+}
+.expr-formula .hl-b { color: #ff4d4d; }
+.expr-formula .hl-p { color: var(--amber); }
+.slider-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 8px;
+  margin-bottom: 6px; padding-left: 6px;
+}
+.slider-val {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 1.05rem;
+}
+.slider-val .eq { color: var(--muted); font-weight: 600; }
+.slider-b .slider-val { color: #ff4d4d; }
+.slider-hint { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+  border-radius: 999px; background: #2a3a52; outline: none; cursor: pointer; margin: 4px 0 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--mast); border: 2px solid #e9eef7;
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.25); cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; background: var(--mast);
+  border: 2px solid #e9eef7; box-shadow: 0 0 0 3px rgba(96,165,250,0.25); cursor: pointer;
+}
+.range-ends {
+  display: flex; justify-content: space-between; font-size: 0.68rem;
+  color: var(--muted); font-family: ui-monospace, Menlo, monospace; padding: 0 1px;
+}
+.presets { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
+.presets button {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem; font-weight: 700;
+  padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  background: #121a27; border: 1px solid var(--row-border); color: var(--ink);
+}
+.presets button:hover { border-color: var(--mast); }
+.presets button.on {
+  background: rgba(255,77,77,0.18); border-color: rgba(255,77,77,0.55); color: #ff4d4d;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 2px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 4px 8px; border-radius: 999px; background: #121a27;
+  border: 1px solid var(--row-border); color: var(--point);
+}
+.chip.red { color: #ff4d4d; border-color: rgba(255,77,77,0.45); }
+.chip.blue { color: #60a5fa; border-color: rgba(96,165,250,0.45); }
+.chip.amber { color: var(--amber); border-color: rgba(255,191,0,0.5); }
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--canvas-bg);
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.caption {
+  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
+}
+.caption strong { color: var(--ink); }
+.caption .hl { color: var(--amber); font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-b { color: #ff4d4d; }
+.caption .hl-r { color: #ff4d4d; }
+.caption .hl-l { color: #60a5fa; }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 6px 0 0; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 43</span> · Exponencial · pares (x, bˣ) · b&gt;1
+        <span class="sub">origen (0,1) · ×b al +1 en x</span>
+      </h1>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" aria-label="Parámetros">
+        <div class="expr-row">
+          <div class="expr-formula" id="exprFormula">y = <span class="hl-b">b</span><sup>x</sup> · P<span class="hl-p">(0, 1)</span></div>
+        </div>
+        <div class="expr-row slider-b" id="rowB">
+          <div class="slider-head">
+            <span class="slider-val">b <span class="eq">=</span> <span id="bLabel">2</span></span>
+            <span class="slider-hint">base · b &gt; 1</span>
+          </div>
+          <input type="range" id="bSlider" min="1.1" max="5" step="0.1" value="2" aria-label="base b" />
+          <div class="range-ends"><span>1.1</span><span>5</span></div>
+          <div class="presets" id="presets" role="group" aria-label="Bases frecuentes">
+            <button type="button" data-b="2">2</button>
+            <button type="button" data-b="3">3</button>
+            <button type="button" data-b="4">4</button>
+            <button type="button" data-b="5">5</button>
+          </div>
+        </div>
+        <div class="expr-row">
+          <div class="chips" id="chips"></div>
+        </div>
+      </aside>
+
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-logaritmo-play.html" title="Lección 42: Logaritmo · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-exponencial-pares-blt1.html" title="Lección 44: Exponencial · pares · 0&lt;b&lt;1" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="700" aria-label="Exponencial y=b^x con pares (x, b^x), b&gt;1"></canvas>
+      </div>
+    </div>
+    <p class="caption" id="caption" aria-live="polite">
+      Memoria muscular: siempre pasa por <span class="hl">(0, 1)</span> · cada <strong>+1</strong> en x multiplica y por <span class="hl-b">b</span>
+      (<span class="hl-r">derecha ×b</span> · <span class="hl-l">izquierda ÷b</span>).
+    </p>
+    <p class="hint">Pares anotados como (x, bˣ): (0, 1), (1, b), (2, b²), (−1, b⁻¹)… · el chip numérico aparece cuando b es conocido · celdas cuadradas</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var AMBER = "#f59e0b";
+  var MUTED = "#8b9bb4";
+  var CURVE = "#ff4d4d";
+  var PAIR_R = "#ff4d4d";
+  var PAIR_L = "#60a5fa";
+  var Y_SOFT_CAP = 28; /* skip integer points whose y exceeds this */
+
+  var XMIN = -4;
+  var XMAX = 5;
+  var YMIN = -1;
+  var YMAX = 10;
+  var PAD = { l: 52, r: 28, t: 28, b: 52 };
+  var CELL_PX = 56;
+
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var bSlider = document.getElementById("bSlider");
+  var bLabel = document.getElementById("bLabel");
+  var chipsEl = document.getElementById("chips");
+  var exprFormula = document.getElementById("exprFormula");
+  var presetsEl = document.getElementById("presets");
+
+  var SUP = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+
+  function toSup(n) {
+    return String(Math.abs(n)).split("").map(function (c) { return SUP[c] || c; }).join("");
+  }
+
+  /** Symbolic y = b^x for integer x */
+  function fmtPow(k) {
+    if (k === 0) return "1";
+    if (k === 1) return "b";
+    if (k === -1) return "b⁻¹";
+    return k < 0 ? ("b⁻" + toSup(k)) : ("b" + toSup(k));
+  }
+
+  function fmtNum(n) {
+    if (Object.is(n, -0) || Math.abs(n) < 1e-12) return "0";
+    if (typeof n === "number" && Math.abs(n - Math.round(n)) < 1e-9) {
+      return String(Math.round(n)).replace("-", "−");
+    }
+    var fracs = [
+      [0.5, "1/2"], [1 / 3, "1/3"], [0.25, "1/4"], [1 / 8, "1/8"],
+      [1 / 9, "1/9"], [1 / 16, "1/16"], [1 / 27, "1/27"], [1 / 32, "1/32"],
+      [1 / 64, "1/64"], [1 / 81, "1/81"], [2 / 3, "2/3"], [3 / 4, "3/4"],
+      [1 / 5, "1/5"], [1 / 6, "1/6"], [2 / 5, "2/5"], [3 / 5, "3/5"],
+      [4 / 5, "4/5"], [1 / 25, "1/25"], [1 / 125, "1/125"]
+    ];
+    for (var i = 0; i < fracs.length; i++) {
+      if (Math.abs(n - fracs[i][0]) < 1e-10) return fracs[i][1];
+    }
+    var s = (Math.round(n * 1000) / 1000).toString();
+    return s.replace("-", "−");
+  }
+
+  function fmtBase(b) {
+    if (Math.abs(b - Math.round(b)) < 1e-9) return String(Math.round(b));
+    return fmtNum(b);
+  }
+
+  function getB() {
+    var v = parseFloat(bSlider.value);
+    if (!Number.isFinite(v) || v <= 1) v = 1.1;
+    return Math.round(v * 10) / 10;
+  }
+
+  function integerXs(b) {
+    var xs = [];
+    for (var x = -3; x <= 3; x++) {
+      var y = Math.pow(b, x);
+      if (!Number.isFinite(y)) continue;
+      if (y > Y_SOFT_CAP) continue;
+      xs.push(x);
+    }
+    return xs;
+  }
+
+  function fitY(b) {
+    var ys = [1];
+    integerXs(b).forEach(function (x) {
+      ys.push(Math.pow(b, x));
+    });
+    /* also sample curve ends lightly */
+    ys.push(Math.pow(b, XMIN + 0.2));
+    ys.push(Math.min(Y_SOFT_CAP, Math.pow(b, Math.min(XMAX, 4))));
+    var yMax = Math.max.apply(null, ys.filter(function (y) { return Number.isFinite(y); }));
+    YMIN = -1;
+    YMAX = Math.max(4, Math.ceil(yMax + 0.8));
+    /* keep span multiple of 1 for clean grid; prefer even-ish for square feel */
+    if (YMAX - YMIN < 6) YMAX = YMIN + 6;
+  }
+
+  function sizeCanvas() {
+    var spanX = XMAX - XMIN;
+    var spanY = YMAX - YMIN;
+    canvas.width = Math.round(PAD.l + spanX * CELL_PX + PAD.r);
+    canvas.height = Math.round(PAD.t + spanY * CELL_PX + PAD.b);
+  }
+
+  function worldToScreen(x, y) {
+    var w = canvas.width - PAD.l - PAD.r;
+    var hh = canvas.height - PAD.t - PAD.b;
+    return {
+      x: PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w,
+      y: PAD.t + ((YMAX - y) / (YMAX - YMIN)) * hh
+    };
+  }
+
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    var xi, yi, p0, p1, q0, q1;
+    for (xi = Math.ceil(XMIN); xi <= Math.floor(XMAX); xi++) {
+      p0 = worldToScreen(xi, YMIN); p1 = worldToScreen(xi, YMAX);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    for (yi = Math.ceil(YMIN); yi <= Math.floor(YMAX); yi++) {
+      q0 = worldToScreen(XMIN, yi); q1 = worldToScreen(XMAX, yi);
+      ctx.beginPath(); ctx.moveTo(q0.x, q0.y); ctx.lineTo(q1.x, q1.y); ctx.stroke();
+    }
+    var ox = worldToScreen(0, 0);
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(PAD.l, ox.y); ctx.lineTo(canvas.width - PAD.r, ox.y);
+    ctx.moveTo(ox.x, PAD.t); ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.stroke();
+    ctx.fillStyle = MUTED;
+    ctx.font = "600 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (var xt = Math.ceil(XMIN); xt <= Math.floor(XMAX); xt++) {
+      if (xt === 0) continue;
+      var sx = worldToScreen(xt, 0);
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath(); ctx.moveTo(sx.x, sx.y - 4); ctx.lineTo(sx.x, sx.y + 4); ctx.stroke();
+      ctx.fillText(String(xt).replace("-", "−"), sx.x, sx.y + 8);
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    var yStep = YMAX - YMIN > 18 ? 2 : 1;
+    for (var yt = Math.ceil(YMIN); yt <= Math.floor(YMAX); yt += yStep) {
+      if (yt === 0) continue;
+      var sy = worldToScreen(0, yt);
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath(); ctx.moveTo(sy.x - 4, sy.y); ctx.lineTo(sy.x + 4, sy.y); ctx.stroke();
+      ctx.fillText(fmtNum(yt), sy.x - 8, sy.y);
+    }
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.fillText("0", ox.x - 8, ox.y + 6);
+    ctx.fillStyle = "#93c5fd";
+    ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("x", canvas.width - PAD.r - 14, ox.y - 8);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("y", ox.x + 10, PAD.t + 4);
+  }
+
+  function drawCurve(b) {
+    var n = 360;
+    var started = false;
+    ctx.save();
+    ctx.strokeStyle = CURVE;
+    ctx.lineWidth = 2.6;
+    ctx.shadowColor = "rgba(255,77,77,0.35)";
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    for (var i = 0; i <= n; i++) {
+      var x = XMIN + (XMAX - XMIN) * (i / n);
+      var y = Math.pow(b, x);
+      if (!Number.isFinite(y) || y < YMIN - 0.5 || y > YMAX + 0.5) {
+        started = false;
+        continue;
+      }
+      var p = worldToScreen(x, y);
+      if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPoint(x, y, color, r) {
+    var p = worldToScreen(x, y);
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#0b1018";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r || 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+    return p;
+  }
+
+  function labelOffset(x) {
+    /* nudge labels so they don't collide with the curve too much */
+    if (x === 0) return { dx: 12, dy: -16, align: "left" };
+    if (x > 0) return { dx: 10, dy: -14, align: "left" };
+    return { dx: -10, dy: -14, align: "right" };
+  }
+
+  function drawLabeledPair(x, b, color) {
+    var y = Math.pow(b, x);
+    if (!Number.isFinite(y) || y < YMIN || y > YMAX) return;
+    var p = drawPoint(x, y, color, x === 0 ? 7.5 : 6);
+    var off = labelOffset(x);
+    var sym = "(" + String(x).replace("-", "−") + ", " + fmtPow(x) + ")";
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.font = "700 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = off.align;
+    ctx.textBaseline = "bottom";
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 4;
+    ctx.fillText(sym, p.x + off.dx, p.y + off.dy);
+    /* secondary numeric when not already trivial */
+    if (x !== 0) {
+      var num = fmtNum(y);
+      var wantNum = Math.abs(y - Math.round(y)) < 1e-9 || y < 1 || Math.abs(b - Math.round(b)) < 1e-9;
+      if (wantNum) {
+        ctx.font = "600 11px ui-monospace, Menlo, monospace";
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = MUTED;
+        ctx.textBaseline = "top";
+        ctx.fillText("(" + String(x).replace("-", "−") + ", " + num + ")", p.x + off.dx, p.y + off.dy + 2);
+      }
+    }
+    ctx.restore();
+  }
+
+  function updateChips(b) {
+    var html = '<span class="chip amber">P = (0, 1)</span>';
+    integerXs(b).forEach(function (x) {
+      if (x === 0) return;
+      var y = Math.pow(b, x);
+      var cls = x > 0 ? "red" : "blue";
+      html += '<span class="chip ' + cls + '">(' + String(x).replace("-", "−") + ", " + fmtPow(x) + ") = (" +
+        String(x).replace("-", "−") + ", " + fmtNum(y) + ")</span>";
+    });
+    chipsEl.innerHTML = html;
+  }
+
+  function syncPresets(b) {
+    var buttons = presetsEl.querySelectorAll("button");
+    for (var i = 0; i < buttons.length; i++) {
+      var pb = parseFloat(buttons[i].getAttribute("data-b"));
+      buttons[i].classList.toggle("on", Math.abs(pb - b) < 1e-9);
+    }
+  }
+
+  function render() {
+    var b = getB();
+    bLabel.textContent = fmtBase(b);
+    exprFormula.innerHTML = "y = <span class=\"hl-b\">" + fmtBase(b) + "</span><sup>x</sup> · P<span class=\"hl-p\">(0, 1)</span>";
+    fitY(b);
+    sizeCanvas();
+    drawGrid();
+    drawCurve(b);
+    var xs = integerXs(b);
+    xs.forEach(function (x) {
+      var color = x === 0 ? AMBER : (x > 0 ? PAIR_R : PAIR_L);
+      drawLabeledPair(x, b, color);
+    });
+    /* ensure origin highlight even if somehow skipped */
+    if (xs.indexOf(0) < 0) drawLabeledPair(0, b, AMBER);
+    updateChips(b);
+    syncPresets(b);
+  }
+
+  bSlider.addEventListener("input", render);
+  presetsEl.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("button[data-b]");
+    if (!btn) return;
+    bSlider.value = btn.getAttribute("data-b");
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
