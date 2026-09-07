@@ -292,7 +292,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     </div>
   </header>
 
-  <p class="prompt attention" id="prompt">Tres puntos están sobre la parábola y uno es impostor. ¿Cuál no pertenece?</p>
+  <p class="prompt attention" id="prompt">Cuatro puntos están sobre la parábola y uno es impostor. ¿Cuál no pertenece?</p>
 
   <div class="card">
     <div class="main-stage">
@@ -303,7 +303,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="expr-row">
           <span class="mode-tag">Caza el impostor</span>
           <p class="hint-mini" id="revealEl">Tocá el punto falso</p>
-          <div class="chips" style="margin-top:8px"><span class="chip" id="pointsInfo">4 puntos · 1 impostor</span></div>
+          <div class="chips" style="margin-top:8px"><span class="chip" id="pointsInfo">5 puntos · 1 impostor</span></div>
         </div>
       </aside>
 
@@ -325,7 +325,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     </div>
 
     <div class="bottom-bar">
-      <p class="hint">3 puntos reales (P / Rn / Ln) + 1 impostor desplazado · click al falso · luego se revela la curva · 20 éxitos</p>
+      <p class="hint">4 puntos reales (P / Rn / Ln) + 1 impostor desplazado · click al falso · luego se revela la curva · 20 éxitos</p>
       <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
         <span class="sound-meter-label" aria-hidden="true">♪</span>
         <span class="sound-bar" data-i="0"></span>
@@ -764,7 +764,7 @@ var GK = window.CampusGameKit || {};
 
   function buildRound() {
     var p = pickParams();
-    var ns = shuffle([-3, -2, -1, 0, 1, 2, 3]).slice(0, 3);
+    var ns = shuffle([-3, -2, -1, 0, 1, 2, 3]).slice(0, 4);
     var real = ns.map(function (n) {
       var r = Rn(p, n);
       var lab = n === 0 ? "P" : (n > 0 ? ("R" + n) : ("L" + (-n)));
@@ -782,7 +782,7 @@ var GK = window.CampusGameKit || {};
       var clash = real.some(function (r) { return r.x === imp.x && r.y === imp.y; });
       if (!clash && !onCurve(p, imp.x, imp.y)) break;
     }
-    var letters = shuffle(["A", "B", "C", "D"]);
+    var letters = shuffle(["A", "B", "C", "D", "E"]);
     var all = shuffle(real.concat([imp]));
     all.forEach(function (pt, i) { pt.label = letters[i]; });
     state.params = p;
@@ -853,9 +853,9 @@ var GK = window.CampusGameKit || {};
     pausedBanner.classList.toggle("on", state.paused);
     exprFormula.innerHTML = formulaHTML(state.params.xp, state.params.yp, state.params.h, state.params.v);
     revealEl.textContent = "Tocá el punto falso";
-    pointsInfo.textContent = "4 puntos · 1 impostor";
+    pointsInfo.textContent = "5 puntos · 1 impostor";
     syncScores();
-    setPrompt("Tres puntos están sobre la parábola y <strong>uno es impostor</strong>. ¿Cuál no pertenece?", "attention");
+    setPrompt("Cuatro puntos están sobre la parábola y <strong>uno es impostor</strong>. ¿Cuál no pertenece?", "attention");
     draw();
   }
   function nextRound() { state.round++; syncScores(); startRound(true); }
