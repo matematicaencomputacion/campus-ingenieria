@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 21 · Recta · play · ordenada-horizontal-vertical = ordenada-pendiente</title>
+<title>Lección 22 · Recta · play · punto-horizontal-vertical = punto-pendiente</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -53,7 +53,6 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   .main-stage { grid-template-columns: 1fr; }
 }
 
-/* Desmos-like expression panel */
 .expr-panel {
   display: flex; flex-direction: column; gap: 8px;
   background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
@@ -68,12 +67,13 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
   border-radius: 0 2px 2px 0; background: var(--line);
 }
-.expr-row.slider-b::before { background: var(--dot); }
+.expr-row.slider-xp::before { background: #f59e0b; }
+.expr-row.slider-yp::before { background: var(--dot); }
 .expr-row.slider-h::before { background: var(--run); }
 .expr-row.slider-v::before { background: var(--rise); }
 .expr-row.table-row::before { background: var(--accent); }
 .expr-formula {
-  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.95rem;
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.92rem;
   color: var(--ink); padding-left: 6px;
 }
 .slider-head {
@@ -85,7 +85,8 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .slider-val .eq { color: var(--muted); font-weight: 600; }
 .slider-hint { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
-.slider-b .slider-val { color: var(--dot); }
+.slider-xp .slider-val { color: #f59e0b; }
+.slider-yp .slider-val { color: var(--dot); }
 .slider-h .slider-val { color: var(--run); }
 .slider-v .slider-val { color: var(--rise); }
 input[type="range"] {
@@ -127,7 +128,6 @@ input[type="range"]::-moz-range-thumb {
 }
 .chip.dim { opacity: 0.32; filter: grayscale(0.35); }
 
-/* L15/L16 khaki attention ×3 — slider / table bip during Play */
 @keyframes bipFlash {
   0%, 100% {
     background: var(--row);
@@ -193,7 +193,8 @@ canvas#c {
 }
 .work-panel.on { display: block; }
 .work-panel .hl { color: var(--amber); }
-.work-panel .hl-b { color: var(--dot); }
+.work-panel .hl-xp { color: #f59e0b; }
+.work-panel .hl-yp { color: var(--dot); }
 .work-panel .hl-h { color: var(--run); }
 .work-panel .hl-v { color: var(--rise); }
 .work-panel .step-eq { color: var(--muted); font-weight: 600; margin: 0 0.35em; }
@@ -215,7 +216,8 @@ canvas#c {
 }
 .caption strong { color: var(--ink); }
 .caption .hl { color: var(--amber); font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-b { color: var(--dot); }
+.caption .hl-xp { color: #f59e0b; }
+.caption .hl-yp { color: var(--dot); }
 .caption .hl-h { color: var(--run); }
 .caption .hl-v { color: var(--rise); }
 .done-banner {
@@ -233,8 +235,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 21</span> · Recta · play
-        <span class="sub">ordenada-horizontal-vertical = ordenada-pendiente</span>
+      <h1><span class="lesson-num">Lección 22</span> · Recta · play
+        <span class="sub">punto-horizontal-vertical = punto-pendiente</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -250,15 +252,23 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" id="exprPanel" aria-label="Lista de expresiones">
         <div class="expr-row">
-          <div class="expr-formula" id="exprFormula">f(x) = (v/h)·x + b</div>
+          <div class="expr-formula" id="exprFormula">f(x) = (v/h)·(x − x<sub>p</sub>) + y<sub>p</sub></div>
         </div>
-        <div class="expr-row slider-b" id="rowB">
+        <div class="expr-row slider-xp" id="rowXp">
           <div class="slider-head">
-            <span class="slider-val">b <span class="eq">=</span> <span id="bLabel">0</span></span>
-            <span class="slider-hint">ordenada al origen</span>
+            <span class="slider-val">x<sub>p</sub> <span class="eq">=</span> <span id="xpLabel">0</span></span>
+            <span class="slider-hint">abscisa del punto</span>
           </div>
-          <input type="range" id="bSlider" min="-4" max="4" step="1" value="0" aria-label="ordenada al origen b" />
-          <div class="range-ends"><span>−4</span><span>4</span></div>
+          <input type="range" id="xpSlider" min="-2" max="4" step="1" value="0" aria-label="abscisa del punto xp" />
+          <div class="range-ends"><span>−2</span><span>4</span></div>
+        </div>
+        <div class="expr-row slider-yp" id="rowYp">
+          <div class="slider-head">
+            <span class="slider-val">y<sub>p</sub> <span class="eq">=</span> <span id="ypLabel">0</span></span>
+            <span class="slider-hint">ordenada del punto</span>
+          </div>
+          <input type="range" id="ypSlider" min="-3" max="3" step="1" value="0" aria-label="ordenada del punto yp" />
+          <div class="range-ends"><span>−3</span><span>3</span></div>
         </div>
         <div class="expr-row slider-h" id="rowH">
           <div class="slider-head">
@@ -282,21 +292,21 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
               <tr><th>x₁</th><th><span class="dot" aria-hidden="true"></span>f(x₁)</th></tr>
             </thead>
             <tbody>
-              <tr id="tableRowA"><td id="tX0">0</td><td id="tY0">—</td></tr>
+              <tr id="tableRowP"><td id="tXp">—</td><td id="tYp">—</td></tr>
               <tr id="tableRowB"><td id="tXh">—</td><td id="tYh">—</td></tr>
             </tbody>
           </table>
           <div class="chips">
-            <span class="chip" id="chipA">A = (—, —)</span>
-            <span class="chip" id="chipB">B = (—, —)</span>
+            <span class="chip dim" id="chipP">P = (—, —)</span>
+            <span class="chip dim" id="chipB">B = (—, —)</span>
           </div>
         </div>
       </aside>
 
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-angulo-click.html" title="Lección 20: Ángulo en el círculo · juego" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-lineal-punto-play.html" title="Lección 22: Recta · play · punto-pendiente" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="1200" height="680" aria-label="Recta · corrimientos h y v desde b"></canvas>
+        <a class="lesson-nav prev" href="leccion-lineal-play.html" title="Lección 21: Recta · play · ordenada-pendiente" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <span class="lesson-nav next" aria-disabled="true" title="Lección 23 · juego (próximamente)" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <canvas id="c" width="1200" height="680" aria-label="Recta · forma punto-pendiente"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
@@ -305,7 +315,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span>Listo · 20/20 presentaciones.</span>
       <button type="button" class="btn amber" id="repeatBtn">Repetir</button>
     </div>
-    <p class="hint">f(x) = (v/h)·x + b · A(0, b) · B(h, b+v) · h ∈ {1…5}, v ∈ {−5…5}\{0}</p>
+    <p class="hint">f(x) = (v/h)·(x − x<sub>p</sub>) + y<sub>p</sub> · P(x<sub>p</sub>, y<sub>p</sub>) · B(x<sub>p</sub>+h, y<sub>p</sub>+v) · h ∈ {1…5}, v ∈ {−5…5}\{0}</p>
   </div>
 </div>
 
@@ -322,6 +332,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var RUN = "#60a5fa";
   var RISE = "#34d399";
   var MUTED = "#8b9bb4";
+  var AMBER = "#f59e0b";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -334,54 +345,50 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var captionEl = document.getElementById("caption");
   var doneBanner = document.getElementById("doneBanner");
   var exprPanel = document.getElementById("exprPanel");
-  var bSlider = document.getElementById("bSlider");
+  var xpSlider = document.getElementById("xpSlider");
+  var ypSlider = document.getElementById("ypSlider");
   var hSlider = document.getElementById("hSlider");
   var vSlider = document.getElementById("vSlider");
-  var bLabel = document.getElementById("bLabel");
+  var xpLabel = document.getElementById("xpLabel");
+  var ypLabel = document.getElementById("ypLabel");
   var hLabel = document.getElementById("hLabel");
   var vLabel = document.getElementById("vLabel");
   var exprFormula = document.getElementById("exprFormula");
-  var tX0 = document.getElementById("tX0");
-  var tY0 = document.getElementById("tY0");
+  var tXp = document.getElementById("tXp");
+  var tYp = document.getElementById("tYp");
   var tXh = document.getElementById("tXh");
   var tYh = document.getElementById("tYh");
-  var chipA = document.getElementById("chipA");
+  var chipP = document.getElementById("chipP");
   var chipB = document.getElementById("chipB");
   var workPanel = document.getElementById("workPanel");
 
-  var XMIN = -1.5, XMAX = 6.5, YMIN = -6, YMAX = 6;
+  var XMIN = -2.5, XMAX = 7.5, YMIN = -6, YMAX = 6;
   var PAD = { l: 56, r: 28, t: 28, b: 42 };
 
   var state = {
     playing: false,
     round: 0,
-    params: { b: 0, h: 4, v: 5 },
+    params: { xp: 0, yp: 0, h: 4, v: 5 },
     anim: null,
     raf: 0,
     timers: [],
     bipTimers: [],
     token: 0,
-    reveal: { x0: true, y0: true, xh: true, yh: true }
+    reveal: { xp: true, yp: true, xh: true, yh: true }
   };
 
-  var rowBEl = document.getElementById("rowB");
+  var rowXpEl = document.getElementById("rowXp");
+  var rowYpEl = document.getElementById("rowYp");
   var rowHEl = document.getElementById("rowH");
   var rowVEl = document.getElementById("rowV");
-  var tableRowA = document.getElementById("tableRowA");
+  var tableRowP = document.getElementById("tableRowP");
   var tableRowB = document.getElementById("tableRowB");
-
-  function gcd(a, b) {
-    a = Math.abs(a); b = Math.abs(b);
-    while (b) { var t = a % b; a = b; b = t; }
-    return a || 1;
-  }
 
   function fmtNum(n) {
     if (Object.is(n, -0) || Math.abs(n) < 1e-12) return "0";
     return String(n).replace("-", "−");
   }
 
-  /* Always unsimplified v/h — keep both digits even when h|v or h===1. */
   function fmtFrac(v, h) {
     var nv = v, nh = h;
     if (nh < 0) { nv = -nv; nh = -nh; }
@@ -395,24 +402,36 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       '</span><span class="den">' + nh + '</span></span>';
   }
 
-  function formulaLatex(b, h, v) {
-    var slope = fmtFrac(v, h);
-    var bs = fmtNum(b);
-    if (b < 0) return "f(x) = " + slope + "·x + (" + bs + ")";
-    if (b === 0) return "f(x) = " + slope + "·x";
-    return "f(x) = " + slope + "·x + " + bs;
+  function xpHTML(xp) {
+    return '<span class="hl-xp">' + fmtNum(xp) + '</span>';
+  }
+  function ypHTML(yp) {
+    return '<span class="hl-yp">' + ((yp < 0) ? ("(" + fmtNum(yp) + ")") : fmtNum(yp)) + '</span>';
   }
 
-  function formulaHTML(b, h, v, xTok) {
+  /* f(x) = (v/h)·(x − xp) + yp  — always stacked unsimplified v/h */
+  function formulaHTML(xp, yp, h, v, xTok) {
     var x = (xTok == null) ? "x" : String(xTok);
     var fr = fracHTML(v, h);
-    var bs = fmtNum(b);
-    var bPart = (b < 0) ? (" + (" + bs + ")") : (b === 0 ? "" : (" + " + bs));
-    return "f(" + x + ") = " + fr + "·" + x + bPart;
-  }
-
-  function symbolicFormula(b, h, v) {
-    return formulaLatex(b, h, v);
+    var xpStr = fmtNum(xp);
+    var paren;
+    if (xTok == null) {
+      paren = "(x − " + (xp === 0 ? "0" : xpStr) + ")";
+      if (xp === 0) paren = "x";
+      else if (xp > 0) paren = "(x − " + xpStr + ")";
+      else paren = "(x + " + fmtNum(-xp) + ")";
+    } else {
+      var xv = parseInt(xTok, 10);
+      if (isNaN(xv)) {
+        paren = "(" + x + " − " + xpStr + ")";
+      } else {
+        paren = "(" + fmtNum(xv) + " − " + xpStr + ")";
+      }
+    }
+    var ypPart = (yp < 0) ? (" + (" + fmtNum(yp) + ")") : (yp === 0 ? "" : (" + " + fmtNum(yp)));
+    if (xTok == null && xp === 0 && yp === 0) return "f(x) = " + fr + "·x";
+    if (xTok == null && xp === 0) return "f(x) = " + fr + "·x" + ypPart;
+    return "f(" + (xTok == null ? "x" : x) + ") = " + fr + "·" + paren + ypPart;
   }
 
   function setWork(html) {
@@ -438,65 +457,50 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function pickParams() {
     var tries = 0;
-    while (tries++ < 200) {
+    while (tries++ < 300) {
+      var xp = -2 + Math.floor(Math.random() * 7); /* -2..4 */
+      var yp = -3 + Math.floor(Math.random() * 7); /* -3..3 */
       var h = 1 + Math.floor(Math.random() * 5);
       var vCand = [];
       for (var vv = -5; vv <= 5; vv++) if (vv !== 0) vCand.push(vv);
       var v = vCand[Math.floor(Math.random() * vCand.length)];
-      var bMin = Math.max(-4, -5 - v);
-      var bMax = Math.min(4, 5 - v);
-      if (bMin > bMax) continue;
-      var b = bMin + Math.floor(Math.random() * (bMax - bMin + 1));
-      if (Math.abs(b) > 5 || Math.abs(b + v) > 5) continue;
-      return { b: b, h: h, v: v };
+      var bx = xp + h;
+      var by = yp + v;
+      /* keep both points roughly in view */
+      if (xp < -2 || xp > 4) continue;
+      if (bx < -2 || bx > 7) continue;
+      if (Math.abs(yp) > 5 || Math.abs(by) > 5.5) continue;
+      if (yp < -5 || yp > 5 || by < -5.5 || by > 5.5) continue;
+      return { xp: xp, yp: yp, h: h, v: v };
     }
-    return { b: 0, h: 4, v: 5 };
+    return { xp: 1, yp: 1, h: 1, v: 1 };
   }
 
-  function clampParams(b, h, v, prefer) {
+  function clampParams(xp, yp, h, v) {
+    xp = Math.max(-2, Math.min(4, Math.round(xp)));
+    yp = Math.max(-3, Math.min(3, Math.round(yp)));
     h = Math.max(1, Math.min(5, Math.round(h)));
     v = Math.round(v);
-    if (v === 0) v = (prefer === "v-down") ? -1 : 1;
+    if (v === 0) v = 1;
     if (v < -5) v = -5;
     if (v > 5) v = 5;
     if (v === 0) v = 1;
-    b = Math.round(b);
-    if (b < -4) b = -4;
-    if (b > 4) b = 4;
-    // Enforce |b|≤5 (already) and |b+v|≤5
-    if (Math.abs(b + v) > 5) {
-      if (prefer === "b") {
-        // nudge v to satisfy
-        if (b + v > 5) v = 5 - b;
-        else v = -5 - b;
-        if (v === 0) v = (b + v > 0) ? 1 : -1;
-        if (v < -5) v = -5;
-        if (v > 5) v = 5;
-        if (Math.abs(b + v) > 5) {
-          if (b + v > 5) b = 5 - v;
-          else b = -5 - v;
-        }
-      } else {
-        // nudge b (default when dragging v)
-        if (b + v > 5) b = 5 - v;
-        else b = -5 - v;
-        if (b < -4) b = -4;
-        if (b > 4) b = 4;
-        if (Math.abs(b + v) > 5) {
-          if (b + v > 5) v = 5 - b;
-          else v = -5 - b;
-          if (v === 0) v = 1;
-        }
-      }
-    }
-    return { b: b, h: h, v: v };
+    /* nudge v so B stays in view */
+    var by = yp + v;
+    if (by > 5) v = 5 - yp;
+    if (by < -5) v = -5 - yp;
+    if (v === 0) v = (yp >= 0) ? -1 : 1;
+    if (v < -5) v = -5;
+    if (v > 5) v = 5;
+    if (xp + h > 7) h = Math.max(1, 7 - xp);
+    return { xp: xp, yp: yp, h: h, v: v };
   }
 
   function worldToScreen(x, y) {
     var w = canvas.width - PAD.l - PAD.r;
-    var h = canvas.height - PAD.t - PAD.b;
+    var hh = canvas.height - PAD.t - PAD.b;
     var sx = PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w;
-    var sy = PAD.t + ((YMAX - y) / (YMAX - YMIN)) * h;
+    var sy = PAD.t + ((YMAX - y) / (YMAX - YMIN)) * hh;
     return { x: sx, y: sy };
   }
 
@@ -515,7 +519,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function softBipTicks() {
-    /* Quiet tick ×3 — not playErrorBuzz. Visual bip is primary. */
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
@@ -560,13 +563,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function resetTableReveal() {
-    state.reveal = { x0: false, y0: false, xh: false, yh: false };
+    state.reveal = { xp: false, yp: false, xh: false, yh: false };
     refreshExprUI();
     setWork("");
   }
 
   function revealAllTable() {
-    state.reveal = { x0: true, y0: true, xh: true, yh: true };
+    state.reveal = { xp: true, yp: true, xh: true, yh: true };
     refreshExprUI();
     setWork("");
   }
@@ -594,7 +597,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function setSlidersLocked(locked) {
     if (locked) exprPanel.classList.add("locked");
     else exprPanel.classList.remove("locked");
-    bSlider.disabled = locked;
+    xpSlider.disabled = locked;
+    ypSlider.disabled = locked;
     hSlider.disabled = locked;
     vSlider.disabled = locked;
   }
@@ -609,27 +613,30 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function syncSlidersFromParams() {
     var p = state.params;
     if (!p) return;
-    /* Idle/static: restore play-only min=0 on h, then match targets. */
     hSlider.min = "1";
-    bSlider.step = "1";
+    xpSlider.step = "1";
+    ypSlider.step = "1";
     hSlider.step = "1";
     vSlider.step = "1";
-    bSlider.value = String(p.b);
+    xpSlider.value = String(p.xp);
+    ypSlider.value = String(p.yp);
     hSlider.value = String(p.h);
     vSlider.value = String(p.v);
     refreshExprUI();
   }
 
   function resetSlidersToZero() {
-    /* Play storytelling start: all three selectors show 0 (labels + thumbs). */
     hSlider.min = "0";
-    bSlider.step = "1";
+    xpSlider.step = "1";
+    ypSlider.step = "1";
     hSlider.step = "1";
     vSlider.step = "1";
-    bSlider.value = "0";
+    xpSlider.value = "0";
+    ypSlider.value = "0";
     hSlider.value = "0";
     vSlider.value = "0";
-    bLabel.textContent = "0";
+    xpLabel.textContent = "0";
+    ypLabel.textContent = "0";
     hLabel.textContent = "0";
     vLabel.textContent = "0";
   }
@@ -637,25 +644,25 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function refreshExprUI() {
     var p = state.params;
     if (!p) return;
-    var rev = state.reveal || { x0: true, y0: true, xh: true, yh: true };
-    /* Labels follow slider DOM (animated during play); table/formula use target params. */
-    bLabel.textContent = fmtNum(parseInt(bSlider.value, 10) || 0);
+    var rev = state.reveal || { xp: true, yp: true, xh: true, yh: true };
+    xpLabel.textContent = fmtNum(parseInt(xpSlider.value, 10) || 0);
+    ypLabel.textContent = fmtNum(parseInt(ypSlider.value, 10) || 0);
     hLabel.textContent = fmtNum(parseInt(hSlider.value, 10) || 0);
     vLabel.textContent = fmtNum(parseInt(vSlider.value, 10) || 0);
-    exprFormula.innerHTML = formulaHTML(p.b, p.h, p.v);
-    tX0.textContent = rev.x0 ? "0" : "—";
-    tY0.textContent = rev.y0 ? fmtNum(p.b) : "—";
-    tXh.textContent = rev.xh ? fmtNum(p.h) : "—";
-    tYh.textContent = rev.yh ? fmtNum(p.b + p.v) : "—";
-    if (rev.y0) {
-      chipA.textContent = "A = (0, " + fmtNum(p.b) + ")";
-      chipA.classList.remove("dim");
+    exprFormula.innerHTML = formulaHTML(p.xp, p.yp, p.h, p.v);
+    tXp.textContent = rev.xp ? fmtNum(p.xp) : "—";
+    tYp.textContent = rev.yp ? fmtNum(p.yp) : "—";
+    tXh.textContent = rev.xh ? fmtNum(p.xp + p.h) : "—";
+    tYh.textContent = rev.yh ? fmtNum(p.yp + p.v) : "—";
+    if (rev.yp) {
+      chipP.textContent = "P = (" + fmtNum(p.xp) + ", " + fmtNum(p.yp) + ")";
+      chipP.classList.remove("dim");
     } else {
-      chipA.textContent = "A = (—, —)";
-      chipA.classList.add("dim");
+      chipP.textContent = "P = (—, —)";
+      chipP.classList.add("dim");
     }
     if (rev.yh) {
-      chipB.textContent = "B = (" + p.h + ", " + fmtNum(p.b + p.v) + ")";
+      chipB.textContent = "B = (" + fmtNum(p.xp + p.h) + ", " + fmtNum(p.yp + p.v) + ")";
       chipB.classList.remove("dim");
     } else {
       chipB.textContent = "B = (—, —)";
@@ -665,10 +672,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function fullScene(p) {
     return {
-      b: p.b, h: p.h, v: p.v, t: 0,
-      highlightB: false, showA: true, showDottedH: true,
+      xp: p.xp, yp: p.yp, h: p.h, v: p.v, t: 0,
+      showXpGuide: false, showP: true, showDottedH: true,
       hProgress: 1, vProgress: 1, showB: true,
-      showTriangle: true, showLabels: true, showLine: true, showLegend: true
+      showTriangle: true, showLabels: true, showLine: true, showLegend: true,
+      liveXp: p.xp, liveYp: p.yp
     };
   }
 
@@ -681,26 +689,23 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function onSliderInput(which) {
     if (state.playing) return;
-    /* Leaving play-reveal: restore h min and snap v off display-0. */
     if (hSlider.min === "0") hSlider.min = "1";
-    var b = parseInt(bSlider.value, 10);
+    var xp = parseInt(xpSlider.value, 10);
+    var yp = parseInt(ypSlider.value, 10);
     var h = parseInt(hSlider.value, 10);
     var v = parseInt(vSlider.value, 10);
     if (h < 1) h = 1;
-    // Snap v off 0 (play may leave display 0; idle user input must leave 0)
     if (v === 0) {
       var prev = state.params ? state.params.v : 1;
       v = prev < 0 ? -1 : 1;
     }
-    var prefer = which === "b" ? "b" : (which === "v" ? "v" : "h");
-    var clamped = clampParams(b, h, v, prefer);
+    var clamped = clampParams(xp, yp, h, v);
     state.params = clamped;
-    // If clamp nudged another param, reflect on sliders
     syncSlidersFromParams();
     clearTimers();
     state.token++;
     doneBanner.classList.remove("on");
-    setCaption("Figura completa · <span class=\"hl hl-b\">b = " + fmtNum(clamped.b) + "</span>, <span class=\"hl hl-h\">h = " + clamped.h + "</span>, <span class=\"hl hl-v\">v = " + fmtNum(clamped.v) + "</span>");
+    setCaption("Figura completa · <span class=\"hl hl-xp\">x<sub>p</sub> = " + fmtNum(clamped.xp) + "</span>, <span class=\"hl hl-yp\">y<sub>p</sub> = " + fmtNum(clamped.yp) + "</span>, <span class=\"hl hl-h\">h = " + clamped.h + "</span>, <span class=\"hl hl-v\">v = " + fmtNum(clamped.v) + "</span>");
     drawFullStatic();
   }
 
@@ -777,7 +782,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.font = "800 15px Segoe UI, system-ui, sans-serif";
       ctx.textBaseline = "bottom";
       var lx = p.x + 12, ly = p.y - 10;
-      if (lx > canvas.width - 80) lx = p.x - 12;
+      if (lx > canvas.width - 100) lx = p.x - 12;
       if (ly < 20) ly = p.y + 22;
       ctx.textAlign = lx < p.x ? "right" : "left";
       ctx.fillText(label, lx, ly);
@@ -825,15 +830,30 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.restore();
   }
 
-  function drawTriangle(b, h, v, alpha) {
-    var A = worldToScreen(0, b);
-    var C = worldToScreen(h, b);
-    var B = worldToScreen(h, b + v);
+  function drawDottedHLine(y, color) {
+    var L = worldToScreen(XMIN, y);
+    var R = worldToScreen(XMAX, y);
+    ctx.save();
+    ctx.strokeStyle = color || "rgba(245,158,11,0.45)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 6]);
+    ctx.beginPath();
+    ctx.moveTo(L.x, L.y);
+    ctx.lineTo(R.x, R.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawTriangle(xp, yp, h, v, alpha) {
+    var P = worldToScreen(xp, yp);
+    var C = worldToScreen(xp + h, yp);
+    var B = worldToScreen(xp + h, yp + v);
     ctx.save();
     ctx.globalAlpha = alpha == null ? 0.22 : alpha;
     ctx.fillStyle = v >= 0 ? "rgba(52,211,153,0.55)" : "rgba(244,114,182,0.5)";
     ctx.beginPath();
-    ctx.moveTo(A.x, A.y);
+    ctx.moveTo(P.x, P.y);
     ctx.lineTo(C.x, C.y);
     ctx.lineTo(B.x, B.y);
     ctx.closePath();
@@ -847,8 +867,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.restore();
   }
 
-  function drawSegmentLabels(b, h, v) {
-    var midH = worldToScreen(h / 2, b);
+  function drawSegmentLabels(xp, yp, h, v) {
+    var midH = worldToScreen(xp + h / 2, yp);
     ctx.save();
     ctx.font = "800 15px ui-monospace, Menlo, monospace";
     ctx.fillStyle = RUN;
@@ -856,7 +876,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.textBaseline = v >= 0 ? "top" : "bottom";
     var hy = v >= 0 ? midH.y + 8 : midH.y - 8;
     ctx.fillText("h = " + h, midH.x, hy);
-    var midV = worldToScreen(h, b + v / 2);
+    var midV = worldToScreen(xp + h, yp + v / 2);
     ctx.fillStyle = RISE;
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
@@ -864,10 +884,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.restore();
   }
 
-  function drawLineThrough(b, h, v) {
+  function drawLineThrough(xp, yp, h, v) {
     var m = v / h;
-    var a = worldToScreen(XMIN, m * XMIN + b);
-    var z = worldToScreen(XMAX, m * XMAX + b);
+    var yAt = function (x) { return m * (x - xp) + yp; };
+    var a = worldToScreen(XMIN, yAt(XMIN));
+    var z = worldToScreen(XMAX, yAt(XMAX));
     ctx.save();
     ctx.strokeStyle = LINE;
     ctx.lineWidth = 3;
@@ -906,15 +927,18 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     return barW;
   }
 
-  function drawLegend(b, h, v) {
+  function drawLegend(xp, yp, h, v) {
     var nv = v, nh = h;
     if (nh < 0) { nv = -nv; nh = -nh; }
     ctx.save();
-    ctx.font = "700 18px ui-monospace, Menlo, monospace";
+    ctx.font = "700 16px ui-monospace, Menlo, monospace";
     var prefix = "f(x) = ";
-    var mid = "·x";
-    var bs = fmtNum(b);
-    var suffix = (b < 0) ? (" + (" + bs + ")") : (b === 0 ? "" : (" + " + bs));
+    var mid;
+    if (xp === 0) mid = "·x";
+    else if (xp > 0) mid = "·(x − " + xp + ")";
+    else mid = "·(x + " + (-xp) + ")";
+    var ypStr = fmtNum(yp);
+    var suffix = (yp < 0) ? (" + (" + ypStr + ")") : (yp === 0 ? "" : (" + " + ypStr));
     var pw = ctx.measureText(prefix).width;
     var mw = ctx.measureText(mid).width;
     var sw = ctx.measureText(suffix).width;
@@ -936,10 +960,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.textBaseline = "middle";
     ctx.fillText(prefix, cursor, cy);
     cursor += pw;
-    drawStackedFrac(nv, nh, cursor + fracW / 2, cy, 15);
+    drawStackedFrac(nv, nh, cursor + fracW / 2, cy, 14);
     cursor += fracW;
     ctx.fillStyle = "#e9eef7";
-    ctx.font = "700 18px ui-monospace, Menlo, monospace";
+    ctx.font = "700 16px ui-monospace, Menlo, monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillText(mid + suffix, cursor, cy);
@@ -956,43 +980,47 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     c.closePath();
   }
 
-  function drawHighlightB(b, t) {
-    var p = worldToScreen(0, b);
-    var pulse = 0.5 + 0.5 * Math.sin(t * 0.008);
+  function drawXpGuide(xp, t) {
+    drawDottedVLine(xp, "rgba(245,158,11,0.55)");
+    var p = worldToScreen(xp, 0);
+    var pulse = 0.5 + 0.5 * Math.sin((t || 0) * 0.008);
     ctx.save();
-    ctx.strokeStyle = "rgba(167,139,250," + (0.35 + 0.35 * pulse) + ")";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(p.x - 18, p.y);
-    ctx.lineTo(p.x + 18, p.y);
-    ctx.stroke();
-    ctx.fillStyle = PURPLE;
+    ctx.fillStyle = AMBER;
     ctx.beginPath();
     ctx.arc(p.x, p.y, 5 + 2 * pulse, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "700 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("x = " + fmtNum(xp), p.x, p.y - 12);
     ctx.restore();
   }
 
   function paintScene(sc) {
     drawGrid();
     if (!sc) return;
-    var b = sc.b, h = sc.h, v = sc.v;
-    if (sc.showDottedH) drawDottedVLine(h, "rgba(96,165,250,0.5)");
-    if (sc.showTriangle) drawTriangle(b, h, v, 0.2);
+    var xp = sc.xp, yp = sc.yp, h = sc.h, v = sc.v;
+    var liveXp = (sc.liveXp != null) ? sc.liveXp : xp;
+    var liveYp = (sc.liveYp != null) ? sc.liveYp : yp;
+    if (sc.showXpGuide) drawXpGuide(liveXp, sc.t || 0);
+    if (sc.showDottedH) drawDottedVLine(xp + h, "rgba(96,165,250,0.5)");
+    if (sc.showTriangle) drawTriangle(xp, yp, h, v, 0.2);
     if (sc.hProgress > 0) {
-      var hx = h * Math.min(1, sc.hProgress);
-      drawArrow(0, b, hx, b, RUN, 3.2);
+      var hx = xp + h * Math.min(1, sc.hProgress);
+      drawArrow(xp, yp, hx, yp, RUN, 3.2);
     }
     if (sc.vProgress > 0) {
-      var vy = b + v * Math.min(1, sc.vProgress);
-      drawArrow(h, b, h, vy, RISE, 3.2);
+      var vy = yp + v * Math.min(1, sc.vProgress);
+      drawArrow(xp + h, yp, xp + h, vy, RISE, 3.2);
     }
-    if (sc.showLabels) drawSegmentLabels(b, h, v);
-    if (sc.showLine) drawLineThrough(b, h, v);
-    if (sc.highlightB) drawHighlightB(b, sc.t || 0);
-    if (sc.showA) drawPoint(0, b, "A(0, " + fmtNum(b) + ")", PURPLE);
-    if (sc.showB) drawPoint(h, b + v, "B(" + h + ", " + fmtNum(b + v) + ")", PURPLE);
-    if (sc.showLegend) drawLegend(b, h, v);
+    if (sc.showLabels) drawSegmentLabels(xp, yp, h, v);
+    if (sc.showLine) drawLineThrough(xp, yp, h, v);
+    if (sc.showP) {
+      drawPoint(liveXp, liveYp, "P(" + fmtNum(liveXp) + ", " + fmtNum(liveYp) + ")", PURPLE);
+    }
+    if (sc.showB) drawPoint(xp + h, yp + v, "B(" + fmtNum(xp + h) + ", " + fmtNum(yp + v) + ")", PURPLE);
+    if (sc.showLegend) drawLegend(xp, yp, h, v);
   }
 
   function chime() {
@@ -1048,44 +1076,86 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function runPresentation(token) {
     var p = pickParams();
     state.params = p;
-    /* Do NOT sync sliders to final params yet — reveal b→h→v per phase. */
     resetSlidersToZero();
     resetTableReveal();
-    var b = p.b, h = p.h, v = p.v;
+    var xp = p.xp, yp = p.yp, h = p.h, v = p.v;
     var sc = {
-      b: b, h: h, v: v, t: 0,
-      highlightB: false, showA: false, showDottedH: false,
+      xp: xp, yp: yp, h: h, v: v, t: 0,
+      showXpGuide: false, showP: false, showDottedH: false,
       hProgress: 0, vProgress: 0, showB: false,
-      showTriangle: false, showLabels: false, showLine: false, showLegend: false
+      showTriangle: false, showLabels: false, showLine: false, showLegend: false,
+      liveXp: 0, liveYp: 0
     };
     state.anim = sc;
     paintScene(sc);
     setCaption("Ejes y cuadrícula listos…");
     setWork("");
 
-    function phase1() {
+    /* Phase 1: xp → guide at x=xp */
+    function phaseXp() {
       if (token !== state.token) return;
-      setCaption("Seleccionando <span class=\"hl hl-b\">b</span>…");
-      animateSlider(bSlider, bLabel, 0, b, 550, token, function () {
+      setCaption("Seleccionando <span class=\"hl hl-xp\">x<sub>p</sub></span>…");
+      sc.showXpGuide = true;
+      var tAnim0 = performance.now();
+      function tickGuide(now) {
         if (token !== state.token) return;
-        sc.highlightB = true;
-        sc.showA = true;
-        setCaption("Ordenada al origen <span class=\"hl hl-b\">b = " + fmtNum(b) + "</span> · punto <strong>A(0, " + fmtNum(b) + ")</strong>");
+        sc.t = now - tAnim0;
+        var u = Math.min(1, (now - tAnim0) / 550);
+        sc.liveXp = 0 + (xp - 0) * easeOut(u);
+        xpSlider.value = String(sc.liveXp);
+        xpLabel.textContent = fmtNum(Math.round(sc.liveXp));
         paintScene(sc);
-        bipRow(rowBEl);
-        var t0 = performance.now();
-        function tick(now) {
-          if (token !== state.token) return;
-          sc.t = now - t0;
+        if (u < 1) state.raf = requestAnimationFrame(tickGuide);
+        else {
+          xpSlider.step = "1";
+          xpSlider.value = String(xp);
+          xpLabel.textContent = fmtNum(xp);
+          sc.liveXp = xp;
+          setCaption("Abscisa del punto <span class=\"hl hl-xp\">x<sub>p</sub> = " + fmtNum(xp) + "</span>");
           paintScene(sc);
-          if (now - t0 < 1400) state.raf = requestAnimationFrame(tick);
-          else { sc.highlightB = false; paintScene(sc); later(200, phase2); }
+          bipRow(rowXpEl);
+          later(900, phaseYp);
         }
-        state.raf = requestAnimationFrame(tick);
-      });
+      }
+      xpSlider.step = "any";
+      state.raf = requestAnimationFrame(tickGuide);
     }
 
-    function phase2() {
+    /* Phase 2: yp → complete P at (xp, yp) */
+    function phaseYp() {
+      if (token !== state.token) return;
+      setCaption("Seleccionando <span class=\"hl hl-yp\">y<sub>p</sub></span>…");
+      sc.showP = true;
+      sc.showXpGuide = true;
+      var t0 = performance.now();
+      var dur = 550;
+      function tick(now) {
+        if (token !== state.token) return;
+        var u = Math.min(1, (now - t0) / dur);
+        sc.liveYp = 0 + (yp - 0) * easeOut(u);
+        sc.t = now - t0;
+        ypSlider.value = String(sc.liveYp);
+        ypLabel.textContent = fmtNum(Math.round(sc.liveYp));
+        paintScene(sc);
+        if (u < 1) state.raf = requestAnimationFrame(tick);
+        else {
+          ypSlider.step = "1";
+          ypSlider.value = String(yp);
+          ypLabel.textContent = fmtNum(yp);
+          sc.liveYp = yp;
+          sc.showXpGuide = false;
+          setCaption("Punto dado <strong>P(" + fmtNum(xp) + ", " + fmtNum(yp) + ")</strong> · <span class=\"hl hl-yp\">y<sub>p</sub> = " + fmtNum(yp) + "</span>");
+          paintScene(sc);
+          bipRow(rowYpEl);
+          later(900, phaseH);
+        }
+      }
+      ypSlider.step = "any";
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    /* Phase 3: h → horizontal arrow + dotted x=xp+h */
+    function phaseH() {
       if (token !== state.token) return;
       setCaption("Seleccionando <span class=\"hl hl-h\">h</span>…");
       animateSlider(hSlider, hLabel, 0, h, 550, token, function () {
@@ -1104,20 +1174,21 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             sc.hProgress = 1;
             paintScene(sc);
             bipRow(rowHEl);
-            later(700, phase3);
+            later(700, phaseV);
           }
         }
         state.raf = requestAnimationFrame(tick);
       });
     }
 
-    function phase3() {
+    /* Phase 4: v → vertical arrow, B, triangle */
+    function phaseV() {
       if (token !== state.token) return;
       var dir = v > 0 ? "arriba" : "abajo";
       setCaption("Seleccionando <span class=\"hl hl-v\">v</span>…");
       animateSlider(vSlider, vLabel, 0, v, 550, token, function () {
         if (token !== state.token) return;
-        setCaption("Corrimiento vertical <span class=\"hl hl-v\">v = " + fmtNum(v) + "</span> (" + dir + ") · punto <strong>B(" + h + ", " + fmtNum(b + v) + ")</strong>");
+        setCaption("Corrimiento vertical <span class=\"hl hl-v\">v = " + fmtNum(v) + "</span> (" + dir + ") · punto <strong>B(" + fmtNum(xp + h) + ", " + fmtNum(yp + v) + ")</strong>");
         var t0 = performance.now();
         var dur = 1100;
         function tick(now) {
@@ -1131,40 +1202,40 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             sc.vProgress = 1; sc.showB = true; sc.showTriangle = true;
             paintScene(sc);
             bipRow(rowVEl);
-            later(700, phaseSubA);
+            later(700, phaseSubP);
           }
         }
         state.raf = requestAnimationFrame(tick);
       });
     }
 
-    /* After B exists: substitution walkthrough fills the table. */
-    function phaseSubA() {
+    /* Substitution: evaluate at x = xp → yp */
+    function phaseSubP() {
       if (token !== state.token) return;
-      state.reveal.x0 = true;
+      state.reveal.xp = true;
       refreshExprUI();
-      pulseCell(tX0);
-      setCaption("Sustitución · evaluar en <span class=\"hl\">x = 0</span> (punto A)");
-      setWork(formulaHTML(b, h, v));
+      pulseCell(tXp);
+      setCaption("Sustitución · evaluar en <span class=\"hl hl-xp\">x = " + fmtNum(xp) + "</span> (punto P)");
+      setWork(formulaHTML(xp, yp, h, v));
       later(900, function () {
         if (token !== state.token) return;
-        setWork(formulaHTML(b, h, v, "0"));
+        setWork(formulaHTML(xp, yp, h, v, String(xp)));
         later(900, function () {
           if (token !== state.token) return;
-          var zeroTerm = fracHTML(v, h) + "·0 = <span class=\"hl\">0</span>";
-          setWork("f(0) = " + zeroTerm + " + <span class=\"hl-b\">" +
-            ((b < 0) ? ("(" + fmtNum(b) + ")") : fmtNum(b)) + "</span>");
+          var zeroParen = "(" + fmtNum(xp) + " − " + fmtNum(xp) + ") = <span class=\"hl\">0</span>";
+          setWork("f(" + fmtNum(xp) + ") = " + fracHTML(v, h) + "·" + zeroParen +
+            " + " + ypHTML(yp));
           later(900, function () {
             if (token !== state.token) return;
-            setWork("f(0) = <span class=\"hl-b\">" + fmtNum(b) + "</span>");
-            state.reveal.y0 = true;
+            setWork("f(" + fmtNum(xp) + ") = <span class=\"hl-yp\">" + fmtNum(yp) + "</span>");
+            state.reveal.yp = true;
             refreshExprUI();
-            pulseCell(tY0);
-            if (tableRowA) {
-              tableRowA.classList.remove("bip");
-              void tableRowA.offsetWidth;
-              tableRowA.classList.add("bip");
-              state.bipTimers.push(setTimeout(function () { tableRowA.classList.remove("bip"); }, 900));
+            pulseCell(tYp);
+            if (tableRowP) {
+              tableRowP.classList.remove("bip");
+              void tableRowP.offsetWidth;
+              tableRowP.classList.add("bip");
+              state.bipTimers.push(setTimeout(function () { tableRowP.classList.remove("bip"); }, 900));
             }
             later(1100, phaseSubB);
           });
@@ -1172,25 +1243,27 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       });
     }
 
+    /* Substitution: evaluate at x = xp+h → yp+v */
     function phaseSubB() {
       if (token !== state.token) return;
+      var xB = xp + h;
       state.reveal.xh = true;
       refreshExprUI();
       pulseCell(tXh);
-      setCaption("Sustitución · evaluar en <span class=\"hl hl-h\">x = " + h + "</span> (punto B)");
-      setWork(formulaHTML(b, h, v));
+      setCaption("Sustitución · evaluar en <span class=\"hl hl-h\">x = " + fmtNum(xB) + "</span> (punto B)");
+      setWork(formulaHTML(xp, yp, h, v));
       later(900, function () {
         if (token !== state.token) return;
-        setWork(formulaHTML(b, h, v, String(h)));
+        setWork(formulaHTML(xp, yp, h, v, String(xB)));
         later(900, function () {
           if (token !== state.token) return;
-          var bPart = (b < 0) ? ("(" + fmtNum(b) + ")") : fmtNum(b);
-          setWork("f(" + h + ") = " + fracHTML(v, h) + "·" + h +
-            " + <span class=\"hl-b\">" + bPart + "</span> <span class=\"step-eq\">→</span> " +
-            "<span class=\"hl-v\">" + fmtNum(v) + "</span> + <span class=\"hl-b\">" + bPart + "</span>");
+          var ypPart = (yp < 0) ? ("(" + fmtNum(yp) + ")") : fmtNum(yp);
+          setWork("f(" + fmtNum(xB) + ") = " + fracHTML(v, h) + "·(" + fmtNum(xB) + " − " + fmtNum(xp) + ")" +
+            " + <span class=\"hl-yp\">" + ypPart + "</span> <span class=\"step-eq\">→</span> " +
+            "<span class=\"hl-v\">" + fmtNum(v) + "</span> + <span class=\"hl-yp\">" + ypPart + "</span>");
           later(1000, function () {
             if (token !== state.token) return;
-            setWork("f(" + h + ") = <span class=\"hl\">" + fmtNum(b + v) + "</span>");
+            setWork("f(" + fmtNum(xB) + ") = <span class=\"hl\">" + fmtNum(yp + v) + "</span>");
             state.reveal.yh = true;
             refreshExprUI();
             pulseCell(tYh);
@@ -1200,33 +1273,33 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
               tableRowB.classList.add("bip");
               state.bipTimers.push(setTimeout(function () { tableRowB.classList.remove("bip"); }, 900));
             }
-            later(1100, phase4);
+            later(1100, phaseLabels);
           });
         });
       });
     }
 
-    function phase4() {
+    function phaseLabels() {
       if (token !== state.token) return;
       setWork("");
       sc.showLabels = true;
       setCaption("Etiquetas del triángulo de pendiente: <span class=\"hl hl-h\">h = " + h + "</span>, <span class=\"hl hl-v\">v = " + fmtNum(v) + "</span>");
       paintScene(sc);
-      later(1200, phase5);
+      later(1200, phaseLine);
     }
 
-    function phase5() {
+    function phaseLine() {
       if (token !== state.token) return;
       sc.showLine = true;
-      setCaption("Recta que pasa por <strong>A</strong> y <strong>B</strong>");
+      setCaption("Recta que pasa por <strong>P</strong> y <strong>B</strong>");
       paintScene(sc);
-      later(900, phase6);
+      later(900, phaseLegend);
     }
 
-    function phase6() {
+    function phaseLegend() {
       if (token !== state.token) return;
       sc.showLegend = true;
-      setCaption("Fórmula: " + formulaHTML(b, h, v));
+      setCaption("Fórmula: " + formulaHTML(xp, yp, h, v));
       paintScene(sc);
       chime();
       later(1800, phaseDone);
@@ -1242,7 +1315,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       });
     }
 
-    phase1();
+    phaseXp();
   }
 
   function startNextRound() {
@@ -1270,7 +1343,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.token++;
     updateButtons();
     setCaption("Detenido en ronda <strong>" + state.round + "/" + TOTAL + "</strong>. Presioná Play para continuar o Reiniciar.");
-    // Idle after round: sliders + full table match target params
     if (state.params) {
       syncSlidersFromParams();
       drawFullStatic();
@@ -1292,21 +1364,23 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     setRound(0);
     updateButtons();
     doneBanner.classList.remove("on");
-    state.params = { b: 0, h: 0, v: 0 };
-    state.reveal = { x0: false, y0: false, xh: false, yh: false };
+    state.params = { xp: 0, yp: 0, h: 0, v: 0 };
+    state.reveal = { xp: false, yp: false, xh: false, yh: false };
     resetSlidersToZero();
     refreshExprUI();
     setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> — cada uno se mueve al dibujar, o explorá a mano.");
     state.anim = {
-      b: 0, h: 0, v: 0, t: 0,
-      highlightB: false, showA: false, showDottedH: false,
+      xp: 0, yp: 0, h: 0, v: 0, t: 0,
+      showXpGuide: false, showP: false, showDottedH: false,
       hProgress: 0, vProgress: 0, showB: false,
-      showTriangle: false, showLabels: false, showLine: false, showLegend: false
+      showTriangle: false, showLabels: false, showLine: false, showLegend: false,
+      liveXp: 0, liveYp: 0
     };
     paintScene(state.anim);
   }
 
-  bSlider.addEventListener("input", function () { onSliderInput("b"); });
+  xpSlider.addEventListener("input", function () { onSliderInput("xp"); });
+  ypSlider.addEventListener("input", function () { onSliderInput("yp"); });
   hSlider.addEventListener("input", function () { onSliderInput("h"); });
   vSlider.addEventListener("input", function () { onSliderInput("v"); });
 
@@ -1328,17 +1402,17 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   restartBtn.addEventListener("click", restart);
   repeatBtn.addEventListener("click", function () { startPlay(0); });
 
-  // Initial: all selectors at 0, empty axes — Play moves them in sequence
-  state.params = { b: 0, h: 0, v: 0 };
-  state.reveal = { x0: false, y0: false, xh: false, yh: false };
+  state.params = { xp: 0, yp: 0, h: 0, v: 0 };
+  state.reveal = { xp: false, yp: false, xh: false, yh: false };
   updateButtons();
   resetSlidersToZero();
   refreshExprUI();
   state.anim = {
-    b: 0, h: 0, v: 0, t: 0,
-    highlightB: false, showA: false, showDottedH: false,
+    xp: 0, yp: 0, h: 0, v: 0, t: 0,
+    showXpGuide: false, showP: false, showDottedH: false,
     hProgress: 0, vProgress: 0, showB: false,
-    showTriangle: false, showLabels: false, showLine: false, showLegend: false
+    showTriangle: false, showLabels: false, showLine: false, showLegend: false,
+    liveXp: 0, liveYp: 0
   };
   setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> — cada uno se mueve al dibujar, o explorá a mano.");
   paintScene(state.anim);
