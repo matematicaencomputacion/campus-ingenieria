@@ -231,10 +231,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="expr-row slider-v" id="rowV">
           <div class="slider-head">
             <span class="slider-val">v <span class="eq">=</span> <span id="vLabel">0</span></span>
-            <span class="slider-hint">unidad vertical</span>
+            <span class="slider-hint">unidad vertical (puede ser negativa)</span>
           </div>
-          <input type="range" id="vSlider" min="0" max="3" step="1" value="0" aria-label="unidad vertical v" />
-          <div class="range-ends"><span>0</span><span>3</span></div>
+          <input type="range" id="vSlider" min="-2" max="2" step="1" value="0" aria-label="unidad vertical v" />
+          <div class="range-ends"><span>−2</span><span>2</span></div>
         </div>
         <div class="expr-row">
           <div class="chips">
@@ -263,7 +263,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Valores fijos del play: x<sub>p</sub>=0, y<sub>p</sub>=0, h=1, v=1 · f(x)=(v/h)(x−x<sub>p</sub>)²+y<sub>p</sub> · patrón de subidas impares 1·3·5</p>
+    <p class="hint">Primeros 5 bucles en (0,0) con h,v distintos; luego vértice al azar. v puede ser negativo (abre hacia abajo · eje X arriba). f(x)=(v/h)(x−x<sub>p</sub>)²+y<sub>p</sub> · patrón impar 1·3·5</p>
   </div>
 </div>
 
@@ -323,7 +323,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     timers: [],
     bipTimers: [],
     token: 0,
-    slow: false
+    slow: false,
+    lastHV: null,
+    first5Schedule: null,
+    shownNegV: false
   };
 
   function fmtNum(n) {
@@ -413,6 +416,97 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function speedFactor() { return state.slow ? 2 : 1; }
+
+  var H_POOL = [1, 2];
+  var V_POOL = [1, 2, -1, -2];
+  var XP_POOL = [-1, 0, 1];
+  var YP_POOL = [-1, 0, 1, 2];
+
+  function shuffleInPlace(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function pickAvoid(pool, avoid) {
+    var opts = [];
+    for (var i = 0; i < pool.length; i++) {
+      if (avoid == null || pool[i] !== avoid) opts.push(pool[i]);
+    }
+    if (!opts.length) opts = pool.slice();
+    return opts[Math.floor(Math.random() * opts.length)];
+  }
+
+  function buildFirst5Schedule() {
+    /* Curated pairs: always (0,0); varied (h,v) with ≥1 negative v */
+    var pairs = [
+      { h: 1, v: 1 },
+      { h: 2, v: 1 },
+      { h: 1, v: 2 },
+      { h: 1, v: -1 },
+      { h: 2, v: -2 }
+    ];
+    return shuffleInPlace(pairs);
+  }
+
+  function fitWorldToParams(p) {
+    var xp = p.xp, yp = p.yp, h = Math.abs(p.h) || 1, v = p.v;
+    var xSpan = Math.max(Math.abs(xp) + 3 * h, 4);
+    XMIN = -Math.ceil(xSpan + 0.5);
+    XMAX = Math.ceil(xSpan + 0.5);
+    if (v >= 0) {
+      /* construcción hacia arriba; vértice cerca del piso del lienzo */
+      var yTop = yp + 9 * v;
+      YMIN = Math.min(-1, yp - 1);
+      YMAX = Math.max(yTop + 1, yp + 2, 10);
+    } else {
+      /* v < 0: eje X / vértice cerca del TOPE; patrón 1·3·5 hacia ABAJO */
+      YMAX = yp + 2;
+      YMIN = yp + 9 * v - 1;
+    }
+  }
+
+  function pickParamsForLoop(loop) {
+    var xp, yp, h, v;
+    if (loop <= 5) {
+      xp = 0;
+      yp = 0;
+      if (!state.first5Schedule || !state.first5Schedule.length) {
+        state.first5Schedule = buildFirst5Schedule();
+      }
+      var pair = state.first5Schedule[loop - 1] || { h: 1, v: 1 };
+      h = pair.h;
+      v = pair.v;
+    } else {
+      h = pickAvoid(H_POOL, state.lastHV && state.lastHV.h);
+      v = pickAvoid(V_POOL, state.lastHV && state.lastHV.v);
+      /* avoid identical (h,v) repeat when possible */
+      if (state.lastHV && h === state.lastHV.h && v === state.lastHV.v) {
+        v = pickAvoid(V_POOL, v);
+      }
+      xp = XP_POOL[Math.floor(Math.random() * XP_POOL.length)];
+      yp = YP_POOL[Math.floor(Math.random() * YP_POOL.length)];
+    }
+    FIXED.xp = xp;
+    FIXED.yp = yp;
+    FIXED.h = h;
+    FIXED.v = v;
+    state.lastHV = { h: h, v: v };
+    if (v < 0) state.shownNegV = true;
+    fitWorldToParams(FIXED);
+  }
+
+  function vertWord() {
+    return FIXED.v < 0 ? "Caída" : "Subida";
+  }
+
+  function paramsCaptionBits() {
+    return "P(<span class=\"hl hl-xp\">" + fmtNum(FIXED.xp) + "</span>, <span class=\"hl hl-yp\">" + fmtNum(FIXED.yp) + "</span>) · <span class=\"hl hl-h\">h=" + fmtNum(FIXED.h) + "</span> · <span class=\"hl hl-v\">v=" + fmtNum(FIXED.v) + "</span>";
+  }
 
   function later(ms, fn) {
     var id = setTimeout(fn, ms * speedFactor());
@@ -830,17 +924,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function runLoop(token) {
+    pickParamsForLoop(state.loop);
     resetSlidersToZero();
     var sc = emptyScene();
     state.anim = sc;
     paintScene(sc);
     exprFormula.innerHTML = "f(x) = (v/h)(x − x<sub>p</sub>)² + y<sub>p</sub>";
     setWork("");
+    setCaption("Bucle <strong>" + state.loop + "</strong> · " + paramsCaptionBits());
 
     /* 1 — eje de simetría, blink ×3 + bip */
     function step1() {
       if (token !== state.token) return;
-      setCaption("Eje de simetría en <span class=\"hl hl-xp\">x = " + fmtNum(FIXED.xp) + "</span>");
+      setCaption("Bucle <strong>" + state.loop + "</strong> · " + paramsCaptionBits() + " · eje <span class=\"hl hl-xp\">x = " + fmtNum(FIXED.xp) + "</span>");
       setWork("Eje de simetría · <span class=\"hl-xp\">x = x<sub>p</sub> = " + fmtNum(FIXED.xp) + "</span>");
       sc.showAxis = true;
       sc.axisBlink = 1;
@@ -888,7 +984,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     /* H1 — dual yellow ±h along y=yp */
     function stepH1() {
       if (token !== state.token) return;
-      setCaption("Paso horizontal <span class=\"hl hl-h\">h = " + FIXED.h + "</span> · flechas ±h desde el vértice");
+      setCaption("Paso horizontal <span class=\"hl hl-h\">h = " + fmtNum(FIXED.h) + "</span> · flechas ±h desde el vértice · " + paramsCaptionBits());
       setWork("H1 · <span class=\"hl-h\">±h</span> → (" + fmtNum(FIXED.xp - FIXED.h) + ", " + fmtNum(FIXED.yp) + ") y (" + fmtNum(FIXED.xp + FIXED.h) + ", " + fmtNum(FIXED.yp) + ")");
       animateSlider(hSlider, hLabel, 0, FIXED.h, 550, token, function () {
         if (token !== state.token) return;
@@ -905,7 +1001,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     /* V1 — dual teal up by 1·v */
     function stepV1() {
       if (token !== state.token) return;
-      setCaption("Subida vertical ×1 · <span class=\"hl hl-v\">1 · v</span> → (±h, y<sub>p</sub>+v)");
+      setCaption(vertWord() + " vertical ×1 · <span class=\"hl hl-v\">1 · |v|</span> → (±h, y<sub>p</sub>+v) · " + paramsCaptionBits());
       setWork("V1 · vertical <span class=\"hl-v\">×1</span> → (" + fmtNum(FIXED.xp - FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.v) + ") y (" + fmtNum(FIXED.xp + FIXED.h) + ", " + fmtNum(FIXED.yp + FIXED.v) + ")");
       animateSlider(vSlider, vLabel, 0, FIXED.v, 550, token, function () {
         if (token !== state.token) return;
@@ -933,7 +1029,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     /* V2 — dual teal up by 3·v */
     function stepV2() {
       if (token !== state.token) return;
-      setCaption("Subida vertical ×3 · <span class=\"hl hl-v\">3 · v</span> → (±2h, y<sub>p</sub>+4v)");
+      setCaption(vertWord() + " vertical ×3 · <span class=\"hl hl-v\">3 · |v|</span> → (±2h, y<sub>p</sub>+4v) · " + paramsCaptionBits());
       setWork("V2 · vertical <span class=\"hl-v\">×3</span> → (" + fmtNum(FIXED.xp - 2 * FIXED.h) + ", " + fmtNum(FIXED.yp + 4 * FIXED.v) + ") y (" + fmtNum(FIXED.xp + 2 * FIXED.h) + ", " + fmtNum(FIXED.yp + 4 * FIXED.v) + ")");
       animateProgress("v2", 800, token, function () {
         if (token !== state.token) return;
@@ -957,7 +1053,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     /* V3 — dual teal up by 5·v, then STOP + parabola + purple dots */
     function stepV3() {
       if (token !== state.token) return;
-      setCaption("Subida vertical ×5 · <span class=\"hl hl-v\">5 · v</span> → (±3h, y<sub>p</sub>+9v) · patrón <strong>1, 3, 5</strong>");
+      setCaption(vertWord() + " vertical ×5 · <span class=\"hl hl-v\">5 · |v|</span> → (±3h, y<sub>p</sub>+9v) · patrón <strong>1, 3, 5</strong> · " + paramsCaptionBits());
       setWork("V3 · vertical <span class=\"hl-v\">×5</span> → (" + fmtNum(FIXED.xp - 3 * FIXED.h) + ", " + fmtNum(FIXED.yp + 9 * FIXED.v) + ") y (" + fmtNum(FIXED.xp + 3 * FIXED.h) + ", " + fmtNum(FIXED.yp + 9 * FIXED.v) + ")");
       animateProgress("v3", 900, token, function () {
         if (token !== state.token) return;
@@ -969,8 +1065,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
     function stepStop() {
       if (token !== state.token) return;
-      setCaption("<strong>STOP</strong> · parábola f(x)=(v/h)(x−x<sub>p</sub>)²+y<sub>p</sub> · puntos del patrón 1·3·5");
-      setWork("STOP · 7 puntos · P(0,0) · (±1,1) · (±2,4) · (±3,9)");
+      var xp = FIXED.xp, yp = FIXED.yp, h = FIXED.h, v = FIXED.v;
+      setCaption("<strong>STOP</strong> · " + paramsCaptionBits() + " · parábola · patrón 1·3·5");
+      setWork("STOP · 7 puntos · P(" + fmtNum(xp) + "," + fmtNum(yp) + ") · (±" + fmtNum(h) + "," + fmtNum(yp + v) + ") · (±" + fmtNum(2 * h) + "," + fmtNum(yp + 4 * v) + ") · (±" + fmtNum(3 * h) + "," + fmtNum(yp + 9 * v) + ")");
       sc.showParabola = true;
       sc.showPurpleDots = true;
       paintScene(sc);
@@ -979,10 +1076,16 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       later(1800, function () {
         if (token !== state.token) return;
         if (!state.playing) return;
-        setLoop(state.loop + 1);
-        clearTimers();
-        state.token++;
-        runLoop(state.token);
+        setCaption("Pausa 5 s · próximo vértice / parámetros…");
+        setWork("");
+        later(5000, function () {
+          if (token !== state.token) return;
+          if (!state.playing) return;
+          setLoop(state.loop + 1);
+          clearTimers();
+          state.token++;
+          runLoop(state.token);
+        });
       });
     }
 
@@ -993,6 +1096,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     clearTimers();
     state.playing = true;
     state.token++;
+    state.first5Schedule = buildFirst5Schedule();
+    state.lastHV = null;
+    state.shownNegV = false;
     setLoop(1);
     updateButtons();
     runLoop(state.token);
@@ -1011,13 +1117,18 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     clearTimers();
     state.playing = false;
     state.token++;
+    state.first5Schedule = null;
+    state.lastHV = null;
+    state.shownNegV = false;
+    FIXED.xp = 0; FIXED.yp = 0; FIXED.h = 1; FIXED.v = 1;
+    fitWorldToParams(FIXED);
     setLoop(0);
     updateButtons();
     resetSlidersToZero();
     state.anim = emptyScene();
     setWork("");
     exprFormula.innerHTML = "f(x) = (v/h)(x − x<sub>p</sub>)² + y<sub>p</sub>";
-    setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> para el patrón de subidas impares <strong>1, 3, 5</strong>.");
+    setCaption("Selectores en <strong>0</strong>. Presioná <strong>▶ Play</strong> · primeros 5 en (0,0) con h,v variados; v puede ser negativo.");
     paintScene(state.anim);
     refreshChips(state.anim);
   }
