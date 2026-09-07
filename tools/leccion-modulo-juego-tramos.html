@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 103 · Módulo · |f(x)| · juego · tramos debajo</title>
+<title>Lección 103 · Módulo · |f(x)| · juego · tramos · ceros · rayos · seno</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -240,7 +240,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <header>
     <div>
       <h1><span class="lesson-num">Lección 103</span> · Módulo · |f(x)| · juego
-        <span class="sub">tramos debajo</span>
+        <span class="sub">tramos · ceros · rayos · seno</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -253,7 +253,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     </div>
   </header>
 
-  <p class="prompt attention" id="prompt">¿Qué tramos están debajo del eje X?</p>
+  <p class="prompt attention" id="prompt">Ceros (verticales) · ¿dónde f(x)<0?</p>
 
   <div class="card">
     <div class="main-stage">
@@ -263,7 +263,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         </div>
         <div class="expr-row phase-ask">
           <span class="mode-tag" id="modeTag">Tramos</span>
-          <p class="hint-mini" id="sideHint">Tramos f&lt;0 · entre ceros</p>
+          <p class="hint-mini" id="sideHint">Ceros → abiertos donde f<0</p>
           <div class="chips" style="margin-top:8px" id="chipBox"></div>
         </div>
       </aside>
@@ -274,19 +274,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="paused-banner" id="pausedBanner">PAUSA</div>
         <div class="victory-banner" id="victoryBanner">
           <div>¡Ganador!</div>
-          <div class="sub-v">20 éxitos · módulo · tramos debajo</div>
+          <div class="sub-v">20 éxitos · módulo · tramos · ceros · rayos · seno</div>
           <div class="victory-actions">
             <button type="button" class="btn primary" id="victoryContinue">Seguir jugando</button>
             <button type="button" class="btn amber" id="victoryRestart">Reiniciar</button>
           </div>
         </div>
-        <canvas id="c" width="1000" height="700" class="clickable" aria-label="Plano · tramos debajo"></canvas>
+        <canvas id="c" width="1000" height="700" class="clickable" aria-label="Plano · tramos · ceros · rayos · seno"></canvas>
         <canvas id="confetti" width="1000" height="700" aria-hidden="true"></canvas>
       </div>
     </div>
 
     <div class="bottom-bar">
-      <p class="hint">f≥0 se queda · solo f<0 se espeja · zona caqui · win@20</p>
+      <p class="hint">Cero → rayo abierto ←/→ · seno: verticales en ceros (°) · f≥0 se queda · win@20</p>
       <div class="sound-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
         <span class="sound-meter-label" aria-hidden="true">♪</span>
         <span class="sound-bar" data-i="0"></span>
@@ -311,7 +311,8 @@ var GK = window.CampusGameKit || {};
   var ORIG = "#f59e0b", MIR = "#38bdf8", MIR_GLOW = "rgba(56,189,248,0.4)";
   var AXIS_GLOW = "#FFBF00", CURVE_ORIG = "rgba(245,158,11,0.55)", CURVE_ABS = "#38bdf8";
   var NEG_HL = "#ff7b7b", KHAKI = "rgba(210,180,100,0.18)", ABS_COL = "#e879f9";
-  var FAMILIES = ["linear", "quadratic", "sqrt", "exp", "log", "hyperbola"];
+  var FAMILIES = ["linear", "quadratic", "sqrt", "exp", "log", "hyperbola", "sine", "cosine"];
+  var TRIG_MODE = false;
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -336,7 +337,7 @@ var GK = window.CampusGameKit || {};
 
   var XMIN = -8, XMAX = 8, YMIN = -8, YMAX = 8;
   var PAD = { l: 48, r: 28, t: 28, b: 48 };
-  var CELL_PX = 36;
+  var CELL_PX = 36, CELL_PX_Y = null;
 
   function delay(ms) { return ms * (state.speedFactor || 1); }
   function clearTimers() { (state.timers || []).forEach(function (id) { clearTimeout(id); }); state.timers = []; }
@@ -356,8 +357,16 @@ var GK = window.CampusGameKit || {};
     return a;
   }
   function pick(arr) { return arr[(Math.random() * arr.length) | 0]; }
+  function isTrig(fam) {
+    return fam && (fam.kind === "sine" || fam.kind === "cosine");
+  }
+  function fmtDeg(n) {
+    return fmtNum(n) + "°";
+  }
   function clampWorldPts(pts, pad) {
     pad = pad == null ? 1 : pad;
+    TRIG_MODE = false;
+    CELL_PX_Y = null;
     var mx = 6, my = 6;
     for (var i = 0; i < pts.length; i++) {
       mx = Math.max(mx, Math.abs(pts[i].x));
@@ -370,10 +379,22 @@ var GK = window.CampusGameKit || {};
     CELL_PX = span <= 12 ? 40 : (span <= 16 ? 34 : (span <= 22 ? 28 : 22));
     sizeCanvas();
   }
+  /** Ventana anisotrópica para trig en grados: X ancho, Y ∈ [-1.5, 1.5]. */
+  function fitTrigWorld(fam) {
+    TRIG_MODE = true;
+    XMIN = fam && fam.xMin != null ? fam.xMin : -180;
+    XMAX = fam && fam.xMax != null ? fam.xMax : 360;
+    YMIN = -1.5; YMAX = 1.5;
+    var spanX = Math.max(1, XMAX - XMIN), spanY = Math.max(1, YMAX - YMIN);
+    CELL_PX = Math.max(1.15, Math.min(2.4, 820 / spanX));
+    CELL_PX_Y = Math.max(56, Math.min(100, 260 / spanY));
+    sizeCanvas();
+  }
   function sizeCanvas() {
     var spanX = Math.max(1, XMAX - XMIN), spanY = Math.max(1, YMAX - YMIN);
-    canvas.width = Math.round(PAD.l + spanX * CELL_PX + PAD.r);
-    canvas.height = Math.round(PAD.t + spanY * CELL_PX + PAD.b);
+    var cpx = CELL_PX, cpy = CELL_PX_Y != null ? CELL_PX_Y : CELL_PX;
+    canvas.width = Math.round(PAD.l + spanX * cpx + PAD.r);
+    canvas.height = Math.round(PAD.t + spanY * cpy + PAD.b);
   }
   function worldToScreen(x, y) {
     var w = canvas.width - PAD.l - PAD.r, hh = canvas.height - PAD.t - PAD.b;
@@ -431,6 +452,8 @@ var GK = window.CampusGameKit || {};
       if (Math.abs(x) < 1e-9) return null;
       return fam.k / x;
     }
+    if (fam.kind === "sine") return Math.sin(x * Math.PI / 180);
+    if (fam.kind === "cosine") return Math.cos(x * Math.PI / 180);
     return null;
   }
   function formulaHTML(fam, absed) {
@@ -455,6 +478,10 @@ var GK = window.CampusGameKit || {};
       core = "log<sub>" + fmtNum(fam.base) + "</sub>(x)";
     } else if (fam.kind === "hyperbola") {
       core = fmtNum(fam.k) + " / x";
+    } else if (fam.kind === "sine") {
+      core = "sen(x)";
+    } else if (fam.kind === "cosine") {
+      core = "cos(x)";
     } else {
       core = "f(x)";
     }
@@ -462,7 +489,7 @@ var GK = window.CampusGameKit || {};
     return "y = <span class=\"hl-orig\">" + core + "</span>";
   }
   function familyLabel(kind) {
-    return ({ linear: "lineal", quadratic: "cuadrática", sqrt: "raíz", exp: "exponencial", log: "logaritmo", hyperbola: "hipérbola" })[kind] || kind;
+    return ({ linear: "lineal", quadratic: "cuadrática", sqrt: "raíz", exp: "exponencial", log: "logaritmo", hyperbola: "hipérbola", sine: "seno", cosine: "coseno" })[kind] || kind;
   }
 
   function makeLinear() {
@@ -530,6 +557,30 @@ var GK = window.CampusGameKit || {};
     }
     return { kind: "hyperbola", k: k, points: shuffle(pts).slice(0, 6) };
   }
+  function niceTrigY(y) {
+    if (Math.abs(y) < 1e-12) return 0;
+    if (Math.abs(y - 1) < 1e-12) return 1;
+    if (Math.abs(y + 1) < 1e-12) return -1;
+    if (Math.abs(y - 0.5) < 1e-12) return 0.5;
+    if (Math.abs(y + 0.5) < 1e-12) return -0.5;
+    return Math.round(y * 1000) / 1000;
+  }
+  function makeSine() {
+    var xMin = -180, xMax = 360;
+    var xs = [-180, -90, 0, 90, 180, 270, 360];
+    var pts = xs.map(function (x) {
+      return { x: x, y: niceTrigY(Math.sin(x * Math.PI / 180)) };
+    });
+    return { kind: "sine", points: pts, xMin: xMin, xMax: xMax };
+  }
+  function makeCosine() {
+    var xMin = -180, xMax = 360;
+    var xs = [-180, -90, 0, 90, 180, 270, 360];
+    var pts = xs.map(function (x) {
+      return { x: x, y: niceTrigY(Math.cos(x * Math.PI / 180)) };
+    });
+    return { kind: "cosine", points: pts, xMin: xMin, xMax: xMax };
+  }
   function makeFamily(kind) {
     if (kind === "linear") return makeLinear();
     if (kind === "quadratic") return makeQuadratic();
@@ -537,12 +588,18 @@ var GK = window.CampusGameKit || {};
     if (kind === "exp") return makeExp();
     if (kind === "log") return makeLog();
     if (kind === "hyperbola") return makeHyperbola();
+    if (kind === "sine") return makeSine();
+    if (kind === "cosine") return makeCosine();
     return makeLinear();
   }
   function randomFamily(prefer) {
     return makeFamily(prefer || pick(FAMILIES));
   }
   function fitFamily(fam) {
+    if (isTrig(fam)) {
+      fitTrigWorld(fam);
+      return;
+    }
     var pts = (fam.points || []).slice();
     var nPts = pts.length;
     for (var i = 0; i < nPts; i++) pts.push(absPt(pts[i]));
@@ -586,6 +643,18 @@ var GK = window.CampusGameKit || {};
       }
     } else if (fam.kind === "log") {
       zs.push(1);
+    } else if (fam.kind === "sine") {
+      var k, z;
+      for (k = Math.ceil(XMIN / 180); k <= Math.floor(XMAX / 180); k++) {
+        z = k * 180;
+        if (z >= XMIN - 1e-9 && z <= XMAX + 1e-9) zs.push(z);
+      }
+    } else if (fam.kind === "cosine") {
+      var kc, zc;
+      for (kc = Math.ceil((XMIN - 90) / 180); kc <= Math.floor((XMAX - 90) / 180); kc++) {
+        zc = 90 + kc * 180;
+        if (zc >= XMIN - 1e-9 && zc <= XMAX + 1e-9) zs.push(zc);
+      }
     }
     return zs.filter(function (z) { return isFinite(z); });
   }
@@ -605,17 +674,19 @@ var GK = window.CampusGameKit || {};
     }
     return out;
   }
-  function fmtInterval(lo, hi, openLo, openHi) {
-    if (Math.abs(hi - lo) < 1e-9) return "x = " + fmtNum(lo);
+  function fmtInterval(lo, hi, openLo, openHi, deg) {
+    var f = deg ? fmtDeg : fmtNum;
+    if (Math.abs(hi - lo) < 1e-9) return "x = " + f(lo);
     var L = openLo ? "(" : "[";
     var R = openHi ? ")" : "]";
-    return L + fmtNum(lo) + ", " + fmtNum(hi) + R;
+    return L + f(lo) + ", " + f(hi) + R;
   }
   /** Tramos entre ceros / rupturas de dominio. f=0 NO es f<0. */
   function buildStretches(fam) {
     var pts = (fam.points || []).slice().sort(function (a, b) { return a.x - b.x; });
     var xmin = XMIN, xmax = XMAX;
-    if (pts.length) {
+    /* Trig ya fija ventana en grados — no expandir con ±0.5 de muestras. */
+    if (pts.length && !isTrig(fam)) {
       xmin = Math.min(xmin, pts[0].x - 0.5);
       xmax = Math.max(xmax, pts[pts.length - 1].x + 0.5);
     }
@@ -647,12 +718,28 @@ var GK = window.CampusGameKit || {};
         mid: mid, yMid: y
       });
     }
+    var deg = isTrig(fam);
     stretches.forEach(function (s, idx) {
       s.id = idx;
-      s.label = fmtInterval(s.lo, s.hi, s.openLo, s.openHi);
+      s.label = fmtInterval(s.lo, s.hi, s.openLo, s.openHi, deg);
       if (s.needMirror) s.signLabel = "f < 0 · espejar · entre ceros";
       else s.signLabel = "f ≥ 0 · se queda";
     });
+    /* Lineal con un cero: rayos abiertos izq/der (conjunto abierto desde el corte). */
+    if (fam.kind === "linear" && zeros.length === 1 && stretches.length === 2) {
+      var z0 = zeros[0];
+      stretches.forEach(function (s) {
+        s.ray = true;
+        s.zero = z0;
+        if (s.mid < z0) {
+          s.dir = "left";
+          s.label = "x < " + fmtNum(z0) + "  (abierto ←)";
+        } else {
+          s.dir = "right";
+          s.label = "x > " + fmtNum(z0) + "  (abierto →)";
+        }
+      });
+    }
     fam._zeros = zeros;
     return stretches;
   }
@@ -673,13 +760,26 @@ var GK = window.CampusGameKit || {};
     drawKhaki();
     ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 1;
     var xi, yi, p0, p1;
-    for (xi = Math.ceil(XMIN); xi <= Math.floor(XMAX); xi++) {
-      p0 = worldToScreen(xi, YMIN); p1 = worldToScreen(xi, YMAX);
-      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
-    }
-    for (yi = Math.ceil(YMIN); yi <= Math.floor(YMAX); yi++) {
-      p0 = worldToScreen(XMIN, yi); p1 = worldToScreen(XMAX, yi);
-      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    if (TRIG_MODE) {
+      /* Grilla cada 90° (campus usa grados). */
+      for (xi = Math.ceil(XMIN / 90) * 90; xi <= XMAX + 1e-9; xi += 90) {
+        p0 = worldToScreen(xi, YMIN); p1 = worldToScreen(xi, YMAX);
+        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+      }
+      [-1, -0.5, 0.5, 1].forEach(function (yv) {
+        if (yv < YMIN || yv > YMAX) return;
+        p0 = worldToScreen(XMIN, yv); p1 = worldToScreen(XMAX, yv);
+        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+      });
+    } else {
+      for (xi = Math.ceil(XMIN); xi <= Math.floor(XMAX); xi++) {
+        p0 = worldToScreen(xi, YMIN); p1 = worldToScreen(xi, YMAX);
+        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+      }
+      for (yi = Math.ceil(YMIN); yi <= Math.floor(YMAX); yi++) {
+        p0 = worldToScreen(XMIN, yi); p1 = worldToScreen(XMAX, yi);
+        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+      }
     }
     var ox = worldToScreen(0, 0);
     ctx.strokeStyle = "#64748b"; ctx.lineWidth = 1.4;
@@ -694,32 +794,48 @@ var GK = window.CampusGameKit || {};
       ctx.shadowBlur = 0;
       ctx.fillStyle = AXIS_GLOW; ctx.font = "800 12px ui-monospace, Menlo, monospace";
       ctx.textAlign = "right"; ctx.textBaseline = "bottom";
-      ctx.fillText("eje X · solo f(x)<0", canvas.width - PAD.r - 6, ox.y - 8);
+      ctx.fillText(TRIG_MODE ? "eje X (°) · solo f(x)<0" : "eje X · solo f(x)<0", canvas.width - PAD.r - 6, ox.y - 8);
       ctx.restore();
     }
     ctx.fillStyle = MUTED; ctx.font = "600 11px ui-monospace, Menlo, monospace";
     ctx.textAlign = "center"; ctx.textBaseline = "top";
-    var step = (XMAX - XMIN) > 24 ? 2 : 1;
-    for (var xt = Math.ceil(XMIN); xt <= Math.floor(XMAX); xt++) {
-      if (xt === 0 || (step > 1 && xt % step !== 0)) continue;
-      var sx = worldToScreen(xt, 0);
-      ctx.strokeStyle = "#64748b";
-      ctx.beginPath(); ctx.moveTo(sx.x, sx.y - 3); ctx.lineTo(sx.x, sx.y + 3); ctx.stroke();
-      ctx.fillText(String(xt).replace("-", "−"), sx.x, sx.y + 7);
-    }
-    ctx.textAlign = "right"; ctx.textBaseline = "middle";
-    for (var yt = Math.ceil(YMIN); yt <= Math.floor(YMAX); yt++) {
-      if (yt === 0 || (step > 1 && yt % step !== 0)) continue;
-      var sy = (0 >= XMIN && 0 <= XMAX) ? worldToScreen(0, yt) : worldToScreen(XMIN, yt);
-      ctx.beginPath(); ctx.moveTo(sy.x - 3, sy.y); ctx.lineTo(sy.x + 3, sy.y); ctx.stroke();
-      ctx.fillText(fmtNum(yt), sy.x - 7, sy.y);
+    if (TRIG_MODE) {
+      for (var xt = Math.ceil(XMIN / 90) * 90; xt <= XMAX + 1e-9; xt += 90) {
+        if (Math.abs(xt) < 1e-9) continue;
+        var sx = worldToScreen(xt, 0);
+        ctx.strokeStyle = "#64748b";
+        ctx.beginPath(); ctx.moveTo(sx.x, sx.y - 3); ctx.lineTo(sx.x, sx.y + 3); ctx.stroke();
+        ctx.fillText(fmtDeg(xt), sx.x, sx.y + 7);
+      }
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      [-1, 1].forEach(function (yt) {
+        var sy = (0 >= XMIN && 0 <= XMAX) ? worldToScreen(0, yt) : worldToScreen(XMIN, yt);
+        ctx.beginPath(); ctx.moveTo(sy.x - 3, sy.y); ctx.lineTo(sy.x + 3, sy.y); ctx.stroke();
+        ctx.fillText(fmtNum(yt), sy.x - 7, sy.y);
+      });
+    } else {
+      var step = (XMAX - XMIN) > 24 ? 2 : 1;
+      for (var xt2 = Math.ceil(XMIN); xt2 <= Math.floor(XMAX); xt2++) {
+        if (xt2 === 0 || (step > 1 && xt2 % step !== 0)) continue;
+        var sx2 = worldToScreen(xt2, 0);
+        ctx.strokeStyle = "#64748b";
+        ctx.beginPath(); ctx.moveTo(sx2.x, sx2.y - 3); ctx.lineTo(sx2.x, sx2.y + 3); ctx.stroke();
+        ctx.fillText(String(xt2).replace("-", "−"), sx2.x, sx2.y + 7);
+      }
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      for (var yt2 = Math.ceil(YMIN); yt2 <= Math.floor(YMAX); yt2++) {
+        if (yt2 === 0 || (step > 1 && yt2 % step !== 0)) continue;
+        var sy2 = (0 >= XMIN && 0 <= XMAX) ? worldToScreen(0, yt2) : worldToScreen(XMIN, yt2);
+        ctx.beginPath(); ctx.moveTo(sy2.x - 3, sy2.y); ctx.lineTo(sy2.x + 3, sy2.y); ctx.stroke();
+        ctx.fillText(fmtNum(yt2), sy2.x - 7, sy2.y);
+      }
     }
   }
   /** mode: "orig" | "abs" | "negOnly" — or boolean absed for compat */
   function drawCurveFam(fam, mode, alpha, color) {
     if (mode === true) mode = "abs";
     if (mode === false || mode == null) mode = "orig";
-    var steps = 320;
+    var steps = isTrig(fam) ? 720 : 320;
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
     ctx.strokeStyle = color || (mode === "abs" ? CURVE_ABS : (mode === "negOnly" ? NEG_HL : CURVE_ORIG));
@@ -798,6 +914,33 @@ var GK = window.CampusGameKit || {};
     ctx.restore();
     drawArrow(pt.x, pt.y, q.x, q.y, MIR);
   }
+  /** Guías verticales en cada cero: línea de puntos hacia ABAJO (tic tic) en zona caqui. */
+  function drawZeros(fam) {
+    fam = fam || null;
+    var zs = (fam && fam._zeros) || (fam ? findZeros(fam) : []) || [];
+    var deg = isTrig(fam);
+    zs.forEach(function (z) {
+      if (z < XMIN - 1e-9 || z > XMAX + 1e-9) return;
+      var p = worldToScreen(z, 0);
+      var bottom = canvas.height - PAD.b;
+      ctx.save();
+      ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 2; ctx.setLineDash([3, 5]);
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x, bottom); ctx.stroke();
+      ctx.setLineDash([]);
+      var yTick = p.y + 14;
+      while (yTick < bottom - 8) {
+        ctx.beginPath(); ctx.moveTo(p.x - 5, yTick); ctx.lineTo(p.x + 5, yTick); ctx.stroke();
+        yTick += 14;
+      }
+      ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = "#fde68a"; ctx.fill();
+      ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = "#fde68a"; ctx.font = "800 11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+      ctx.fillText(deg ? fmtDeg(z) : "cero", p.x + 8, p.y - 6);
+      ctx.restore();
+    });
+  }
   function showVictory(sub) {
     state.won = true; state.locked = true;
     var subEl = victoryBanner.querySelector(".sub-v");
@@ -858,39 +1001,22 @@ var GK = window.CampusGameKit || {};
   }
 
 var state = { ok:0,bad:0,round:1,fam:null,stretches:[],picked:{},locked:false,paused:false,won:false,speedFactor:1,timers:[],reveal:false,familyIdx:0 };
-  var FAMILY_ROT = ["linear","quadratic","sqrt","exp","log","hyperbola"];
+  /* Preferir lineal + seno (ceros / rayos / verticales). */
+  var FAMILY_ROT = ["linear","linear","sine","linear","quadratic","sine","sqrt","linear","cosine","log","hyperbola"];
   function buildRound(){
     var kind = FAMILY_ROT[state.familyIdx % FAMILY_ROT.length];
     state.familyIdx++;
     state.fam = ensureNegFamily(kind);
+    /* fit primero: buildStretches usa XMIN/XMAX (ventana ° para trig). */
+    fitFamily(state.fam);
     state.stretches = buildStretches(state.fam);
-    /* ensure at least one below and one above when possible */
     if (state.stretches.length < 2) {
       state.fam = ensureNegFamily("linear");
+      fitFamily(state.fam);
       state.stretches = buildStretches(state.fam);
     }
     state.picked = {};
     state.reveal = false;
-    fitFamily(state.fam);
-  }
-  function drawZeros(){
-    var zs = (state.fam && state.fam._zeros) || findZeros(state.fam) || [];
-    zs.forEach(function(z){
-      if (z < XMIN || z > XMAX) return;
-      var y = fOf(state.fam, z);
-      if (y == null || !isFinite(y)) y = 0;
-      var p = worldToScreen(z, 0);
-      ctx.save();
-      ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(p.x, PAD.t); ctx.lineTo(p.x, canvas.height - PAD.b); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = "#fde68a"; ctx.fill();
-      ctx.fillStyle = "#0f172a"; ctx.font = "800 11px ui-monospace, Menlo, monospace";
-      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-      ctx.fillText("0", p.x, p.y - 8);
-      ctx.restore();
-    });
   }
   function drawStretchBand(s, picked){
     if (!s) return;
@@ -907,7 +1033,7 @@ var state = { ok:0,bad:0,round:1,fam:null,stretches:[],picked:{},locked:false,pa
       if (state.picked[s.id] || state.reveal) drawStretchBand(s, true);
     });
     drawCurveFam(state.fam, "orig", 0.4, CURVE_ORIG);
-    drawZeros();
+    drawZeros(state.fam);
     if (state.reveal) drawCurveFam(state.fam, "negOnly", 0.95, NEG_HL);
     (state.fam.points || []).forEach(function(p){
       var sid = stretchIdOf(p);
@@ -931,7 +1057,14 @@ var state = { ok:0,bad:0,round:1,fam:null,stretches:[],picked:{},locked:false,pa
     return -1;
   }
   function renderChips(){
-    var html = '<p class="row-label">Marcá tramos f(x)&lt;0 · delimitados por <strong>ceros</strong> (f=0 no es f&lt;0)</p><div class="stretch-list" id="stretchList"></div>';
+    var isLin = state.fam && state.fam.kind === "linear";
+    var isSin = state.fam && isTrig(state.fam);
+    var rowLab = isLin
+      ? 'Desde el <strong>cero</strong>: conjunto abierto ← o → donde f&lt;0 (f=0 no cuenta)'
+      : (isSin
+        ? 'Verticales en cada <strong>cero</strong> (°) · marcá tramos abiertos entre ceros con f&lt;0'
+        : 'Marcá los tramos con f(x)&lt;0 (zona caqui)');
+    var html = '<p class="row-label">' + rowLab + '</p><div class="stretch-list" id="stretchList"></div>';
     html += '<button type="button" class="btn primary" id="checkBtn" style="margin:8px 0 0 6px">Comprobar</button>';
     chipBox.innerHTML = html;
     var list = document.getElementById("stretchList");
@@ -973,11 +1106,11 @@ var state = { ok:0,bad:0,round:1,fam:null,stretches:[],picked:{},locked:false,pa
       b.textContent = s.label + " · " + s.signLabel;
     });
     if (okAll) {
-      successRound("¡Bien! Solo los tramos con <span class=\"hl-orig\">f(x)&lt;0</span> se espejan · f≥0 se queda.", "20 éxitos · módulo · tramos");
+      successRound("¡Bien! Solo los tramos con <span class=\"hl-orig\">f(x)&lt;0</span> se espejan · f≥0 se queda · Cero → rayo/tramo abierto.", "20 éxitos · módulo · tramos");
     } else {
       state.bad++; syncScores(); pulseBad();
       state.reveal = true; draw();
-      setPrompt("Incorrecto · marcá <strong>solo</strong> tramos debajo del eje X (zona caqui).", "bad");
+      setPrompt("Incorrecto · marcá <strong>solo</strong> tramos debajo del eje X (zona caqui) · verticales en los ceros.", "bad");
       later(1500, nextRound);
     }
   }
@@ -986,10 +1119,10 @@ var state = { ok:0,bad:0,round:1,fam:null,stretches:[],picked:{},locked:false,pa
     if (!keepScores) { state.ok=0; state.bad=0; state.round=1; state.familyIdx=0; }
     state.won = false; victoryBanner.classList.remove("on");
     exprFormula.innerHTML = formulaHTML(state.fam, false) + ' <span style="color:var(--muted)">→</span> <span class="hl-abs">' + formulaHTML(state.fam, true).replace(/^y = /, "") + "</span>";
-    sideHint.textContent = "¿Entre qué ceros está f&lt;0?";
+    sideHint.textContent = isTrig(state.fam) ? "Ceros (°) → verticales · tramos f<0" : "Cero → rayo abierto ←/→";
     if (modeTagEl) modeTagEl.textContent = "Tramos";
     syncScores();
-    setPrompt("Marcá tramos <span class=\"hl-orig\">f(x)&lt;0</span> · se delimitan por los <strong>ceros</strong> (f=0 no cuenta) · zona <span class=\"hl-khaki\">caqui</span>.", "attention");
+    setPrompt("Mirá los <strong>ceros</strong> (cortes con el eje X) · línea de puntos hacia abajo · elegí conjuntos <strong>abiertos</strong> entre ceros donde f&lt;0 (←/→ en lineal · ° en seno).", "attention");
     renderChips(); draw();
   }
   function nextRound(){ state.round++; syncScores(); startRound(true); }
