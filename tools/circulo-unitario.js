@@ -97,6 +97,7 @@
   const coordXYVerifyBtn = document.getElementById("coordXYVerifyBtn");
   const coordXYOtroBtn = document.getElementById("coordXYOtroBtn");
   const coordXYResetBtn = document.getElementById("coordXYResetBtn");
+  const coordExitNextBtn = document.getElementById("coordExitNextBtn");
   const coordXYScoreOk = document.getElementById("coordXYScoreOk");
   const coordXYScoreBad = document.getElementById("coordXYScoreBad");
   const coordPredChallenge = document.getElementById("coordPredChallenge");
@@ -526,10 +527,18 @@
     if (!anglePlaceOtroBtn) return;
     if (anglePlaceWon) {
       anglePlaceOtroBtn.textContent = "Seguir jugando";
-      if (anglePlaceResetBtn) anglePlaceResetBtn.textContent = "Reiniciar";
+      anglePlaceOtroBtn.classList.add("primary");
+      if (anglePlaceResetBtn) {
+        anglePlaceResetBtn.textContent = "Reiniciar";
+        anglePlaceResetBtn.classList.add("primary");
+      }
     } else {
       anglePlaceOtroBtn.textContent = anglePlacePaused ? "Continuar" : "Pausar";
-      if (anglePlaceResetBtn) anglePlaceResetBtn.textContent = "Reset";
+      anglePlaceOtroBtn.classList.add("primary");
+      if (anglePlaceResetBtn) {
+        anglePlaceResetBtn.textContent = "Reset";
+        anglePlaceResetBtn.classList.remove("primary");
+      }
     }
   }
   function syncAnglePlacePauseBtn() {
@@ -784,6 +793,8 @@
     }
     coordPredVerifyBtn.disabled =
       coordEvalLocked || coordPredXPaused || coordPredXWon || !coordPredActive || !coordPredSnapped;
+    if (coordPredVerifyBtn) coordPredVerifyBtn.style.display = coordPredXWon ? "none" : "";
+    syncCoordPredXWinUI();
   }
   function buildCoordPredXChips() {
     coordPredXChips.innerHTML = "";
@@ -817,6 +828,8 @@
     }
     coordPredYVerifyBtn.disabled =
       coordEvalLocked || coordPredYPaused || coordPredYWon || !coordPredActive || !coordPredSnapped;
+    if (coordPredYVerifyBtn) coordPredYVerifyBtn.style.display = coordPredYWon ? "none" : "";
+    syncCoordPredYWinUI();
   }
   function buildCoordPredYChips() {
     coordPredYChips.innerHTML = "";
@@ -857,8 +870,8 @@
     coordPrev.disabled = !inCoord || coordScreen === 0;
     coordNext.disabled = !inCoord;
     if (coordScreen === 4) {
-      coordNext.title = "Salir del lote";
-      coordNext.setAttribute("aria-label", "Volver a Enseñar");
+      coordNext.title = "Siguiente: Construcción del seno";
+      coordNext.setAttribute("aria-label", "Siguiente: Construcción del seno");
     } else {
       coordNext.title = "Pantalla siguiente";
       coordNext.setAttribute("aria-label", "Pantalla siguiente");
@@ -1003,10 +1016,26 @@
     if (!coordPredOtroBtn) return;
     if (coordPredXWon) {
       coordPredOtroBtn.textContent = "Seguir jugando";
-      if (coordPredResetBtn) coordPredResetBtn.textContent = "Reiniciar";
+      coordPredOtroBtn.classList.add("primary");
+      if (coordPredResetBtn) {
+        coordPredResetBtn.textContent = "Reiniciar";
+        coordPredResetBtn.classList.add("primary");
+      }
+      if (coordPredVerifyBtn) {
+        coordPredVerifyBtn.style.display = "none";
+        coordPredVerifyBtn.classList.remove("primary");
+      }
     } else {
       coordPredOtroBtn.textContent = coordPredXPaused ? "Continuar" : "Pausar";
-      if (coordPredResetBtn) coordPredResetBtn.textContent = "Reset";
+      coordPredOtroBtn.classList.remove("primary");
+      if (coordPredResetBtn) {
+        coordPredResetBtn.textContent = "Reset";
+        coordPredResetBtn.classList.remove("primary");
+      }
+      if (coordPredVerifyBtn) {
+        coordPredVerifyBtn.style.display = "";
+        coordPredVerifyBtn.classList.add("primary");
+      }
     }
   }
   function syncCoordPredYWinUI() {
@@ -1014,10 +1043,26 @@
     if (!coordPredYOtroBtn) return;
     if (coordPredYWon) {
       coordPredYOtroBtn.textContent = "Seguir jugando";
-      if (coordPredYResetBtn) coordPredYResetBtn.textContent = "Reiniciar";
+      coordPredYOtroBtn.classList.add("primary");
+      if (coordPredYResetBtn) {
+        coordPredYResetBtn.textContent = "Reiniciar";
+        coordPredYResetBtn.classList.add("primary");
+      }
+      if (coordPredYVerifyBtn) {
+        coordPredYVerifyBtn.style.display = "none";
+        coordPredYVerifyBtn.classList.remove("primary");
+      }
     } else {
       coordPredYOtroBtn.textContent = coordPredYPaused ? "Continuar" : "Pausar";
-      if (coordPredYResetBtn) coordPredYResetBtn.textContent = "Reset";
+      coordPredYOtroBtn.classList.remove("primary");
+      if (coordPredYResetBtn) {
+        coordPredYResetBtn.textContent = "Reset";
+        coordPredYResetBtn.classList.remove("primary");
+      }
+      if (coordPredYVerifyBtn) {
+        coordPredYVerifyBtn.style.display = "";
+        coordPredYVerifyBtn.classList.add("primary");
+      }
     }
   }
   function syncCoordPredXPauseBtn() { syncCoordPredXWinUI(); }
@@ -3129,12 +3174,19 @@
       }
     }
     if (tourNext) {
-      const hasNext = i < TOUR.length - 1;
+      const hasNextMode = i < TOUR.length - 1;
+      const exitToNextLesson = i === TOUR.length - 1 && mode === 'drawCoord';
+      const hasNext = hasNextMode || exitToNextLesson;
       tourNext.classList.toggle('hidden', !hasNext);
       tourNext.disabled = !hasNext || movieBusy;
-      if (hasNext) {
+      if (hasNextMode) {
         tourNext.title = 'Ir a ' + TOUR[i + 1].label;
         tourNext.setAttribute('aria-label', tourNext.title);
+        tourNext.dataset.exitLesson = '';
+      } else if (exitToNextLesson) {
+        tourNext.title = 'Siguiente: Construcción del seno';
+        tourNext.setAttribute('aria-label', tourNext.title);
+        tourNext.dataset.exitLesson = 'construccion-seno.html';
       }
     }
   }
@@ -4091,11 +4143,13 @@
   coordNext.addEventListener("click", () => {
     if (mode !== "drawCoord") return;
     if (coordScreen === 4) {
-      // Salir del lote → volver a Enseñar
-      setCoordScreen(0);
+      window.location.href = "construccion-seno.html";
       return;
     }
     setCoordScreen(coordScreen + 1);
+  });
+  if (coordExitNextBtn) coordExitNextBtn.addEventListener("click", () => {
+    window.location.href = "construccion-seno.html";
   });
   coordPredVerifyBtn.addEventListener("click", verifyCoordPredX);
   coordPredOtroBtn.addEventListener("click", () => toggleCoordPredXPause());
@@ -4155,6 +4209,10 @@
   });
   if (tourNext) tourNext.addEventListener("click", () => {
     const i = tourIndex();
+    if (tourNext && tourNext.dataset.exitLesson) {
+      window.location.href = tourNext.dataset.exitLesson;
+      return;
+    }
     if (i >= TOUR.length - 1) return;
     TOUR[i + 1].go();
   });
