@@ -719,6 +719,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       h3: 0, v3: 0,
       h4: 0, v4: 0,
       showHLabel: 0,
+      showVLabel: 0,
       showCurve: false,
       showPurple: false,
       nMax: 3,
@@ -1006,6 +1007,48 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.restore();
     }
 
+    /* V = vertical floor labels */
+    if (sc.showVLabel >= 1 && sc.v1 >= 1) {
+      var midV1 = worldToScreen(xa + h, yp + v / 2);
+      ctx.save();
+      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = rc;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("V", midV1.x + 12, midV1.y);
+      ctx.restore();
+    }
+    if (sc.showVLabel >= 2 && sc.v2 >= 1) {
+      var midV2 = worldToScreen(r2.x, r1.y + v / 2);
+      ctx.save();
+      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = rc;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("V", midV2.x + 12, midV2.y);
+      ctx.restore();
+    }
+    if (sc.showVLabel >= 3 && sc.v3 >= 1) {
+      var midV3 = worldToScreen(r3.x, r2.y + v / 2);
+      ctx.save();
+      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = rc;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("V", midV3.x + 12, midV3.y);
+      ctx.restore();
+    }
+    if (nMax >= 4 && sc.showVLabel >= 4 && sc.v4 >= 1) {
+      var midV4 = worldToScreen(r4.x, r3.y + v / 2);
+      ctx.save();
+      ctx.font = "800 15px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = rc;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("V", midV4.x + 12, midV4.y);
+      ctx.restore();
+    }
+
     var ptColor = sc.showPurple ? PURPLE : AMBER;
     if (sc.showP) {
       drawPoint(xa, yp, "P(" + fmtNum(xa) + ", " + fmtNum(yp) + ")", ptColor);
@@ -1178,6 +1221,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       setWork("V1 · vertical <span class=\"hl-v\">+v</span> → R1");
       animateProgress("v1", 700, token, function () {
         if (token !== state.token) return;
+        sc.showVLabel = 1;
+        paintScene(sc);
         later(700, stepH2);
       });
     }
@@ -1201,6 +1246,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       setWork("V2 · vertical <span class=\"hl-v\">+v</span> → R2");
       animateProgress("v2", 700, token, function () {
         if (token !== state.token) return;
+        sc.showVLabel = 2;
+        paintScene(sc);
         later(700, stepH3);
       });
     }
@@ -1224,6 +1271,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       setWork("V3 · vertical <span class=\"hl-v\">+v</span> → R3");
       animateProgress("v3", 800, token, function () {
         if (token !== state.token) return;
+        sc.showVLabel = 3;
+        paintScene(sc);
         if (sc.nMax >= 4) later(600, stepH4);
         else later(700, stepStop);
       });
@@ -1248,6 +1297,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       setWork("V4 · vertical <span class=\"hl-v\">+v</span> → R4");
       animateProgress("v4", 800, token, function () {
         if (token !== state.token) return;
+        sc.showVLabel = 4;
+        paintScene(sc);
         later(700, stepStop);
       });
     }
