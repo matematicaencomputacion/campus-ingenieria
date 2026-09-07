@@ -19,7 +19,7 @@ Ship a single zero-dependency script `tools/game-kit.js` exporting `window.Campu
 **From now on**, new campus games include:
 
 ```html
-<script src="game-kit.js"></script>
+<script src="game-kit.js?v=20260907"></script>
 ```
 
 and reuse these APIs instead of copying feedback code.
