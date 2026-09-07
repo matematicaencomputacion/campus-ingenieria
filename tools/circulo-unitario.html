@@ -117,6 +117,11 @@
     .lesson-nav.prev .chev { border-right: 18px solid #60a5fa; }
     .lesson-nav.next .chev { border-left: 18px solid #60a5fa; }
     .lesson-nav:disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
+    .lesson-nav.tour {
+      top: 12px; transform: none;
+      opacity: 0.7;
+    }
+    .lesson-nav.tour:hover { opacity: 1; }
   </style>
 </head>
 <body>
@@ -164,6 +169,8 @@
           <button type="button" id="angleNext" class="lesson-nav next hidden" title="Pantalla siguiente" aria-label="Pantalla siguiente"><span class="chev" aria-hidden="true"></span></button>
           <button type="button" id="coordPrev" class="lesson-nav prev hidden" title="Pantalla anterior" aria-label="Pantalla anterior"><span class="chev" aria-hidden="true"></span></button>
           <button type="button" id="coordNext" class="lesson-nav next hidden" title="Pantalla siguiente" aria-label="Pantalla siguiente"><span class="chev" aria-hidden="true"></span></button>
+          <button type="button" id="tourPrev" class="lesson-nav prev tour hidden" title="Anterior" aria-label="Anterior"><span class="chev" aria-hidden="true"></span></button>
+          <button type="button" id="tourNext" class="lesson-nav next tour hidden" title="Siguiente" aria-label="Siguiente"><span class="chev" aria-hidden="true"></span></button>
         </div>
       </div>
 
@@ -174,6 +181,7 @@
         <div class="toolbar" style="margin-bottom:12px;">
           <button class="btn primary" id="playBtn">▶ Play</button>
           <button class="btn" id="nextBtn">Siguiente</button>
+          <button class="btn" id="educateStopBtn" disabled>Detener</button>
           <button class="btn" id="resetEducateBtn">Reset</button>
         </div>
         <p class="hint" style="margin-bottom:10px;">Cada punto deja línea + label <span style="color:#ff5c5c">rojo en X</span> y <span style="color:#34d399">verde en Y</span>; quedan permanentes.</p>
@@ -219,6 +227,7 @@
           <p class="hint" style="margin-bottom:10px;">El segmento <strong style="color:#FFBF00">ámbar</strong> es sen θ (altura desde el eje X hasta el punto). Titila ×3 y se desliza hasta el eje Y, donde queda en <strong style="color:#34d399">verde</strong>.</p>
           <div class="toolbar" style="margin-bottom:12px;">
             <button class="btn primary" id="senoReplayBtn">▶ Repetir seno</button>
+            <button class="btn" id="senoReplayStopBtn" disabled>Detener</button>
             <button class="btn" id="senoResetParkBtn">Limpiar Y</button>
           </div>
           <p class="hint">Elegí un ángulo en la tabla o en el círculo. Educar + Seno quedan activos.</p>
@@ -239,10 +248,32 @@
         </div>
 
         <div id="educateScreen3" class="hidden">
+          <h2>Coseno · Película</h2>
+          <p class="hint" style="margin-bottom:10px;">Play recorre los ángulos notables (30°, 45°, 60°, ejes y múltiplos): en cada uno el segmento ámbar titila ×3 y se proyecta al eje X en rojo. La película es larga a propósito.</p>
+          <div class="toolbar" style="margin-bottom:12px;">
+            <button class="btn primary" id="cosenoMoviePlayBtn">▶ Play coseno</button>
+            <button class="btn" id="cosenoMovieNextBtn">Siguiente</button>
+            <button class="btn" id="cosenoMovieStopBtn" disabled>Detener</button>
+            <button class="btn" id="cosenoMovieClearBtn">Limpiar X</button>
+          </div>
+          <div class="locked" id="cosenoMovieStatus">Listo para ▶ Play coseno · secuencia: 30° → 45° → 60° → … → 0°</div>
+          <p class="hint" style="margin-top:10px;">Educar + Coseno activos. ▶ del círculo pasa a explorar un ángulo a la vez.</p>
+          <div class="locus-strip" id="educateLocusCosMovie" aria-label="Cuadrante o eje activo">
+            <span class="locus" data-locus="q1">I</span>
+            <span class="locus" data-locus="q2">II</span>
+            <span class="locus" data-locus="q3">III</span>
+            <span class="locus" data-locus="q4">IV</span>
+            <span class="locus" data-locus="x">eje X</span>
+            <span class="locus" data-locus="y">eje Y</span>
+          </div>
+        </div>
+
+        <div id="educateScreen4" class="hidden">
           <h2>Coseno · proyección en X</h2>
           <p class="hint" style="margin-bottom:10px;">El segmento <strong style="color:#FFBF00">ámbar</strong> es cos θ (desde el eje Y hasta el punto). Titila ×3 y se desliza hasta el eje X, donde queda en <strong style="color:#ff5c5c">rojo</strong>.</p>
           <div class="toolbar" style="margin-bottom:12px;">
             <button class="btn primary" id="cosenoReplayBtn">▶ Repetir coseno</button>
+            <button class="btn" id="cosenoReplayStopBtn" disabled>Detener</button>
             <button class="btn" id="cosenoResetParkBtn">Limpiar X</button>
           </div>
           <p class="hint">Elegí un ángulo en la tabla o en el círculo. Educar + Coseno quedan activos.</p>
@@ -527,8 +558,11 @@
   const educateScreen1 = document.getElementById("educateScreen1");
   const educateScreen2 = document.getElementById("educateScreen2");
   const educateScreen3 = document.getElementById("educateScreen3");
+  const educateScreen4 = document.getElementById("educateScreen4");
   const educatePrev = document.getElementById("educatePrev");
   const educateNext = document.getElementById("educateNext");
+  const tourPrev = document.getElementById("tourPrev");
+  const tourNext = document.getElementById("tourNext");
   const modeSeno = document.getElementById("modeSeno");
   const modeCoseno = document.getElementById("modeCoseno");
   const tbodySeno = document.getElementById("tbodySeno");
@@ -645,7 +679,13 @@
   const CHOICES = ["1", "0", "−1", "1/2", "−1/2", "√2/2", "−√2/2", "√3/2", "−√3/2"];
 
   let mode = "educate"; // educate | predict | drawAngle | drawCoord
-  let educateScreen = 0; // 0 construcción, 1 seno película, 2 seno explorar, 3 coseno
+  let educateScreen = 0; // 0 construcción, 1 seno película, 2 seno explorar, 3 coseno película, 4 coseno explorar
+  let cosenoMoviePlaying = false;
+  let cosenoMovieAbort = false;
+  let cosenoMovieBusy = false;
+  let cosenoMovieIndex = -1;
+  let cosenoMovieCurr = null;
+  let cosenoMoviePrev = null;
   let senoMoviePlaying = false;
   let senoMovieAbort = false;
   let senoMovieCurr = null;
@@ -899,6 +939,7 @@
     angleScreen3.classList.toggle("hidden", angleScreen !== 3);
     angleScreen4.classList.toggle("hidden", angleScreen !== 4);
     syncAngleNav();
+    syncTourNav();
     if (angleScreen === 0) {
       updateDrawAnglePanel();
       setNarration("Dibujar ángulo · Enseñar: arrastrá el marcador. Snap cada <strong>15°</strong> (umbral 8°).");
@@ -1218,6 +1259,7 @@
     coordScreen3.classList.toggle("hidden", coordScreen !== 3);
     coordScreen4.classList.toggle("hidden", coordScreen !== 4);
     syncCoordNav();
+    syncTourNav();
     if (coordScreen === 0) {
       updateDrawCoordPanel();
       setNarration("Dibujar coordenada · Enseñar: arrastrá libremente; snap a valores exactos en los ejes (umbral <strong>0.12</strong>).");
@@ -1918,6 +1960,66 @@
   const confettiCanvas = document.getElementById("confetti");
   const confettiCtx = confettiCanvas ? confettiCanvas.getContext("2d") : null;
   let confettiRaf = null;
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+  function playErrorSound() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    const bufLen = Math.floor(ctx.sampleRate * 0.16);
+    const buffer = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.pow(1 - i / bufLen, 1.4);
+      data[i] = (Math.random() * 2 - 1) * env * 0.35;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 280;
+    filter.Q.value = 1.2;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.55, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+    noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    noise.start(t0); noise.stop(t0 + 0.17);
+    const osc = ctx.createOscillator();
+    const og = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(110, t0);
+    osc.frequency.exponentialRampToValueAtTime(55, t0 + 0.12);
+    og.gain.setValueAtTime(0.0001, t0);
+    og.gain.exponentialRampToValueAtTime(0.18, t0 + 0.01);
+    og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.14);
+    osc.connect(og); og.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + 0.15);
+  }
+  function playOkChime() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    [523.25, 659.25, 783.99].forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = f;
+      const t = t0 + i * 0.05;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(t); osc.stop(t + 0.24);
+    });
+  }
   function fireConfetti() {
     if (!confettiCanvas || !confettiCtx) return;
     const parent = confettiCanvas.parentElement;
@@ -1971,7 +2073,12 @@
   function setNarration(html, cls) {
     narration.className = "narration" + (cls ? " " + cls : "");
     narration.innerHTML = html;
-    if (cls === "ok") fireConfetti();
+    if (cls === "ok") {
+      fireConfetti();
+      playOkChime();
+    } else if (cls === "bad") {
+      playErrorSound();
+    }
   }
   function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -2989,7 +3096,7 @@
         chipOn = key != null;
       }
     }
-    for (const id of ["educateLocus", "educateLocusMovie", "educateLocusSeno", "educateLocusCoseno"]) {
+    for (const id of ["educateLocus", "educateLocusMovie", "educateLocusSeno", "educateLocusCosMovie", "educateLocusCoseno"]) {
       const root = document.getElementById(id);
       if (!root) continue;
       root.querySelectorAll(".locus").forEach(el => {
@@ -3037,37 +3144,103 @@
       const r = projAnim._resolve;
       projAnim = null;
       r();
+      syncEducateButtons();
       return;
     }
     projAnim = null;
+    syncEducateButtons();
+  }
+  const TOUR = [
+    { id: 'educate', label: 'Educar · Play', go(){ if (mode !== 'educate') setMode('educate'); setEducateScreen(0); } },
+    { id: 'seno', label: 'Seno', go(){ if (mode !== 'educate') setMode('educate'); setEducateScreen(1); } },
+    { id: 'coseno', label: 'Coseno', go(){ if (mode !== 'educate') setMode('educate'); setEducateScreen(3); } },
+    { id: 'predict', label: 'Predecir', go(){ setMode('predict'); } },
+    { id: 'drawAngle', label: 'Dibujar ángulo', go(){ setMode('drawAngle'); } },
+    { id: 'drawCoord', label: 'Dibujar coordenada', go(){ setMode('drawCoord'); } },
+  ];
+  function tourIndex() {
+    if (mode === 'educate') {
+      if (educateScreen === 0) return 0;
+      if (educateScreen === 1 || educateScreen === 2) return 1;
+      if (educateScreen === 3 || educateScreen === 4) return 2;
+      return 0;
+    }
+    if (mode === 'predict') return 3;
+    if (mode === 'drawAngle') return 4;
+    if (mode === 'drawCoord') return 5;
+    return 0;
+  }
+  function syncTourNav() {
+    const i = tourIndex();
+    const movieBusy = senoMoviePlaying || senoMovieBusy || cosenoMoviePlaying || cosenoMovieBusy;
+    if (tourPrev) {
+      const hasPrev = i > 0;
+      tourPrev.classList.toggle('hidden', !hasPrev);
+      tourPrev.disabled = !hasPrev || movieBusy;
+      if (hasPrev) {
+        tourPrev.title = 'Ir a ' + TOUR[i - 1].label;
+        tourPrev.setAttribute('aria-label', tourPrev.title);
+      }
+    }
+    if (tourNext) {
+      const hasNext = i < TOUR.length - 1;
+      tourNext.classList.toggle('hidden', !hasNext);
+      tourNext.disabled = !hasNext || movieBusy;
+      if (hasNext) {
+        tourNext.title = 'Ir a ' + TOUR[i + 1].label;
+        tourNext.setAttribute('aria-label', tourNext.title);
+      }
+    }
   }
   function syncEducateChrome() {
+
     const inEdu = mode === "educate";
     if (educateScreen0) educateScreen0.classList.toggle("hidden", !inEdu || educateScreen !== 0);
     if (educateScreen1) educateScreen1.classList.toggle("hidden", !inEdu || educateScreen !== 1);
     if (educateScreen2) educateScreen2.classList.toggle("hidden", !inEdu || educateScreen !== 2);
     if (educateScreen3) educateScreen3.classList.toggle("hidden", !inEdu || educateScreen !== 3);
+    if (educateScreen4) educateScreen4.classList.toggle("hidden", !inEdu || educateScreen !== 4);
     if (modeSeno) modeSeno.classList.toggle("active", inEdu && (educateScreen === 1 || educateScreen === 2));
-    if (modeCoseno) modeCoseno.classList.toggle("active", inEdu && educateScreen === 3);
+    if (modeCoseno) modeCoseno.classList.toggle("active", inEdu && (educateScreen === 3 || educateScreen === 4));
     const eduBtn = document.getElementById("modeEducate");
     if (eduBtn) eduBtn.classList.toggle("active", inEdu);
-    const maxS = 3;
+    const maxS = 4;
+    const movieBusy = senoMoviePlaying || senoMovieBusy || cosenoMoviePlaying || cosenoMovieBusy;
     if (educatePrev) {
       educatePrev.classList.toggle("hidden", !inEdu);
-      educatePrev.disabled = !inEdu || educateScreen <= 0 || senoMoviePlaying;
+      // screen 0: ◀ → Lección 9 racional (lesson chain)
+      educatePrev.disabled = !inEdu || movieBusy;
+      educatePrev.title = educateScreen <= 0
+        ? "Lección 9: Función racional"
+        : "Pantalla anterior";
+      educatePrev.setAttribute("aria-label", educatePrev.title);
     }
     if (educateNext) {
       educateNext.classList.toggle("hidden", !inEdu);
-      const canNext = inEdu && !senoMoviePlaying && !senoMovieBusy && educateScreen < maxS;
+      // last screen: ▶ → Predecir (tour continues in this page)
+      const canNext = inEdu && !movieBusy; // always enabled in educate (internal or tour exit)
       educateNext.disabled = !canNext;
+      educateNext.title = educateScreen >= maxS
+        ? "Ir a Predecir"
+        : "Pantalla siguiente";
+      educateNext.setAttribute("aria-label", educateNext.title);
     }
+    syncTourNav();
     const playBtn = document.getElementById("senoMoviePlayBtn");
     const stopBtn = document.getElementById("senoMovieStopBtn");
     const nextBtn = document.getElementById("senoMovieNextBtn");
     if (playBtn) playBtn.disabled = senoMoviePlaying || senoMovieBusy;
-    if (stopBtn) stopBtn.disabled = !senoMoviePlaying;
+    if (stopBtn) stopBtn.disabled = !(senoMoviePlaying || senoMovieBusy);
     if (nextBtn) {
       nextBtn.disabled = senoMoviePlaying || senoMovieBusy || senoMovieIndex >= SIN_MOVIE_DEGS.length - 1;
+    }
+    const cPlay = document.getElementById("cosenoMoviePlayBtn");
+    const cStop = document.getElementById("cosenoMovieStopBtn");
+    const cNext = document.getElementById("cosenoMovieNextBtn");
+    if (cPlay) cPlay.disabled = cosenoMoviePlaying || cosenoMovieBusy;
+    if (cStop) cStop.disabled = !(cosenoMoviePlaying || cosenoMovieBusy);
+    if (cNext) {
+      cNext.disabled = cosenoMoviePlaying || cosenoMovieBusy || cosenoMovieIndex >= SIN_MOVIE_DEGS.length - 1;
     }
   }
   function fillEducateCloneTable(targetBody) {
@@ -3084,23 +3257,27 @@
       tr.innerHTML = shown
         ? "<td>" + deg + "°</td><td class=\"pair\">(<span class=\"x\">" + e.x + "</span>, <span class=\"y\">" + e.y + "</span>)</td>"
         : "<td>" + deg + "°</td><td class=\"pair\">…</td>";
-      if (shown) {
-        tr.addEventListener("click", () => {
-          selected = deg;
-          rebuildEducateTable();
-          if (educateScreen === 1 || educateScreen === 2) startSinAnim(deg);
-          if (educateScreen === 3) startCosAnim(deg);
-          draw();
-        });
-      }
+      tr.style.cursor = "pointer";
+      tr.addEventListener("click", () => {
+        selected = deg;
+        if (!revealed.includes(deg)) revealed.push(deg);
+        rebuildEducateTable();
+        pulseEducatePoint(deg);
+        if (educateScreen === 1 || educateScreen === 2) startSinAnim(deg);
+        if (educateScreen === 3 || educateScreen === 4) startCosAnim(deg);
+      });
       targetBody.appendChild(tr);
     }
   }
   function setEducateScreen(n) {
-    n = Math.max(0, Math.min(3, n|0));
+    n = Math.max(0, Math.min(4, n|0));
     if (senoMoviePlaying) {
       senoMovieAbort = true;
       senoMoviePlaying = false;
+    }
+    if (cosenoMoviePlaying) {
+      cosenoMovieAbort = true;
+      cosenoMoviePlaying = false;
     }
     educateScreen = n;
     stopProjAnim();
@@ -3125,7 +3302,18 @@
       setNarration("Seno: el segmento vertical ámbar (altura) titila ×3 y se desliza al eje Y en verde.");
       if (selected != null) startSinAnim(selected);
       else if (revealed.length) { selected = revealed[revealed.length - 1]; startSinAnim(selected); }
+    } else if (n === 3) {
+      cosenoMovieCurr = null;
+      cosenoMoviePrev = null;
+      cosenoMovieIndex = -1;
+      ensureSinMovieAngles();
+      rebuildEducateTable();
+      setNarration("Coseno · Película: ▶ Play coseno recorre 30°, 45°, 60°… hasta proyectar cada cos θ en X.");
+      const cst = document.getElementById("cosenoMovieStatus");
+      if (cst) cst.textContent = "Listo para ▶ Play coseno · secuencia: 30° → 45° → 60° → … → 0°";
     } else {
+      ensureSinMovieAngles();
+      rebuildEducateTable();
       setNarration("Coseno: el segmento horizontal ámbar titila ×3 y se desliza al eje X en rojo.");
       if (selected != null) startCosAnim(selected);
       else if (revealed.length) { selected = revealed[revealed.length - 1]; startCosAnim(selected); }
@@ -3142,6 +3330,7 @@
         kind: "sin", deg: deg, phase: "blink", blinkOn: true, blinkLeft: 3,
         x: x0, t0: performance.now(), raf: null, _resolve: resolve
       };
+      syncEducateButtons();
       const tick = (now) => {
         if (!projAnim || projAnim.kind !== "sin") { resolve(); return; }
         const p = projAnim;
@@ -3166,6 +3355,7 @@
             if (!sinParked.includes(deg)) sinParked.push(deg);
             const done = p._resolve;
             projAnim = null;
+            syncEducateButtons();
             draw();
             if (done) done();
             return;
@@ -3187,6 +3377,10 @@
     if (mode === "educate" && educateScreen === 1) {
       if (senoMovieCurr == null && senoMoviePrev == null) return false;
       return deg === senoMovieCurr || deg === senoMoviePrev;
+    }
+    if (mode === "educate" && educateScreen === 3) {
+      if (cosenoMovieCurr == null && cosenoMoviePrev == null) return false;
+      return deg === cosenoMovieCurr || deg === cosenoMoviePrev;
     }
     return true;
   }
@@ -3213,7 +3407,7 @@
     await startSinAnim(deg);
   }
   async function playSenoMovie() {
-    if (senoMoviePlaying || senoMovieBusy || mode !== "educate") return;
+    if (senoMoviePlaying || senoMovieBusy || cosenoMoviePlaying || mode !== "educate") return;
     educateScreen = 1;
     senoMoviePlaying = true;
     senoMovieAbort = false;
@@ -3244,7 +3438,7 @@
     draw();
   }
   async function stepSenoMovieNext() {
-    if (senoMoviePlaying || senoMovieBusy || mode !== "educate") return;
+    if (senoMoviePlaying || senoMovieBusy || cosenoMoviePlaying || mode !== "educate") return;
     if (educateScreen !== 1) {
       setEducateScreen(1);
     }
@@ -3273,44 +3467,120 @@
   }
   function startCosAnim(deg) {
     stopProjAnim();
-    if (deg == null || !EXACT[deg]) return;
+    if (deg == null || !EXACT[deg]) return Promise.resolve();
     const a = degToRad(deg);
     const y0 = Math.sin(a);
-    projAnim = {
-      kind: "cos", deg: deg, phase: "blink", blinkOn: true, blinkLeft: 3,
-      y: y0, t0: performance.now(), raf: null
-    };
-    const tick = (now) => {
-      if (!projAnim || projAnim.kind !== "cos") return;
-      const p = projAnim;
-      const dt = now - p.t0;
-      if (p.phase === "blink") {
-        const cycle = 500;
-        const inCycle = dt % cycle;
-        p.blinkOn = inCycle < 280;
-        const completed = Math.floor(dt / cycle);
-        if (completed >= 3) {
-          p.phase = "slide";
-          p.t0 = now;
-          p.blinkOn = true;
+    return new Promise((resolve) => {
+      projAnim = {
+        kind: "cos", deg: deg, phase: "blink", blinkOn: true, blinkLeft: 3,
+        y: y0, t0: performance.now(), raf: null, _resolve: resolve
+      };
+      syncEducateButtons();
+      const tick = (now) => {
+        if (!projAnim || projAnim.kind !== "cos") { resolve(); return; }
+        const p = projAnim;
+        const dt = now - p.t0;
+        if (p.phase === "blink") {
+          const cycle = 500;
+          const inCycle = dt % cycle;
+          p.blinkOn = inCycle < 280;
+          const completed = Math.floor(dt / cycle);
+          if (completed >= 3) {
+            p.phase = "slide";
+            p.t0 = now;
+            p.blinkOn = true;
+          }
+        } else if (p.phase === "slide") {
+          const dur = 900;
+          const u = Math.min(1, (now - p.t0) / dur);
+          const ease = 1 - Math.pow(1 - u, 3);
+          p.y = y0 * (1 - ease);
+          if (u >= 1) {
+            p.phase = "done";
+            if (!cosParked.includes(deg)) cosParked.push(deg);
+            const done = p._resolve;
+            projAnim = null;
+            syncEducateButtons();
+            draw();
+            if (done) done();
+            return;
+          }
         }
-      } else if (p.phase === "slide") {
-        const dur = 900;
-        const u = Math.min(1, (now - p.t0) / dur);
-        const ease = 1 - Math.pow(1 - u, 3);
-        p.y = y0 * (1 - ease);
-        if (u >= 1) {
-          p.phase = "done";
-          if (!cosParked.includes(deg)) cosParked.push(deg);
-          projAnim = null;
-          draw();
-          return;
-        }
-      }
-      draw();
-      if (projAnim) projAnim.raf = requestAnimationFrame(tick);
-    };
-    projAnim.raf = requestAnimationFrame(tick);
+        draw();
+        if (projAnim) projAnim.raf = requestAnimationFrame(tick);
+      };
+      projAnim.raf = requestAnimationFrame(tick);
+    });
+  }
+  async function runCosenoMovieStep(i) {
+    const deg = SIN_MOVIE_DEGS[i];
+    cosenoMovieIndex = i;
+    cosenoMoviePrev = i > 0 ? SIN_MOVIE_DEGS[i - 1] : null;
+    cosenoMovieCurr = deg;
+    selected = deg;
+    rebuildEducateTable();
+    draw();
+    const st = document.getElementById("cosenoMovieStatus");
+    if (st) st.textContent = "Coseno · " + (i + 1) + "/" + SIN_MOVIE_DEGS.length + " · θ = " + deg + "° (titila → proyecta a X)";
+    setNarration("θ = <strong>" + deg + "°</strong> · cos θ se titila y proyecta al eje X.");
+    await startCosAnim(deg);
+  }
+  async function playCosenoMovie() {
+    if (cosenoMoviePlaying || cosenoMovieBusy || senoMoviePlaying || mode !== "educate") return;
+    educateScreen = 3;
+    cosenoMoviePlaying = true;
+    cosenoMovieAbort = false;
+    cosenoMovieIndex = -1;
+    cosParked = [];
+    stopProjAnim();
+    syncEducateChrome();
+    const st = document.getElementById("cosenoMovieStatus");
+    setNarration("Película de coseno en curso…");
+    ensureSinMovieAngles();
+    rebuildEducateTable();
+    draw();
+    for (let i = 0; i < SIN_MOVIE_DEGS.length; i++) {
+      if (cosenoMovieAbort) break;
+      await runCosenoMovieStep(i);
+      if (cosenoMovieAbort) break;
+      await waitMs(450);
+    }
+    cosenoMoviePlaying = false;
+    syncEducateChrome();
+    if (cosenoMovieAbort) {
+      if (st) st.textContent = "Película detenida. Podés Siguiente o ▶ Play.";
+      setNarration("Película de coseno detenida. Usá <strong>Siguiente</strong> o ▶ Play.");
+    } else {
+      if (st) st.textContent = "Película completa · todos los cosenos notables en X.";
+      setNarration("Película completa: cosenos de los ángulos notables quedaron proyectados en X.");
+    }
+    draw();
+  }
+  async function stepCosenoMovieNext() {
+    if (cosenoMoviePlaying || cosenoMovieBusy || senoMoviePlaying || mode !== "educate") return;
+    if (educateScreen !== 3) setEducateScreen(3);
+    ensureSinMovieAngles();
+    const next = cosenoMovieIndex + 1;
+    if (next >= SIN_MOVIE_DEGS.length) {
+      const st = document.getElementById("cosenoMovieStatus");
+      if (st) st.textContent = "Secuencia completa · Limpiar X o ▶ Play para reiniciar.";
+      setNarration("Ya recorriste todos los ángulos notables. ▶ Play reinicia la película.");
+      syncEducateChrome();
+      return;
+    }
+    cosenoMovieBusy = true;
+    syncEducateChrome();
+    await runCosenoMovieStep(next);
+    cosenoMovieBusy = false;
+    syncEducateChrome();
+    draw();
+  }
+  function stopCosenoMovie() {
+    cosenoMovieAbort = true;
+    stopProjAnim();
+    cosenoMoviePlaying = false;
+    cosenoMovieBusy = false;
+    syncEducateChrome();
   }
   function drawParkedAndAnim(L) {
     // parked sine segments on Y (green)
@@ -3396,7 +3666,7 @@
         if (!revealed.includes(deg)) revealed.push(deg);
         rebuildEducateTable();
         if (educateScreen === 1 || educateScreen === 2) startSinAnim(deg);
-        if (educateScreen === 3) startCosAnim(deg);
+        if (educateScreen === 3 || educateScreen === 4) startCosAnim(deg);
         draw();
       });
       tbody.appendChild(tr);
@@ -3413,6 +3683,14 @@
     playBtn.disabled = playing || done || mode !== "educate";
     nextBtn.disabled = playing || done || mode !== "educate";
     playBtn.textContent = done ? "✓ Completo" : (playing ? "Desplegando…" : "▶ Play");
+    const educateStopBtn = document.getElementById("educateStopBtn");
+    if (educateStopBtn) educateStopBtn.disabled = !playing || mode !== "educate";
+    // explore replay stops
+    const senoReplayStopBtn = document.getElementById("senoReplayStopBtn");
+    const cosenoReplayStopBtn = document.getElementById("cosenoReplayStopBtn");
+    const projBusy = !!(projAnim);
+    if (senoReplayStopBtn) senoReplayStopBtn.disabled = !(projBusy && projAnim && projAnim.kind === "sin" && !senoMoviePlaying);
+    if (cosenoReplayStopBtn) cosenoReplayStopBtn.disabled = !(projBusy && projAnim && projAnim.kind === "cos" && !cosenoMoviePlaying);
   }
 
   function revealOne() {
@@ -3600,6 +3878,11 @@
       resetDrawCoordTeach();
       syncCoordScreen();
     }
+    if (m !== "educate") {
+      if (modeSeno) modeSeno.classList.remove("active");
+      if (modeCoseno) modeCoseno.classList.remove("active");
+    }
+    syncTourNav();
   }
 
   function setStep(s) {
@@ -3772,7 +4055,7 @@
         }
         rebuildEducateTable();
         if (educateScreen === 1 || educateScreen === 2) startSinAnim(selected);
-        if (educateScreen === 3) startCosAnim(selected);
+        if (educateScreen === 3 || educateScreen === 4) startCosAnim(selected);
       }
       draw();
     }
@@ -3885,8 +4168,30 @@
     });
   })();
 
-  if (educatePrev) educatePrev.addEventListener("click", () => setEducateScreen(educateScreen - 1));
-  if (educateNext) educateNext.addEventListener("click", () => setEducateScreen(educateScreen + 1));
+  if (educatePrev) educatePrev.addEventListener("click", () => {
+    if (educateScreen <= 0) {
+      window.location.href = "leccion-racional.html";
+      return;
+    }
+    setEducateScreen(educateScreen - 1);
+  });
+  if (educateNext) educateNext.addEventListener("click", () => {
+    if (educateScreen >= 4) {
+      setMode("predict");
+      return;
+    }
+    setEducateScreen(educateScreen + 1);
+  });
+  if (tourPrev) tourPrev.addEventListener("click", () => {
+    const i = tourIndex();
+    if (i <= 0) return;
+    TOUR[i - 1].go();
+  });
+  if (tourNext) tourNext.addEventListener("click", () => {
+    const i = tourIndex();
+    if (i >= TOUR.length - 1) return;
+    TOUR[i + 1].go();
+  });
   if (modeSeno) modeSeno.addEventListener("click", () => {
     if (mode !== "educate") setMode("educate");
     setEducateScreen(1);
@@ -3895,6 +4200,27 @@
     if (mode !== "educate") setMode("educate");
     setEducateScreen(3);
   });
+  (function wireCosenoMovie() {
+    const cosenoMoviePlayBtn = document.getElementById("cosenoMoviePlayBtn");
+    const cosenoMovieNextBtn = document.getElementById("cosenoMovieNextBtn");
+    const cosenoMovieStopBtn = document.getElementById("cosenoMovieStopBtn");
+    const cosenoMovieClearBtn = document.getElementById("cosenoMovieClearBtn");
+    if (cosenoMoviePlayBtn) cosenoMoviePlayBtn.addEventListener("click", () => { playCosenoMovie(); });
+    if (cosenoMovieNextBtn) cosenoMovieNextBtn.addEventListener("click", () => { stepCosenoMovieNext(); });
+    if (cosenoMovieStopBtn) cosenoMovieStopBtn.addEventListener("click", () => { stopCosenoMovie(); });
+    if (cosenoMovieClearBtn) cosenoMovieClearBtn.addEventListener("click", () => {
+      if (cosenoMoviePlaying) stopCosenoMovie();
+      cosParked = [];
+      cosenoMovieIndex = -1;
+      cosenoMovieCurr = null;
+      cosenoMoviePrev = null;
+      stopProjAnim();
+      draw();
+      const st = document.getElementById("cosenoMovieStatus");
+      if (st) st.textContent = "X limpio · listo para ▶ Play coseno o Siguiente";
+      syncEducateChrome();
+    });
+  })();
   const senoReplayBtn = document.getElementById("senoReplayBtn");
   const senoResetParkBtn = document.getElementById("senoResetParkBtn");
   const cosenoReplayBtn = document.getElementById("cosenoReplayBtn");
@@ -3912,6 +4238,28 @@
     cosParked = []; stopProjAnim(); draw();
   });
 
+
+  const educateStopBtn = document.getElementById("educateStopBtn");
+  if (educateStopBtn) educateStopBtn.addEventListener("click", () => {
+    if (!playing) return;
+    playAbort = true;
+    setNarration("Play detenido. Podés seguir con <strong>Siguiente</strong> o ▶ Play.");
+    syncEducateButtons();
+  });
+  const senoReplayStopBtn = document.getElementById("senoReplayStopBtn");
+  if (senoReplayStopBtn) senoReplayStopBtn.addEventListener("click", () => {
+    stopProjAnim();
+    draw();
+    syncEducateButtons();
+    setNarration("Animación de seno detenida.");
+  });
+  const cosenoReplayStopBtn = document.getElementById("cosenoReplayStopBtn");
+  if (cosenoReplayStopBtn) cosenoReplayStopBtn.addEventListener("click", () => {
+    stopProjAnim();
+    draw();
+    syncEducateButtons();
+    setNarration("Animación de coseno detenida.");
+  });
   wireLocusSignalizers();
   setMode("educate");
 })();
