@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 175 · Economía · editor · tramos · play</title>
+<title>Lección 171 · Economía · 11 · ingreso, costo y beneficio · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -77,7 +77,6 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
 }
 .band-row:last-child { margin-bottom: 0; }
-.band-row.on { color: #e9eef7; font-weight: 700; }
 .band-swatch {
   width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
@@ -101,30 +100,11 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
   border-radius: 0 2px 2px 0; background: var(--accent);
 }
-.expr-row.phase-ask::before { background: var(--amber); }
 .expr-formula {
   font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.86rem;
   color: var(--ink); padding-left: 6px; line-height: 1.55;
 }
 .hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
-.chip {
-  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
-  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
-}
-.chip.teal { color: #2dd4bf; border-color: rgba(45,212,191,0.5); }
-.chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
-.chip.coral { color: #fb7185; border-color: rgba(251,113,133,0.5); }
-.chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
-.chip.purple { color: #c4b5fd; border-color: rgba(167,139,250,.5); }
-.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
-.chip.on { box-shadow: 0 0 10px rgba(255,191,0,.35); border-color: #FFBF00; color: #FFBF00; }
-.mode-tag {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
-  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24;
-  margin-left: 6px;
-}
 .graph-wrap { position: relative; min-width: 0; }
 canvas#c {
   width: 100%; height: auto; display: block; border-radius: 10px;
@@ -154,7 +134,6 @@ canvas#c {
 .work-panel .ok { color: #5ad4a8; }
 .work-panel .bad { color: #ff7b7b; }
 .work-panel .paso { color: #60a5fa; }
-.work-panel .empty { color: #94a3b8; }
 .caption {
   margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
 }
@@ -188,22 +167,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .expr-formula .ok { color: #5ad4a8; }
 .expr-formula .hl { color: #FFBF00; }
 .expr-formula .bad { color: #ff7b7b; }
-.expr-formula .empty { color: #94a3b8; }
-.gloss-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-.gloss-list li {
-  font-size: 0.78rem; line-height: 1.4; color: #9fb0c7;
-  padding: 7px 9px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
-}
-.gloss-list li.on { color: #e9eef7; border-color: rgba(255,191,0,.45); background: rgba(255,191,0,.08); }
-.gloss-list .k { font-weight: 800; color: #fbbf24; font-family: ui-monospace, Menlo, monospace; }
-.frac {
-  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
-  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace;
-  font-weight: 800;
-}
-.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.88em; }
-.frac .num { border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
-.frac .den { padding-top: 1px; }
 </style>
 </head>
 <body>
@@ -211,8 +174,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 175</span> · Economía · editor · tramos · play
-        <span class="sub">50x | 40x | 35x · Dom = unión de intervalos</span>
+      <h1><span class="lesson-num">Lección 171</span> · Economía · 11 · expresiones I, C y B · play
+        <span class="sub">I=p·x · Ī=I/x · C · C̄=C/x · B=I−C · B̄=B/x</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -228,40 +191,41 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" aria-label="Qué es esto, pasos y fórmula">
         <div class="contrast-card">
-          <p class="contrast-kicker">1 · Qué es esto</p>
+          <p class="contrast-kicker">UDL · guía §11 · expresiones</p>
           <ul class="contrast-bullets">
-            <li>Acá el precio por copia depende del <span class="hl">volumen total</span>: todas las copias salen a la misma tarifa de ese tramo.</li>
-            <li>No es como el gas: no se “acumulan” tarifas. Por eso el gráfico puede <span class="bad">saltar</span>. El dominio son <strong>solo esos intervalos</strong>.</li>
+            <li>La guía pide <span class="hl">escribir</span> las funciones, no adivinar un número. Ingreso no es ganancia.</li>
+            <li>I = p·x · Ī = I/x (=p) · C = costo total · C̄ = C/x · <span class="hl">B = I − C</span> · B̄ = B/x. Ejemplo: p=40−x, C=80+8x.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Tarifa · total = tarifa · x</div>
-          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">1000≤x≤10000</strong> → 50x</span></div>
-          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">10001≤x≤20000</strong> → 40x</span></div>
-          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">20001≤x≤50000</strong> → 35x</span></div>
+          <div class="band-legend-title">Seis expresiones</div>
+          <div class="band-row"><span class="band-swatch teal"></span><span>I y Ī</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span>C y C̄</span></div>
+          <div class="band-row"><span class="band-swatch purple"></span><span>B y B̄</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Qué es tarifa por volumen</li>
-            <li data-step="2"><span class="n">2</span> Tramo 50x · [1000; 10000]</li>
-            <li data-step="3"><span class="n">3</span> Tramo 40x · [10001; 20000]</li>
-            <li data-step="4"><span class="n">4</span> Tramo 35x · [20001; 50000]</li>
-            <li data-step="5"><span class="n">5</span> Dominio = unión de intervalos</li>
-            <li data-step="6"><span class="n">6</span> Gráfico · tres rayos (con saltos)</li>
+            <li data-step="1"><span class="n">1</span> I = p·x</li>
+            <li data-step="2"><span class="n">2</span> Ī = I/x</li>
+            <li data-step="3"><span class="n">3</span> C total</li>
+            <li data-step="4"><span class="n">4</span> C̄ = C/x</li>
+            <li data-step="5"><span class="n">5</span> B = I−C</li>
+            <li data-step="6"><span class="n">6</span> B̄ = B/x</li>
           </ol>
-        </div>        <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">C(x) a tramos · total = tarifa·x</div>
-          <p class="hint-mini" id="hintMini">▶ Play · función a tramos + dominio</p>
+        </div>
+        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">I = p·x · C = C(x) · B = I − C</div>
+          <p class="hint-mini" id="hintMini">▶ Play</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-14-gas-play.html" title="Lección 174: Economía · gas · tramos · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-16-play.html" title="Lección 176: Economía · 16 · dos costos · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Costo de copias por volumen"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-10-play.html" title="Lección 170: Economía · 10 · demanda x=10−p/3 · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-12-cafeteras-play.html" title="Lección 172: Economía · 12 · cafeteras · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Expresiones de ingreso, costo y beneficio"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · costo por volumen de copias, a tramos.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · guía §11: escribir I, Ī, C, C̄, B, B̄.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -271,7 +235,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Total = tarifa·x · Dom solo [1000;10000]∪[10001;20000]∪[20001;50000]</p>
+    <p class="hint">Ejemplo p=40−x · C=80+8x · I=40x−x² · B=−x²+32x−80</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -282,97 +246,61 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var EP = window.EconomiaPlay;
   var C = EP.COLORS;
   var canvas = document.getElementById("c");
-
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 52000, ymin: 0, ymax: 1900000,
-    xlabel: "copias x", ylabel: "costo total",
-    xTicks: [0, 10000, 20000, 35000, 50000],
-    yTicks: [0, 250000, 500000, 800000, 1200000, 1750000]
+    xmin: 0, xmax: 42, ymin: -120, ymax: 520,
+    xlabel: "cantidad x", ylabel: "u.m.",
+    xTicks: [0, 8, 16, 20, 40],
+    yTicks: [-80, 0, 176, 320, 400]
   });
+  function Iof(x) { return (40 - x) * x; }
+  function Cof(x) { return 80 + 8 * x; }
+  function Bof(x) { return Iof(x) - Cof(x); }
   function draw(api) {
     var v = api.vis;
     g.size(); g.drawAxes();
-    if (v.t1) {
-      g.segment(1000, 50*1000, 10000, 50*10000, { color: C.amber, lw: 3.4 });
-      g.point(1000, 50000, { color: C.amber });
-      g.point(10000, 500000, { color: C.amber });
-    }
-    if (v.t2) {
-      g.segment(10001, 40*10001, 20000, 40*20000, { color: C.teal, lw: 3.4 });
-      g.point(10001, 400040, { color: C.teal });
-      g.point(20000, 800000, { color: C.teal });
-    }
-    if (v.t3) {
-      g.segment(20001, 35*20001, 50000, 35*50000, { color: C.coral, lw: 3.4 });
-      g.point(20001, 700035, { color: C.coral });
-      g.point(50000, 1750000, { color: C.coral });
-    }
-    if (v.dom) {
-      var ox = g.sy(0);
-      g.ctx.save();
-      g.ctx.strokeStyle = "#16a34a";
-      g.ctx.lineWidth = 8;
-      g.ctx.lineCap = "round";
-      g.ctx.globalAlpha = 0.55;
-      g.ctx.beginPath();
-      g.ctx.moveTo(g.sx(1000), ox + 18);
-      g.ctx.lineTo(g.sx(10000), ox + 18);
-      g.ctx.moveTo(g.sx(10001), ox + 18);
-      g.ctx.lineTo(g.sx(20000), ox + 18);
-      g.ctx.moveTo(g.sx(20001), ox + 18);
-      g.ctx.lineTo(g.sx(50000), ox + 18);
-      g.ctx.stroke();
-      g.ctx.restore();
-    }
+    if (v.I) g.plotFn(Iof, 0, 40, { color: C.ingreso, lw: 2.6 });
+    if (v.C) g.plotFn(Cof, 0, 40, { color: C.costo, lw: 2.4 });
+    if (v.B) g.plotFn(Bof, 0, 40, { color: C.beneficio, lw: 2.8 });
     if (v.badge) g.badge(v.badge);
   }
   EP.bindPlay({
     totalPhases: 6,
-    idleCaption: "Presioná <strong>▶ Play</strong> · costo por volumen de copias, a tramos.",
+    idleCaption: "Presioná <strong>▶ Play</strong> · guía §11: escribir I, Ī, C, C̄, B, B̄.",
     idleVis: {},
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1800, vis: { badge: "1 · tarifa de todo el lote" },
-          work: '<span class="paso">1</span> · total = tarifa · x · la tarifa depende del tamaño del pedido',
-          cap: 'Si pedís 15000 copias, <strong>todas</strong> salen a 40 (no 50 las primeras 10000). Por eso puede haber un salto al cambiar de tramo.',
-          htmls: [{ id: "exprFormula", value: "C(x) = tarifa(x) · x" }] },
-        { phase: 2, wait: 1600, vis: { t1: true, badge: "tramo 50x" },
-          work: '<span class="paso">2</span> · 1000≤x≤10000 → C(x)=50x',
-          cap: 'Pedido chico: 50 por copia. En x=1000, C=50 000. En x=10000, C=500 000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">50x</span> si 1000≤x≤10000' }] },
-        { phase: 3, wait: 1700, vis: { t1: true, t2: true, badge: "tramo 40x · salto" },
-          work: '<span class="paso">3</span> · 10001≤x≤20000 → C(x)=40x · C(10001)=400 040',
-          cap: 'Al pasar a 10001 copias el total <span class="bad">baja</span> (500 000 → 400 040): descuento por volumen sobre todo el lote.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">40x</span> si 10001≤x≤20000' }] },
-        { phase: 4, wait: 1600, vis: { t1: true, t2: true, t3: true, badge: "tramo 35x" },
-          work: '<span class="paso">4</span> · 20001≤x≤50000 → C(x)=35x',
-          cap: 'Pedido grande: 35 por copia. En x=50000, C=1 750 000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">35x</span> si 20001≤x≤50000' }] },
-        { phase: 5, wait: 1800, vis: { t1: true, t2: true, t3: true, dom: true, badge: "Dom = unión" },
-          work: '<span class="paso">5</span> · Dom = [1000;10000] ∪ [10001;20000] ∪ [20001;50000]',
-          cap: 'Fuera de esos intervalos la editorial <strong>no cotiza</strong> (ni menos de 1000 ni más de 50000). El dominio son solo esos tramos.',
-          htmls: [{ id: "exprFormula", value: "Dom = [1000;10000]∪[10001;20000]∪[20001;50000]" }] },
-        { phase: 6, wait: 1600, vis: { t1: true, t2: true, t3: true, dom: true, badge: "tres segmentos · saltos" },
-          work: '<span class="paso">6</span> · tres segmentos · <span class="bad">no es continuo</span> en los cambios de tarifa',
-          cap: '<strong>Cierre:</strong> función a tramos con saltos. Distinto del gas (allá el gráfico era un polígono continuo).',
-          htmls: [{ id: "exprFormula", value: "C(x)=50x | 40x | 35x · Dom solo esos intervalos" }] }
+        { phase: 1, wait: 1600, vis: { I: true, badge: "1 · ingreso I" },
+          work: '<span class="paso">1</span> · I(x) = p(x)·x · ej. (40−x)·x = <span class="ok">40x − x²</span>',
+          cap: 'Ingreso = lo que entra a la caja. Todavía no restamos costos.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">I(x) = p(x)·x</span>' }] },
+        { phase: 2, wait: 1500, vis: { I: true, badge: "2 · ingreso medio" },
+          work: '<span class="paso">2</span> · Ī(x) = I(x)/x = p(x) · ej. Ī = 40 − x',
+          cap: 'Por unidad, el ingreso medio vuelve a ser el precio. No confundas Ī con I.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">Ī(x) = I(x)/x = p(x)</span>' }] },
+        { phase: 3, wait: 1500, vis: { I: true, C: true, badge: "3 · costo C" },
+          work: '<span class="paso">3</span> · C(x) = costo total · ej. <span class="ok">80 + 8x</span> (fijo + variable)',
+          cap: 'El costo se escribe como función de x. A x=0 queda el fijo.',
+          htmls: [{ id: "exprFormula", value: "C(x) = C<sub>f</sub> + c<sub>v</sub>·x" }] },
+        { phase: 4, wait: 1500, vis: { I: true, C: true, badge: "4 · costo medio" },
+          work: '<span class="paso">4</span> · C̄(x) = C(x)/x · ej. 8 + 80/x (baja cuando x crece)',
+          cap: 'El fijo se diluye. C̄ no es la pendiente de C.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C̄(x) = C(x)/x</span>' }] },
+        { phase: 5, wait: 1700, vis: { I: true, C: true, B: true, badge: "5 · beneficio B" },
+          work: '<span class="paso">5</span> · B(x) = I(x) − C(x) · ej. <span class="ok">−x² + 32x − 80</span>',
+          cap: 'Beneficio es lo que queda. Si B&lt;0 hay pérdida. No uses “ingreso” cuando te piden B.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B(x) = I(x) − C(x)</span>' }] },
+        { phase: 6, wait: 1500, vis: { I: true, C: true, B: true, badge: "6 · B medio" },
+          work: '<span class="paso">6</span> · B̄(x) = B(x)/x = Ī(x) − C̄(x)',
+          cap: '<strong>Cierre:</strong> seis expresiones. I, Ī, C, C̄, B, B̄. El ejemplo solo ilustra.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B̄ = B/x = Ī − C̄</span>' }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> 50x | 40x | 35x · Dom = unión de los tres intervalos.', 'editor listo');
+        api.finish('<strong>Cierre:</strong> I=p·x, Ī=I/x, C, C̄=C/x, B=I−C, B̄=B/x.', 'expresiones listas');
       });
     }
   });
-  window.__L162 = {
-    C: function (x) {
-      if (x >= 1000 && x <= 10000) return 50 * x;
-      if (x >= 10001 && x <= 20000) return 40 * x;
-      if (x >= 20001 && x <= 50000) return 35 * x;
-      return null;
-    },
-    dom: "[1000,10000]∪[10001,20000]∪[20001,50000]"
-  };
+  window.__L171 = { I: Iof, C: Cof, B: Bof };
 })();
-
 </script>
 </body>
 </html>
