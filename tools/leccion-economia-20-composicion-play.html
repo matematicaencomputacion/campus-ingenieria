@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 165 · Economía · composición C∘x · play</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #38bdf8; --border: #243044;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #2dd4bf;
+  --coral: #fb7185; --row: #121a27; --row-border: #2a3548;
+  --graph-bg: #f8fafc; --axes-black: #111111;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.18rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: #fbbf24; font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.84rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn, a.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.on { background: var(--amber); color: #0b1018; box-shadow: 0 0 10px rgba(255,191,0,.35); }
+button.btn:hover, a.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548; color: var(--mast);
+}
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
+.main-stage { display: grid; grid-template-columns: minmax(250px, 340px) 1fr; gap: 10px; align-items: stretch; }
+@media (max-width: 820px) { .main-stage { grid-template-columns: 1fr; } }
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.contrast-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(255,191,0,0.35);
+  background: linear-gradient(135deg, rgba(255,191,0,0.10), rgba(18,26,39,0.95));
+}
+.contrast-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #FFBF00; margin: 0 0 8px;
+}
+.contrast-bullets { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.contrast-bullets li {
+  font-size: 0.82rem; line-height: 1.4; color: var(--ink); font-weight: 650;
+  padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.contrast-bullets .hl { color: #FFBF00; }
+.contrast-bullets .ok { color: #5ad4a8; }
+.contrast-bullets .bad { color: #ff7b7b; }
+.band-legend {
+  margin: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #2a3a52; background: #121a28;
+}
+.band-legend-title {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #93c5fd; margin: 0 0 8px;
+}
+.band-row {
+  display: flex; align-items: flex-start; gap: 10px; margin: 0 0 7px;
+  font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
+}
+.band-row:last-child { margin-bottom: 0; }
+.band-row.on { color: #e9eef7; font-weight: 700; }
+.band-swatch {
+  width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+.band-swatch.green { background: #22c55e; }
+.band-swatch.coral { background: #fb7185; }
+.band-swatch.amber { background: #f59e0b; }
+.band-swatch.teal { background: #2dd4bf; }
+.band-swatch.purple { background: #a78bfa; }
+.band-swatch.gray { background: #64748b; }
+.band-row strong.v { color: #22c55e; }
+.band-row strong.c { color: #fb7185; }
+.band-row strong.a { color: #f59e0b; }
+.band-row strong.t { color: #2dd4bf; }
+.band-row strong.p { color: #a78bfa; }
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.phase-ask::before { background: var(--amber); }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.86rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.55;
+}
+.hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
+}
+.chip.teal { color: #2dd4bf; border-color: rgba(45,212,191,0.5); }
+.chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
+.chip.coral { color: #fb7185; border-color: rgba(251,113,133,0.5); }
+.chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
+.chip.purple { color: #c4b5fd; border-color: rgba(167,139,250,.5); }
+.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
+.chip.on { box-shadow: 0 0 10px rgba(255,191,0,.35); border-color: #FFBF00; color: #FFBF00; }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24;
+  margin-left: 6px;
+}
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--graph-bg); touch-action: none;
+  border: 1px solid #cbd5e1;
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
+  transition: opacity .15s; filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev { display: block; width: 0; height: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.work-panel {
+  display: none; margin-top: 8px; padding: 10px 14px; border-radius: 10px;
+  background: rgba(18, 26, 39, 0.95); border: 1px solid rgba(56,189,248,0.45);
+  font-family: ui-monospace, Menlo, monospace; font-size: 1.02rem; font-weight: 700;
+  color: var(--ink); min-height: 2.2em; line-height: 1.55;
+}
+.work-panel.on { display: block; }
+.work-panel .hl { color: var(--amber); }
+.work-panel .ok { color: #5ad4a8; }
+.work-panel .bad { color: #ff7b7b; }
+.work-panel .paso { color: #60a5fa; }
+.work-panel .empty { color: #94a3b8; }
+.caption {
+  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
+}
+.caption strong { color: var(--ink); }
+.caption .hl { color: #FFBF00; font-weight: 800; }
+.caption .ok { color: #5ad4a8; font-weight: 800; }
+.caption .bad { color: #ff7b7b; font-weight: 800; }
+.caption .paso { color: #60a5fa; font-weight: 800; }
+.sound-meter {
+  margin: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; min-height: 28px;
+  padding: 6px 10px; color: var(--muted); font-size: 0.8rem; font-weight: 700; user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px; width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar { display: inline-block; width: 5px; height: 8px; border-radius: 2px; background: #3b4a63; transition: height .08s ease, background .08s ease; }
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
+.steps-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
+.steps-box li { margin: 3px 0; }
+.steps-box li.on { color: #e9eef7; font-weight: 700; }
+.steps-box li.done { color: #5ad4a8; }
+.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.expr-formula .ok { color: #5ad4a8; }
+.expr-formula .hl { color: #FFBF00; }
+.expr-formula .bad { color: #ff7b7b; }
+.expr-formula .empty { color: #94a3b8; }
+.gloss-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.gloss-list li {
+  font-size: 0.78rem; line-height: 1.4; color: #9fb0c7;
+  padding: 7px 9px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.gloss-list li.on { color: #e9eef7; border-color: rgba(255,191,0,.45); background: rgba(255,191,0,.08); }
+.gloss-list .k { font-weight: 800; color: #fbbf24; font-family: ui-monospace, Menlo, monospace; }
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace;
+  font-weight: 800;
+}
+.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.88em; }
+.frac .num { border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.frac .den { padding-top: 1px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 165</span> · Economía · composición C∘x · play
+        <span class="sub">máquinas t → x → C · C̄(t) · límite en t≈4</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="playBtn">▶ Play</button>
+      <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
+      <button type="button" class="btn" id="restartBtn">Reiniciar</button>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/8</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" aria-label="Qué es esto, pasos y fórmula">
+        <div class="contrast-card">
+          <p class="contrast-kicker">1 · Qué es esto</p>
+          <ul class="contrast-bullets">
+            <li>Componer <span class="hl">C∘x</span> = primero la caja <strong>x</strong> (horas → unidades), después la caja <strong>C</strong> (unidades → costo).</li>
+            <li>El orden importa: entra t, sale x(t), y eso entra a C. Dominio: <span class="hl">0 ≤ t ≤ 5</span> horas.</li>
+          </ul>
+        </div>
+        <div class="band-legend">
+          <div class="band-legend-title">Cajas</div>
+          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">x(t) = 25t</strong> · unidades por hora</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">C(x) = x² + x + 500</strong> · costo</span></div>
+        </div>
+        <div class="steps-box" aria-label="Pasos con nombre">
+          <ol id="stepsList">
+            <li data-step="1"><span class="n">1</span> Qué es C∘x · dos cajas</li>
+            <li data-step="2"><span class="n">2</span> a) Pegar C(x(t))</li>
+            <li data-step="3"><span class="n">3</span> b) t=3 por las cajas</li>
+            <li data-step="4"><span class="n">4</span> b) (C∘x)(3)=6200</li>
+            <li data-step="5"><span class="n">5</span> c) C̄(t)=C(t)/t</li>
+            <li data-step="6"><span class="n">6</span> c) C̄(3)=2066,67</li>
+            <li data-step="7"><span class="n">7</span> d) C(t)=11000 → t≈4</li>
+            <li data-step="8"><span class="n">8</span> d) sí se alcanza el límite</li>
+          </ol>
+        </div>
+        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">x(t) = 25t<br>C(x) = x² + x + 500</div>
+          <p class="hint-mini" id="hintMini">▶ Play · t entra a x, sale a C</p>
+        </div>
+      </aside>
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-economia-18-beneficio-play.html" title="Lección 164: Economía · beneficio · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-16-play.html" title="Lección 167: Economía · dos costos · empate · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Composición C∘x · máquinas y gráfico"></canvas>
+      </div>
+    </div>
+    <div class="work-panel" id="workPanel" aria-live="polite"></div>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · t entra a la caja x, sale a la caja C.</p>
+    <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
+    <p class="hint">(C∘x)(t)=625t²+25t+500 · C̄(t)=625t+25+500/t · C̄(3)≈2066,67 · C=11000 en t≈4</p>
+  </div>
+</div>
+<script src="game-kit.js?v=20260907"></script>
+<script src="economia-play-core.js?v=20260907"></script>
+<script>
+(function () {
+  "use strict";
+  var EP = window.EconomiaPlay;
+  var C = EP.COLORS;
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+
+  var g = new EP.Graph(canvas, {
+    xmin: 0, xmax: 5.4, ymin: 0, ymax: 18000,
+    xlabel: "horas t", ylabel: "costo (C∘x)",
+    xTicks: [0, 1, 2, 3, 4, 5],
+    yTicks: [0, 5000, 6200, 11000, 16250],
+    yFmt: function (n) { return EP.fmtNum(n, 0); }
+  });
+
+  function Cx(t) { return 625 * t * t + 25 * t + 500; }
+  var tStar = (-1 + Math.sqrt(42001)) / 50;
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawBox(box, letter, formula, color, active) {
+    ctx.save();
+    if (active) { ctx.shadowColor = color; ctx.shadowBlur = 18; }
+    roundRect(box.x, box.y, box.w, box.h, 14);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.lineWidth = active ? 4 : 2.5;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    roundRect(box.x + 10, box.y - 14, 40, 26, 7);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 15px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(letter, box.x + 30, box.y - 1);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "700 14px ui-monospace, Menlo, monospace";
+    ctx.fillText(formula, box.x + box.w / 2, box.y + box.h / 2 + 6);
+    ctx.fillStyle = color;
+    roundRect(box.x - 7, box.y + box.h / 2 - 9, 9, 18, 3);
+    ctx.fill();
+    roundRect(box.x + box.w - 2, box.y + box.h / 2 - 9, 9, 18, 3);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawArrow(x1, y1, x2, y2, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    var ang = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 11 * Math.cos(ang - 0.4), y2 - 11 * Math.sin(ang - 0.4));
+    ctx.lineTo(x2 - 11 * Math.cos(ang + 0.4), y2 - 11 * Math.sin(ang + 0.4));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawToken(x, y, label) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = "#f59e0b";
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = "#0b1018";
+    ctx.font = "800 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, x, y + 1);
+    ctx.restore();
+  }
+
+  function drawMachines(v) {
+    var W = canvas.width, H = canvas.height;
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "800 17px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("Cadena  x  →  C     ·     (C ∘ x)", W / 2, 14);
+
+    var boxW = Math.min(200, W * 0.28);
+    var boxH = Math.min(132, H * 0.34);
+    var y = H * 0.30;
+    var gap = Math.min(100, W * 0.13);
+    var total = boxW * 2 + gap;
+    var x0 = (W - total) / 2;
+    var left = { x: x0, y: y, w: boxW, h: boxH };
+    var right = { x: x0 + boxW + gap, y: y, w: boxW, h: boxH };
+    var midY = y + boxH / 2;
+    var inX = x0 - 64;
+    var midX = x0 + boxW + gap / 2;
+    var outX = x0 + total + 64;
+
+    drawBox(left, "x", "25 · t", C.teal, v.pulse === "x");
+    drawBox(right, "C", "u² + u + 500", C.costo, v.pulse === "C");
+    drawArrow(inX + 18, midY, left.x - 10, midY, "#64748b");
+    drawArrow(left.x + left.w + 8, midY, right.x - 10, midY, "#64748b");
+    drawArrow(right.x + right.w + 8, midY, outX - 10, midY, "#64748b");
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "700 12px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("t horas", inX - 4, midY - 28);
+    ctx.fillText("unidades", midX, midY - 28);
+    ctx.fillText("costo", outX + 4, midY - 28);
+
+    if (v.token === "in") drawToken(inX, midY, v.tLabel || "t");
+    if (v.token === "mid") drawToken(midX, midY, v.xLabel || "x");
+    if (v.token === "out") drawToken(outX, midY, v.cLabel || "C");
+
+    if (v.note) {
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 15px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(v.note, W / 2, H - 36);
+    }
+    if (v.badge) g.badge(v.badge);
+  }
+
+  function draw(api) {
+    var v = api.vis;
+    g.size();
+    if (v.mode === "graph") {
+      g.drawAxes();
+      g.plotFn(Cx, 0, 5, { color: C.costo, lw: 3.2 });
+      g.hLine(11000, { color: C.coral, lw: 2, dash: [6, 4], alpha: 0.9 });
+      g.label(0.15, 11800, "límite 11000", { color: C.coral, dx: 8, dy: -4 });
+      if (v.P3) {
+        g.point(3, 6200, { color: C.teal });
+        g.label(3, 6200, "t=3 · 6200", { color: C.teal, dy: 18, baseline: "top" });
+      }
+      if (v.P4) {
+        g.vLine(tStar, { color: C.coral, lw: 1.4, dash: [4, 4], alpha: 0.7 });
+        g.point(tStar, 11000, { color: C.coral });
+        g.label(tStar, 11000, "t≈4 · límite", { color: C.coral, dy: -6 });
+      }
+      if (v.P5) {
+        g.point(5, 16250, { color: C.coral });
+        g.label(3.55, 16250, "t=5 · 16250", { color: C.coral, align: "left", dx: 8 });
+      }
+      if (v.badge) g.badge(v.badge);
+      return;
+    }
+    drawMachines(v);
+  }
+
+  EP.bindPlay({
+    totalPhases: 8,
+    idleCaption: "Presioná <strong>▶ Play</strong> · t entra a la caja x, sale a la caja C.",
+    idleVis: { mode: "machines", pulse: null, token: "in", tLabel: "t" },
+    draw: draw,
+    run: function (api) {
+      api.runSequence([
+        { phase: 1, wait: 1800, vis: { mode: "machines", pulse: "x", token: "in", tLabel: "t", badge: "1 · dos cajas" },
+          work: '<span class="paso">1</span> · primero x(t), después C(x) · eso es C∘x',
+          cap: 't son <strong>horas</strong> (0 a 5). La caja x convierte horas en unidades (25 por hora). La caja C convierte unidades en costo.',
+          htmls: [{ id: "exprFormula", value: "x(t)=25t &nbsp;→&nbsp; C(x)=x²+x+500" }] },
+        { phase: 2, wait: 2000, vis: { mode: "machines", pulse: "C", token: "mid", xLabel: "25t", badge: "a) pegar C(x(t))" },
+          work: '<span class="paso">2</span> · C(25t)=(25t)²+25t+500 = <span class="ok">625t² + 25t + 500</span>',
+          cap: '<span class="hl">a)</span> Se pega: donde C veía x, ahora va 25t. (C∘x)(t) ya es costo en función del tiempo. Abajo se escribe C(t) por brevedad.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C(t) = 625t² + 25t + 500</span>' }] },
+        { phase: 3, wait: 1800, vis: { mode: "machines", pulse: "x", token: "in", tLabel: "3", badge: "b) t = 3 entra" },
+          work: '<span class="paso">3</span> · t=3 → x(3)=25·3=<span class="ok">75</span> unidades',
+          cap: '<span class="hl">b)</span> El token 3 entra a la primera caja. Salen 75 unidades (no confundir con C de 3 unidades).',
+          htmls: [{ id: "exprFormula", value: "x(3) = 75" }] },
+        { phase: 4, wait: 1800, vis: { mode: "machines", pulse: "C", token: "out", cLabel: "6200", note: "C(75) = 75² + 75 + 500 = 6200", badge: "(C∘x)(3)=6200" },
+          work: '<span class="paso">4</span> · C(75)=5625+75+500 = <span class="ok">6200</span>',
+          cap: 'Esas 75 unidades entran a C. A las 3 horas el costo total es 6200. Eso es C(3) de la composición.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C(3) = 6200</span>' }] },
+        { phase: 5, wait: 2200, vis: { mode: "machines", token: "out", cLabel: "C̄", note: "C̄(t) = C(t)/t = 625t + 25 + 500/t", badge: "c) C̄ = C/t" },
+          work: '<span class="paso">5</span> · C̄(t)=(625t²+25t+500)/t = <span class="ok">625t+25+500/t</span>',
+          cap: '<span class="hl">c)</span> Costo promedio por hora: se divide el total por el tiempo. El 500/t es el fijo repartido.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C̄(t)=625t+25+500/t</span>' }] },
+        { phase: 6, wait: 1800, vis: { mode: "graph", P3: true, badge: "C̄(3)≈2066,67" },
+          work: '<span class="paso">6</span> · C̄(3)=625·3+25+500/3 = 1875+25+166,67 = <span class="ok">2066,67</span>',
+          cap: 'A las 3 h: 6200/3 ≈ 2066,67 por hora. Misma cuenta: 1875+25+500/3.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C̄(3) ≈ 2066,67</span>' }] },
+        { phase: 7, wait: 2200, vis: { mode: "graph", P3: true, P4: true, badge: "d) C(t)=11000 → t≈4" },
+          work: '<span class="paso">7</span> · 625t²+25t+500=11000 → 25t²+t−420=0 → <span class="ok">t≈4,08</span>',
+          cap: '<span class="hl">d)</span> Se iguala C(t) al límite 11000. La raíz positiva es t≈4 (alrededor de 4 horas).',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">t ≈ 4</span> · se alcanza 11000' }] },
+        { phase: 8, wait: 1800, vis: { mode: "graph", P3: true, P4: true, P5: true, badge: "sí se alcanza · t≈4" },
+          work: '<span class="paso">8</span> · t≈4 ya toca 11000 · en t=5, C=16250&gt;11000 → <span class="bad">sí se alcanza</span>',
+          cap: 'El límite se alcanza alrededor de t=4. A las 5 h el punto queda arriba de la raya (16250).',
+          htmls: [{ id: "exprFormula", value: '<span class="bad">sí se alcanza</span> el límite (t≈4)' }] }
+      ], function () {
+        api.finish('<strong>Cierre:</strong> C(t)=625t²+25t+500 · C̄(t)=625t+25+500/t · C̄(3)≈2066,67 · límite en t≈4.', 'composición lista');
+      });
+    }
+  });
+  window.__L165 = {
+    Cx: function (t) { return 625 * t * t + 25 * t + 500; },
+    Cbar: function (t) { return 625 * t + 25 + 500 / t; },
+    t3: 6200,
+    avg3: 6200 / 3,
+    tStar: (-1 + Math.sqrt(42001)) / 50,
+    t5: 16250,
+    limit: 11000
+  };
+})();
+
+</script>
+</body>
+</html>

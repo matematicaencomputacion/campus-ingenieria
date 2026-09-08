@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 164 · Economía · beneficio · play</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #38bdf8; --border: #243044;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #2dd4bf;
+  --coral: #fb7185; --row: #121a27; --row-border: #2a3548;
+  --graph-bg: #f8fafc; --axes-black: #111111;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.18rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: #fbbf24; font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.84rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn, a.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.on { background: var(--amber); color: #0b1018; box-shadow: 0 0 10px rgba(255,191,0,.35); }
+button.btn:hover, a.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548; color: var(--mast);
+}
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
+.main-stage { display: grid; grid-template-columns: minmax(250px, 340px) 1fr; gap: 10px; align-items: stretch; }
+@media (max-width: 820px) { .main-stage { grid-template-columns: 1fr; } }
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.contrast-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(255,191,0,0.35);
+  background: linear-gradient(135deg, rgba(255,191,0,0.10), rgba(18,26,39,0.95));
+}
+.contrast-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #FFBF00; margin: 0 0 8px;
+}
+.contrast-bullets { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.contrast-bullets li {
+  font-size: 0.82rem; line-height: 1.4; color: var(--ink); font-weight: 650;
+  padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.contrast-bullets .hl { color: #FFBF00; }
+.contrast-bullets .ok { color: #5ad4a8; }
+.contrast-bullets .bad { color: #ff7b7b; }
+.band-legend {
+  margin: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #2a3a52; background: #121a28;
+}
+.band-legend-title {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #93c5fd; margin: 0 0 8px;
+}
+.band-row {
+  display: flex; align-items: flex-start; gap: 10px; margin: 0 0 7px;
+  font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
+}
+.band-row:last-child { margin-bottom: 0; }
+.band-row.on { color: #e9eef7; font-weight: 700; }
+.band-swatch {
+  width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+.band-swatch.green { background: #22c55e; }
+.band-swatch.coral { background: #fb7185; }
+.band-swatch.amber { background: #f59e0b; }
+.band-swatch.teal { background: #2dd4bf; }
+.band-swatch.purple { background: #a78bfa; }
+.band-swatch.gray { background: #64748b; }
+.band-row strong.v { color: #22c55e; }
+.band-row strong.c { color: #fb7185; }
+.band-row strong.a { color: #f59e0b; }
+.band-row strong.t { color: #2dd4bf; }
+.band-row strong.p { color: #a78bfa; }
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.phase-ask::before { background: var(--amber); }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.86rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.55;
+}
+.hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
+}
+.chip.teal { color: #2dd4bf; border-color: rgba(45,212,191,0.5); }
+.chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
+.chip.coral { color: #fb7185; border-color: rgba(251,113,133,0.5); }
+.chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
+.chip.purple { color: #c4b5fd; border-color: rgba(167,139,250,.5); }
+.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
+.chip.on { box-shadow: 0 0 10px rgba(255,191,0,.35); border-color: #FFBF00; color: #FFBF00; }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24;
+  margin-left: 6px;
+}
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--graph-bg); touch-action: none;
+  border: 1px solid #cbd5e1;
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
+  transition: opacity .15s; filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev { display: block; width: 0; height: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.work-panel {
+  display: none; margin-top: 8px; padding: 10px 14px; border-radius: 10px;
+  background: rgba(18, 26, 39, 0.95); border: 1px solid rgba(56,189,248,0.45);
+  font-family: ui-monospace, Menlo, monospace; font-size: 1.02rem; font-weight: 700;
+  color: var(--ink); min-height: 2.2em; line-height: 1.55;
+}
+.work-panel.on { display: block; }
+.work-panel .hl { color: var(--amber); }
+.work-panel .ok { color: #5ad4a8; }
+.work-panel .bad { color: #ff7b7b; }
+.work-panel .paso { color: #60a5fa; }
+.work-panel .empty { color: #94a3b8; }
+.caption {
+  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
+}
+.caption strong { color: var(--ink); }
+.caption .hl { color: #FFBF00; font-weight: 800; }
+.caption .ok { color: #5ad4a8; font-weight: 800; }
+.caption .bad { color: #ff7b7b; font-weight: 800; }
+.caption .paso { color: #60a5fa; font-weight: 800; }
+.sound-meter {
+  margin: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; min-height: 28px;
+  padding: 6px 10px; color: var(--muted); font-size: 0.8rem; font-weight: 700; user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px; width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar { display: inline-block; width: 5px; height: 8px; border-radius: 2px; background: #3b4a63; transition: height .08s ease, background .08s ease; }
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
+.steps-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
+.steps-box li { margin: 3px 0; }
+.steps-box li.on { color: #e9eef7; font-weight: 700; }
+.steps-box li.done { color: #5ad4a8; }
+.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.expr-formula .ok { color: #5ad4a8; }
+.expr-formula .hl { color: #FFBF00; }
+.expr-formula .bad { color: #ff7b7b; }
+.expr-formula .empty { color: #94a3b8; }
+.gloss-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.gloss-list li {
+  font-size: 0.78rem; line-height: 1.4; color: #9fb0c7;
+  padding: 7px 9px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.gloss-list li.on { color: #e9eef7; border-color: rgba(255,191,0,.45); background: rgba(255,191,0,.08); }
+.gloss-list .k { font-weight: 800; color: #fbbf24; font-family: ui-monospace, Menlo, monospace; }
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace;
+  font-weight: 800;
+}
+.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.88em; }
+.frac .num { border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.frac .den { padding-top: 1px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 164</span> · Economía · beneficio · play
+        <span class="sub">I · B · B(100) · máximo (175; 5525)</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="playBtn">▶ Play</button>
+      <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
+      <button type="button" class="btn" id="restartBtn">Reiniciar</button>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/7</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" aria-label="Qué es esto, pasos y fórmula">
+        <div class="contrast-card">
+          <p class="contrast-kicker">1 · Qué es esto</p>
+          <ul class="contrast-bullets">
+            <li>El <span class="hl">ingreso</span> I es lo que entra: precio × cantidad. El <span class="hl">beneficio</span> B = I − C es lo que queda.</li>
+            <li>El <span class="hl">beneficio medio</span> es B/x (por unidad). El máximo de B está donde la curva deja de subir (pendiente 0).</li>
+          </ul>
+        </div>
+        <div class="band-legend">
+          <div class="band-legend-title">Datos</div>
+          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">Costo</strong> · C(x) = (1/10)x² − 10x + 600</span></div>
+          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">Demanda</strong> · x = −10p + 600 → p = 60 − x/10</span></div>
+        </div>
+        <div class="steps-box" aria-label="Pasos con nombre">
+          <ol id="stepsList">
+            <li data-step="1"><span class="n">1</span> Qué es I, B y B medio</li>
+            <li data-step="2"><span class="n">2</span> a) Armar I(x) = p·x</li>
+            <li data-step="3"><span class="n">3</span> b) B = I − C</li>
+            <li data-step="4"><span class="n">4</span> c) B(100) y medio</li>
+            <li data-step="5"><span class="n">5</span> d) pendiente B′ = 0 → x=175</li>
+            <li data-step="6"><span class="n">6</span> d) B<sub>máx</sub> = 5525</li>
+            <li data-step="7"><span class="n">7</span> e) Gráfico · vértice</li>
+          </ol>
+        </div>
+        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">C(x) = (1/10)x² − 10x + 600<br>p(x) = 60 − x/10</div>
+          <p class="hint-mini" id="hintMini">▶ Play · ingreso, beneficio, máximo</p>
+        </div>
+      </aside>
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-economia-17-equilibrio-play.html" title="Lección 163: Economía · equilibrio · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-20-composicion-play.html" title="Lección 165: Economía · composición C∘x · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Beneficio B(x) y su máximo"></canvas>
+      </div>
+    </div>
+    <div class="work-panel" id="workPanel" aria-live="polite"></div>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · ingreso, beneficio, B(100) y el máximo.</p>
+    <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
+    <p class="hint">B = 70x − x²/5 − 600 · B(100)=4400 · máx en x=175, B=5525</p>
+  </div>
+</div>
+<script src="game-kit.js?v=20260907"></script>
+<script src="economia-play-core.js?v=20260907"></script>
+<script>
+(function () {
+  "use strict";
+  var EP = window.EconomiaPlay;
+  var C = EP.COLORS;
+  var canvas = document.getElementById("c");
+
+  var g = new EP.Graph(canvas, {
+    xmin: 0, xmax: 360, ymin: -800, ymax: 6200,
+    xlabel: "cantidad x", ylabel: "beneficio B",
+    xTicks: [0, 50, 100, 175, 250, 350],
+    yTicks: [0, 2000, 4000, 4400, 5525],
+    yFmt: function (n) { return EP.fmtNum(n, 0); }
+  });
+  function Bof(x) { return 70 * x - (x * x) / 5 - 600; }
+  function draw(api) {
+    var v = api.vis;
+    g.size(); g.drawAxes();
+    if (v.curve) g.plotFn(Bof, 0, 350, { color: C.beneficio, lw: 3.2 });
+    if (v.P100) {
+      g.vLine(100, { color: C.teal, lw: 1.4, dash: [4, 4] });
+      g.point(100, 4400, { color: C.teal });
+      g.label(100, 4400, "B(100)=4400", { color: C.teal, dy: 16, baseline: "top", dx: 8 });
+    }
+    if (v.vert) {
+      g.vLine(175, { color: C.amber, lw: 1.6, dash: [5, 4] });
+      g.hLine(5525, { color: C.amber, lw: 1.4, dash: [5, 4] });
+      g.point(175, 5525, { color: C.amber });
+      g.label(175, 5525, "máx (175; 5525)", { color: C.amber });
+    }
+    if (v.badge) g.badge(v.badge);
+  }
+  EP.bindPlay({
+    totalPhases: 7,
+    idleCaption: "Presioná <strong>▶ Play</strong> · ingreso, beneficio, B(100) y el máximo.",
+    idleVis: { curve: true },
+    draw: draw,
+    run: function (api) {
+      api.runSequence([
+        { phase: 1, wait: 1800, vis: { curve: true, badge: "1 · I, B, B medio" },
+          work: '<span class="paso">1</span> · I = p·x · B = I − C · B medio = B/x',
+          cap: 'La demanda viene como x = −10p + 600. Despejamos p: p = 60 − x/10. Con eso armamos el ingreso.',
+          htmls: [{ id: "exprFormula", value: "p = 60 − x/10<br>C(x) = (1/10)x² − 10x + 600" }] },
+        { phase: 2, wait: 1900, vis: { curve: true, badge: "a) I = p·x" },
+          work: '<span class="paso">2</span> · I(x) = (60 − x/10)·x = <span class="ok">60x − x²/10</span>',
+          cap: '<span class="hl">a)</span> Cada una de las x unidades se vende a p. Multiplicamos y queda una cuadrática.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">I(x) = 60x − x²/10</span>' }] },
+        { phase: 3, wait: 2000, vis: { curve: true, badge: "b) B = I − C" },
+          work: '<span class="paso">3</span> · B = 60x − x²/10 − ((1/10)x² − 10x + 600) = <span class="ok">70x − x²/5 − 600</span>',
+          cap: '<span class="hl">b)</span> Restamos: −x²/10 − x²/10 = −x²/5 y 60x − (−10x) = 70x. El gráfico ya es esa B(x).',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B(x) = 70x − x²/5 − 600</span>' }] },
+        { phase: 4, wait: 1800, vis: { curve: true, P100: true, badge: "c) B(100)=4400" },
+          work: '<span class="paso">4</span> · B(100)=7000 − 2000 − 600 = <span class="ok">4400</span> · medio = 4400/100 = <span class="ok">44</span>',
+          cap: '<span class="hl">c)</span> Sustituimos x=100. El <strong>beneficio medio</strong> es lo que queda por unidad: 44.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B(100)=4400 · B̄(100)=44</span>' }] },
+        { phase: 5, wait: 2000, vis: { curve: true, P100: true, vert: true, badge: "d) B′ = 0" },
+          work: '<span class="paso">5</span> · B′(x) = 70 − (2/5)x = 0 → x = 70·5/2 = <span class="ok">175</span>',
+          cap: '<span class="hl">d)</span> B′ es la <strong>pendiente</strong> de B. Se anula donde B deja de subir (el máximo). Equivale al vértice x = −b/(2a).',
+          htmls: [{ id: "exprFormula", value: "B′ = 70 − (2/5)x = 0 → x = 175" }] },
+        { phase: 6, wait: 1800, vis: { curve: true, P100: true, vert: true, badge: "B(175)=5525" },
+          work: '<span class="paso">6</span> · B(175)=70·175 − 175²/5 − 600 = 12250 − 6125 − 600 = <span class="ok">5525</span>',
+          cap: 'Sustituimos x=175 en B. El beneficio máximo es 5525.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B<sub>máx</sub> = 5525</span>' }] },
+        { phase: 7, wait: 1600, vis: { curve: true, P100: true, vert: true, badge: "e) vértice (175; 5525)" },
+          work: '<span class="paso">7</span> · parábola hacia abajo · vértice <span class="ok">(175; 5525)</span>',
+          cap: '<span class="hl">e)</span> El gráfico de B marca el máximo. A 100 unidades se gana 4400; en el vértice se gana más: 5525.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">máx B = 5525 en x = 175</span>' }] }
+      ], function () {
+        api.finish('<strong>Cierre:</strong> I=60x−x²/10 · B=70x−x²/5−600 · B(100)=4400 · máx (175; 5525).', 'beneficio listo');
+      });
+    }
+  });
+  window.__L164 = {
+    I: function (x) { return 60 * x - x * x / 10; },
+    B: function (x) { return 70 * x - x * x / 5 - 600; },
+    B100: 4400,
+    avg100: 44,
+    xmax: 175,
+    Bmax: 5525
+  };
+})();
+
+</script>
+</body>
+</html>
