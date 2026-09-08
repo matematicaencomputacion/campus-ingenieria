@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 120 · Dominio · regla 1 · denominador ≠ 0 · play</title>
+<title>Lección 121 · Dominio · sin denominador · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -20,9 +20,9 @@ body {
 }
 .wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
 header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
-h1 { margin: 0; font-size: 1.22rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 { margin: 0; font-size: 1.18rem; font-weight: 700; letter-spacing: -0.02em; }
 h1 .lesson-num { color: #38bdf8; font-weight: 800; }
-.sub { color: var(--muted); font-size: 0.86rem; margin-left: 0.45rem; font-weight: 400; }
+.sub { color: var(--muted); font-size: 0.84rem; margin-left: 0.45rem; font-weight: 400; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 button.btn, a.btn {
   border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
@@ -48,28 +48,23 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   padding: 8px; min-height: 0; overflow: auto;
 }
 .rule-card {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(251,113,133,0.45);
-  background: linear-gradient(135deg, rgba(251,113,133,0.14), rgba(18,26,39,0.95));
-  box-shadow: 0 0 18px rgba(251,113,133,0.12);
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(90,212,168,0.4);
+  background: linear-gradient(135deg, rgba(90,212,168,0.12), rgba(18,26,39,0.95));
+  box-shadow: 0 0 18px rgba(90,212,168,0.10);
 }
 .rule-card-kicker {
   font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-  color: #fb7185; margin: 0 0 6px;
+  color: #5ad4a8; margin: 0 0 6px;
 }
 .rule-card-body {
   margin: 0; font-size: 0.86rem; line-height: 1.45; color: var(--ink); font-weight: 650;
 }
 .rule-card-body .hl { color: #FFBF00; }
-.rule-card-body .bad { color: #ff7b7b; }
+.rule-card-body .ok { color: #5ad4a8; }
 .band-legend {
-  margin: 0;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #2a3a52;
-  background: #121a28;
+  margin: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #2a3a52; background: #121a28;
 }
 .band-legend-title {
   font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
@@ -126,10 +121,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .rule-list strong { color: var(--ink); }
 .rule-list .ok { color: #5ad4a8; }
 .rule-list .bad { color: #ff7b7b; }
-.rule-list .empty { color: #94a3b8; }
-.ex-progress {
-  display: flex; gap: 5px; padding: 2px 4px; flex-wrap: wrap;
-}
+.ex-progress { display: flex; gap: 5px; padding: 2px 4px; flex-wrap: wrap; }
 .ex-dot {
   width: 10px; height: 10px; border-radius: 50%;
   background: #2a3548; border: 1px solid #3b4a63;
@@ -164,7 +156,7 @@ canvas#c {
 .work-panel .hl { color: var(--amber); }
 .work-panel .ok { color: #5ad4a8; }
 .work-panel .bad { color: #ff7b7b; }
-.work-panel .empty { color: #94a3b8; }
+.work-panel .paso { color: #60a5fa; }
 .caption {
   margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
 }
@@ -174,7 +166,7 @@ canvas#c {
 .caption .hl-curve { color: #0d9488; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 .caption .ok { color: #5ad4a8; font-weight: 800; }
 .caption .bad { color: #ff7b7b; font-weight: 800; }
-.caption .empty { color: #94a3b8; font-weight: 800; }
+.caption .paso { color: #60a5fa; font-weight: 800; }
 .sound-meter {
   margin: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; min-height: 28px;
   padding: 6px 10px; color: var(--muted); font-size: 0.8rem; font-weight: 700; user-select: none;
@@ -192,7 +184,15 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .expr-formula .hl-curve { color: #2dd4bf; }
 .expr-formula .hl-g { color: #f59e0b; }
 .expr-formula .hl-v { color: #22c55e; }
-.expr-formula .bad { color: #ff7b7b; }
+.expr-formula .ok { color: #5ad4a8; }
+.steps-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
+.steps-box li { margin: 3px 0; }
+.steps-box li.on { color: #e9eef7; font-weight: 700; }
+.steps-box li.done { color: #5ad4a8; }
+.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 </style>
 </head>
 <body>
@@ -200,8 +200,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 120</span> · Dominio · regla 1 · denominador ≠ 0 · play
-        <span class="sub">anuladores · asíntotas · banda de dominio</span>
+      <h1><span class="lesson-num">Lección 121</span> · Dominio · sin denominador · play
+        <span class="sub">polinomios · Dom = ℝ · hoja 2.1 / 2.3</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -209,7 +209,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Ej. <strong>1</strong>/5</span>
+      <span class="score" id="loopEl">Ej. <strong>2.1</strong>/2</span>
     </div>
   </header>
 
@@ -217,66 +217,73 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" aria-label="Regla y ejemplo">
         <div class="rule-card" id="ruleCard">
-          <p class="rule-card-kicker">Regla nº 1 · dominio</p>
+          <p class="rule-card-kicker">Sin denominador · polinomios</p>
           <p class="rule-card-body">
-            El <span class="hl">denominador no puede ser igual a cero</span>.
-            Los valores de <strong>x</strong> que <span class="bad">anulan</span> el denominador
-            se sacan del dominio <strong>(no hay imagen)</strong>.
+            Si la función es <span class="hl">lineal</span> o <span class="hl">cuadrática</span>
+            (polinomio) y <strong>no</strong> hay denominador con x,
+            <span class="ok">no hay restricción</span> → Dom = <strong>ℝ</strong>.
           </p>
         </div>
 
         <div class="band-legend" aria-label="Leyenda del dominio en el eje X">
           <div class="band-legend-title">Banda de dominio (eje X)</div>
           <div class="band-row">
-            <span class="band-swatch gray" aria-hidden="true"></span>
-            <span><strong class="g">Gris</strong> — fuera de dominio: ceros del denominador (anuladores).</span>
+            <span class="band-swatch green" aria-hidden="true"></span>
+            <span><strong class="v">Verde</strong> — en el dominio (toda la recta).</span>
           </div>
           <div class="band-row">
-            <span class="band-swatch green" aria-hidden="true"></span>
-            <span><strong class="v">Verde</strong> — en el dominio: el denominador ≠ 0.</span>
+            <span class="band-swatch gray" aria-hidden="true"></span>
+            <span><strong class="g">Gris</strong> — fuera (aquí no aparece: no hay anuladores).</span>
           </div>
+        </div>
+
+        <div class="steps-box" aria-label="Pasos del procedimiento">
+          <ol id="stepsList">
+            <li data-step="1"><span class="n">1</span> Mirar la fórmula · ¿qué tipo?</li>
+            <li data-step="2"><span class="n">2</span> ¿Hay denominador con x?</li>
+            <li data-step="3"><span class="n">3</span> Conclusión: sin restricción</li>
+            <li data-step="4"><span class="n">4</span> Pintar banda verde · escribir Dom</li>
+          </ol>
         </div>
 
         <div class="ex-progress" id="exProgress" aria-hidden="true"></div>
 
         <div class="expr-row" id="formulaRow">
           <div class="expr-formula" id="exprFormula">
-            <span class="hl-curve">f(x) = 1 / g(x)</span><br>
-            <span style="color:#8b9bb4;font-size:0.82rem">si g(x₀)=0 → x₀ ∉ Dom(f)</span>
+            <span class="hl-curve">g(x) = −(1/3)x + 1</span><br>
+            <span style="color:#8b9bb4;font-size:0.82rem">Ej. 2.1 · lineal</span>
           </div>
-          <p class="hint-mini" id="hintMini">Presioná ▶ Play para ver 5 ejemplos</p>
+          <p class="hint-mini" id="hintMini">Presioná ▶ Play · procedimiento paso a paso</p>
         </div>
 
         <div class="expr-row" id="domainRow">
           <div class="expr-formula" id="exprDomain">
-            Dom(f) = <span class="hl-v">ℝ − {ceros de g}</span>
+            Dom = <span class="hl-v">ℝ</span>
           </div>
           <div class="chips" id="chipBox">
-            <span class="chip teal">f = 1/g</span>
-            <span class="chip coral">g(x)=0 → polo</span>
-            <span class="chip gray">gris = fuera</span>
-            <span class="chip green">verde = dominio</span>
+            <span class="chip teal">polinomio</span>
+            <span class="chip green">sin denom</span>
+            <span class="chip green">Dom = ℝ</span>
           </div>
         </div>
 
         <div class="expr-row phase-ask" id="signRow">
-          <span class="mode-tag">Anuladores</span>
-          <p class="hint-mini">ceros de g · asíntotas · círculo gris en cada anulador</p>
+          <span class="mode-tag">Procedimiento</span>
           <ul class="rule-list" id="ruleList">
-            <li>Buscá <strong class="bad">g(x) = 0</strong></li>
-            <li>Esos x se <strong class="empty">sacan</strong> del dominio</li>
-            <li>En el gráfico: <strong>asíntota vertical</strong></li>
+            <li>Identificá el <strong>tipo</strong> (lineal / cuadrática)</li>
+            <li>Preguntá: <strong>¿hay denominador con x?</strong></li>
+            <li>Si no → <strong class="ok">Dom = ℝ</strong></li>
           </ul>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-dominio-numero-prohibido-play.html" title="Lección 119: Dominio · intro · número prohibido · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-dominio-sin-denominador-play.html" title="Lección 121: Dominio · sin denominador · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Dominio · denominador distinto de cero"></canvas>
+        <a class="lesson-nav prev" href="leccion-dominio-denominador-play.html" title="Lección 120: Dominio · regla 1 · denominador ≠ 0 · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-dominio-con-denominador-play.html" title="Lección 122: Dominio · con denominador · hoja 2 · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Dominio · sin denominador · polinomios"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · Regla nº 1: el denominador <span class="bad">no puede ser 0</span>.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · vas a ver el procedimiento <span class="paso">paso a paso</span> para hallar el dominio.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -286,7 +293,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Espíritu hoja 2.2 / 2.4 · <strong style="color:#64748b">círculo gris = anulador / fuera de dominio</strong> · <strong style="color:#22c55e">verde = Dom</strong> · asíntotas en los ceros de g · contraste: x²+4 sin ceros reales</p>
+    <p class="hint">Hoja ejercicio 2 · <strong style="color:#5ad4a8">2.1 lineal</strong> y <strong style="color:#5ad4a8">2.3 cuadrática</strong> · raíz / log / exp se ven más adelante (después de sus reglas) · banda verde = Dom completo</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -300,11 +307,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var TEAL = "#0d9488";
   var GREEN = "#22c55e";
   var EMPTY = "#64748b";
-  var GUIDE = "#94a3b8";
   var AMBER = "#d97706";
-  var CORAL = "#e11d48";
   var BAND_H = 14;
-  var GHOST = "rgba(245,158,11,0.35)";
   var PAD = { l: 48, r: 36, t: 28, b: 52 };
 
   var canvas = document.getElementById("c");
@@ -324,90 +328,34 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var ruleList = document.getElementById("ruleList");
   var formulaRow = document.getElementById("formulaRow");
   var exProgress = document.getElementById("exProgress");
+  var stepsList = document.getElementById("stepsList");
 
-  /* —— 5 ejemplos: 1/g · ceros · contraste sin ceros reales —— */
   var EXAMPLES = [
     {
-      id: 1,
-      title: "g lineal · x",
-      fHtml: '<span class="hl-curve">f(x) = 1 / x</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">x</span></span>',
-      gHtml: "g(x) = x",
-      domainSet: "ℝ − {0}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ − {0}</span>',
-      zeros: [0],
-      xmin: -5, xmax: 5, ymin: -4.2, ymax: 4.2,
-      g: function (x) { return x; },
-      f: function (x) { return 1 / x; },
-      signMarks: [
-        { x: -2.5, s: "−" }, { x: 0, s: "0" }, { x: 2.5, s: "+" }
-      ],
-      tip: "Un solo anulador: x = 0 → asíntota vertical."
-    },
-    {
-      id: 2,
-      title: "g lineal · x − 2",
-      fHtml: '<span class="hl-curve">f(x) = 1 / (x − 2)</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">x − 2</span></span>',
-      gHtml: "g(x) = x − 2",
-      domainSet: "ℝ − {2}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ − {2}</span>',
-      zeros: [2],
-      xmin: -3, xmax: 7, ymin: -4.2, ymax: 4.2,
-      g: function (x) { return x - 2; },
-      f: function (x) { return 1 / (x - 2); },
-      signMarks: [
-        { x: 0, s: "−" }, { x: 2, s: "0" }, { x: 4.5, s: "+" }
-      ],
-      tip: "El cero se desplaza: ahora anula en x = 2."
-    },
-    {
-      id: 3,
-      title: "g cuadrática · espíritu 2.2",
-      fHtml: '<span class="hl-curve">f(x) = 1 / (x² − 3x + 2)</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">(x−1)(x−2)</span></span>',
-      gHtml: "g(x) = (x−1)(x−2)",
-      domainSet: "ℝ − {1, 2}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ − {1, 2}</span>',
-      zeros: [1, 2],
-      xmin: -1.5, xmax: 4.5, ymin: -5, ymax: 5,
-      g: function (x) { return (x - 1) * (x - 2); },
-      f: function (x) { return 1 / ((x - 1) * (x - 2)); },
-      signMarks: [
-        { x: 0, s: "+" }, { x: 1, s: "0" }, { x: 1.5, s: "−" }, { x: 2, s: "0" }, { x: 3.2, s: "+" }
-      ],
-      tip: "Hoja 2.2 · dos polos: factorizá y sacá x=1 y x=2."
-    },
-    {
-      id: 4,
-      title: "g cúbica · tres ceros",
-      fHtml: '<span class="hl-curve">f(x) = 1 / [x(x−1)(x+2)]</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">x(x−1)(x+2)</span></span>',
-      gHtml: "g(x) = x(x−1)(x+2)",
-      domainSet: "ℝ − {−2, 0, 1}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ − {−2, 0, 1}</span>',
-      zeros: [-2, 0, 1],
-      xmin: -4, xmax: 3.5, ymin: -4.5, ymax: 4.5,
-      g: function (x) { return x * (x - 1) * (x + 2); },
-      f: function (x) { return 1 / (x * (x - 1) * (x + 2)); },
-      signMarks: [
-        { x: -3, s: "−" }, { x: -2, s: "0" }, { x: -1, s: "+" },
-        { x: 0, s: "0" }, { x: 0.5, s: "−" }, { x: 1, s: "0" }, { x: 2, s: "+" }
-      ],
-      tip: "Tres anuladores → tres asíntotas verticales."
-    },
-    {
-      id: 5,
-      title: "sin ceros reales · espíritu 2.4",
-      fHtml: '<span class="hl-curve">f(x) = 1 / (x² + 4)</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">x² + 4</span> ≥ 4 &gt; 0</span>',
-      gHtml: "g(x) = x² + 4",
+      id: "2.1",
+      sheet: "2.1",
+      title: "lineal",
+      kind: "lineal (polinomio de grado 1)",
+      fHtml: '<span class="hl-curve">g(x) = −(1/3)x + 1</span><br><span style="color:#8b9bb4;font-size:0.82rem">Ej. 2.1 · función lineal</span>',
       domainSet: "ℝ",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ</span> <span style="color:#5ad4a8">· ¡sorpresa!</span>',
-      zeros: [],
-      xmin: -5, xmax: 5, ymin: -0.4, ymax: 0.55,
-      g: function (x) { return x * x + 4; },
-      f: function (x) { return 1 / (x * x + 4); },
-      signMarks: [
-        { x: -2.5, s: "+" }, { x: 0, s: "+" }, { x: 2.5, s: "+" }
-      ],
-      tip: "Hoja 2.4 · x²+4 nunca es 0 en ℝ → Dom = ℝ.",
-      surprise: true
+      domainHtml: 'Dom(g) = <span class="hl-v">ℝ</span>',
+      xmin: -6, xmax: 9, ymin: -2, ymax: 4,
+      f: function (x) { return -(1 / 3) * x + 1; },
+      tip: "Recta · sin denominador · Dom = ℝ",
+      intercepts: { x: 3, y: 1 }
+    },
+    {
+      id: "2.3",
+      sheet: "2.3",
+      title: "cuadrática",
+      kind: "cuadrática (polinomio de grado 2)",
+      fHtml: '<span class="hl-curve">f(x) = −x² − 5</span><br><span style="color:#8b9bb4;font-size:0.82rem">Ej. 2.3 · parábola hacia abajo</span>',
+      domainSet: "ℝ",
+      domainHtml: 'Dom(f) = <span class="hl-v">ℝ</span>',
+      xmin: -4, xmax: 4, ymin: -12, ymax: 2,
+      f: function (x) { return -x * x - 5; },
+      tip: "Parábola · sin denominador · Dom = ℝ",
+      intercepts: { x: null, y: -5 }
     }
   ];
 
@@ -419,14 +367,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     raf: 0,
     exIndex: 0,
     phase: "idle",
-    revealedZeros: 0,
+    step: 0,
     showCurve: false,
-    showAsymptotes: false,
-    showGhostG: false,
-    showSign: false,
-    bandReveal: 0, /* 0..1 */
-    punchFlash: -1,
-    curveAlpha: 1
+    bandReveal: 0,
+    curveAlpha: 1,
+    showTypeBadge: false,
+    showCheck: false
   };
 
   function ex() { return EXAMPLES[state.exIndex]; }
@@ -442,6 +388,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     return id;
   }
   function fmtNum(n) {
+    if (n == null || !isFinite(n)) return "—";
     if (Object.is(n, -0) || Math.abs(n) < 1e-12) return "0";
     if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n)).replace("-", "−");
     return String(Math.round(n * 100) / 100).replace("-", "−");
@@ -463,12 +410,23 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
   }
 
+  function setStepUI(n) {
+    state.step = n;
+    var items = stepsList.querySelectorAll("li");
+    items.forEach(function (li) {
+      var s = parseInt(li.getAttribute("data-step"), 10);
+      li.classList.remove("on", "done");
+      if (s < n) li.classList.add("done");
+      else if (s === n) li.classList.add("on");
+    });
+  }
+
   function buildProgress() {
     exProgress.innerHTML = "";
     EXAMPLES.forEach(function (e, i) {
       var d = document.createElement("span");
       d.className = "ex-dot" + (i < state.exIndex ? " done" : (i === state.exIndex ? " on" : ""));
-      d.title = "Ejemplo " + (i + 1) + ": " + e.title;
+      d.title = "Ej. " + e.sheet + ": " + e.title;
       exProgress.appendChild(d);
     });
   }
@@ -478,32 +436,17 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     exprFormula.innerHTML = e.fHtml;
     exprDomain.innerHTML = e.domainHtml;
     hintMini.textContent = e.tip;
-    formulaRow.classList.toggle("surprise", !!e.surprise);
-    var chips = "";
-    chips += '<span class="chip teal">ej. ' + e.id + "/5</span>";
-    chips += '<span class="chip coral">' + e.gHtml + "</span>";
-    if (e.zeros.length === 0) {
-      chips += '<span class="chip green">sin ceros reales</span>';
-      chips += '<span class="chip green">Dom = ℝ</span>';
-    } else {
-      chips += '<span class="chip bad">ceros {' + e.zeros.map(fmtNum).join(", ") + "}</span>";
-      chips += '<span class="chip gray">fuera</span>';
-    }
-    chipBox.innerHTML = chips;
-
-    var lis = "";
-    if (e.zeros.length === 0) {
-      lis += '<li><span class="ok">g(x) = x² + 4 &gt; 0</span> para todo x ∈ ℝ</li>';
-      lis += '<li>ningún anulador → <strong class="ok">Dom = ℝ</strong></li>';
-      lis += "<li>curva suave · sin asíntota vertical</li>";
-    } else {
-      lis += "<li>Anuladores: <strong class=\"bad\">{" + e.zeros.map(fmtNum).join(", ") + "}</strong></li>";
-      lis += "<li>Se sacan del dominio → <strong class=\"empty\">gris</strong> en la banda</li>";
-      lis += "<li>Asíntotas verticales en esos x</li>";
-      lis += "<li>Dom = <strong class=\"ok\">" + e.domainSet + "</strong></li>";
-    }
-    ruleList.innerHTML = lis;
-    loopEl.innerHTML = "Ej. <strong>" + e.id + "</strong>/5";
+    formulaRow.classList.add("surprise");
+    chipBox.innerHTML =
+      '<span class="chip teal">Ej. ' + e.sheet + "</span>" +
+      '<span class="chip coral">' + e.title + "</span>" +
+      '<span class="chip green">sin denom</span>' +
+      '<span class="chip green">Dom = ℝ</span>';
+    ruleList.innerHTML =
+      "<li>Tipo: <strong>" + e.kind + "</strong></li>" +
+      "<li>¿Denominador con x? → <strong class=\"ok\">NO</strong></li>" +
+      "<li>Conclusión: <strong class=\"ok\">Dom = ℝ</strong></li>";
+    loopEl.innerHTML = "Ej. <strong>" + e.sheet + "</strong>/" + EXAMPLES.length;
     buildProgress();
   }
 
@@ -602,129 +545,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
   }
 
-  function nearZero(x, zeros, eps) {
-    eps = eps == null ? 0.04 : eps;
-    for (var i = 0; i < zeros.length; i++) {
-      if (Math.abs(x - zeros[i]) < eps) return true;
-    }
-    return false;
-  }
-
-  function drawGhostG() {
-    if (!state.showGhostG) return;
-    var e = ex();
-    var steps = 360;
-    var first = true;
-    var i, x, y, s, prevY = null;
-    ctx.save();
-    ctx.strokeStyle = GHOST;
-    ctx.lineWidth = 1.6;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    for (i = 0; i <= steps; i++) {
-      x = e.xmin + (e.xmax - e.xmin) * (i / steps);
-      y = e.g(x);
-      if (!isFinite(y) || y < e.ymin - 0.5 || y > e.ymax + 0.5) {
-        first = true; prevY = null; continue;
-      }
-      /* scale ghost into view if huge — for cubic/quadratic near poles it can spike; clamp visually */
-      var yDraw = Math.max(e.ymin - 0.2, Math.min(e.ymax + 0.2, y));
-      s = worldToScreen(x, yDraw);
-      if (first || (prevY != null && Math.abs(y - prevY) > (e.ymax - e.ymin) * 0.85)) {
-        ctx.moveTo(s.x, s.y); first = false;
-      } else {
-        ctx.lineTo(s.x, s.y);
-      }
-      prevY = y;
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = AMBER;
-    ctx.globalAlpha = 0.75;
-    ctx.font = "700 11px ui-monospace, Menlo, monospace";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    ctx.fillText("g(x)", PAD.l + 8, PAD.t + 4);
-    ctx.restore();
-  }
-
-  function drawSignChart() {
-    if (!state.showSign) return;
-    var e = ex();
-    var marks = e.signMarks || [];
-    if (!marks.length) return;
-    var yBase = canvas.height - 18;
-    ctx.save();
-    ctx.font = "800 12px ui-monospace, Menlo, monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    /* baseline */
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(PAD.l, yBase);
-    ctx.lineTo(canvas.width - PAD.r, yBase);
-    ctx.stroke();
-    ctx.fillStyle = "#64748b";
-    ctx.font = "700 10px Segoe UI, system-ui, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("signo g", PAD.l, yBase - 14);
-    marks.forEach(function (m) {
-      var sx = worldToScreen(m.x, 0).x;
-      if (m.s === "0") {
-        ctx.fillStyle = CORAL;
-        ctx.beginPath();
-        ctx.arc(sx, yBase, 7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#fff";
-        ctx.font = "800 11px ui-monospace, Menlo, monospace";
-        ctx.textAlign = "center";
-        ctx.fillText("0", sx, yBase + 1);
-      } else {
-        ctx.fillStyle = m.s === "+" ? GREEN : "#64748b";
-        ctx.font = "800 13px ui-monospace, Menlo, monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(m.s, sx, yBase);
-      }
-    });
-    ctx.restore();
-  }
-
-  function drawAsymptotes() {
-    if (!state.showAsymptotes) return;
-    var e = ex();
-    var n = Math.min(state.revealedZeros, e.zeros.length);
-    for (var i = 0; i < n; i++) {
-      var z = e.zeros[i];
-      var a = worldToScreen(z, e.ymin);
-      var b = worldToScreen(z, e.ymax);
-      ctx.save();
-      ctx.strokeStyle = GUIDE;
-      ctx.lineWidth = 1.7;
-      ctx.setLineDash([5, 5]);
-      ctx.globalAlpha = 0.9;
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = CORAL;
-      ctx.globalAlpha = 0.95;
-      ctx.font = "700 11px ui-monospace, Menlo, monospace";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-      var labelY = PAD.t + 4 + (i % 3) * 14;
-      ctx.fillText("x = " + fmtNum(z), a.x + 6, labelY);
-      ctx.restore();
-    }
-  }
-
-  function drawRationalCurve() {
+  function drawCurve() {
     if (!state.showCurve) return;
     var e = ex();
-    var steps = 520;
+    var steps = 420;
     var first = true;
-    var i, x, y, s, prevX = null;
+    var i, x, y, s, prevY = null;
     var yPad = (e.ymax - e.ymin) * 0.02;
     ctx.save();
     ctx.strokeStyle = TEAL;
@@ -735,117 +561,119 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.beginPath();
     for (i = 0; i <= steps; i++) {
       x = e.xmin + (e.xmax - e.xmin) * (i / steps);
-      if (nearZero(x, e.zeros, 0.055)) { first = true; prevX = x; continue; }
       y = e.f(x);
       if (!isFinite(y) || y < e.ymin - yPad || y > e.ymax + yPad) {
-        first = true; prevX = x; continue;
+        first = true; prevY = null; continue;
       }
       s = worldToScreen(x, y);
-      if (first || (prevX != null && Math.abs(x - prevX) > (e.xmax - e.xmin) / steps * 3)) {
+      if (first || (prevY != null && Math.abs(y - prevY) > (e.ymax - e.ymin) * 0.9)) {
         ctx.moveTo(s.x, s.y); first = false;
       } else {
         ctx.lineTo(s.x, s.y);
       }
-      prevX = x;
+      prevY = y;
     }
     ctx.stroke();
+    ctx.restore();
+
+    /* interceptos suaves */
+    if (state.step >= 4 && e.intercepts) {
+      ctx.save();
+      ctx.fillStyle = AMBER;
+      if (e.intercepts.y != null && e.intercepts.y >= e.ymin && e.intercepts.y <= e.ymax) {
+        var py = worldToScreen(0, e.intercepts.y);
+        ctx.beginPath(); ctx.arc(py.x, py.y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.font = "700 11px ui-monospace, Menlo, monospace";
+        ctx.textAlign = "left";
+        ctx.fillText("(0, " + fmtNum(e.intercepts.y) + ")", py.x + 8, py.y - 8);
+      }
+      if (e.intercepts.x != null && e.intercepts.x >= e.xmin && e.intercepts.x <= e.xmax) {
+        var px = worldToScreen(e.intercepts.x, 0);
+        ctx.beginPath(); ctx.arc(px.x, px.y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.font = "700 11px ui-monospace, Menlo, monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("(" + fmtNum(e.intercepts.x) + ", 0)", px.x, px.y + 18);
+      }
+      ctx.restore();
+    }
+  }
+
+  function drawTypeBadge() {
+    if (!state.showTypeBadge) return;
+    var e = ex();
+    ctx.save();
+    ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
+    ctx.strokeStyle = TEAL;
+    ctx.lineWidth = 2;
+    var bx = PAD.l + 10, by = PAD.t + 10, bw = 210, bh = 36;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 8);
+    else { ctx.rect(bx, by, bw, bh); }
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = TEAL;
+    ctx.font = "800 13px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("tipo · " + e.title, bx + 12, by + bh / 2);
+    ctx.restore();
+  }
+
+  function drawCheckBadge() {
+    if (!state.showCheck) return;
+    ctx.save();
+    ctx.fillStyle = "rgba(34, 197, 94, 0.12)";
+    ctx.strokeStyle = GREEN;
+    ctx.lineWidth = 2;
+    var bx = canvas.width - PAD.r - 200, by = PAD.t + 10, bw = 190, bh = 36;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 8);
+    else { ctx.rect(bx, by, bw, bh); }
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = GREEN;
+    ctx.font = "800 13px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("✓ sin restricción", bx + 12, by + bh / 2);
     ctx.restore();
   }
 
   function drawDomainBand() {
-    var e = ex();
     if (state.bandReveal <= 0.001) return;
+    var e = ex();
     var ox = worldToScreen(0, 0);
-    /* if origin off-screen vertically, pin band to x-axis if visible else bottomish */
     var y = (0 >= e.ymin && 0 <= e.ymax) ? ox.y : (canvas.height - PAD.b - 8);
-    var gap = 5;
     var revealX = e.xmin + (e.xmax - e.xmin) * Math.min(1, state.bandReveal);
-
-    function xPx(xw) { return worldToScreen(xw, 0).x; }
-
-    function strokeSeg(x0, x1, color) {
-      var a = Math.max(x0, e.xmin);
-      var b = Math.min(x1, revealX);
-      if (b <= a + 1e-6) return;
-      var pa = xPx(a);
-      var pb = xPx(b);
-      if (pb <= pa + 1) return;
-      ctx.save();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = BAND_H;
-      ctx.lineCap = "butt";
-      ctx.globalAlpha = 0.9;
-      ctx.beginPath();
-      ctx.moveTo(pa, y);
-      ctx.lineTo(pb, y);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    /* Verde continuo con huecos; en cada anulador: círculo gris relleno (no retazo) */
-    var zeros = e.zeros.slice(0, state.revealedZeros).slice().sort(function (a, b) { return a - b; });
-    var rPx = BAND_H / 2 + 1;
-    var worldPerPx = (e.xmax - e.xmin) / Math.max(1, (canvas.width - PAD.l - PAD.r));
-    /* hueco mínimo: el verde llega casi al borde del círculo gris */
-    var punchW = rPx * worldPerPx * 1.08;
-
-    if (zeros.length === 0) {
-      strokeSeg(e.xmin, e.xmax, GREEN);
-      return;
-    }
-
-    var cursor = e.xmin;
-    zeros.forEach(function (z) {
-      var left = z - punchW;
-      var right = z + punchW;
-      if (left > cursor) strokeSeg(cursor, left, GREEN);
-      cursor = right;
-    });
-    if (cursor < e.xmax) strokeSeg(cursor, e.xmax, GREEN);
-
-    /* círculos grises rellenos = fuera de dominio / asíntota vertical */
-    zeros.forEach(function (z) {
-      if (z > revealX + 1e-9) return;
-      var px = xPx(z);
-      var flash = state.punchFlash >= 0 && Math.abs(e.zeros[state.punchFlash] - z) < 1e-9;
-      var r = flash ? (BAND_H / 2 + 4) : (BAND_H / 2 + 1);
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(px, y, r + 3, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(px, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = EMPTY;
-      ctx.globalAlpha = flash ? 1 : 0.95;
-      ctx.fill();
-      ctx.strokeStyle = "#94a3b8";
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 1;
-      ctx.stroke();
-      ctx.restore();
-    });
+    var pa = worldToScreen(e.xmin, 0).x;
+    var pb = worldToScreen(revealX, 0).x;
+    if (pb <= pa + 1) return;
+    ctx.save();
+    ctx.strokeStyle = GREEN;
+    ctx.lineWidth = BAND_H;
+    ctx.lineCap = "butt";
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(pa, y);
+    ctx.lineTo(pb, y);
+    ctx.stroke();
+    ctx.restore();
   }
 
   function draw() {
     drawAxes();
-    drawGhostG();
-    drawAsymptotes();
-    drawRationalCurve();
+    drawCurve();
     drawDomainBand();
-    drawSignChart();
+    drawTypeBadge();
+    drawCheckBadge();
   }
 
   function resetVisualsForExample() {
-    state.revealedZeros = 0;
     state.showCurve = false;
-    state.showAsymptotes = false;
-    state.showGhostG = false;
-    state.showSign = false;
     state.bandReveal = 0;
-    state.punchFlash = -1;
     state.curveAlpha = 1;
+    state.showTypeBadge = false;
+    state.showCheck = false;
     state.phase = "idle";
+    setStepUI(0);
   }
 
   function loadExample(i) {
@@ -864,7 +692,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     stopBtn.disabled = true;
     loadExample(0);
     setWork("");
-    setCaption('Presioná <strong>▶ Play</strong> · Regla nº 1: el denominador <span class="bad">no puede ser 0</span>.');
+    setCaption('Presioná <strong>▶ Play</strong> · vas a ver el procedimiento <span class="paso">paso a paso</span> para hallar el dominio.');
   }
 
   function animateBand(durationMs, onDone) {
@@ -877,9 +705,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       var ease = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
       state.bandReveal = ease;
       draw();
-      if (u < 1) {
-        state.raf = requestAnimationFrame(frame);
-      } else {
+      if (u < 1) state.raf = requestAnimationFrame(frame);
+      else {
         state.raf = 0;
         state.bandReveal = 1;
         draw();
@@ -889,50 +716,26 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.raf = requestAnimationFrame(frame);
   }
 
-  function revealZeroAt(k, onDone) {
-    var e = ex();
-    if (k >= e.zeros.length) { if (onDone) onDone(); return; }
-    state.phase = "zero";
-    state.revealedZeros = k + 1;
-    state.showAsymptotes = true;
-    state.punchFlash = k;
-    var z = e.zeros[k];
-    setWork('anulador · g(<span class="hl">' + fmtNum(z) + '</span>) = 0 → <span class="bad">x = ' + fmtNum(z) + " ∉ Dom</span>");
-    setCaption('Cero de g: <span class="bad">x = ' + fmtNum(z) + '</span> · se <strong>saca</strong> del dominio · aparece la asíntota vertical.');
-    bip("bad");
-    draw();
-    later(720, function () {
-      state.punchFlash = -1;
-      draw();
-      if (onDone) onDone();
-    });
-  }
-
-  function revealZerosSeq(onDone) {
-    var e = ex();
-    if (!e.zeros.length) {
-      state.revealedZeros = 0;
-      state.showAsymptotes = false;
-      setWork('<span class="ok">g(x) ≠ 0</span> para todo x ∈ ℝ · <span class="ok">ningún anulador</span>');
-      setCaption('<span class="ok">¡Contraste!</span> <span class="hl-curve">x² + 4</span> nunca se anula en los reales → no hay asíntota vertical.');
-      bip("ok");
-      draw();
-      later(900, function () { if (onDone) onDone(); });
-      return;
-    }
-    var k = 0;
-    function next() {
+  function fadeCurve(durationMs, onDone) {
+    state.showCurve = true;
+    state.curveAlpha = 0;
+    var t0 = null;
+    var dur = delay(durationMs);
+    function fade(now) {
       if (!state.playing) return;
-      revealZeroAt(k, function () {
-        k++;
-        if (k < e.zeros.length) {
-          later(380, next);
-        } else if (onDone) {
-          onDone();
-        }
-      });
+      if (t0 == null) t0 = now;
+      var u = Math.min(1, (now - t0) / dur);
+      state.curveAlpha = u;
+      draw();
+      if (u < 1) state.raf = requestAnimationFrame(fade);
+      else {
+        state.raf = 0;
+        state.curveAlpha = 1;
+        draw();
+        if (onDone) onDone();
+      }
     }
-    next();
+    state.raf = requestAnimationFrame(fade);
   }
 
   function runOneExample(onDone) {
@@ -942,61 +745,64 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     resetVisualsForExample();
     draw();
 
-    setWork('ejemplo ' + e.id + "/5 · <span class=\"hl\">" + e.gHtml + "</span>");
-    setCaption('Ejemplo <strong>' + e.id + "</strong>: " + e.title + " · buscamos los <span class=\"bad\">ceros de g</span>.");
+    /* Paso 1 — fórmula y tipo */
+    setStepUI(1);
+    setWork('<span class="paso">Paso 1</span> · Ej. <span class="hl">' + e.sheet + "</span> · mirá la fórmula");
+    setCaption('<span class="paso">Paso 1:</span> Mostramos <span class="hl-curve">Ej. ' + e.sheet + "</span>. ¿Qué tipo de función es?");
     bip("ok");
 
-    later(700, function () {
+    later(900, function () {
       if (!state.playing) return;
-      state.showGhostG = true;
-      state.showSign = true;
-      draw();
-      setCaption('Fantasma ámbar: <span class="hl-t">g(x)</span> · debajo, el signo (+ / 0 / −). Los <span class="bad">0</span> son anuladores.');
+      state.showTypeBadge = true;
+      fadeCurve(650, function () {
+        if (!state.playing) return;
+        setWork('<span class="paso">Paso 1</span> · es <span class="ok">' + e.kind + "</span>");
+        setCaption('<span class="paso">Paso 1:</span> Es una función <strong>' + e.title + "</strong> — un <span class=\"hl-t\">polinomio</span>.");
+        bip("ok");
+      });
     });
 
-    later(1600, function () {
+    later(2200, function () {
       if (!state.playing) return;
-      revealZerosSeq(function () {
+      /* Paso 2 — ¿hay denominador? */
+      setStepUI(2);
+      setWork('<span class="paso">Paso 2</span> · ¿hay <span class="hl">denominador con x</span>?');
+      setCaption('<span class="paso">Paso 2:</span> Pregunta clave: ¿hay un <strong>denominador que dependa de x</strong>?');
+      bip("ok");
+    });
+
+    later(3400, function () {
+      if (!state.playing) return;
+      setWork('<span class="paso">Paso 2</span> · respuesta: <span class="ok">NO</span> · no hay fracción con x abajo');
+      setCaption('<span class="paso">Paso 2:</span> <span class="ok">No</span> hay denominador con x. Tampoco hay raíz ni log (eso viene después).');
+      bip("ok");
+    });
+
+    later(4700, function () {
+      if (!state.playing) return;
+      /* Paso 3 — conclusión */
+      setStepUI(3);
+      state.showCheck = true;
+      draw();
+      setWork('<span class="paso">Paso 3</span> · <span class="ok">sin restricción</span> → Dom libre');
+      setCaption('<span class="paso">Paso 3:</span> Polinomio sin denominador → <strong class="ok">no hay restricción</strong>. Todo x real es válido.');
+      bip("ok");
+    });
+
+    later(6000, function () {
+      if (!state.playing) return;
+      /* Paso 4 — banda + Dom */
+      setStepUI(4);
+      setWork('<span class="paso">Paso 4</span> · pintamos la banda verde · escribimos Dom');
+      setCaption('<span class="paso">Paso 4:</span> Pintamos toda la recta en <span class="hl-v">verde</span> (Dom) y escribimos la notación.');
+      animateBand(1300, function () {
         if (!state.playing) return;
-        later(400, function () {
+        setWork('Dom = <span class="ok">' + e.domainSet + "</span> · Ej. " + e.sheet);
+        setCaption('<strong>Cierre Ej. ' + e.sheet + ':</strong> Dom = <span class="hl-v">' + e.domainSet + "</span> · banda verde completa · sin círculos grises.");
+        bip("ok");
+        later(1600, function () {
           if (!state.playing) return;
-          state.showCurve = true;
-          state.curveAlpha = 0;
-          /* fade curve in */
-          var t0 = null;
-          var dur = delay(700);
-          function fade(now) {
-            if (!state.playing) return;
-            if (t0 == null) t0 = now;
-            var u = Math.min(1, (now - t0) / dur);
-            state.curveAlpha = u;
-            draw();
-            if (u < 1) state.raf = requestAnimationFrame(fade);
-            else {
-              state.raf = 0;
-              state.curveAlpha = 1;
-              setCaption('Curva <span class="hl-curve">f = 1/g</span>' + (e.zeros.length ? " · ramas separadas por las asíntotas." : " · suave, sin polos."));
-              later(500, function () {
-                if (!state.playing) return;
-                animateBand(1400, function () {
-                  if (!state.playing) return;
-                  setWork('dominio = <span class="ok">' + e.domainSet + "</span>");
-                  if (e.surprise) {
-                    setCaption('<strong>Resumen:</strong> g nunca es 0 → <span class="ok">Dom(f) = ℝ</span>. Misma regla: solo se sacan los anuladores… ¡y aquí no hay!');
-                    bip("ok");
-                  } else {
-                    setCaption('<strong>Resumen:</strong> Dom(f) = <span class="hl-v">' + e.domainSet + "</span> · gris = anuladores · verde = dominio.");
-                    bip("ok");
-                  }
-                  later(1600, function () {
-                    if (!state.playing) return;
-                    if (onDone) onDone();
-                  });
-                });
-              });
-            }
-          }
-          state.raf = requestAnimationFrame(fade);
+          if (onDone) onDone();
         });
       });
     });
@@ -1008,12 +814,13 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     stopBtn.disabled = true;
     state.bandReveal = 1;
     state.showCurve = true;
-    state.showAsymptotes = true;
-    state.revealedZeros = ex().zeros.length;
+    state.showCheck = true;
+    state.showTypeBadge = true;
+    setStepUI(4);
     draw();
     buildProgress();
-    setWork('Regla nº 1 · Dom(f) = <span class="ok">ℝ − {ceros de g}</span>');
-    setCaption('<strong>Cierre:</strong> el denominador <span class="bad">no puede ser 0</span>. Sacá esos x del dominio · en el gráfico: asíntotas + banda gris. Si g no se anula (x²+4), Dom = <span class="ok">ℝ</span>.');
+    setWork('Polinomios · Dom = <span class="ok">ℝ</span>');
+    setCaption('<strong>Cierre:</strong> lineal y cuadrática <span class="ok">sin denominador</span> → Dom = <span class="hl-v">ℝ</span>. Más adelante: raíz, log y exp con sus reglas.');
     bip("ok");
   }
 
@@ -1027,11 +834,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     stopBtn.disabled = false;
     loadExample(0);
 
-    setWork('<span class="hl">Regla nº 1</span> · denominador ≠ 0');
-    setCaption('<strong>Regla nº 1:</strong> El denominador <span class="bad">no puede ser igual a cero</span>. Los anuladores se sacan del dominio.');
+    setWork('<span class="paso">Procedimiento</span> · dominio sin denominador');
+    setCaption('<strong>Arranque:</strong> vamos a hallar el dominio <span class="paso">paso a paso</span> en Ej. 2.1 y 2.3 (polinomios).');
     bip("ok");
 
-    later(1100, function () {
+    later(1000, function () {
       if (!state.playing) return;
       function nextEx() {
         if (!state.playing) return;
@@ -1057,7 +864,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.playing = false;
     playBtn.disabled = false;
     stopBtn.disabled = true;
-    setCaption("Detenido · ▶ Play para repetir los 5 ejemplos · o Reiniciar.");
+    setCaption("Detenido · ▶ Play para repetir el procedimiento · o Reiniciar.");
   }
 
   playBtn.addEventListener("click", runPlay);
@@ -1077,7 +884,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
   });
 
-  window.__L120 = { EXAMPLES: EXAMPLES, loadExample: loadExample, state: state };
+  window.__L121 = { EXAMPLES: EXAMPLES, loadExample: loadExample, state: state };
   resetView();
 })();
 </script>
