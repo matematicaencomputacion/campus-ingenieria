@@ -294,9 +294,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function avg(x) { return 2.23 * x + 3.5 + 85 / x; }
   function draw(api) {
     var v = api.vis;
+    if (v.mode === "IB") {
+      g.setWorld({ xmin: 0, xmax: 20, ymin: 0, ymax: 700, xlabel: "x (miles)", ylabel: "miles de $",
+        xTicks: [0, 2, 4, 6, 8, 10, 12, 14, 17, 20], yTicks: [0, 100, 200, 300, 400, 500, 600, 700] });
+    } else if (v.mode === "B") {
+      g.setWorld({ xmin: 0, xmax: 20, ymin: -120, ymax: 180, xlabel: "x (miles)", ylabel: "B miles de $",
+        xTicks: [0, 2, 4, 6, 8, 10, 12, 14, 17, 20], yTicks: [-80, -40, 0, 40, 80, 120, 160] });
+    } else {
+      g.setWorld({ xmin: 0, xmax: 20, ymin: 0, ymax: 120, xlabel: "x (miles)", ylabel: "C̄ miles de $",
+        xTicks: [0, 2, 4, 6, 8, 10, 12, 14, 17, 20], yTicks: [0, 20, 40, 60, 80, 100, 120] });
+    }
     g.size(); g.drawAxes();
     if (v.mode === "avg") {
-      g.plotFn(function (x) { return avg(x); }, 0.8, 20, { color: C.costo, lw: 3 });
+      g.plotFn(function (x) { return avg(x); }, 1.2, 20, { color: C.costo, lw: 3 });
       if (v.P4) {
         g.vLine(4, { color: C.teal, lw: 1.5, dash: [4, 4] });
         g.point(4, avg(4), { color: C.teal });
