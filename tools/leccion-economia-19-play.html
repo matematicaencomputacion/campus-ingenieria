@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 161 · Economía · gas · tramos · play</title>
+<title>Lección 168 · Economía · x(t) composición · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -211,8 +211,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 161</span> · Economía · gas · tramos · play
-        <span class="sub">clave · formas cerradas 0,08x+20 | 0,06x+21 | 0,05x+22,5</span>
+      <h1><span class="lesson-num">Lección 168</span> · Economía · x(t) · play
+        <span class="sub">clave TP · ej.19 · 4374/(0,2t+12)²</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -220,7 +220,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/8</span>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/7</span>
     </div>
   </header>
 
@@ -230,40 +230,39 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="contrast-card">
           <p class="contrast-kicker">1 · Qué es esto</p>
           <ul class="contrast-bullets">
-            <li>Una tarifa <span class="hl">a tramos</span> cambia el precio del m³ según cuánto ya consumiste.</li>
-            <li>Hay un <span class="hl">cargo fijo</span> de 20 u.m. (se paga siempre) y tres precios variables.</li>
+            <li>La clave da <span class="hl">x(t)=4374/(0,2t+12)²</span>: primero la caja interior u=0,2t+12, después 4374/u².</li>
+            <li>No hay enunciado de contexto (tanque, etc.). Play recorre la fórmula y los números de la clave: 22,32 kg y t=15.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Tramos del gas</div>
-          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">0≤x≤50</strong> · 0,08 u.m./m³</span></div>
-          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">50&lt;x≤150</strong> · 0,06 los siguientes</span></div>
-          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">x&gt;150</strong> · 0,05 el resto</span></div>
+          <div class="band-legend-title">Cajas</div>
+          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">u(t) = 0,2t + 12</strong> · interior</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">x = 4374 / u²</strong> · kg</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Qué es cargo fijo + tramos</li>
-            <li data-step="2"><span class="n">2</span> Tramo 1 · 0,08x+20</li>
-            <li data-step="3"><span class="n">3</span> Empalme x=50 → 24</li>
-            <li data-step="4"><span class="n">4</span> Tramo 2 · 24+0,06(x−50)</li>
-            <li data-step="5"><span class="n">5</span> Expandir → 0,06x+21</li>
-            <li data-step="6"><span class="n">6</span> Empalme x=150 → 30</li>
-            <li data-step="7"><span class="n">7</span> Expandir → 0,05x+22,5</li>
-            <li data-step="8"><span class="n">8</span> Clave · tres formas cerradas</li>
+            <li data-step="1"><span class="n">1</span> Qué es u y x</li>
+            <li data-step="2"><span class="n">2</span> a) x(t)=4374/(0,2t+12)²</li>
+            <li data-step="3"><span class="n">3</span> b) 4374/14² ≈ 22,32</li>
+            <li data-step="4"><span class="n">4</span> b) x=22,32 kg</li>
+            <li data-step="5"><span class="n">5</span> c) 0,2t+12=15</li>
+            <li data-step="6"><span class="n">6</span> c) t=15</li>
+            <li data-step="7"><span class="n">7</span> Gráfico · puntos clave</li>
           </ol>
-        </div>        <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">C(x) a tramos</div>
-          <p class="hint-mini" id="hintMini">▶ Play · tramos → formas cerradas de la clave</p>
+        </div>
+        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">x(t) = 4374 / (0,2t+12)²</div>
+          <p class="hint-mini" id="hintMini">▶ Play · clave TP · ej.19</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-12-cafeteras-play.html" title="Lección 160: Economía · cafeteras · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-15-editor-play.html" title="Lección 162: Economía · editor · tramos · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Factura de gas a tramos"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-16-play.html" title="Lección 167: Economía · dos costos · empate · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <span class="lesson-nav next" aria-disabled="true" title="Fin de aplicaciones económicas" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <canvas id="c" width="900" height="640" aria-label="x(t)=4374/(0,2t+12)²"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · de los tramos a las formas cerradas de la clave.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · fórmula de la clave y los números 22,32 kg y t=15.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -273,7 +272,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Clave: C(x)=0,08x+20 (x≤50) | 0,06x+21 (50&lt;x≤150) | 0,05x+22,5 (x&gt;150)</p>
+    <p class="hint">clave TP · ej.19 · x(t)=4374/(0,2t+12)² · 22,32 kg · t=15</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -284,86 +283,208 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var EP = window.EconomiaPlay;
   var C = EP.COLORS;
   var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
 
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 260, ymin: 0, ymax: 40,
-    xlabel: "m³  x", ylabel: "cargo C (u.m.)",
-    xTicks: [0, 50, 100, 150, 200, 250],
-    yTicks: [0, 10, 20, 24, 30, 40]
+    xmin: 0, xmax: 20, ymin: 0, ymax: 36,
+    xlabel: "t", ylabel: "x (kg)",
+    xTicks: [0, 5, 10, 15, 20],
+    yTicks: [0, 10, 19.44, 22.32, 30]
   });
-  function C1(x) { return 0.08 * x + 20; }
-  function C2(x) { return 0.06 * x + 21; }
-  function C3(x) { return 0.05 * x + 22.5; }
-  function draw(api) {
-    var v = api.vis;
-    g.size(); g.drawAxes();
-    if (v.t1) {
-      g.segment(0, C1(0), 50, C1(50), { color: C.amber, lw: 3.4 });
-      g.point(0, 20, { color: C.amber });
-      if (v.join50) g.point(50, 24, { color: C.amber });
-    }
-    if (v.t2) {
-      g.segment(50, C2(50), 150, C2(150), { color: C.teal, lw: 3.4 });
-      if (v.join150) g.point(150, 30, { color: C.teal });
-    }
-    if (v.t3) {
-      g.segment(150, C3(150), 250, C3(250), { color: C.coral, lw: 3.4 });
-      g.point(250, C3(250), { color: C.coral, open: true });
+
+  function uOf(t) { return 0.2 * t + 12; }
+  function xOf(t) { return 4374 / (uOf(t) * uOf(t)); }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawBox(box, letter, formula, color, active) {
+    ctx.save();
+    if (active) { ctx.shadowColor = color; ctx.shadowBlur = 18; }
+    roundRect(box.x, box.y, box.w, box.h, 14);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.lineWidth = active ? 4 : 2.5;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    roundRect(box.x + 10, box.y - 14, 40, 26, 7);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 15px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(letter, box.x + 30, box.y - 1);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "700 14px ui-monospace, Menlo, monospace";
+    ctx.fillText(formula, box.x + box.w / 2, box.y + box.h / 2 + 6);
+    ctx.fillStyle = color;
+    roundRect(box.x - 7, box.y + box.h / 2 - 9, 9, 18, 3);
+    ctx.fill();
+    roundRect(box.x + box.w - 2, box.y + box.h / 2 - 9, 9, 18, 3);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawArrow(x1, y1, x2, y2, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    var ang = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 11 * Math.cos(ang - 0.4), y2 - 11 * Math.sin(ang - 0.4));
+    ctx.lineTo(x2 - 11 * Math.cos(ang + 0.4), y2 - 11 * Math.sin(ang + 0.4));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawToken(x, y, label) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = "#f59e0b";
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = "#0b1018";
+    ctx.font = "800 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, x, y + 1);
+    ctx.restore();
+  }
+
+  function drawMachines(v) {
+    var W = canvas.width, H = canvas.height;
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "800 17px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("Cadena  u  →  x     ·     4374 / u²", W / 2, 14);
+
+    var boxW = Math.min(200, W * 0.28);
+    var boxH = Math.min(132, H * 0.34);
+    var y = H * 0.30;
+    var gap = Math.min(100, W * 0.13);
+    var total = boxW * 2 + gap;
+    var x0 = (W - total) / 2;
+    var left = { x: x0, y: y, w: boxW, h: boxH };
+    var right = { x: x0 + boxW + gap, y: y, w: boxW, h: boxH };
+    var midY = y + boxH / 2;
+    var inX = x0 - 64;
+    var midX = x0 + boxW + gap / 2;
+    var outX = x0 + total + 64;
+
+    drawBox(left, "u", "0,2t + 12", C.teal, v.pulse === "u");
+    drawBox(right, "x", "4374 / u²", C.costo, v.pulse === "x");
+    drawArrow(inX + 18, midY, left.x - 10, midY, "#64748b");
+    drawArrow(left.x + left.w + 8, midY, right.x - 10, midY, "#64748b");
+    drawArrow(right.x + right.w + 8, midY, outX - 10, midY, "#64748b");
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "700 12px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("t", inX - 4, midY - 28);
+    ctx.fillText("u", midX, midY - 28);
+    ctx.fillText("kg", outX + 4, midY - 28);
+
+    if (v.token === "in") drawToken(inX, midY, v.tLabel || "t");
+    if (v.token === "mid") drawToken(midX, midY, v.uLabel || "u");
+    if (v.token === "out") drawToken(outX, midY, v.xLabel || "x");
+
+    if (v.note) {
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 15px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(v.note, W / 2, H - 36);
     }
     if (v.badge) g.badge(v.badge);
   }
+
+  function draw(api) {
+    var v = api.vis;
+    g.size();
+    if (v.mode === "graph") {
+      g.drawAxes();
+      g.plotFn(xOf, 0, 20, { color: C.costo, lw: 3.2 });
+      if (v.P10) {
+        g.point(10, xOf(10), { color: C.teal });
+        g.label(10, xOf(10), "22,32 kg", { color: C.teal, dy: 16, baseline: "top" });
+      }
+      if (v.P15) {
+        g.vLine(15, { color: C.coral, lw: 1.4, dash: [4, 4], alpha: 0.7 });
+        g.point(15, xOf(15), { color: C.coral });
+        g.label(15, xOf(15), "t=15", { color: C.coral, dy: -6 });
+      }
+      if (v.badge) g.badge(v.badge);
+      return;
+    }
+    drawMachines(v);
+  }
+
   EP.bindPlay({
-    totalPhases: 8,
-    idleCaption: "Presioná <strong>▶ Play</strong> · de los tramos a las formas cerradas de la clave.",
-    idleVis: {},
+    totalPhases: 7,
+    idleCaption: "Presioná <strong>▶ Play</strong> · fórmula de la clave y los números 22,32 kg y t=15.",
+    idleVis: { mode: "machines", pulse: null, token: "in", tLabel: "t" },
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1700, vis: { badge: "1 · fijo 20 + tramos" },
-          work: '<span class="paso">1</span> · fijo 20 + 0,08 / 0,06 / 0,05 según los m³',
-          cap: 'Los primeros 50 m³ salen 0,08; los que siguen hasta 150 salen 0,06; el resto, 0,05. El fijo se suma siempre. Después se <strong>expanden</strong> a la forma de la clave.',
-          htmls: [{ id: "exprFormula", value: "fijo 20 + 0,08 / 0,06 / 0,05" }] },
-        { phase: 2, wait: 1700, vis: { t1: true, badge: "tramo 1 · cerrado" },
-          work: '<span class="paso">2</span> · x≤50: C(x)=20+0,08x = <span class="ok">0,08x+20</span>',
-          cap: 'En el primer tramo no hay “siguientes”: todos los m³ a 0,08. Ya está en forma cerrada (la de la clave).',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,08x+20</span> &nbsp; x≤50' }] },
-        { phase: 3, wait: 1600, vis: { t1: true, join50: true, badge: "C(50)=24" },
-          work: '<span class="paso">3</span> · C(50)=0,08·50+20=<span class="ok">24</span> · empalme',
-          cap: 'El segundo tramo <strong>sigue desde 24</strong>. Por eso se escribe primero 24 + 0,06(x−50) (solo los m³ después de 50).',
-          htmls: [{ id: "exprFormula", value: "C(50)=24 · continuo" }] },
-        { phase: 4, wait: 1800, vis: { t1: true, join50: true, t2: true, badge: "tramo 2 · con (x−50)" },
-          work: '<span class="paso">4</span> · 50&lt;x≤150: C=24+0,06(x−50)',
-          cap: 'Esta es la escritura “por tramos”. Ahora se distribuye para llegar a la forma cerrada de la clave.',
-          htmls: [{ id: "exprFormula", value: "C(x)=24+0,06(x−50)" }] },
-        { phase: 5, wait: 2000, vis: { t1: true, join50: true, t2: true, badge: "0,06x+21" },
-          work: '<span class="paso">5</span> · 24+0,06x−3 = <span class="ok">0,06x+21</span>',
-          cap: '0,06(x−50)=0,06x−3. Entonces 24−3+0,06x. Misma recta, otra escritura. En x=150: 0,06·150+21=30.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,06x+21</span> &nbsp; 50&lt;x≤150' }] },
-        { phase: 6, wait: 1600, vis: { t1: true, join50: true, t2: true, join150: true, badge: "C(150)=30" },
-          work: '<span class="paso">6</span> · C(150)=30 · tercer tramo arranca ahí',
-          cap: 'Otra vez empalme: el resto se suma a 30, a 0,05 por m³ extra: 30+0,05(x−150).',
-          htmls: [{ id: "exprFormula", value: "C(150)=30 · continuo" }] },
-        { phase: 7, wait: 2000, vis: { t1: true, join50: true, t2: true, join150: true, t3: true, badge: "0,05x+22,5" },
-          work: '<span class="paso">7</span> · 30+0,05x−7,5 = <span class="ok">0,05x+22,5</span>',
-          cap: '0,05(x−150)=0,05x−7,5. Entonces 30−7,5+0,05x. Forma cerrada del tercer tramo.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,05x+22,5</span> &nbsp; x&gt;150' }] },
-        { phase: 8, wait: 1800, vis: { t1: true, join50: true, t2: true, join150: true, t3: true, badge: "clave · continuo" },
-          work: '<span class="paso">8</span> · tres formas cerradas · <span class="ok">polígono continuo</span>',
-          cap: '<strong>Cierre:</strong> 0,08x+20 | 0,06x+21 | 0,05x+22,5. Equivalente a sumar tramos. El gráfico no salta.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">0,08x+20 | 0,06x+21 | 0,05x+22,5</span>' }] }
+        { phase: 1, wait: 1800, vis: { mode: "machines", pulse: "u", token: "in", tLabel: "t", badge: "1 · dos cajas" },
+          work: '<span class="paso">1</span> · primero u=0,2t+12, después x=4374/u²',
+          cap: 'Composición: t entra a la caja interior. Sale u. Eso entra a la caja x. No inventamos un relato: la clave da esta fórmula.',
+          htmls: [{ id: "exprFormula", value: "u=0,2t+12 &nbsp;→&nbsp; x=4374/u²" }] },
+        { phase: 2, wait: 2000, vis: { mode: "machines", pulse: "x", token: "mid", uLabel: "u", badge: "a) pegar" },
+          work: '<span class="paso">2</span> · <span class="ok">x(t)=4374/(0,2t+12)²</span>',
+          cap: '<span class="hl">a)</span> Se pega el interior en el denominador. Esa es la ley de la clave.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">x(t)=4374/(0,2t+12)²</span>' }] },
+        { phase: 3, wait: 2000, vis: { mode: "machines", pulse: "u", token: "mid", uLabel: "14", badge: "b) u=14" },
+          work: '<span class="paso">3</span> · 22,32 kg = 4374/196 y 196=14² → u=14',
+          cap: '<span class="hl">b)</span> La clave da 22,32 kg. 4374÷22,32≈196=14², así que el interior vale 14. Entonces 0,2t+12=14 → t=10.',
+          htmls: [{ id: "exprFormula", value: "4374/14² = 22,316 ≈ 22,32" }] },
+        { phase: 4, wait: 1700, vis: { mode: "machines", pulse: "x", token: "out", xLabel: "22,32", note: "x = 4374 / 196 ≈ 22,32 kg", badge: "b) 22,32 kg" },
+          work: '<span class="paso">4</span> · x=<span class="ok">22,32 kg</span>',
+          cap: 'Ese es el valor de la clave. Sale de la segunda caja cuando u=14.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">x = 22,32 kg</span>' }] },
+        { phase: 5, wait: 1800, vis: { mode: "machines", pulse: "u", token: "in", tLabel: "15", badge: "c) interior = 15" },
+          work: '<span class="paso">5</span> · 0,2t+12=15 → 0,2t=3',
+          cap: '<span class="hl">c)</span> La clave da t=15. Encaja con el interior igual a 15: 0,2·15+12=15.',
+          htmls: [{ id: "exprFormula", value: "0,2t+12 = 15" }] },
+        { phase: 6, wait: 1600, vis: { mode: "machines", token: "out", xLabel: "t=15", badge: "c) t=15" },
+          work: '<span class="paso">6</span> · t=<span class="ok">15</span> · x(15)=4374/225=19,44 kg',
+          cap: 't=15 es la respuesta de la clave. En el gráfico se marca ese instante (x(15)=19,44).',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">t = 15</span>' }] },
+        { phase: 7, wait: 1800, vis: { mode: "graph", P10: true, P15: true, badge: "22,32 kg · t=15" },
+          work: '<span class="paso">7</span> · puntos de la clave sobre x(t)',
+          cap: '<strong>Cierre:</strong> x(t)=4374/(0,2t+12)² · 22,32 kg (u=14) · t=15. Sin enunciado extra.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">22,32 kg · t=15</span>' }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> C=0,08x+20 (x≤50) | 0,06x+21 (50&lt;x≤150) | 0,05x+22,5 (x&gt;150).', 'gas listo');
+        api.finish('<strong>Cierre:</strong> x(t)=4374/(0,2t+12)² · 22,32 kg · t=15.', 'ej.19 listo');
       });
     }
   });
-  window.__L161 = {
-    C: function (x) {
-      if (x <= 50) return 0.08 * x + 20;
-      if (x <= 150) return 0.06 * x + 21;
-      return 0.05 * x + 22.5;
-    },
-    closed: { t1: [0.08, 20], t2: [0.06, 21], t3: [0.05, 22.5] },
-    knots: [[0, 20], [50, 24], [150, 30]]
+  window.__L168 = {
+    x: function (t) { return 4374 / Math.pow(0.2 * t + 12, 2); },
+    x10: 4374 / 196,
+    x15: 4374 / 225,
+    t15: 15
   };
 })();
 

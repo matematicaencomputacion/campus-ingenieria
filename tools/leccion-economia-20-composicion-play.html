@@ -212,7 +212,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <header>
     <div>
       <h1><span class="lesson-num">Lección 165</span> · Economía · composición C∘x · play
-        <span class="sub">máquinas t → x → C · 0≤t≤5</span>
+        <span class="sub">máquinas t → x → C · C̄(t) · límite en t≈4</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -220,7 +220,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/7</span>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/8</span>
     </div>
   </header>
 
@@ -245,9 +245,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             <li data-step="2"><span class="n">2</span> a) Pegar C(x(t))</li>
             <li data-step="3"><span class="n">3</span> b) t=3 por las cajas</li>
             <li data-step="4"><span class="n">4</span> b) (C∘x)(3)=6200</li>
-            <li data-step="5"><span class="n">5</span> c) promedio = total / tiempo</li>
-            <li data-step="6"><span class="n">6</span> d) t=5 → 16250</li>
-            <li data-step="7"><span class="n">7</span> d) ¿supera 11000?</li>
+            <li data-step="5"><span class="n">5</span> c) C̄(t)=C(t)/t</li>
+            <li data-step="6"><span class="n">6</span> c) C̄(3)=2066,67</li>
+            <li data-step="7"><span class="n">7</span> d) C(t)=11000 → t≈4</li>
+            <li data-step="8"><span class="n">8</span> d) sí se alcanza el límite</li>
           </ol>
         </div>
         <div class="expr-row" id="formulaRow">
@@ -257,7 +258,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </aside>
       <div class="graph-wrap" id="graphWrap">
         <a class="lesson-nav prev" href="leccion-economia-18-beneficio-play.html" title="Lección 164: Economía · beneficio · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <span class="lesson-nav next" aria-disabled="true" title="Fin de aplicaciones económicas" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <a class="lesson-nav next" href="leccion-economia-16-play.html" title="Lección 167: Economía · dos costos · empate · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
         <canvas id="c" width="900" height="640" aria-label="Composición C∘x · máquinas y gráfico"></canvas>
       </div>
     </div>
@@ -272,7 +273,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">(C∘x)(t)=625t²+25t+500 · t=3 → 6200 · promedio 2066,67/h · t=5 → 16250 &gt; 11000</p>
+    <p class="hint">(C∘x)(t)=625t²+25t+500 · C̄(t)=625t+25+500/t · C̄(3)≈2066,67 · C=11000 en t≈4</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -294,6 +295,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   });
 
   function Cx(t) { return 625 * t * t + 25 * t + 500; }
+  var tStar = (-1 + Math.sqrt(42001)) / 50;
 
   function roundRect(x, y, w, h, r) {
     ctx.beginPath();
@@ -431,6 +433,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         g.point(3, 6200, { color: C.teal });
         g.label(3, 6200, "t=3 · 6200", { color: C.teal, dy: 18, baseline: "top" });
       }
+      if (v.P4) {
+        g.vLine(tStar, { color: C.coral, lw: 1.4, dash: [4, 4], alpha: 0.7 });
+        g.point(tStar, 11000, { color: C.coral });
+        g.label(tStar, 11000, "t≈4 · límite", { color: C.coral, dy: -6 });
+      }
       if (v.P5) {
         g.point(5, 16250, { color: C.coral });
         g.label(3.55, 16250, "t=5 · 16250", { color: C.coral, align: "left", dx: 8 });
@@ -442,7 +449,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   EP.bindPlay({
-    totalPhases: 7,
+    totalPhases: 8,
     idleCaption: "Presioná <strong>▶ Play</strong> · t entra a la caja x, sale a la caja C.",
     idleVis: { mode: "machines", pulse: null, token: "in", tLabel: "t" },
     draw: draw,
@@ -454,37 +461,43 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
           htmls: [{ id: "exprFormula", value: "x(t)=25t &nbsp;→&nbsp; C(x)=x²+x+500" }] },
         { phase: 2, wait: 2000, vis: { mode: "machines", pulse: "C", token: "mid", xLabel: "25t", badge: "a) pegar C(x(t))" },
           work: '<span class="paso">2</span> · C(25t)=(25t)²+25t+500 = <span class="ok">625t² + 25t + 500</span>',
-          cap: '<span class="hl">a)</span> Se pega: donde C veía x, ahora va 25t. (C∘x)(t) ya es costo en función del tiempo.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">(C∘x)(t) = 625t² + 25t + 500</span>' }] },
+          cap: '<span class="hl">a)</span> Se pega: donde C veía x, ahora va 25t. (C∘x)(t) ya es costo en función del tiempo. Abajo se escribe C(t) por brevedad.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C(t) = 625t² + 25t + 500</span>' }] },
         { phase: 3, wait: 1800, vis: { mode: "machines", pulse: "x", token: "in", tLabel: "3", badge: "b) t = 3 entra" },
           work: '<span class="paso">3</span> · t=3 → x(3)=25·3=<span class="ok">75</span> unidades',
-          cap: '<span class="hl">b)</span> El token 3 entra a la primera caja. Salen 75 unidades (no confundir con C(3) de 3 unidades).',
+          cap: '<span class="hl">b)</span> El token 3 entra a la primera caja. Salen 75 unidades (no confundir con C de 3 unidades).',
           htmls: [{ id: "exprFormula", value: "x(3) = 75" }] },
         { phase: 4, wait: 1800, vis: { mode: "machines", pulse: "C", token: "out", cLabel: "6200", note: "C(75) = 75² + 75 + 500 = 6200", badge: "(C∘x)(3)=6200" },
           work: '<span class="paso">4</span> · C(75)=5625+75+500 = <span class="ok">6200</span>',
-          cap: 'Esas 75 unidades entran a C. A las 3 horas el costo total es 6200. Eso es (C∘x)(3), no C(x=3).',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">(C∘x)(3) = 6200</span>' }] },
-        { phase: 5, wait: 2200, vis: { mode: "machines", token: "out", cLabel: "÷3", note: "promedio = total / tiempo = 6200 / 3 ≈ 2066,67  (no es C/x)", badge: "c) total ÷ horas" },
-          work: '<span class="paso">5</span> · 6200 / 3 ≈ <span class="ok">2066,67</span> por hora · no es costo por unidad',
-          cap: '<span class="hl">c)</span> Acá “promedio” es <strong>total / tiempo</strong> (cuánto sale cada hora). Costo medio por unidad sería 6200/75 ≈ 82,67 — otra cuenta.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">6200/3 ≈ 2066,67</span> por hora' }] },
-        { phase: 6, wait: 1800, vis: { mode: "graph", P3: true, P5: true, badge: "d) t=5 → 16250" },
-          work: '<span class="paso">6</span> · (C∘x)(5)=625·25+125+500 = <span class="ok">16250</span>',
-          cap: '<span class="hl">d)</span> A las 5 horas (tope del dominio) el costo es 16250. La raya coral es el límite 11000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">(C∘x)(5) = 16250</span>' }] },
-        { phase: 7, wait: 1700, vis: { mode: "graph", P3: true, P5: true, badge: "16250 > 11000 · sí" },
-          work: '<span class="paso">7</span> · 16250 &gt; 11000 → <span class="bad">sí se supera</span> el límite',
-          cap: 'En t=5 el punto queda <strong>arriba</strong> de la raya 11000. El presupuesto no alcanza para las 5 horas.',
-          htmls: [{ id: "exprFormula", value: '<span class="bad">16250 &gt; 11000</span> · se supera' }] }
+          cap: 'Esas 75 unidades entran a C. A las 3 horas el costo total es 6200. Eso es C(3) de la composición.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C(3) = 6200</span>' }] },
+        { phase: 5, wait: 2200, vis: { mode: "machines", token: "out", cLabel: "C̄", note: "C̄(t) = C(t)/t = 625t + 25 + 500/t", badge: "c) C̄ = C/t" },
+          work: '<span class="paso">5</span> · C̄(t)=(625t²+25t+500)/t = <span class="ok">625t+25+500/t</span>',
+          cap: '<span class="hl">c)</span> Costo promedio por hora: se divide el total por el tiempo. El 500/t es el fijo repartido.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C̄(t)=625t+25+500/t</span>' }] },
+        { phase: 6, wait: 1800, vis: { mode: "graph", P3: true, badge: "C̄(3)≈2066,67" },
+          work: '<span class="paso">6</span> · C̄(3)=625·3+25+500/3 = 1875+25+166,67 = <span class="ok">2066,67</span>',
+          cap: 'A las 3 h: 6200/3 ≈ 2066,67 por hora. Misma cuenta: 1875+25+500/3.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C̄(3) ≈ 2066,67</span>' }] },
+        { phase: 7, wait: 2200, vis: { mode: "graph", P3: true, P4: true, badge: "d) C(t)=11000 → t≈4" },
+          work: '<span class="paso">7</span> · 625t²+25t+500=11000 → 25t²+t−420=0 → <span class="ok">t≈4,08</span>',
+          cap: '<span class="hl">d)</span> Se iguala C(t) al límite 11000. La raíz positiva es t≈4 (alrededor de 4 horas).',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">t ≈ 4</span> · se alcanza 11000' }] },
+        { phase: 8, wait: 1800, vis: { mode: "graph", P3: true, P4: true, P5: true, badge: "sí se alcanza · t≈4" },
+          work: '<span class="paso">8</span> · t≈4 ya toca 11000 · en t=5, C=16250&gt;11000 → <span class="bad">sí se alcanza</span>',
+          cap: 'El límite se alcanza alrededor de t=4. A las 5 h el punto queda arriba de la raya (16250).',
+          htmls: [{ id: "exprFormula", value: '<span class="bad">sí se alcanza</span> el límite (t≈4)' }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> (C∘x)(t)=625t²+25t+500 · t=3 → 6200 · promedio 2066,67/h · t=5 → 16250&gt;11000.', 'composición lista');
+        api.finish('<strong>Cierre:</strong> C(t)=625t²+25t+500 · C̄(t)=625t+25+500/t · C̄(3)≈2066,67 · límite en t≈4.', 'composición lista');
       });
     }
   });
   window.__L165 = {
     Cx: function (t) { return 625 * t * t + 25 * t + 500; },
+    Cbar: function (t) { return 625 * t + 25 + 500 / t; },
     t3: 6200,
     avg3: 6200 / 3,
+    tStar: (-1 + Math.sqrt(42001)) / 50,
     t5: 16250,
     limit: 11000
   };

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 161 · Economía · gas · tramos · play</title>
+<title>Lección 167 · Economía · dos costos · empate · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -211,8 +211,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 161</span> · Economía · gas · tramos · play
-        <span class="sub">clave · formas cerradas 0,08x+20 | 0,06x+21 | 0,05x+22,5</span>
+      <h1><span class="lesson-num">Lección 167</span> · Economía · dos costos · empate · play
+        <span class="sub">C₁=0,1x+12 · C₂=0,14x+10 · x=50</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -220,7 +220,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/8</span>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/6</span>
     </div>
   </header>
 
@@ -230,40 +230,38 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="contrast-card">
           <p class="contrast-kicker">1 · Qué es esto</p>
           <ul class="contrast-bullets">
-            <li>Una tarifa <span class="hl">a tramos</span> cambia el precio del m³ según cuánto ya consumiste.</li>
-            <li>Hay un <span class="hl">cargo fijo</span> de 20 u.m. (se paga siempre) y tres precios variables.</li>
+            <li>Hay <span class="hl">dos costos lineales</span> (fijo + variable). El fijo es donde arranca la recta; el variable es la pendiente.</li>
+            <li>El <span class="hl">empate</span> es la cantidad x donde las dos cuestan igual. A un lado conviene una, al otro la otra.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Tramos del gas</div>
-          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">0≤x≤50</strong> · 0,08 u.m./m³</span></div>
-          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">50&lt;x≤150</strong> · 0,06 los siguientes</span></div>
-          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">x&gt;150</strong> · 0,05 el resto</span></div>
+          <div class="band-legend-title">Las dos rectas</div>
+          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">C₁ = 0,1x + 12</strong> · fijo 12, 0,10 por unidad</span></div>
+          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">C₂ = 0,14x + 10</strong> · fijo 10, 0,14 por unidad</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Qué es cargo fijo + tramos</li>
-            <li data-step="2"><span class="n">2</span> Tramo 1 · 0,08x+20</li>
-            <li data-step="3"><span class="n">3</span> Empalme x=50 → 24</li>
-            <li data-step="4"><span class="n">4</span> Tramo 2 · 24+0,06(x−50)</li>
-            <li data-step="5"><span class="n">5</span> Expandir → 0,06x+21</li>
-            <li data-step="6"><span class="n">6</span> Empalme x=150 → 30</li>
-            <li data-step="7"><span class="n">7</span> Expandir → 0,05x+22,5</li>
-            <li data-step="8"><span class="n">8</span> Clave · tres formas cerradas</li>
+            <li data-step="1"><span class="n">1</span> Qué es fijo / variable / empate</li>
+            <li data-step="2"><span class="n">2</span> C₁ = 0,1x + 12</li>
+            <li data-step="3"><span class="n">3</span> C₂ = 0,14x + 10</li>
+            <li data-step="4"><span class="n">4</span> Igualar → x=50</li>
+            <li data-step="5"><span class="n">5</span> x&lt;50 · conviene C₂</li>
+            <li data-step="6"><span class="n">6</span> x&gt;50 · conviene C₁</li>
           </ol>
-        </div>        <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">C(x) a tramos</div>
-          <p class="hint-mini" id="hintMini">▶ Play · tramos → formas cerradas de la clave</p>
+        </div>
+        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">C₁ y C₂</div>
+          <p class="hint-mini" id="hintMini">▶ Play · comparar dos costos y el empate</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-12-cafeteras-play.html" title="Lección 160: Economía · cafeteras · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-15-editor-play.html" title="Lección 162: Economía · editor · tramos · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Factura de gas a tramos"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-20-composicion-play.html" title="Lección 165: Economía · composición C∘x · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-19-play.html" title="Lección 168: Economía · x(t) · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Dos costos lineales y empate"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · de los tramos a las formas cerradas de la clave.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · dos costos lineales y el empate.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -273,7 +271,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Clave: C(x)=0,08x+20 (x≤50) | 0,06x+21 (50&lt;x≤150) | 0,05x+22,5 (x&gt;150)</p>
+    <p class="hint">C₁=0,1x+12 · C₂=0,14x+10 · empate x=50 · x&lt;50 → C₂ · x&gt;50 → C₁</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -286,84 +284,70 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var canvas = document.getElementById("c");
 
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 260, ymin: 0, ymax: 40,
-    xlabel: "m³  x", ylabel: "cargo C (u.m.)",
-    xTicks: [0, 50, 100, 150, 200, 250],
-    yTicks: [0, 10, 20, 24, 30, 40]
+    xmin: 0, xmax: 110, ymin: 0, ymax: 30,
+    xlabel: "cantidad x", ylabel: "costo C",
+    xTicks: [0, 25, 50, 75, 100],
+    yTicks: [0, 10, 12, 17, 20, 24, 30]
   });
-  function C1(x) { return 0.08 * x + 20; }
-  function C2(x) { return 0.06 * x + 21; }
-  function C3(x) { return 0.05 * x + 22.5; }
+  function C1(x) { return 0.1 * x + 12; }
+  function C2(x) { return 0.14 * x + 10; }
   function draw(api) {
     var v = api.vis;
     g.size(); g.drawAxes();
-    if (v.t1) {
-      g.segment(0, C1(0), 50, C1(50), { color: C.amber, lw: 3.4 });
-      g.point(0, 20, { color: C.amber });
-      if (v.join50) g.point(50, 24, { color: C.amber });
-    }
-    if (v.t2) {
-      g.segment(50, C2(50), 150, C2(150), { color: C.teal, lw: 3.4 });
-      if (v.join150) g.point(150, 30, { color: C.teal });
-    }
-    if (v.t3) {
-      g.segment(150, C3(150), 250, C3(250), { color: C.coral, lw: 3.4 });
-      g.point(250, C3(250), { color: C.coral, open: true });
+    if (v.band2) g.bandX(0, 50, { color: "rgba(13,148,136,0.14)" });
+    if (v.band1) g.bandX(50, 110, { color: "rgba(217,119,6,0.14)" });
+    if (v.line1) g.plotFn(C1, 0, 110, { color: C.amber, lw: v.thick1 ? 4.2 : 2.4, alpha: v.fade1 ? 0.35 : 1 });
+    if (v.line2) g.plotFn(C2, 0, 110, { color: C.teal, lw: v.thick2 ? 4.2 : 2.4, alpha: v.fade2 ? 0.35 : 1 });
+    if (v.cheap2) g.segment(0, C2(0), 50, C2(50), { color: C.teal, lw: 4.4 });
+    if (v.cheap1) g.segment(50, C1(50), 110, C1(110), { color: C.amber, lw: 4.4 });
+    if (v.eq) {
+      g.vLine(50, { color: C.purple, lw: 1.5, dash: [5, 4], alpha: 0.8 });
+      g.point(50, 17, { color: C.purple });
+      g.label(50, 17, "empate (50; 17)", { color: C.purple, dy: -8 });
     }
     if (v.badge) g.badge(v.badge);
   }
   EP.bindPlay({
-    totalPhases: 8,
-    idleCaption: "Presioná <strong>▶ Play</strong> · de los tramos a las formas cerradas de la clave.",
-    idleVis: {},
+    totalPhases: 6,
+    idleCaption: "Presioná <strong>▶ Play</strong> · dos costos lineales y el empate.",
+    idleVis: { line1: true, line2: true },
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1700, vis: { badge: "1 · fijo 20 + tramos" },
-          work: '<span class="paso">1</span> · fijo 20 + 0,08 / 0,06 / 0,05 según los m³',
-          cap: 'Los primeros 50 m³ salen 0,08; los que siguen hasta 150 salen 0,06; el resto, 0,05. El fijo se suma siempre. Después se <strong>expanden</strong> a la forma de la clave.',
-          htmls: [{ id: "exprFormula", value: "fijo 20 + 0,08 / 0,06 / 0,05" }] },
-        { phase: 2, wait: 1700, vis: { t1: true, badge: "tramo 1 · cerrado" },
-          work: '<span class="paso">2</span> · x≤50: C(x)=20+0,08x = <span class="ok">0,08x+20</span>',
-          cap: 'En el primer tramo no hay “siguientes”: todos los m³ a 0,08. Ya está en forma cerrada (la de la clave).',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,08x+20</span> &nbsp; x≤50' }] },
-        { phase: 3, wait: 1600, vis: { t1: true, join50: true, badge: "C(50)=24" },
-          work: '<span class="paso">3</span> · C(50)=0,08·50+20=<span class="ok">24</span> · empalme',
-          cap: 'El segundo tramo <strong>sigue desde 24</strong>. Por eso se escribe primero 24 + 0,06(x−50) (solo los m³ después de 50).',
-          htmls: [{ id: "exprFormula", value: "C(50)=24 · continuo" }] },
-        { phase: 4, wait: 1800, vis: { t1: true, join50: true, t2: true, badge: "tramo 2 · con (x−50)" },
-          work: '<span class="paso">4</span> · 50&lt;x≤150: C=24+0,06(x−50)',
-          cap: 'Esta es la escritura “por tramos”. Ahora se distribuye para llegar a la forma cerrada de la clave.',
-          htmls: [{ id: "exprFormula", value: "C(x)=24+0,06(x−50)" }] },
-        { phase: 5, wait: 2000, vis: { t1: true, join50: true, t2: true, badge: "0,06x+21" },
-          work: '<span class="paso">5</span> · 24+0,06x−3 = <span class="ok">0,06x+21</span>',
-          cap: '0,06(x−50)=0,06x−3. Entonces 24−3+0,06x. Misma recta, otra escritura. En x=150: 0,06·150+21=30.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,06x+21</span> &nbsp; 50&lt;x≤150' }] },
-        { phase: 6, wait: 1600, vis: { t1: true, join50: true, t2: true, join150: true, badge: "C(150)=30" },
-          work: '<span class="paso">6</span> · C(150)=30 · tercer tramo arranca ahí',
-          cap: 'Otra vez empalme: el resto se suma a 30, a 0,05 por m³ extra: 30+0,05(x−150).',
-          htmls: [{ id: "exprFormula", value: "C(150)=30 · continuo" }] },
-        { phase: 7, wait: 2000, vis: { t1: true, join50: true, t2: true, join150: true, t3: true, badge: "0,05x+22,5" },
-          work: '<span class="paso">7</span> · 30+0,05x−7,5 = <span class="ok">0,05x+22,5</span>',
-          cap: '0,05(x−150)=0,05x−7,5. Entonces 30−7,5+0,05x. Forma cerrada del tercer tramo.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,05x+22,5</span> &nbsp; x&gt;150' }] },
-        { phase: 8, wait: 1800, vis: { t1: true, join50: true, t2: true, join150: true, t3: true, badge: "clave · continuo" },
-          work: '<span class="paso">8</span> · tres formas cerradas · <span class="ok">polígono continuo</span>',
-          cap: '<strong>Cierre:</strong> 0,08x+20 | 0,06x+21 | 0,05x+22,5. Equivalente a sumar tramos. El gráfico no salta.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">0,08x+20 | 0,06x+21 | 0,05x+22,5</span>' }] }
+        { phase: 1, wait: 1800, vis: { line1: true, line2: true, badge: "1 · dos rectas" },
+          work: '<span class="paso">1</span> · cada C = fijo + (variable)·x',
+          cap: 'C₁ arranca más alto (fijo 12) pero sube más lento (0,10). C₂ arranca más bajo (fijo 10) pero sube más rápido (0,14).',
+          htmls: [{ id: "exprFormula", value: "C₁ fijo 12 · C₂ fijo 10" }] },
+        { phase: 2, wait: 1700, vis: { line1: true, thick1: true, line2: true, fade2: true, badge: "C₁ = 0,1x+12" },
+          work: '<span class="paso">2</span> · <span class="ok">C₁(x) = 0,1x + 12</span>',
+          cap: 'Pendiente 0,10: cada unidad agrega 0,10. En x=0 vale 12. En x=50 vale 17. En x=100 vale 22.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C₁ = 0,1x + 12</span>' }] },
+        { phase: 3, wait: 1700, vis: { line1: true, fade1: true, line2: true, thick2: true, badge: "C₂ = 0,14x+10" },
+          work: '<span class="paso">3</span> · <span class="ok">C₂(x) = 0,14x + 10</span>',
+          cap: 'Pendiente 0,14: cada unidad agrega 0,14. En x=0 vale 10. En x=50 vale 17. En x=100 vale 24.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C₂ = 0,14x + 10</span>' }] },
+        { phase: 4, wait: 2000, vis: { line1: true, line2: true, eq: true, badge: "empate x=50" },
+          work: '<span class="paso">4</span> · 0,1x+12=0,14x+10 → 2=0,04x → <span class="ok">x=50</span> · C=17',
+          cap: 'Donde se cruzan cuestan lo mismo. 12−10=2 y 0,14−0,10=0,04 → x=2/0,04=50.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C₁=C₂ en x=50</span> · C=17' }] },
+        { phase: 5, wait: 1800, vis: { line1: true, line2: true, eq: true, band2: true, cheap2: true, badge: "x<50 · C₂" },
+          work: '<span class="paso">5</span> · si x&lt;50 <span class="ok">conviene C₂</span> (sale menos)',
+          cap: 'A la izquierda del empate, C₂ está más abajo: el fijo más chico gana cuando hay pocas unidades.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">x&lt;50 → C₂</span>' }] },
+        { phase: 6, wait: 1800, vis: { line1: true, line2: true, eq: true, band2: true, band1: true, cheap2: true, cheap1: true, badge: "x>50 · C₁" },
+          work: '<span class="paso">6</span> · si x&gt;50 <span class="ok">conviene C₁</span> (sale menos)',
+          cap: '<strong>Cierre:</strong> a la derecha gana C₁: la pendiente más chica termina importando más que el fijo.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">x&gt;50 → C₁</span>' }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> C=0,08x+20 (x≤50) | 0,06x+21 (50&lt;x≤150) | 0,05x+22,5 (x&gt;150).', 'gas listo');
+        api.finish('<strong>Cierre:</strong> empate x=50 · x&lt;50 conviene C₂ · x&gt;50 conviene C₁.', 'empate listo');
       });
     }
   });
-  window.__L161 = {
-    C: function (x) {
-      if (x <= 50) return 0.08 * x + 20;
-      if (x <= 150) return 0.06 * x + 21;
-      return 0.05 * x + 22.5;
-    },
-    closed: { t1: [0.08, 20], t2: [0.06, 21], t3: [0.05, 22.5] },
-    knots: [[0, 20], [50, 24], [150, 30]]
+  window.__L167 = {
+    C1: function (x) { return 0.1 * x + 12; },
+    C2: function (x) { return 0.14 * x + 10; },
+    eq: 50,
+    Ceq: 17
   };
 })();
 
