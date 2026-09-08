@@ -24,7 +24,8 @@
   var DOM_LO = -9;
   var DOM_HI = -1;
   var BIG_R = 14;
-  var SNAP_TOL = 0.7;
+  var SNAP_IN = 0.7;
+  var SNAP_OUT = 1.05;
   var SHIFTS = [-2, -1, 0, 1, 2];
 
   var SHAPES = {
@@ -98,6 +99,7 @@
     hover: null,
     near: false,
     chimed: false,
+    chimeGen: 0,
     locked: false,
     paused: false,
     won: false,
@@ -168,8 +170,15 @@
   }
 
   function nearPt(a, b, tol) {
-    tol = tol == null ? SNAP_TOL : tol;
+    tol = tol == null ? SNAP_IN : tol;
     return dist(a, b) <= tol;
+  }
+
+  function inSnapZone(w, Q) {
+    if (!w || !Q) return false;
+    var d = dist(w, Q);
+    if (state.near) return d <= SNAP_OUT;
+    return d <= SNAP_IN;
   }
 
   function sizeCanvas() {
@@ -231,12 +240,21 @@
     promptEl.innerHTML = html;
   }
 
-  function pulseOk() {
-    if (GK.playOkChime) GK.playOkChime();
-    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+  function armAudio() {
+    if (GK.ensureAudio) return GK.ensureAudio();
+    return null;
+  }
+
+  function flashOk() {
     graphWrap.classList.remove("flash-ok", "flash-bad");
     void graphWrap.offsetWidth;
     graphWrap.classList.add("flash-ok");
+  }
+
+  function pulseOk() {
+    if (GK.playOkChime) GK.playOkChime();
+    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    flashOk();
   }
 
   function pulseBad() {
@@ -247,9 +265,27 @@
     graphWrap.classList.add("flash-bad");
   }
 
+  /* Hover enter-zone: pip×3 once. Never wait for click. Resume AudioContext if the browser still has it suspended. */
   function focusChime() {
-    if (GK.playOkChime) GK.playOkChime();
-    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    var gen = state.chimeGen;
+    function ping() {
+      if (gen !== state.chimeGen) return;
+      if (!state.near || state.won || state.paused || state.locked) return;
+      if (GK.playOkChime) GK.playOkChime();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    }
+    var ac = armAudio();
+    if (ac && ac.state === "suspended" && ac.resume) {
+      ac.resume().then(ping).catch(ping);
+      return;
+    }
+    ping();
+  }
+
+  function rearmChime() {
+    state.chimeGen += 1;
+    state.chimed = false;
+    state.near = false;
   }
 
   function pickShift(shape) {
@@ -281,6 +317,7 @@
     state.hover = null;
     state.near = false;
     state.chimed = false;
+    state.chimeGen += 1;
     state.locked = false;
     state.won = false;
   }
@@ -345,14 +382,15 @@
   function updateHud() {
     var pt = activePt();
     if (!measureHud) return;
-    if (!pt || state.won || state.paused) {
+    if (!pt || state.won || state.paused || !state.hover) {
       measureHud.hidden = true;
+      measureHud.classList.remove("snap");
       return;
     }
     var F = pivotOf(pt);
     var Q = mirrorOf(pt);
     var vert = Math.abs(pt.y - pt.x);
-    var near = !!(state.hover && nearPt(state.hover, Q));
+    var near = !!state.near;
     measureHud.hidden = false;
     measureHud.classList.toggle("snap", near);
     measureHud.innerHTML =
@@ -631,16 +669,19 @@
     if (!pt || !state.hover || state.won || state.paused || state.locked) return;
     var F = pivotOf(pt);
     var Q = mirrorOf(pt);
-    var near = nearPt(state.hover, Q);
+    var near = !!state.near;
     var a = worldToScreen(pt.x, pt.y);
     var f = worldToScreen(F.x, F.y);
     var cur = worldToScreen(state.hover.x, state.hover.y);
     var q = worldToScreen(Q.x, Q.y);
-    drawDashed(a, f, AMBER, 2.4, [5, 5]);
+    ctx.save();
+    ctx.globalAlpha = near ? 1 : 0.42;
+    drawDashed(a, f, AMBER, near ? 2.6 : 1.8, [5, 5]);
     drawPivot(F);
     drawMeasureBracket(pt, F);
     if (near) {
       var hEnd = worldToScreen(Q.x, F.y);
+      ctx.globalAlpha = 1;
       drawDashed(f, hEnd, GREEN, 2.6, [5, 5]);
       ctx.save();
       ctx.strokeStyle = GREEN;
@@ -657,9 +698,9 @@
       ctx.fillText("L · " + fmtPt(Q), q.x + 16, q.y - 10);
       ctx.restore();
     } else {
-      drawDashed(f, cur, "#fb923c", 2.1, [4, 5]);
+      drawDashed(f, cur, "#fb923c", 2.0, [4, 5]);
       ctx.save();
-      ctx.strokeStyle = "rgba(249,115,22,0.85)";
+      ctx.strokeStyle = "rgba(249,115,22,0.7)";
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -673,6 +714,7 @@
       ctx.fillText(fmtPt({ x: Math.round(state.hover.x * 10) / 10, y: Math.round(state.hover.y * 10) / 10 }), cur.x + 14, cur.y - 12);
       ctx.restore();
     }
+    ctx.restore();
   }
 
   function drawPoints() {
@@ -711,11 +753,12 @@
     var Q = mirrorOf(pt);
     setPrompt(
       "Punto <span class=\"hl-hot\">" + (state.active + 1) + "/5</span> · " +
-      "<span class=\"hl-p\">" + fmtPt(pt) + "</span> → colocá el verde " +
-      "<span class=\"hl-g\">(y, x)</span> formando la L sobre <span class=\"hl-axis\">y = x</span>.",
+      "<span class=\"hl-p\">" + fmtPt(pt) + "</span> → formá la L; " +
+      "<span class=\"hl-g\">bip×3</span> al entrar en <span class=\"hl-g\">(y, x)</span> · " +
+      "click para trabar sobre <span class=\"hl-axis\">y = x</span>.",
       "attention"
     );
-    sideHint.textContent = "Vertical hasta " + fmtPt(pivotOf(pt)) + " · L hacia " + fmtPt(Q) + " · bip×3 al cerrar.";
+    sideHint.textContent = "Hover hasta " + fmtPt(Q) + " · bip×3 al entrar · click para trabar " + fmtPt(Q) + ".";
   }
 
   function showVictory() {
@@ -739,13 +782,18 @@
   function placeCorrect() {
     var pt = activePt();
     if (!pt) return;
+    var heardHover = state.chimed;
     state.placed[state.active] = true;
     state.ok++;
     state.hover = null;
-    state.near = false;
-    state.chimed = false;
+    rearmChime();
     syncScores();
-    pulseOk();
+    if (heardHover) {
+      flashOk();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    } else {
+      pulseOk();
+    }
     renderPanel();
     var Q = mirrorOf(pt);
     setPrompt("¡Bien! " + fmtPt(pt) + " → <span class=\"hl-g\">" + fmtPt(Q) + "</span>.", "ok");
@@ -780,37 +828,40 @@
 
   function onMove(ev) {
     if (state.paused || state.locked || state.won) return;
+    armAudio();
     var w = screenToWorld(eventToCanvas(ev).x, eventToCanvas(ev).y);
     state.hover = w;
     var pt = activePt();
     if (!pt) return;
     var Q = mirrorOf(pt);
-    var near = nearPt(w, Q);
-    if (near && !state.chimed) {
-      state.chimed = true;
-      focusChime();
+    var near = inSnapZone(w, Q);
+    if (near) {
+      state.near = true;
+      if (!state.chimed) {
+        state.chimed = true;
+        focusChime();
+      }
+    } else if (state.near || state.chimed) {
+      rearmChime();
     }
-    if (!near) state.chimed = false;
-    state.near = near;
     draw();
   }
 
   function onLeave() {
     state.hover = null;
-    state.near = false;
-    state.chimed = false;
+    rearmChime();
     if (!state.won && !state.paused) draw();
   }
 
   function onClick(ev) {
     if (state.paused || state.locked || state.won) return;
     if (ev && ev.preventDefault) ev.preventDefault();
-    if (GK.ensureAudio) GK.ensureAudio();
+    armAudio();
     var w = screenToWorld(eventToCanvas(ev).x, eventToCanvas(ev).y);
     var pt = activePt();
     if (!pt) return;
     var Q = mirrorOf(pt);
-    if (nearPt(w, Q)) placeCorrect();
+    if (nearPt(w, Q, SNAP_IN)) placeCorrect();
     else placeWrong();
   }
 
@@ -873,8 +924,10 @@
 
   sizeCanvas();
   canvas.addEventListener("pointermove", onMove);
+  canvas.addEventListener("pointerdown", function () { armAudio(); });
   canvas.addEventListener("click", onClick);
   canvas.addEventListener("pointerleave", onLeave);
+  document.addEventListener("pointerdown", function () { armAudio(); });
   pauseBtn.addEventListener("click", togglePause);
   restartBtn.addEventListener("click", restart);
   if (victoryRestart) victoryRestart.addEventListener("click", restart);
@@ -897,7 +950,10 @@
     worldToScreen: worldToScreen,
     screenToWorld: screenToWorld,
     mirrorOf: mirrorOf,
-    pivotOf: pivotOf
+    pivotOf: pivotOf,
+    inSnapZone: inSnapZone,
+    SNAP_IN: SNAP_IN,
+    SNAP_OUT: SNAP_OUT
   };
 
   startRound(false);

@@ -290,8 +290,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
           <p class="contrast-kicker">Cómo jugar</p>
           <ul class="contrast-bullets">
             <li><span class="hot">1 · activo</span> — un lila a la vez, halo naranja.</li>
-            <li><span class="hl">2 · L</span> — vertical al pivote · luego hacia el cursor.</li>
-            <li><span class="ok">3 · bip×3</span> — cuando la L cierra en (y, x), tocá.</li>
+            <li><span class="hl">2 · hover</span> — L punteada (vertical al y=x + hacia el cursor).</li>
+            <li><span class="ok">3 · bip×3</span> — al entrar en el lugar exacto, sin click.</li>
+            <li><span class="ok">4 · click</span> — recién ahí se traba el verde.</li>
           </ul>
         </div>
 
@@ -331,7 +332,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
         <div class="expr-row phase-ask">
           <span class="mode-tag" id="modeTag">Juego</span>
-          <p class="hint-mini" id="sideHint">Mové el cursor: vertical + L. Bip×3 = el lugar exacto.</p>
+          <p class="hint-mini" id="sideHint">Hover: L + bip×3 al entrar en (y, x). Click: traba el verde.</p>
         </div>
       </aside>
 
@@ -368,6 +369,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
-<script src="leccion-inversa-cara-juego.js?v=20260908d"></script>
+<script src="leccion-inversa-cara-juego.js?v=20260908e"></script>
 </body>
 </html>
