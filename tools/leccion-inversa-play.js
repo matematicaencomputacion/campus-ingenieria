@@ -17,6 +17,7 @@
   var AMBER = "#d97706";
   var GREEN = "#16a34a";
   var EMPTY = "#64748b";
+  var LPATH = "#7c3aed";
   var PAD = { l: 52, r: 48, t: 36, b: 48 };
   var XMIN = CFG.xmin;
   var XMAX = CFG.xmax;
@@ -55,6 +56,8 @@
     showMeet: false,
     showFAsy: false,
     showInvAsy: false,
+    showLPaths: false,
+    lItems: [],
     badge: "",
     pulse: 0
   };
@@ -200,6 +203,54 @@
       ctx.font = "600 12px ui-monospace, Menlo, monospace";
       ctx.fillText("0", ox.x - 8, ox.y + 8);
     }
+  }
+
+  function lerpPt(a, b, t) {
+    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+  }
+
+  function easeInOut(u) {
+    return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+  }
+
+  function lGeom(spec) {
+    if (!spec || spec.x == null) throw new Error("INVERSA: lPath requiere x");
+    var x = spec.x;
+    var y = spec.y != null ? spec.y : CFG.f(x);
+    var first = spec.first;
+    var start = { x: x, y: y };
+    var end = { x: y, y: x };
+    var corner;
+    switch (first) {
+      case "v":
+        corner = { x: x, y: x };
+        break;
+      case "h":
+        corner = { x: y, y: y };
+        break;
+      default: {
+        var _exhaustive = first;
+        throw new Error("INVERSA: lPath.first debe ser \"v\" o \"h\", no " + _exhaustive);
+      }
+    }
+    return { start: start, corner: corner, end: end, first: first };
+  }
+
+  function wrapBadgeLines(text, maxW) {
+    var words = String(text).split(/\s+/);
+    var lines = [];
+    var cur = "";
+    var i, trial;
+    for (i = 0; i < words.length; i++) {
+      trial = cur ? cur + " " + words[i] : words[i];
+      if (!cur || ctx.measureText(trial).width <= maxW) cur = trial;
+      else {
+        lines.push(cur);
+        cur = words[i];
+      }
+    }
+    if (cur) lines.push(cur);
+    return lines;
   }
 
   function drawDashed(a, b, color, lw) {
@@ -368,6 +419,89 @@
     }
   }
 
+  function drawDot(x, y, r, fill) {
+    var p = worldToScreen(x, y);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.restore();
+    return p;
+  }
+
+  function drawLPaths() {
+    if (!state.showLPaths || !state.lItems || !state.lItems.length) return;
+    var i, item, g, t1, t2, a, c, tip, tipPt, pStart, pEnd;
+    for (i = 0; i < state.lItems.length; i++) {
+      item = state.lItems[i];
+      g = item.geom;
+      t1 = Math.max(0, Math.min(1, item.t1 || 0));
+      t2 = Math.max(0, Math.min(1, item.t2 || 0));
+      tip = null;
+      a = worldToScreen(g.start.x, g.start.y);
+      ctx.save();
+      ctx.strokeStyle = item.done ? "rgba(124,58,237,0.78)" : LPATH;
+      ctx.lineWidth = 2.8;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      if (t1 > 0.001) {
+        tipPt = lerpPt(g.start, g.corner, t1);
+        tip = worldToScreen(tipPt.x, tipPt.y);
+        ctx.lineTo(tip.x, tip.y);
+      }
+      if (t1 >= 0.999 && t2 > 0.001) {
+        tipPt = lerpPt(g.corner, g.end, t2);
+        tip = worldToScreen(tipPt.x, tipPt.y);
+        c = worldToScreen(g.corner.x, g.corner.y);
+        ctx.lineTo(c.x, c.y);
+        ctx.lineTo(tip.x, tip.y);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      pStart = drawDot(g.start.x, g.start.y, 5.2, TEAL);
+      ctx.save();
+      ctx.fillStyle = TEAL;
+      ctx.font = "700 11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillText("(" + fmtTick(g.start.x) + "," + fmtTick(g.start.y) + ")", pStart.x + 8, pStart.y - 6);
+      ctx.restore();
+
+      if (t1 >= 0.92) {
+        drawDot(g.corner.x, g.corner.y, 4.2, AMBER);
+      }
+      if (t2 > 0.88) {
+        pEnd = drawDot(g.end.x, g.end.y, 5.2, CORAL);
+        ctx.save();
+        ctx.fillStyle = CORAL;
+        ctx.font = "700 11px ui-monospace, Menlo, monospace";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "bottom";
+        ctx.fillText("(" + fmtTick(g.end.x) + "," + fmtTick(g.end.y) + ")", pEnd.x + 8, pEnd.y - 6);
+        ctx.restore();
+      }
+      if (!item.done && tip) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(tip.x, tip.y, 4.4, 0, Math.PI * 2);
+        ctx.fillStyle = LPATH;
+        ctx.fill();
+        ctx.strokeStyle = "#ede9fe";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+
   function drawMeet() {
     if (!state.showMeet || !CFG.meet || !CFG.meet.length) return;
     var i, m, p, r;
@@ -399,20 +533,33 @@
   function drawBadge() {
     if (!state.badge) return;
     ctx.save();
+    ctx.font = "800 13px Segoe UI, system-ui, sans-serif";
+    var maxInner = canvas.width - PAD.l - PAD.r - 40;
+    var minW = Math.min(340, canvas.width - PAD.l - PAD.r - 16);
+    var lines = wrapBadgeLines(state.badge, maxInner);
+    var i, tw = 0, lw;
+    for (i = 0; i < lines.length; i++) {
+      lw = ctx.measureText(lines[i]).width;
+      if (lw > tw) tw = lw;
+    }
+    var bw = Math.min(canvas.width - PAD.l - PAD.r - 16, Math.max(minW, tw + 24));
+    var lineH = 18;
+    var bh = Math.max(36, 16 + lines.length * lineH);
+    var bx = PAD.l + 8, by = PAD.t + 8;
     ctx.fillStyle = "rgba(22,101,52,0.92)";
     ctx.strokeStyle = GREEN;
     ctx.lineWidth = 2;
-    var bw = Math.min(340, canvas.width - PAD.l - PAD.r - 16);
-    var bx = PAD.l + 8, by = PAD.t + 8, bh = 36;
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 8);
     else ctx.rect(bx, by, bw, bh);
     ctx.fill(); ctx.stroke();
     ctx.fillStyle = "#86efac";
-    ctx.font = "800 13px Segoe UI, system-ui, sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    ctx.fillText(state.badge, bx + 12, by + bh / 2);
+    var y0 = by + bh / 2 - ((lines.length - 1) * lineH) / 2;
+    for (i = 0; i < lines.length; i++) {
+      ctx.fillText(lines[i], bx + 12, y0 + i * lineH);
+    }
     ctx.restore();
   }
 
@@ -425,6 +572,7 @@
     drawCurveProgress(CFG.fInv, invOk, CORAL, state.invT, "f⁻¹");
     if (state.fT > 0.5) drawHoles(CFG.fHoles);
     if (state.invT > 0.5) drawHoles(CFG.invHoles);
+    drawLPaths();
     drawMirror();
     drawMeet();
     drawBadge();
@@ -451,6 +599,40 @@
     state.raf = requestAnimationFrame(frame);
   }
 
+  function animateLPath(item, durationMs, onDone) {
+    var t0 = null;
+    var dur = delay(durationMs);
+    var holdFrac = 0.18;
+    function frame(now) {
+      if (!state.playing) return;
+      if (t0 == null) t0 = now;
+      var u = Math.min(1, (now - t0) / dur);
+      var u1 = 0.5 - holdFrac / 2;
+      var u2 = 0.5 + holdFrac / 2;
+      if (u <= u1) {
+        item.t1 = easeInOut(u / u1);
+        item.t2 = 0;
+      } else if (u <= u2) {
+        item.t1 = 1;
+        item.t2 = 0;
+      } else {
+        item.t1 = 1;
+        item.t2 = easeInOut((u - u2) / (1 - u2));
+      }
+      draw();
+      if (u < 1) state.raf = requestAnimationFrame(frame);
+      else {
+        state.raf = 0;
+        item.t1 = 1;
+        item.t2 = 1;
+        item.done = true;
+        draw();
+        if (onDone) onDone();
+      }
+    }
+    state.raf = requestAnimationFrame(frame);
+  }
+
   function resetVisuals() {
     state.fT = 0;
     state.invT = 0;
@@ -461,6 +643,8 @@
     state.showMeet = false;
     state.showFAsy = false;
     state.showInvAsy = false;
+    state.showLPaths = false;
+    state.lItems = [];
     state.badge = "";
     state.pulse = 0;
     setPhaseUI(0);
@@ -490,6 +674,7 @@
     if (p.showMeet != null) state.showMeet = p.showMeet;
     if (p.showFAsy != null) state.showFAsy = p.showFAsy;
     if (p.showInvAsy != null) state.showInvAsy = p.showInvAsy;
+    if (p.showLPaths != null) state.showLPaths = p.showLPaths;
     if (p.badge != null) state.badge = p.badge;
     if (p.resultHtml && exprResult) exprResult.innerHTML = p.resultHtml;
     draw();
@@ -548,6 +733,16 @@
         state.showMirror = true;
         applyPhase(p);
         animateKey("mirrorT", 0, 1, p.dur || 1100, function () {
+          later(p.wait || 450, function () { chain(i + 1); });
+        });
+        return;
+      }
+      if (anim === "lPath") {
+        state.showLPaths = true;
+        var item = { geom: lGeom(p.lPath), t1: 0, t2: 0, done: false };
+        state.lItems.push(item);
+        applyPhase(p);
+        animateLPath(item, p.dur || 1500, function () {
           later(p.wait || 450, function () { chain(i + 1); });
         });
         return;
