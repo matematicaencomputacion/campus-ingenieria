@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 132 · Composición · máquinas en cadena · play</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #38bdf8; --border: #243044;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #2dd4bf;
+  --coral: #fb7185; --row: #121a27; --row-border: #2a3548;
+  --graph-bg: #f8fafc; --axes-black: #111111;
+  --g-box: #a78bfa; --f-box: #38bdf8; --token: #FFBF00;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.18rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: #38bdf8; font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.84rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn, a.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.on { background: var(--amber); color: #0b1018; box-shadow: 0 0 10px rgba(255,191,0,.35); }
+button.btn:hover, a.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548; color: var(--mast);
+}
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
+.main-stage { display: grid; grid-template-columns: minmax(250px, 340px) 1fr; gap: 10px; align-items: stretch; }
+@media (max-width: 820px) { .main-stage { grid-template-columns: 1fr; } }
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.contrast-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(255,191,0,0.35);
+  background: linear-gradient(135deg, rgba(255,191,0,0.10), rgba(18,26,39,0.95));
+}
+.contrast-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #FFBF00; margin: 0 0 8px;
+}
+.contrast-bullets { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.contrast-bullets li {
+  font-size: 0.82rem; line-height: 1.4; color: var(--ink); font-weight: 650;
+  padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.contrast-bullets .ok { color: #5ad4a8; }
+.contrast-bullets .bad { color: #ff7b7b; }
+.contrast-bullets .hl { color: #FFBF00; }
+.contrast-bullets .g { color: #a78bfa; }
+.contrast-bullets .f { color: #38bdf8; }
+.rule-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(90,212,168,0.4);
+  background: linear-gradient(135deg, rgba(90,212,168,0.12), rgba(18,26,39,0.95));
+  box-shadow: 0 0 18px rgba(90,212,168,0.10);
+}
+.rule-card-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #5ad4a8; margin: 0 0 6px;
+}
+.rule-card-body {
+  margin: 0; font-size: 0.86rem; line-height: 1.45; color: var(--ink); font-weight: 650;
+}
+.rule-card-body .hl { color: #FFBF00; }
+.rule-card-body .ok { color: #5ad4a8; }
+.rule-card-body .bad { color: #ff7b7b; }
+.rule-card-body .g { color: #c4b5fd; }
+.rule-card-body .f { color: #7dd3fc; }
+.rule-card-body .paste { color: #fb7185; background: rgba(251,113,133,.15); padding: 0 3px; border-radius: 3px; }
+.band-legend {
+  margin: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #2a3a52; background: #121a28;
+}
+.band-legend-title {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  color: #93c5fd; margin: 0 0 8px;
+}
+.band-row {
+  display: flex; align-items: flex-start; gap: 10px; margin: 0 0 7px;
+  font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
+}
+.band-row:last-child { margin-bottom: 0; }
+.band-swatch {
+  width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+.band-swatch.gray { background: #64748b; }
+.band-swatch.green { background: #22c55e; }
+.band-swatch.amber { background: #FFBF00; }
+.band-swatch.purple { background: #a78bfa; }
+.band-row strong.g { color: #94a3b8; }
+.band-row strong.v { color: #22c55e; }
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.phase-ask::before { background: var(--amber); }
+.expr-row.boom::before { background: #ff7b7b; }
+.expr-row.surprise::before { background: #5ad4a8; }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.88rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.55;
+}
+.hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
+}
+.chip.teal { color: #0d9488; border-color: rgba(13,148,136,0.5); }
+.chip.coral { color: #f59e0b; border-color: rgba(245,158,11,0.5); }
+.chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
+.chip.bad { color: #ff7b7b; border-color: rgba(255,123,123,0.45); }
+.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
+.chip.purple { color: #c4b5fd; border-color: rgba(167,139,250,.5); }
+.chip.blue { color: #7dd3fc; border-color: rgba(56,189,248,.5); }
+.chip.on { box-shadow: 0 0 10px rgba(255,191,0,.35); border-color: #FFBF00; color: #FFBF00; }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.4); color: var(--accent);
+  margin-left: 6px;
+}
+.rule-list {
+  margin: 6px 0 0; padding: 0 0 0 22px; font-size: 0.78rem; color: var(--muted); line-height: 1.55;
+}
+.rule-list li { margin: 2px 0; }
+.rule-list li.on { color: var(--ink); font-weight: 700; }
+.rule-list li.done { color: #5ad4a8; }
+.rule-list strong { color: var(--ink); }
+.rule-list .ok { color: #5ad4a8; }
+.rule-list .bad { color: #ff7b7b; }
+.rule-list .empty { color: #94a3b8; }
+.ex-progress { display: flex; gap: 5px; padding: 2px 4px; flex-wrap: wrap; }
+.ex-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #2a3548; border: 1px solid #3b4a63;
+}
+.ex-dot.on { background: var(--accent); border-color: var(--mast); box-shadow: 0 0 8px rgba(56,189,248,.55); }
+.ex-dot.done { background: #5ad4a8; border-color: rgba(90,212,168,.6); }
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--graph-bg); touch-action: none;
+  border: 1px solid #cbd5e1;
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
+  transition: opacity .15s; filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev { display: block; width: 0; height: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.work-panel {
+  display: none; margin-top: 8px; padding: 10px 14px; border-radius: 10px;
+  background: rgba(18, 26, 39, 0.95); border: 1px solid rgba(56,189,248,0.45);
+  font-family: ui-monospace, Menlo, monospace; font-size: 1.02rem; font-weight: 700;
+  color: var(--ink); min-height: 2.2em; line-height: 1.55;
+}
+.work-panel.on { display: block; }
+.work-panel.boom { border-color: rgba(255,123,123,0.65); background: rgba(40, 16, 20, 0.95); }
+.work-panel .hl { color: var(--amber); }
+.work-panel .ok { color: #5ad4a8; }
+.work-panel .bad { color: #ff7b7b; }
+.work-panel .paso { color: #60a5fa; }
+.work-panel .empty { color: #94a3b8; }
+.work-panel .g { color: #c4b5fd; }
+.work-panel .f { color: #7dd3fc; }
+.work-panel .paste { color: #fb7185; }
+.caption {
+  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
+}
+.caption strong { color: var(--ink); }
+.caption .hl-t { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-v { color: #22c55e; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .ok { color: #5ad4a8; font-weight: 800; }
+.caption .bad { color: #ff7b7b; font-weight: 800; }
+.caption .paso { color: #60a5fa; font-weight: 800; }
+.caption .g { color: #c4b5fd; font-weight: 800; }
+.caption .f { color: #7dd3fc; font-weight: 800; }
+.sound-meter {
+  margin: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; min-height: 28px;
+  padding: 6px 10px; color: var(--muted); font-size: 0.8rem; font-weight: 700; user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px; width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar { display: inline-block; width: 5px; height: 8px; border-radius: 2px; background: #3b4a63; transition: height .08s ease, background .08s ease; }
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
+.expr-formula .hl-curve { color: #2dd4bf; }
+.expr-formula .hl-g { color: #a78bfa; }
+.expr-formula .hl-f { color: #38bdf8; }
+.expr-formula .hl-v { color: #22c55e; }
+.expr-formula .paste { color: #fb7185; }
+.expr-formula .bad { color: #ff7b7b; }
+.expr-formula .ok { color: #5ad4a8; }
+.steps-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
+.steps-box li { margin: 3px 0; }
+.steps-box li.on { color: #e9eef7; font-weight: 700; }
+.steps-box li.done { color: #5ad4a8; }
+.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.q-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.q-box .q-item {
+  display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start;
+  padding: 7px 8px; border-radius: 8px; margin: 4px 0; border: 1px solid transparent;
+  font-size: 0.78rem; color: #9fb0c7; line-height: 1.4;
+}
+.q-box .q-item .qn {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; color: #60a5fa;
+  width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  background: #121a27; border: 1px solid #2a3548;
+}
+.q-box .q-item.on {
+  color: #e9eef7; font-weight: 700;
+  border-color: rgba(255,191,0,.45); background: rgba(255,191,0,.08);
+}
+.q-box .q-item.on .qn { border-color: #FFBF00; color: #FFBF00; box-shadow: 0 0 8px rgba(255,191,0,.35); }
+.q-box .q-item.done { color: #5ad4a8; }
+.q-box .q-item.done .qn { border-color: rgba(90,212,168,.6); color: #5ad4a8; }
+.analogy-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(167,139,250,0.45);
+  background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(18,26,39,0.95));
+}
+.analogy-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #c4b5fd; margin: 0 0 6px;
+}
+.analogy-body { margin: 0; font-size: 0.82rem; line-height: 1.45; color: var(--ink); font-weight: 650; }
+.analogy-body .hl { color: #FFBF00; }
+.diet-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 132</span> · Composición · máquinas en cadena · play
+        <span class="sub">fog ≠ gof · el orden importa</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="playBtn">▶ Play</button>
+      <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
+      <button type="button" class="btn" id="restartBtn">Reiniciar</button>
+      <span class="score" id="loopEl">Fase <strong>1</strong></span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" aria-label="Teoría y ritual">
+
+        <div class="contrast-card" id="contrastCard">
+          <p class="contrast-kicker">Idea clave · fog ≠ gof</p>
+          <ul class="contrast-bullets">
+            <li><span class="g">g</span> primero, luego <span class="f">f</span> → <span class="hl">(f∘g)(x)=f(g(x))</span></li>
+            <li>Al revés: <span class="f">f</span> primero, luego <span class="g">g</span> → <span class="hl">(g∘f)(x)=g(f(x))</span></li>
+            <li class="bad">En general <strong>no</strong> dan lo mismo · el orden importa.</li>
+          </ul>
+        </div>
+
+        <div class="analogy-card" id="analogyCard">
+          <p class="analogy-kicker">Analogía · calcetines y zapatos</p>
+          <p class="analogy-body" id="analogyBody">
+            Primero calcetín, después zapato ≠ primero zapato, después calcetín.
+            También: impermeable → traducir EN→FR. El <span class="hl">orden</span> cambia el resultado.
+          </p>
+        </div>
+
+        <div class="rule-card" id="ruleCard">
+          <p class="rule-card-kicker">Ejemplo 4.a.1 · máquinas</p>
+          <p class="rule-card-body">
+            <span class="g">G</span> = √(· − 3) · <span class="f">F</span> = · + 1
+            <br>Token de prueba: <span class="hl">7</span>
+          </p>
+        </div>
+
+        <div class="steps-box" aria-label="Pasos">
+          <ol id="stepsList">
+            <li data-step="1"><span class="n">1</span> Máquinas G y F</li>
+            <li data-step="2"><span class="n">2</span> Token 7 · G→F (fog)</li>
+            <li data-step="3"><span class="n">3</span> Token 7 · F→G (gof)</li>
+            <li data-step="4"><span class="n">4</span> Comparar salidas</li>
+            <li data-step="5"><span class="n">5</span> Reemplazar 7 por x</li>
+          </ol>
+        </div>
+
+        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">
+            <span class="hl-g">g(u)=√(u−3)</span><br>
+            <span class="hl-f">f(u)=u+1</span>
+          </div>
+          <p class="hint-mini" id="hintMini">Presioná ▶ Play · token por las cajas</p>
+        </div>
+
+        <div class="expr-row" id="domainRow">
+          <div class="expr-formula" id="exprDomain">
+            (f∘g)(7) = <span class="empty">…</span> · (g∘f)(7) = <span class="empty">…</span>
+          </div>
+          <div class="chips" id="chipBox">
+            <span class="chip purple">G primero</span>
+            <span class="chip blue">F primero</span>
+            <span class="chip coral">orden</span>
+          </div>
+        </div>
+
+        <div class="expr-row phase-ask" id="signRow">
+          <span class="mode-tag">Mensaje</span>
+          <ul class="rule-list" id="ruleList">
+            <li>El orden de las cajas <strong>importa</strong></li>
+            <li>Como calcetines y zapatos</li>
+            <li>fog <strong class="bad">≠</strong> gof (en general)</li>
+          </ul>
+        </div>
+
+      </aside>
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-trozos-36-play.html" title="Lección 131: A trozos · hoja 3.6 · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-composicion-dieta-play.html" title="Lección 133: Composición · 4 preguntas · dieta · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Máquinas en cadena · composición"></canvas>
+      </div>
+    </div>
+    <div class="work-panel" id="workPanel" aria-live="polite"></div>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> para arrancar.</p>
+    <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
+    <p class="hint">Teoría · <strong style="color:#5ad4a8">(f∘g)(x)=f(g(x))</strong> · primero g, luego f · analogía calcetines/zapatos · fog ≠ gof</p>
+  </div>
+</div>
+<script src="game-kit.js?v=20260907"></script>
+<script>
+
+
+(function () {
+  "use strict";
+  var GK = window.CampusGameKit || {};
+  var GRAPH_BG = "#f8fafc";
+  var G_COL = "#7c3aed";
+  var F_COL = "#0284c7";
+  var TOKEN = "#d97706";
+  var OK = "#16a34a";
+  var BAD = "#e11d48";
+  var INK = "#0f172a";
+  var MUTED = "#64748b";
+
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var playBtn = document.getElementById("playBtn");
+  var stopBtn = document.getElementById("stopBtn");
+  var slowBtn = document.getElementById("slowBtn");
+  var restartBtn = document.getElementById("restartBtn");
+  var loopEl = document.getElementById("loopEl");
+  var captionEl = document.getElementById("caption");
+  var workPanel = document.getElementById("workPanel");
+  var soundMeter = document.getElementById("soundMeter");
+  var exprFormula = document.getElementById("exprFormula");
+  var exprDomain = document.getElementById("exprDomain");
+  var hintMini = document.getElementById("hintMini");
+  var chipBox = document.getElementById("chipBox");
+  var formulaRow = document.getElementById("formulaRow");
+  var stepsList = document.getElementById("stepsList");
+  var analogyBody = document.getElementById("analogyBody");
+
+  var state = {
+    playing: false,
+    speedFactor: 1,
+    timers: [],
+    raf: 0,
+    phase: "idle",
+    step: 0,
+    // animation
+    order: "fog", // fog | gof
+    tokenVal: 7,
+    tokenT: 0, // 0..1 along path
+    showToken: false,
+    midVal: null,
+    outVal: null,
+    fogOut: null,
+    gofOut: null,
+    compare: false,
+    symbolic: false,
+    pulseBox: null, // "G" | "F" | null
+    socks: false,
+    flashDiff: 0
+  };
+
+  function delay(ms) { return ms * (state.speedFactor || 1); }
+  function clearTimers() {
+    state.timers.forEach(function (id) { clearTimeout(id); });
+    state.timers = [];
+    if (state.raf) { cancelAnimationFrame(state.raf); state.raf = 0; }
+  }
+  function later(ms, fn) {
+    var id = setTimeout(fn, delay(ms));
+    state.timers.push(id);
+    return id;
+  }
+  function setCaption(html) { captionEl.innerHTML = html; }
+  function setWork(html, boom) {
+    if (!html) { workPanel.classList.remove("on", "boom"); workPanel.innerHTML = ""; return; }
+    workPanel.classList.add("on");
+    workPanel.classList.toggle("boom", !!boom);
+    workPanel.innerHTML = html;
+  }
+  function bip(kind) {
+    if (kind === "bad" || kind === "boom") {
+      if (kind === "boom" && GK.playExplosion) GK.playExplosion();
+      else if (GK.playErrorBuzz) GK.playErrorBuzz();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "bad");
+    } else {
+      if (GK.playOkChime) GK.playOkChime();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    }
+  }
+  function setStepUI(n) {
+    state.step = n;
+    var items = stepsList.querySelectorAll("li");
+    items.forEach(function (li) {
+      var s = parseInt(li.getAttribute("data-step"), 10);
+      li.classList.remove("on", "done");
+      if (s < n) li.classList.add("done");
+      else if (s === n) li.classList.add("on");
+    });
+    loopEl.innerHTML = "Fase <strong>" + Math.min(n, 5) + "</strong>/5";
+  }
+
+  function gOf(u) { return Math.sqrt(u - 3); }
+  function fOf(u) { return u + 1; }
+  function fmt(n) {
+    if (n == null || !isFinite(n)) return "—";
+    if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+    return (Math.round(n * 100) / 100).toString().replace(".", ",");
+  }
+
+  function sizeCanvas() {
+    var wrap = document.getElementById("graphWrap");
+    var w = Math.max(520, Math.floor(wrap.clientWidth || 720));
+    var h = Math.max(420, Math.floor(w * 0.62));
+    canvas.width = w;
+    canvas.height = h;
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function layout() {
+    var W = canvas.width, H = canvas.height;
+    var boxW = Math.min(200, W * 0.28);
+    var boxH = Math.min(150, H * 0.38);
+    var y = H * 0.28;
+    var gap = Math.min(110, W * 0.14);
+    var total = boxW * 2 + gap;
+    var x0 = (W - total) / 2;
+    return {
+      W: W, H: H, boxW: boxW, boxH: boxH, y: y, gap: gap,
+      left: { x: x0, y: y, w: boxW, h: boxH },
+      right: { x: x0 + boxW + gap, y: y, w: boxW, h: boxH },
+      inX: x0 - 70, midX: x0 + boxW + gap / 2, outX: x0 + total + 70
+    };
+  }
+
+  function drawMachine(box, letter, formula, color, active) {
+    ctx.save();
+    if (active) {
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 22;
+    }
+    roundRect(box.x, box.y, box.w, box.h, 16);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.lineWidth = active ? 4 : 2.5;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // top badge
+    roundRect(box.x + 12, box.y - 16, 44, 28, 8);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 16px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(letter, box.x + 34, box.y - 2);
+
+    // gears hint
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.25;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(box.x + box.w - 28, box.y + 28, 12, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(box.x + box.w - 42, box.y + 40, 8, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = INK;
+    ctx.font = "700 15px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(formula, box.x + box.w / 2, box.y + box.h / 2 + 6);
+
+    // ports
+    ctx.fillStyle = color;
+    roundRect(box.x - 8, box.y + box.h / 2 - 10, 10, 20, 3);
+    ctx.fill();
+    roundRect(box.x + box.w - 2, box.y + box.h / 2 - 10, 10, 20, 3);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawArrow(x1, y1, x2, y2, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    var ang = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 12 * Math.cos(ang - 0.4), y2 - 12 * Math.sin(ang - 0.4));
+    ctx.lineTo(x2 - 12 * Math.cos(ang + 0.4), y2 - 12 * Math.sin(ang + 0.4));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawToken(x, y, label) {
+    ctx.save();
+    ctx.shadowColor = "rgba(217,119,6,.55)";
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.fillStyle = TOKEN;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = "#0b1018";
+    ctx.font = "800 15px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, x, y + 1);
+    ctx.restore();
+  }
+
+  function draw() {
+    sizeCanvas();
+    var L = layout();
+    ctx.clearRect(0, 0, L.W, L.H);
+    ctx.fillStyle = GRAPH_BG;
+    ctx.fillRect(0, 0, L.W, L.H);
+
+    // title strip
+    ctx.fillStyle = INK;
+    ctx.font = "800 18px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    var title = state.order === "fog" ? "Cadena G → F   ·   (f ∘ g)" : "Cadena F → G   ·   (g ∘ f)";
+    if (state.compare) title = "Comparar salidas · ¿iguales?";
+    if (state.symbolic) title = "Reemplazar 7 por x · fórmulas";
+    ctx.fillText(title, L.W / 2, 16);
+
+    var leftLetter, leftForm, leftCol, rightLetter, rightForm, rightCol;
+    if (state.order === "fog") {
+      leftLetter = "G"; leftForm = "√(· − 3)"; leftCol = G_COL;
+      rightLetter = "F"; rightForm = "· + 1"; rightCol = F_COL;
+    } else {
+      leftLetter = "F"; leftForm = "· + 1"; leftCol = F_COL;
+      rightLetter = "G"; rightForm = "√(· − 3)"; rightCol = G_COL;
+    }
+
+    var leftActive = state.pulseBox === leftLetter;
+    var rightActive = state.pulseBox === rightLetter;
+    drawMachine(L.left, leftLetter, leftForm, leftCol, leftActive);
+    drawMachine(L.right, rightLetter, rightForm, rightCol, rightActive);
+
+    // conveyor arrows
+    var cy = L.left.y + L.left.h / 2;
+    drawArrow(L.inX + 30, cy, L.left.x - 10, cy, MUTED);
+    drawArrow(L.left.x + L.left.w + 10, cy, L.right.x - 10, cy, MUTED);
+    drawArrow(L.right.x + L.right.w + 10, cy, L.outX - 20, cy, MUTED);
+
+    // labels under
+    ctx.fillStyle = MUTED;
+    ctx.font = "700 12px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("entra", L.inX + 10, cy + 40);
+    ctx.fillText("intermedio", L.midX, cy + 40);
+    ctx.fillText("sale", L.outX - 10, cy + 40);
+
+    // mid / out values
+    if (state.midVal != null) {
+      ctx.fillStyle = leftCol;
+      ctx.font = "800 16px ui-monospace, Menlo, monospace";
+      ctx.fillText(fmt(state.midVal), L.midX, cy - 28);
+    }
+    if (state.outVal != null) {
+      ctx.fillStyle = rightCol;
+      ctx.font = "800 18px ui-monospace, Menlo, monospace";
+      ctx.fillText(fmt(state.outVal), L.outX - 10, cy - 28);
+    }
+
+    // token position along path
+    if (state.showToken) {
+      var t = state.tokenT;
+      var pts = [
+        { x: L.inX + 10, y: cy },
+        { x: L.left.x + L.left.w / 2, y: cy },
+        { x: L.midX, y: cy },
+        { x: L.right.x + L.right.w / 2, y: cy },
+        { x: L.outX - 10, y: cy }
+      ];
+      var seg = Math.min(3, Math.floor(t * 4));
+      var local = t * 4 - seg;
+      var a = pts[seg], b = pts[seg + 1];
+      var tx = a.x + (b.x - a.x) * local;
+      var ty = a.y + (b.y - a.y) * local;
+      var lab = state.symbolic ? "x" : String(state.tokenVal);
+      if (t >= 0.25 && t < 0.5 && state.midVal != null && !state.symbolic) lab = fmt(state.midVal);
+      if (t >= 0.75 && state.outVal != null && !state.symbolic) lab = fmt(state.outVal);
+      drawToken(tx, ty - 36, lab);
+    }
+
+    // compare panel
+    if (state.compare) {
+      var panelY = L.H - 120;
+      roundRect(L.W * 0.12, panelY, L.W * 0.76, 90, 14);
+      ctx.fillStyle = state.flashDiff > 0 ? "rgba(254,226,226,0.95)" : "#fff";
+      ctx.fill();
+      ctx.strokeStyle = state.flashDiff > 0 ? BAD : "#cbd5e1";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.fillStyle = INK;
+      ctx.font = "700 15px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText("(f∘g)(7) = " + fmt(state.fogOut) + "     ·     (g∘f)(7) = " + fmt(state.gofOut), L.W / 2, panelY + 32);
+      ctx.font = "800 17px Segoe UI, system-ui, sans-serif";
+      ctx.fillStyle = BAD;
+      ctx.fillText("¿Salieron lo mismo?  NO — el orden importa", L.W / 2, panelY + 62);
+    }
+
+    // symbolic formulas
+    if (state.symbolic) {
+      var sy = L.H - 130;
+      roundRect(L.W * 0.08, sy, L.W * 0.84, 105, 14);
+      ctx.fillStyle = "#fff";
+      ctx.fill();
+      ctx.strokeStyle = OK;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.textAlign = "center";
+      ctx.fillStyle = G_COL;
+      ctx.font = "800 16px ui-monospace, Menlo, monospace";
+      ctx.fillText("(f ∘ g)(x) = f(g(x)) = √(x − 3) + 1", L.W / 2, sy + 38);
+      ctx.fillStyle = F_COL;
+      ctx.fillText("(g ∘ f)(x) = g(f(x)) = √((x + 1) − 3) = √(x − 2)", L.W / 2, sy + 72);
+    }
+
+    // socks card flash
+    if (state.socks) {
+      roundRect(20, L.H - 70, L.W - 40, 50, 10);
+      ctx.fillStyle = "rgba(167,139,250,0.15)";
+      ctx.fill();
+      ctx.strokeStyle = G_COL;
+      ctx.stroke();
+      ctx.fillStyle = INK;
+      ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🧦→👟  calcetín luego zapato  ≠  zapato luego calcetín", L.W / 2, L.H - 42);
+    }
+  }
+
+  function animateToken(duration, onUpdate, done) {
+    var t0 = performance.now();
+    function frame(now) {
+      if (!state.playing) return;
+      var p = Math.min(1, (now - t0) / delay(duration));
+      state.tokenT = p;
+      if (onUpdate) onUpdate(p);
+      draw();
+      if (p < 1) state.raf = requestAnimationFrame(frame);
+      else { state.raf = 0; if (done) done(); }
+    }
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  function updateSideFog() {
+    exprFormula.innerHTML = '<span class="hl-g">g(u)=√(u−3)</span><br><span class="hl-f">f(u)=u+1</span>';
+    exprDomain.innerHTML = '(f∘g)(7) = <span class="ok">' + fmt(state.fogOut) + '</span> · (g∘f)(7) = <span class="empty">…</span>';
+    hintMini.textContent = "Primero G, luego F";
+    chipBox.innerHTML = '<span class="chip purple on">G→F</span><span class="chip blue">F→G</span><span class="chip coral">orden</span>';
+    formulaRow.classList.add("surprise");
+  }
+  function updateSideGof() {
+    exprDomain.innerHTML = '(f∘g)(7) = <span class="ok">' + fmt(state.fogOut) + '</span> · (g∘f)(7) = <span class="ok">' + fmt(state.gofOut) + '</span>';
+    hintMini.textContent = "Primero F, luego G — distinto";
+    chipBox.innerHTML = '<span class="chip purple">G→F</span><span class="chip blue on">F→G</span><span class="chip bad">≠</span>';
+  }
+  function updateSideSymbolic() {
+    exprFormula.innerHTML = '<span class="hl-curve">(f∘g)(x)=f(g(x))</span><br><span class="hl-curve">(g∘f)(x)=g(f(x))</span>';
+    exprDomain.innerHTML = '<span class="bad">fog ≠ gof</span> · en general';
+    hintMini.textContent = "Instalá la idea antes del álgebra pesada";
+    chipBox.innerHTML = '<span class="chip green">f(g(x))</span><span class="chip green">g(f(x))</span><span class="chip bad">≠</span>';
+    formulaRow.classList.add("surprise");
+  }
+
+  function runFog(done) {
+    state.order = "fog";
+    state.symbolic = false;
+    state.compare = false;
+    state.socks = false;
+    state.showToken = true;
+    state.tokenT = 0;
+    state.midVal = null;
+    state.outVal = null;
+    state.pulseBox = null;
+    setStepUI(2);
+    setCaption('Token <span class="hl-t">7</span> entra a <span class="g">G</span> = √(· − 3)…');
+    setWork('<span class="paso">fog</span> · <span class="g">g(7)</span> = √(7−3) = …');
+    bip("ok");
+    draw();
+    later(500, function () {
+      if (!state.playing) return;
+      state.pulseBox = "G";
+      animateToken(1600, function (p) {
+        if (p >= 0.25 && state.midVal == null) {
+          state.midVal = gOf(7);
+          setWork('<span class="paso">fog</span> · <span class="g">g(7)</span> = √4 = <span class="ok">2</span> · ahora a <span class="f">F</span>');
+          bip("ok");
+        }
+        if (p >= 0.55) state.pulseBox = "F";
+        if (p >= 0.75 && state.outVal == null) {
+          state.outVal = fOf(state.midVal);
+          state.fogOut = state.outVal;
+          setWork('<span class="paso">fog</span> · <span class="f">f(2)</span> = 2+1 = <span class="ok">3</span>');
+        }
+      }, function () {
+        state.pulseBox = null;
+        state.fogOut = state.outVal;
+        updateSideFog();
+        setCaption('Sale <span class="ok">3</span> · (f∘g)(7) = <span class="ok">3</span>');
+        bip("ok");
+        later(900, done);
+      });
+    });
+  }
+
+  function runGof(done) {
+    state.order = "gof";
+    state.showToken = true;
+    state.tokenT = 0;
+    state.midVal = null;
+    state.outVal = null;
+    state.pulseBox = null;
+    setStepUI(3);
+    setCaption('Ahora al revés: token <span class="hl-t">7</span> entra a <span class="f">F</span> = · + 1…');
+    setWork('<span class="paso">gof</span> · <span class="f">f(7)</span> = 7+1 = …');
+    bip("ok");
+    draw();
+    later(500, function () {
+      if (!state.playing) return;
+      state.pulseBox = "F";
+      animateToken(1600, function (p) {
+        if (p >= 0.25 && state.midVal == null) {
+          state.midVal = fOf(7);
+          setWork('<span class="paso">gof</span> · <span class="f">f(7)</span> = <span class="ok">8</span> · ahora a <span class="g">G</span>');
+          bip("ok");
+        }
+        if (p >= 0.55) state.pulseBox = "G";
+        if (p >= 0.75 && state.outVal == null) {
+          state.outVal = gOf(state.midVal);
+          state.gofOut = state.outVal;
+          setWork('<span class="paso">gof</span> · <span class="g">g(8)</span> = √(8−3) = √5 ≈ <span class="ok">' + fmt(state.outVal) + '</span>');
+        }
+      }, function () {
+        state.pulseBox = null;
+        state.gofOut = state.outVal;
+        updateSideGof();
+        setCaption('Sale ≈ <span class="ok">' + fmt(state.gofOut) + '</span> · distinto de 3');
+        bip("ok");
+        later(900, done);
+      });
+    });
+  }
+
+  function runCompare(done) {
+    setStepUI(4);
+    state.compare = true;
+    state.showToken = false;
+    state.flashDiff = 1;
+    state.socks = true;
+    draw();
+    setCaption('<span class="bad">¿Salieron lo mismo?</span> El orden importa — como calcetines y zapatos.');
+    setWork('<span class="ok">fog→3</span> · <span class="ok">gof→√5</span> · <span class="bad">≠</span>');
+    bip("boom");
+    analogyBody.innerHTML = 'Primero calcetín, después zapato <span class="hl">≠</span> primero zapato, después calcetín. También: impermeable · traducir EN→FR. El <span class="hl">orden</span> cambia el resultado.';
+    later(400, function () { state.flashDiff = 0; draw(); });
+    later(2200, done);
+  }
+
+  function runSymbolic(done) {
+    setStepUI(5);
+    state.compare = false;
+    state.socks = false;
+    state.symbolic = true;
+    state.showToken = true;
+    state.tokenT = 0.5;
+    state.midVal = null;
+    state.outVal = null;
+    updateSideSymbolic();
+    setCaption('Reemplazá 7 por <span class="hl-t">x</span>: <span class="paso">(f∘g)(x)=f(g(x))</span> y <span class="paso">(g∘f)(x)=g(f(x))</span>.');
+    setWork('<span class="g">(f∘g)(x)=√(x−3)+1</span><br><span class="f">(g∘f)(x)=√(x−2)</span> · <span class="bad">fog ≠ gof</span>');
+    bip("ok");
+    draw();
+    later(2000, done);
+  }
+
+  function finishAll() {
+    state.playing = false;
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
+    setStepUI(5);
+    setCaption('<span class="ok">Listo</span> · instalaste <strong>fog ≠ gof</strong> antes del álgebra. ▶ Play para repetir · siguiente: 4 preguntas + dieta.');
+    bip("ok");
+  }
+
+  function runPlay() {
+    if (state.playing) return;
+    if (GK.ensureAudio) GK.ensureAudio();
+    clearTimers();
+    state.playing = true;
+    playBtn.disabled = true;
+    stopBtn.disabled = false;
+    state.fogOut = null;
+    state.gofOut = null;
+    state.symbolic = false;
+    state.compare = false;
+    setStepUI(1);
+    setCaption('Dos máquinas: <span class="g">G = √(· − 3)</span> y <span class="f">F = · + 1</span> (ejemplo 4.a.1).');
+    setWork('<span class="g">G</span> y <span class="f">F</span> en cadena');
+    state.order = "fog";
+    state.showToken = false;
+    draw();
+    bip("ok");
+    later(900, function () {
+      if (!state.playing) return;
+      runFog(function () {
+        if (!state.playing) return;
+        runGof(function () {
+          if (!state.playing) return;
+          runCompare(function () {
+            if (!state.playing) return;
+            runSymbolic(function () {
+              if (!state.playing) return;
+              finishAll();
+            });
+          });
+        });
+      });
+    });
+  }
+
+  function stopPlay() {
+    clearTimers();
+    state.playing = false;
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
+    setCaption("Detenido · ▶ Play para repetir · o Reiniciar.");
+  }
+
+  function resetView() {
+    clearTimers();
+    state.playing = false;
+    state.order = "fog";
+    state.showToken = false;
+    state.midVal = null;
+    state.outVal = null;
+    state.fogOut = null;
+    state.gofOut = null;
+    state.compare = false;
+    state.symbolic = false;
+    state.socks = false;
+    state.pulseBox = null;
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
+    setStepUI(1);
+    exprFormula.innerHTML = '<span class="hl-g">g(u)=√(u−3)</span><br><span class="hl-f">f(u)=u+1</span>';
+    exprDomain.innerHTML = '(f∘g)(7) = <span class="empty">…</span> · (g∘f)(7) = <span class="empty">…</span>';
+    hintMini.textContent = "Presioná ▶ Play · token por las cajas";
+    chipBox.innerHTML = '<span class="chip purple">G primero</span><span class="chip blue">F primero</span><span class="chip coral">orden</span>';
+    formulaRow.classList.remove("surprise", "boom");
+    setWork("");
+    setCaption('Presioná <strong>▶ Play</strong> · token 7 por las máquinas · fog ≠ gof.');
+    draw();
+  }
+
+  playBtn.addEventListener("click", runPlay);
+  stopBtn.addEventListener("click", stopPlay);
+  restartBtn.addEventListener("click", function () { stopPlay(); resetView(); });
+  slowBtn.addEventListener("click", function () {
+    if (state.speedFactor === 1) {
+      state.speedFactor = 1.85;
+      slowBtn.classList.add("on");
+      slowBtn.setAttribute("aria-pressed", "true");
+      slowBtn.textContent = "Lento ✓";
+    } else {
+      state.speedFactor = 1;
+      slowBtn.classList.remove("on");
+      slowBtn.setAttribute("aria-pressed", "false");
+      slowBtn.textContent = "Lento";
+    }
+  });
+  window.addEventListener("resize", function () { draw(); });
+
+  window.__L132 = { state: state, draw: draw };
+  resetView();
+})();
+</script>
+</body>
+</html>

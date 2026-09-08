@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 134 · Composición · fog / gof · ejemplos · play</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #38bdf8; --border: #243044;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #2dd4bf;
+  --coral: #fb7185; --row: #121a27; --row-border: #2a3548;
+  --graph-bg: #f8fafc; --axes-black: #111111;
+  --g-box: #a78bfa; --f-box: #38bdf8; --token: #FFBF00;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.18rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: #38bdf8; font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.84rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn, a.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.on { background: var(--amber); color: #0b1018; box-shadow: 0 0 10px rgba(255,191,0,.35); }
+button.btn:hover, a.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548; color: var(--mast);
+}
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
+.main-stage { display: grid; grid-template-columns: minmax(250px, 340px) 1fr; gap: 10px; align-items: stretch; }
+@media (max-width: 820px) { .main-stage { grid-template-columns: 1fr; } }
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.contrast-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(255,191,0,0.35);
+  background: linear-gradient(135deg, rgba(255,191,0,0.10), rgba(18,26,39,0.95));
+}
+.contrast-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #FFBF00; margin: 0 0 8px;
+}
+.contrast-bullets { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.contrast-bullets li {
+  font-size: 0.82rem; line-height: 1.4; color: var(--ink); font-weight: 650;
+  padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.contrast-bullets .ok { color: #5ad4a8; }
+.contrast-bullets .bad { color: #ff7b7b; }
+.contrast-bullets .hl { color: #FFBF00; }
+.contrast-bullets .g { color: #a78bfa; }
+.contrast-bullets .f { color: #38bdf8; }
+.rule-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(90,212,168,0.4);
+  background: linear-gradient(135deg, rgba(90,212,168,0.12), rgba(18,26,39,0.95));
+  box-shadow: 0 0 18px rgba(90,212,168,0.10);
+}
+.rule-card-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #5ad4a8; margin: 0 0 6px;
+}
+.rule-card-body {
+  margin: 0; font-size: 0.86rem; line-height: 1.45; color: var(--ink); font-weight: 650;
+}
+.rule-card-body .hl { color: #FFBF00; }
+.rule-card-body .ok { color: #5ad4a8; }
+.rule-card-body .bad { color: #ff7b7b; }
+.rule-card-body .g { color: #c4b5fd; }
+.rule-card-body .f { color: #7dd3fc; }
+.rule-card-body .paste { color: #fb7185; background: rgba(251,113,133,.15); padding: 0 3px; border-radius: 3px; }
+.band-legend {
+  margin: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #2a3a52; background: #121a28;
+}
+.band-legend-title {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  color: #93c5fd; margin: 0 0 8px;
+}
+.band-row {
+  display: flex; align-items: flex-start; gap: 10px; margin: 0 0 7px;
+  font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
+}
+.band-row:last-child { margin-bottom: 0; }
+.band-swatch {
+  width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+.band-swatch.gray { background: #64748b; }
+.band-swatch.green { background: #22c55e; }
+.band-swatch.amber { background: #FFBF00; }
+.band-swatch.purple { background: #a78bfa; }
+.band-row strong.g { color: #94a3b8; }
+.band-row strong.v { color: #22c55e; }
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.phase-ask::before { background: var(--amber); }
+.expr-row.boom::before { background: #ff7b7b; }
+.expr-row.surprise::before { background: #5ad4a8; }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.88rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.55;
+}
+.hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
+}
+.chip.teal { color: #0d9488; border-color: rgba(13,148,136,0.5); }
+.chip.coral { color: #f59e0b; border-color: rgba(245,158,11,0.5); }
+.chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
+.chip.bad { color: #ff7b7b; border-color: rgba(255,123,123,0.45); }
+.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
+.chip.purple { color: #c4b5fd; border-color: rgba(167,139,250,.5); }
+.chip.blue { color: #7dd3fc; border-color: rgba(56,189,248,.5); }
+.chip.on { box-shadow: 0 0 10px rgba(255,191,0,.35); border-color: #FFBF00; color: #FFBF00; }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.4); color: var(--accent);
+  margin-left: 6px;
+}
+.rule-list {
+  margin: 6px 0 0; padding: 0 0 0 22px; font-size: 0.78rem; color: var(--muted); line-height: 1.55;
+}
+.rule-list li { margin: 2px 0; }
+.rule-list li.on { color: var(--ink); font-weight: 700; }
+.rule-list li.done { color: #5ad4a8; }
+.rule-list strong { color: var(--ink); }
+.rule-list .ok { color: #5ad4a8; }
+.rule-list .bad { color: #ff7b7b; }
+.rule-list .empty { color: #94a3b8; }
+.ex-progress { display: flex; gap: 5px; padding: 2px 4px; flex-wrap: wrap; }
+.ex-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #2a3548; border: 1px solid #3b4a63;
+}
+.ex-dot.on { background: var(--accent); border-color: var(--mast); box-shadow: 0 0 8px rgba(56,189,248,.55); }
+.ex-dot.done { background: #5ad4a8; border-color: rgba(90,212,168,.6); }
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--graph-bg); touch-action: none;
+  border: 1px solid #cbd5e1;
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
+  transition: opacity .15s; filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev { display: block; width: 0; height: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.work-panel {
+  display: none; margin-top: 8px; padding: 10px 14px; border-radius: 10px;
+  background: rgba(18, 26, 39, 0.95); border: 1px solid rgba(56,189,248,0.45);
+  font-family: ui-monospace, Menlo, monospace; font-size: 1.02rem; font-weight: 700;
+  color: var(--ink); min-height: 2.2em; line-height: 1.55;
+}
+.work-panel.on { display: block; }
+.work-panel.boom { border-color: rgba(255,123,123,0.65); background: rgba(40, 16, 20, 0.95); }
+.work-panel .hl { color: var(--amber); }
+.work-panel .ok { color: #5ad4a8; }
+.work-panel .bad { color: #ff7b7b; }
+.work-panel .paso { color: #60a5fa; }
+.work-panel .empty { color: #94a3b8; }
+.work-panel .g { color: #c4b5fd; }
+.work-panel .f { color: #7dd3fc; }
+.work-panel .paste { color: #fb7185; }
+.caption {
+  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
+}
+.caption strong { color: var(--ink); }
+.caption .hl-t { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-v { color: #22c55e; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .ok { color: #5ad4a8; font-weight: 800; }
+.caption .bad { color: #ff7b7b; font-weight: 800; }
+.caption .paso { color: #60a5fa; font-weight: 800; }
+.caption .g { color: #c4b5fd; font-weight: 800; }
+.caption .f { color: #7dd3fc; font-weight: 800; }
+.sound-meter {
+  margin: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; min-height: 28px;
+  padding: 6px 10px; color: var(--muted); font-size: 0.8rem; font-weight: 700; user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px; width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar { display: inline-block; width: 5px; height: 8px; border-radius: 2px; background: #3b4a63; transition: height .08s ease, background .08s ease; }
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
+.expr-formula .hl-curve { color: #2dd4bf; }
+.expr-formula .hl-g { color: #a78bfa; }
+.expr-formula .hl-f { color: #38bdf8; }
+.expr-formula .hl-v { color: #22c55e; }
+.expr-formula .paste { color: #fb7185; }
+.expr-formula .bad { color: #ff7b7b; }
+.expr-formula .ok { color: #5ad4a8; }
+.steps-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
+.steps-box li { margin: 3px 0; }
+.steps-box li.on { color: #e9eef7; font-weight: 700; }
+.steps-box li.done { color: #5ad4a8; }
+.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.q-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.q-box .q-item {
+  display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start;
+  padding: 7px 8px; border-radius: 8px; margin: 4px 0; border: 1px solid transparent;
+  font-size: 0.78rem; color: #9fb0c7; line-height: 1.4;
+}
+.q-box .q-item .qn {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 800; color: #60a5fa;
+  width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  background: #121a27; border: 1px solid #2a3548;
+}
+.q-box .q-item.on {
+  color: #e9eef7; font-weight: 700;
+  border-color: rgba(255,191,0,.45); background: rgba(255,191,0,.08);
+}
+.q-box .q-item.on .qn { border-color: #FFBF00; color: #FFBF00; box-shadow: 0 0 8px rgba(255,191,0,.35); }
+.q-box .q-item.done { color: #5ad4a8; }
+.q-box .q-item.done .qn { border-color: rgba(90,212,168,.6); color: #5ad4a8; }
+.analogy-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(167,139,250,0.45);
+  background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(18,26,39,0.95));
+}
+.analogy-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #c4b5fd; margin: 0 0 6px;
+}
+.analogy-body { margin: 0; font-size: 0.82rem; line-height: 1.45; color: var(--ink); font-weight: 650; }
+.analogy-body .hl { color: #FFBF00; }
+.diet-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 134</span> · Composición · fog / gof · ejemplos · play
+        <span class="sub">4.a.1 y 4.a.3 · Dom en la recta</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="playBtn">▶ Play</button>
+      <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
+      <button type="button" class="btn" id="restartBtn">Reiniciar</button>
+      <span class="score" id="loopEl">Fase <strong>1</strong></span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" aria-label="Teoría y ritual">
+
+        <div class="contrast-card" id="contrastCard">
+          <p class="contrast-kicker">Teoría trabajada · hoja 4.a</p>
+          <ul class="contrast-bullets">
+            <li><span class="hl">4.a.1</span> g=√(x−3), f=x+1</li>
+            <li><span class="hl">4.a.3</span> g=√x, f=ln x</li>
+            <li>Máquinas + 4 preguntas + fórmula + Dom en la recta</li>
+          </ul>
+        </div>
+
+        <div class="rule-card" id="ruleCard">
+          <p class="rule-card-kicker">Resultados a clavar</p>
+          <p class="rule-card-body" id="ruleBody">
+            fog: √(x−3)+1 · Dom x≥3<br>
+            gof: √(x−2) · Dom x≥2
+          </p>
+        </div>
+
+        <div class="q-box" id="qBox" aria-label="Cuatro preguntas">
+          <div class="q-item" data-q="1"><span class="qn">1</span><div>¿Qué entra? → Dom 1ª</div></div>
+          <div class="q-item" data-q="2"><span class="qn">2</span><div>¿Qué sale? → Im 1ª</div></div>
+          <div class="q-item" data-q="3"><span class="qn">3</span><div>¿Qué come 2ª? → Dom 2ª</div></div>
+          <div class="q-item" data-q="4"><span class="qn">4</span><div>∩ · sobrevivientes</div></div>
+        </div>
+
+        <div class="steps-box" aria-label="Pasos">
+          <ol id="stepsList">
+            <li data-step="1"><span class="n">1</span> 4.a.1 · fog</li>
+            <li data-step="2"><span class="n">2</span> 4.a.1 · gof</li>
+            <li data-step="3"><span class="n">3</span> 4.a.3 · fog</li>
+            <li data-step="4"><span class="n">4</span> 4.a.3 · gof</li>
+            <li data-step="5"><span class="n">5</span> Error deliberado</li>
+          </ol>
+        </div>
+
+        <div class="ex-progress" id="exProgress" aria-hidden="true"></div>
+
+        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">
+            <span class="hl-curve">4.a.1 / 4.a.3</span>
+          </div>
+          <p class="hint-mini" id="hintMini">Presioná ▶ Play · ejemplos trabajados</p>
+        </div>
+
+        <div class="expr-row" id="domainRow">
+          <div class="expr-formula" id="exprDomain">
+            Dom = <span class="empty">…</span>
+          </div>
+          <div class="chips" id="chipBox">
+            <span class="chip teal">4.a.1</span>
+            <span class="chip teal">4.a.3</span>
+            <span class="chip green">Dom</span>
+          </div>
+        </div>
+
+        <div class="band-legend" aria-label="Leyenda Dom">
+          <div class="band-legend-title">Banda de dominio (recta)</div>
+          <div class="band-row">
+            <span class="band-swatch green" aria-hidden="true"></span>
+            <span><strong class="v">Verde</strong> — Dom · sobrevivientes</span>
+          </div>
+          <div class="band-row">
+            <span class="band-swatch gray" aria-hidden="true"></span>
+            <span><strong class="g">Gris</strong> — fuera del Dom</span>
+          </div>
+        </div>
+
+      </aside>
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-composicion-dieta-play.html" title="Lección 133: Composición · 4 preguntas · dieta · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-composicion-4a2-play.html" title="Lección 135: Composición · 4.a.2 · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Composición · ejemplos 4.a.1 y 4.a.3"></canvas>
+      </div>
+    </div>
+    <div class="work-panel" id="workPanel" aria-live="polite"></div>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> para arrancar.</p>
+    <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
+    <p class="hint">Teoría trabajada · <strong style="color:#5ad4a8">4.a.1</strong> Dom fog x≥3 · gof x≥2 · <strong style="color:#5ad4a8">4.a.3</strong> Dom fog x&gt;0 · gof x≥1</p>
+  </div>
+</div>
+<script src="game-kit.js?v=20260907"></script>
+<script>
+
+
+(function () {
+  "use strict";
+  var GK = window.CampusGameKit || {};
+  var GRAPH_BG = "#f8fafc";
+  var G_COL = "#7c3aed";
+  var F_COL = "#0284c7";
+  var PASTE = "#e11d48";
+  var OK = "#16a34a";
+  var BAD = "#e11d48";
+  var INK = "#0f172a";
+  var MUTED = "#64748b";
+  var AMBER = "#d97706";
+  var GREEN = "#22c55e";
+  var EMPTY = "#64748b";
+
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var playBtn = document.getElementById("playBtn");
+  var stopBtn = document.getElementById("stopBtn");
+  var slowBtn = document.getElementById("slowBtn");
+  var restartBtn = document.getElementById("restartBtn");
+  var loopEl = document.getElementById("loopEl");
+  var captionEl = document.getElementById("caption");
+  var workPanel = document.getElementById("workPanel");
+  var soundMeter = document.getElementById("soundMeter");
+  var exprFormula = document.getElementById("exprFormula");
+  var exprDomain = document.getElementById("exprDomain");
+  var hintMini = document.getElementById("hintMini");
+  var chipBox = document.getElementById("chipBox");
+  var formulaRow = document.getElementById("formulaRow");
+  var stepsList = document.getElementById("stepsList");
+  var qBox = document.getElementById("qBox");
+  var ruleBody = document.getElementById("ruleBody");
+  var exProgress = document.getElementById("exProgress");
+
+  var EXAMPLES = [
+    {
+      id: "4a1-fog", sheet: "4.a.1", kind: "fog", step: 1,
+      gLabel: "G", fLabel: "F",
+      gForm: "√(· − 3)", fForm: "· + 1",
+      first: "G", second: "F", firstForm: "√(· − 3)", secondForm: "· + 1",
+      firstCol: G_COL, secondCol: F_COL,
+      title: "4.a.1 · (f∘g)",
+      a1: "Dom(g)=[3,+∞)", a2: "Im(g)=[0,+∞)", a3: "Dom(f)=ℝ", a4: "∩ = [0,+∞)",
+      // survivors in terms of x: need x in Dom(g) AND g(x) in Dom(f)
+      // Dom(f)=R so Dom = Dom(g) = [3,+∞)
+      survivors: "x ≥ 3",
+      survivorsSet: "[3, +∞)",
+      formulaHtml: '(f∘g)(x)=<span class="paste">√(x−3)</span>+1',
+      formulaPlain: "√(x−3)+1",
+      pasteInner: "√(x−3)",
+      band: { kind: "ray", from: 3, closed: true, xmin: -1, xmax: 8 },
+      wrongDom: "x ≥ 0",
+      wrongNote: "Crime: usaste Dom(√) genérico · falta x−3≥0 ⇒ x≥3",
+      tip: "fog · √(x−3)+1 · Dom x≥3"
+    },
+    {
+      id: "4a1-gof", sheet: "4.a.1", kind: "gof", step: 2,
+      first: "F", second: "G", firstForm: "· + 1", secondForm: "√(· − 3)",
+      firstCol: F_COL, secondCol: G_COL,
+      title: "4.a.1 · (g∘f)",
+      a1: "Dom(f)=ℝ", a2: "Im(f)=ℝ", a3: "Dom(g)=[3,+∞)", a4: "∩ = [3,+∞)",
+      // g(f(x))=√(x+1-3)=√(x-2) needs x-2≥0 ⇒ x≥2
+      // Also: f(x) must be in Dom(g): x+1≥3 ⇒ x≥2
+      survivors: "x ≥ 2",
+      survivorsSet: "[2, +∞)",
+      formulaHtml: '(g∘f)(x)=√(<span class="paste">x+1</span>−3)=√(x−2)',
+      formulaPlain: "√(x−2)",
+      pasteInner: "x+1",
+      band: { kind: "ray", from: 2, closed: true, xmin: -1, xmax: 8 },
+      wrongDom: "x ≥ 3",
+      wrongNote: "Crime: copiaste Dom de fog · aquí es x+1≥3 ⇒ x≥2",
+      tip: "gof · √(x−2) · Dom x≥2"
+    },
+    {
+      id: "4a3-fog", sheet: "4.a.3", kind: "fog", step: 3,
+      first: "G", second: "F", firstForm: "√(·)", secondForm: "ln(·)",
+      firstCol: G_COL, secondCol: F_COL,
+      title: "4.a.3 · (f∘g) = ln√x",
+      a1: "Dom(g)=[0,+∞)", a2: "Im(g)=[0,+∞)", a3: "Dom(f)=(0,+∞)", a4: "∩ = (0,+∞)",
+      // g(x)=√x needs x≥0; f(g)=ln√x needs √x>0 ⇒ x>0 (drop 0)
+      survivors: "x > 0",
+      survivorsSet: "(0, +∞)",
+      formulaHtml: '(f∘g)(x)=ln<span class="paste">√x</span> = ½ ln x',
+      formulaPlain: "ln√x = ½ ln x",
+      pasteInner: "√x",
+      band: { kind: "ray", from: 0, closed: false, xmin: -1, xmax: 6 },
+      wrongDom: "x ≥ 0",
+      wrongNote: "Crime: incluiste 0 · ln necesita √x>0 ⇒ x>0",
+      tip: "fog · ln√x=½ln x · Dom x>0 (se cae el 0)"
+    },
+    {
+      id: "4a3-gof", sheet: "4.a.3", kind: "gof", step: 4,
+      first: "F", second: "G", firstForm: "ln(·)", secondForm: "√(·)",
+      firstCol: F_COL, secondCol: G_COL,
+      title: "4.a.3 · (g∘f) = √(ln x)",
+      a1: "Dom(f)=(0,+∞)", a2: "Im(f)=ℝ", a3: "Dom(g)=[0,+∞)", a4: "∩ = [0,+∞)",
+      // need x>0 (Dom ln) AND ln x ≥ 0 ⇒ x ≥ 1
+      survivors: "x ≥ 1",
+      survivorsSet: "[1, +∞)",
+      formulaHtml: '(g∘f)(x)=√(<span class="paste">ln x</span>)',
+      formulaPlain: "√(ln x)",
+      pasteInner: "ln x",
+      band: { kind: "ray", from: 1, closed: true, xmin: -1, xmax: 6 },
+      wrongDom: "x > 0",
+      wrongNote: "Crime: solo Dom(ln) · falta ln x≥0 ⇒ x≥1",
+      tip: "gof · √(ln x) · Dom x≥1"
+    }
+  ];
+
+  var state = {
+    playing: false,
+    speedFactor: 1,
+    timers: [],
+    raf: 0,
+    exIndex: 0,
+    q: 0,
+    answers: ["", "", "", ""],
+    survivors: "",
+    pasteOn: false,
+    bandReveal: 0,
+    showBand: false,
+    crime: false,
+    crimeFlash: 0,
+    tokenT: 0,
+    showToken: false,
+    midShown: false
+  };
+
+  function ex() { return EXAMPLES[state.exIndex]; }
+  function delay(ms) { return ms * (state.speedFactor || 1); }
+  function clearTimers() {
+    state.timers.forEach(function (id) { clearTimeout(id); });
+    state.timers = [];
+    if (state.raf) { cancelAnimationFrame(state.raf); state.raf = 0; }
+  }
+  function later(ms, fn) {
+    var id = setTimeout(fn, delay(ms));
+    state.timers.push(id);
+    return id;
+  }
+  function setCaption(html) { captionEl.innerHTML = html; }
+  function setWork(html, boom) {
+    if (!html) { workPanel.classList.remove("on", "boom"); workPanel.innerHTML = ""; return; }
+    workPanel.classList.add("on");
+    workPanel.classList.toggle("boom", !!boom);
+    workPanel.innerHTML = html;
+  }
+  function bip(kind) {
+    if (kind === "bad" || kind === "boom") {
+      if (kind === "boom" && GK.playExplosion) GK.playExplosion();
+      else if (GK.playErrorBuzz) GK.playErrorBuzz();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "bad");
+    } else {
+      if (GK.playOkChime) GK.playOkChime();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    }
+  }
+  function setStepUI(n) {
+    var items = stepsList.querySelectorAll("li");
+    items.forEach(function (li) {
+      var s = parseInt(li.getAttribute("data-step"), 10);
+      li.classList.remove("on", "done");
+      if (s < n) li.classList.add("done");
+      else if (s === n) li.classList.add("on");
+    });
+    loopEl.innerHTML = "Ej. <strong>" + Math.min(n, 5) + "</strong>/5";
+  }
+  function setQ(n) {
+    state.q = n;
+    qBox.querySelectorAll(".q-item").forEach(function (el) {
+      var q = parseInt(el.getAttribute("data-q"), 10);
+      el.classList.remove("on", "done");
+      if (q < n) el.classList.add("done");
+      else if (q === n) el.classList.add("on");
+    });
+  }
+  function buildProgress() {
+    exProgress.innerHTML = "";
+    EXAMPLES.forEach(function (e, i) {
+      var d = document.createElement("span");
+      d.className = "ex-dot" + (i < state.exIndex ? " done" : (i === state.exIndex ? " on" : ""));
+      d.title = e.title;
+      exProgress.appendChild(d);
+    });
+  }
+
+  function sizeCanvas() {
+    var wrap = document.getElementById("graphWrap");
+    var w = Math.max(520, Math.floor(wrap.clientWidth || 720));
+    var h = Math.max(460, Math.floor(w * 0.72));
+    canvas.width = w;
+    canvas.height = h;
+  }
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawMachine(box, letter, formula, color, active) {
+    ctx.save();
+    if (active) { ctx.shadowColor = color; ctx.shadowBlur = 18; }
+    roundRect(box.x, box.y, box.w, box.h, 14);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.lineWidth = active ? 4 : 2.5;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    roundRect(box.x + 10, box.y - 14, 40, 26, 7);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 15px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(letter, box.x + 30, box.y - 1);
+    ctx.fillStyle = INK;
+    ctx.font = "700 13px ui-monospace, Menlo, monospace";
+    ctx.fillText(formula, box.x + box.w / 2, box.y + box.h / 2 + 4);
+    ctx.fillStyle = color;
+    roundRect(box.x - 7, box.y + box.h / 2 - 9, 9, 18, 3);
+    ctx.fill();
+    roundRect(box.x + box.w - 2, box.y + box.h / 2 - 9, 9, 18, 3);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBand(e, yLine) {
+    var b = e.band;
+    var W = canvas.width;
+    var x0 = 40, x1 = W - 40;
+    var map = function (x) {
+      return x0 + ((x - b.xmin) / (b.xmax - b.xmin)) * (x1 - x0);
+    };
+    // axis
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x0, yLine);
+    ctx.lineTo(x1, yLine);
+    ctx.stroke();
+    // ticks
+    ctx.fillStyle = MUTED;
+    ctx.font = "700 11px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    for (var t = Math.ceil(b.xmin); t <= Math.floor(b.xmax); t++) {
+      var sx = map(t);
+      ctx.beginPath();
+      ctx.moveTo(sx, yLine - 5);
+      ctx.lineTo(sx, yLine + 5);
+      ctx.strokeStyle = "#94a3b8";
+      ctx.stroke();
+      ctx.fillText(String(t), sx, yLine + 18);
+    }
+    // gray full then green reveal
+    var fromX = map(b.from);
+    var endX = map(b.xmax);
+    var startX = map(b.xmin);
+    ctx.fillStyle = EMPTY;
+    ctx.globalAlpha = 0.35;
+    ctx.fillRect(startX, yLine - 10, endX - startX, 8);
+    ctx.globalAlpha = 1;
+    if (state.showBand) {
+      var reveal = state.bandReveal;
+      var gx0 = fromX;
+      var gw = (endX - fromX) * reveal;
+      ctx.fillStyle = GREEN;
+      ctx.globalAlpha = 0.85;
+      ctx.fillRect(gx0, yLine - 10, Math.max(0, gw), 8);
+      ctx.globalAlpha = 1;
+      // endpoint
+      ctx.beginPath();
+      ctx.arc(fromX, yLine - 6, 6, 0, Math.PI * 2);
+      ctx.fillStyle = b.closed ? GREEN : "#fff";
+      ctx.fill();
+      ctx.strokeStyle = GREEN;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      if (!b.closed) {
+        // open circle already white fill
+      }
+      ctx.fillStyle = GREEN;
+      ctx.font = "800 13px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("Dom = " + e.survivorsSet, fromX + 10, yLine - 22);
+    }
+    if (state.crime) {
+      // wrong band mark
+      ctx.fillStyle = BAD;
+      ctx.font = "800 13px Segoe UI, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("✗ Dom falso: " + e.wrongDom, W / 2, yLine - 40);
+    }
+  }
+
+  function draw() {
+    sizeCanvas();
+    var W = canvas.width, H = canvas.height;
+    var e = ex();
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = GRAPH_BG;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = INK;
+    ctx.font = "800 17px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(e.title + (state.crime ? " · ¿error?" : ""), W / 2, 12);
+
+    var boxW = Math.min(170, W * 0.24);
+    var boxH = 100;
+    var gap = Math.min(90, W * 0.11);
+    var total = boxW * 2 + gap;
+    var x0 = (W - total) / 2;
+    var y = 48;
+    var left = { x: x0, y: y, w: boxW, h: boxH };
+    var right = { x: x0 + boxW + gap, y: y, w: boxW, h: boxH };
+    var qActive1 = state.q === 1 || state.q === 2;
+    var qActive2 = state.q === 3 || state.q === 4;
+    drawMachine(left, e.first, e.firstForm, e.firstCol, qActive1 || state.showToken);
+    drawMachine(right, e.second, e.secondForm, e.secondCol, qActive2);
+
+    // conveyor
+    var cy = y + boxH / 2;
+    ctx.strokeStyle = MUTED;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(left.x + left.w + 6, cy);
+    ctx.lineTo(right.x - 6, cy);
+    ctx.stroke();
+
+    if (state.showToken) {
+      var t = state.tokenT;
+      var px = left.x - 40 + t * (right.x + right.w + 40 - (left.x - 40));
+      ctx.beginPath();
+      ctx.arc(px, cy - 32, 16, 0, Math.PI * 2);
+      ctx.fillStyle = AMBER;
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#0b1018";
+      ctx.font = "800 12px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("x", px, cy - 31);
+    }
+
+    // formula paste card
+    roundRect(W * 0.1, y + boxH + 24, W * 0.8, 48, 12);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.strokeStyle = state.pasteOn ? PASTE : "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = INK;
+    ctx.font = "800 16px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    if (state.pasteOn) {
+      // simplified: draw plain with paste color hint via fillText segments is hard; use plain + label
+      ctx.fillStyle = PASTE;
+      ctx.fillText(e.formulaPlain, W / 2, y + boxH + 48);
+    } else {
+      ctx.fillStyle = MUTED;
+      ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
+      ctx.fillText("Fórmula · color paste tras las 4 preguntas", W / 2, y + boxH + 48);
+    }
+
+    // casillas mini
+    var yC = y + boxH + 88;
+    var labels = [state.answers[0] || "Q1…", state.answers[1] || "Q2…", state.answers[2] || "Q3…", state.answers[3] || "Q4…"];
+    var cw = (W - 60) / 4;
+    for (var i = 0; i < 4; i++) {
+      var xx = 24 + i * (cw + 4);
+      var on = state.q === i + 1;
+      roundRect(xx, yC, cw - 4, 44, 8);
+      ctx.fillStyle = on ? "rgba(255,191,0,0.18)" : "#fff";
+      ctx.fill();
+      ctx.strokeStyle = on ? AMBER : (state.answers[i] ? OK : "#cbd5e1");
+      ctx.lineWidth = on ? 2.5 : 1.5;
+      ctx.stroke();
+      ctx.fillStyle = INK;
+      ctx.font = "700 10px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(labels[i], xx + (cw - 4) / 2, yC + 24);
+    }
+
+    // number line
+    drawBand(e, H - 70);
+
+    if (state.crime && state.crimeFlash) {
+      ctx.fillStyle = "rgba(225,29,72,0.12)";
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+
+  function updateSide(e) {
+    exprFormula.innerHTML = '<span class="hl-curve">' + e.sheet + "</span> · " + (e.kind === "fog" ? "f∘g" : "g∘f") +
+      "<br>" + e.formulaHtml;
+    exprDomain.innerHTML = "Dom = <span class=\"ok\">" + e.survivorsSet + "</span>";
+    hintMini.textContent = e.tip;
+    chipBox.innerHTML =
+      '<span class="chip teal">' + e.sheet + "</span>" +
+      '<span class="chip ' + (e.kind === "fog" ? "purple" : "blue") + '">' + e.kind + "</span>" +
+      '<span class="chip green">' + e.survivorsSet + "</span>";
+    formulaRow.classList.add("surprise");
+    formulaRow.classList.remove("boom");
+    if (e.sheet === "4.a.1") {
+      ruleBody.innerHTML = "fog: √(x−3)+1 · Dom x≥3<br>gof: √(x−2) · Dom x≥2";
+    } else {
+      ruleBody.innerHTML = "fog: ln√x = ½ ln x · Dom x&gt;0<br>gof: √(ln x) · Dom x≥1";
+    }
+    buildProgress();
+  }
+
+  function askQ(n, answer, caption, work, done) {
+    setQ(n);
+    setCaption(caption);
+    setWork(work);
+    draw();
+    bip("ok");
+    later(950, function () {
+      if (!state.playing) return;
+      state.answers[n - 1] = answer;
+      draw();
+      later(550, done);
+    });
+  }
+
+  function runMachinesBrief(done) {
+    state.showToken = true;
+    state.tokenT = 0;
+    var t0 = performance.now();
+    function frame(now) {
+      if (!state.playing) return;
+      var p = Math.min(1, (now - t0) / delay(1200));
+      state.tokenT = p;
+      draw();
+      if (p < 1) state.raf = requestAnimationFrame(frame);
+      else { state.raf = 0; state.showToken = false; done(); }
+    }
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  function runOneExample(done) {
+    var e = ex();
+    setStepUI(e.step);
+    state.answers = ["", "", "", ""];
+    state.survivors = "";
+    state.pasteOn = false;
+    state.showBand = false;
+    state.bandReveal = 0;
+    state.crime = false;
+    setQ(0);
+    updateSide(e);
+    exprDomain.innerHTML = "Dom = <span class=\"empty\">…</span>";
+    setCaption('<span class="paso">' + e.title + "</span> · máquinas en cadena…");
+    setWork('<span class="paso">' + e.sheet + "</span> · " + e.kind);
+    bip("ok");
+    draw();
+    later(400, function () {
+      if (!state.playing) return;
+      runMachinesBrief(function () {
+        if (!state.playing) return;
+        askQ(1, e.a1, '<span class="paso">1</span> ¿Qué entra a la 1ª? → Dom', '<span class="paso">Q1</span> · ' + e.a1, function () {
+          if (!state.playing) return;
+          askQ(2, e.a2, '<span class="paso">2</span> ¿Qué sale? → Im', '<span class="paso">Q2</span> · ' + e.a2, function () {
+            if (!state.playing) return;
+            askQ(3, e.a3, '<span class="paso">3</span> ¿Qué come la 2ª? → Dom', '<span class="paso">Q3</span> · ' + e.a3, function () {
+              if (!state.playing) return;
+              askQ(4, e.a4, '<span class="paso">4</span> ∩ · sobrevivientes', '<span class="paso">Q4</span> · ' + e.a4, function () {
+                if (!state.playing) return;
+                state.pasteOn = true;
+                state.survivors = e.survivors;
+                setQ(5);
+                exprFormula.innerHTML = e.formulaHtml;
+                setCaption('Color paste · <span class="hl-t">' + e.formulaPlain + "</span>");
+                setWork('<span class="ok">' + e.formulaPlain + "</span>");
+                bip("ok");
+                draw();
+                later(900, function () {
+                  if (!state.playing) return;
+                  // band reveal
+                  state.showBand = true;
+                  state.bandReveal = 0;
+                  var t0 = performance.now();
+                  function bandFrame(now) {
+                    if (!state.playing) return;
+                    var p = Math.min(1, (now - t0) / delay(900));
+                    state.bandReveal = p;
+                    draw();
+                    if (p < 1) state.raf = requestAnimationFrame(bandFrame);
+                    else {
+                      state.raf = 0;
+                      exprDomain.innerHTML = "Dom = <span class=\"ok\">" + e.survivorsSet + "</span>";
+                      setCaption('<span class="ok">Dom = ' + e.survivorsSet + "</span> · " + e.tip);
+                      setWork('<span class="ok">Dom = ' + e.survivorsSet + "</span>");
+                      bip("ok");
+                      later(1100, done);
+                    }
+                  }
+                  state.raf = requestAnimationFrame(bandFrame);
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  }
+
+  function runCrime(done) {
+    setStepUI(5);
+    // pick 4.a.3 fog wrong Dom x≥0
+    state.exIndex = 2;
+    var e = ex();
+    state.answers = [e.a1, e.a2, e.a3, e.a4];
+    state.pasteOn = true;
+    state.showBand = true;
+    state.bandReveal = 1;
+    state.crime = true;
+    state.crimeFlash = 1;
+    setQ(5);
+    updateSide(e);
+    formulaRow.classList.add("boom");
+    formulaRow.classList.remove("surprise");
+    exprDomain.innerHTML = 'Dom = <span class="bad">' + e.wrongDom + "</span> ¿?";
+    setCaption('<span class="bad">Error deliberado</span>: ¿Dom = ' + e.wrongDom + "?");
+    setWork('<span class="bad">✗ ' + e.wrongDom + "</span> · " + e.wrongNote, true);
+    bip("boom");
+    draw();
+    later(1600, function () {
+      if (!state.playing) return;
+      state.crimeFlash = 0;
+      exprDomain.innerHTML = "Dom = <span class=\"ok\">" + e.survivorsSet + "</span>";
+      formulaRow.classList.remove("boom");
+      formulaRow.classList.add("surprise");
+      setCaption('<span class="ok">Corregido</span>: ' + e.wrongNote.replace("Crime: ", ""));
+      setWork('<span class="ok">Dom = ' + e.survivorsSet + "</span> · se cae el 0 porque ln necesita &gt;0");
+      state.crime = false;
+      bip("ok");
+      draw();
+      later(1600, done);
+    });
+  }
+
+  function finishAll() {
+    state.playing = false;
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
+    setStepUI(5);
+    setCaption('<span class="ok">Listo</span> · 4.a.1 y 4.a.3 clavados · ejercicios 4.a.2 / 4.a.4 después.');
+    bip("ok");
+  }
+
+  function runPlay() {
+    if (state.playing) return;
+    if (GK.ensureAudio) GK.ensureAudio();
+    clearTimers();
+    state.playing = true;
+    playBtn.disabled = true;
+    stopBtn.disabled = false;
+    state.exIndex = 0;
+    buildProgress();
+
+    function nextEx() {
+      if (!state.playing) return;
+      runOneExample(function () {
+        if (!state.playing) return;
+        if (state.exIndex < EXAMPLES.length - 1) {
+          later(500, function () {
+            if (!state.playing) return;
+            state.exIndex++;
+            nextEx();
+          });
+        } else {
+          later(400, function () {
+            if (!state.playing) return;
+            runCrime(function () {
+              if (!state.playing) return;
+              finishAll();
+            });
+          });
+        }
+      });
+    }
+    nextEx();
+  }
+
+  function stopPlay() {
+    clearTimers();
+    state.playing = false;
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
+    setCaption("Detenido · ▶ Play para repetir · o Reiniciar.");
+  }
+  function resetView() {
+    clearTimers();
+    state.playing = false;
+    state.exIndex = 0;
+    state.q = 0;
+    state.answers = ["", "", "", ""];
+    state.survivors = "";
+    state.pasteOn = false;
+    state.showBand = false;
+    state.bandReveal = 0;
+    state.crime = false;
+    state.showToken = false;
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
+    setStepUI(1);
+    setQ(0);
+    exprFormula.innerHTML = '<span class="hl-curve">4.a.1 / 4.a.3</span>';
+    exprDomain.innerHTML = 'Dom = <span class="empty">…</span>';
+    hintMini.textContent = "Presioná ▶ Play · ejemplos trabajados";
+    chipBox.innerHTML = '<span class="chip teal">4.a.1</span><span class="chip teal">4.a.3</span><span class="chip green">Dom</span>';
+    formulaRow.classList.remove("surprise", "boom");
+    ruleBody.innerHTML = "fog: √(x−3)+1 · Dom x≥3<br>gof: √(x−2) · Dom x≥2";
+    setWork("");
+    setCaption('Presioná <strong>▶ Play</strong> · 4.a.1 y 4.a.3 con ritual completo.');
+    buildProgress();
+    draw();
+  }
+
+  playBtn.addEventListener("click", runPlay);
+  stopBtn.addEventListener("click", stopPlay);
+  restartBtn.addEventListener("click", function () { stopPlay(); resetView(); });
+  slowBtn.addEventListener("click", function () {
+    if (state.speedFactor === 1) {
+      state.speedFactor = 1.85;
+      slowBtn.classList.add("on");
+      slowBtn.setAttribute("aria-pressed", "true");
+      slowBtn.textContent = "Lento ✓";
+    } else {
+      state.speedFactor = 1;
+      slowBtn.classList.remove("on");
+      slowBtn.setAttribute("aria-pressed", "false");
+      slowBtn.textContent = "Lento";
+    }
+  });
+  window.addEventListener("resize", function () { draw(); });
+  window.__L134 = { EXAMPLES: EXAMPLES, state: state };
+  resetView();
+})();
+</script>
+</body>
+</html>
