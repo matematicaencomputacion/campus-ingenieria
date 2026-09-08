@@ -253,7 +253,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </aside>
       <div class="graph-wrap" id="graphWrap">
         <a class="lesson-nav prev" href="leccion-funcion-detector-doble-lleno-play.html" title="Lección 117: Función · detector · doble lleno · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <span class="lesson-nav next" aria-disabled="true" title="Fin de la serie detector" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <a class="lesson-nav next" href="leccion-dominio-denominador-play.html" title="Lección 119: Dominio · regla 1 · denominador ≠ 0 · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
         <canvas id="c" width="900" height="640" aria-label="Detector de función · logaritmo ln(x)"></canvas>
       </div>
     </div>
@@ -268,7 +268,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Eje X · veredicto: <strong style="color:#64748b">gris = x ≤ 0 (vacío · no dominio)</strong> · <strong style="color:#22c55e">verde = x &gt; 0 (sí función · 1 y)</strong> · asíntota x=0 · punto (1, 0)</p>
+    <p class="hint">Eje X · veredicto: <strong style="color:#64748b">gris = x ≤ 0 (vacío · no dominio) · círculo gris en x=0</strong> · <strong style="color:#22c55e">verde = x &gt; 0 (sí función · 1 y)</strong> · asíntota x=0 · punto (1, 0)</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -490,14 +490,34 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.restore();
     }
 
-    /* 1) vacío x ≤ 0 — incluye el 0 (cerrado a la derecha visualmente con gap hacia verde) */
+    /* 1) vacío x < 0 — deja hueco en 0 para el círculo gris de “no dominio” */
     if (reveal > XMIN) {
       strokeSeg(XMIN, Math.min(DOMAIN_START, clipEnd(DOMAIN_START)), EMPTY, false, true);
     }
 
-    /* 2) sí función x > 0 — extremo izquierdo abierto en 0 */
+    /* 2) sí función x > 0 — extremo izquierdo abierto en 0 (intervalo abierto) */
     if (reveal > DOMAIN_START) {
       strokeSeg(DOMAIN_START, Math.min(XMAX, clipEnd(XMAX)), GREEN, true, false);
+    }
+
+    /* 3) en (0,0): círculo gris relleno = x=0 no está en el dominio */
+    if (reveal >= DOMAIN_START - 1e-9) {
+      var r = BAND_H / 2 + 1;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(ox.x, y, r + 3, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(ox.x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = EMPTY;
+      ctx.globalAlpha = 0.95;
+      ctx.fill();
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+      ctx.restore();
     }
   }
 
