@@ -268,7 +268,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             <li data-step="2"><span class="n">2</span> Graficar f · Dom / Im</li>
             <li data-step="3"><span class="n">3</span> Algebra: y=f(x) · x↔y · despejar</li>
             <li data-step="4"><span class="n">4</span> Trazar el espejo y = x</li>
-            <li data-step="5"><span class="n">5</span> Puntos claros · L · PP′ ⟂ y = x</li>
+            <li data-step="5"><span class="n">5</span> Ejes · L · PP′ ⟂ y = x</li>
             <li data-step="6"><span class="n">6</span> Reflejar puntos (x,y)→(y,x)</li>
             <li data-step="7"><span class="n">7</span> f y f⁻¹ juntas</li>
           </ol>
@@ -326,7 +326,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 window.__INVERSA_CFG__ = {
   exportName: "__L149",
   sheet: "9.1",
-  xmin: -7, xmax: 5, ymin: -9, ymax: 7,
+  xmin: -8, xmax: 6, ymin: -9, ymax: 7,
   totalPhases: 7,
   softPrev: [
     { href: "leccion-familia-84-play.html", title: "Lección 148: Familias · 8.4 · play" },
@@ -347,7 +347,9 @@ window.__INVERSA_CFG__ = {
   ],
   lPoints: [
     { x: 0, y: -4, first: "horiz" },
-    { x: -2, y: 2, first: "vert" }
+    { x: -2, y: 2, first: "vert" },
+    { x: -3, y: 5, first: "vert" },
+    { x: 1, y: -7, first: "horiz" }
   ],
   meet: [{ x: -1, y: -1, html: "(−1, −1)" }],
   fAsy: [],
@@ -414,9 +416,9 @@ window.__INVERSA_CFG__ = {
       yxT: 1,
       showLTeach: true,
       lPick: true,
-      badge: "Elijo valores de x donde y queda bien definido",
-      work: "<span class=\"f\">(0, −4)</span> en eje Y · <span class=\"f\">(−2, 2)</span> en la cuadrícula",
-      caption: "<span class=\"paso\">Paso 5a:</span> elijo puntos con coordenadas claras: <span class=\"hl-f\">(0, −4)</span> sobre el <span class=\"hl-axis\">eje Y</span> y <span class=\"hl-f\">(−2, 2)</span> en la cuadrícula."
+      badge: "Elijo valores de x para los que y está bien definida",
+      work: "<span class=\"f\">(0, −4)</span> en eje y · luego retícula (−2, 2), (−3, 5), (1, −7)",
+      caption: "<span class=\"paso\">Paso 5a:</span> elijo x con y bien definida. Empiezo por <span class=\"hl-f\">(0, −4)</span> sobre el <span class=\"hl-axis\">eje y</span> (x = 0 se lee solo) y sigo con puntos de retícula."
     },
     {
       step: 5,
@@ -431,7 +433,7 @@ window.__INVERSA_CFG__ = {
       lPick: true,
       badge: "L horizontal · toco y = x y giro 90°",
       work: "(0, −4) → (−4, −4) → <span class=\"inv\">(−4, 0)</span>",
-      caption: "<span class=\"paso\">Paso 5b:</span> desde <span class=\"hl-f\">(0, −4)</span> avanzo en <strong>horizontal</strong> hasta <span class=\"hl-axis\">y = x</span> en (−4, −4) y giro 90° hasta <span class=\"hl-g\">(−4, 0)</span>."
+      caption: "<span class=\"paso\">Paso 5b:</span> <span class=\"hl-f\">(0, −4)</span> está sobre el <strong>eje y</strong>. Avanzo en <strong>horizontal</strong> hasta <span class=\"hl-axis\">y = x</span> en (−4, −4) y giro 90° hasta <span class=\"hl-g\">(−4, 0)</span> sobre el <strong>eje x</strong>."
     },
     {
       step: 5,
@@ -444,9 +446,9 @@ window.__INVERSA_CFG__ = {
       yxT: 1,
       showLTeach: true,
       lPick: true,
-      badge: "El segmento une el original con su imagen · ⟂ y = x",
+      badge: "El segmento une el punto original con su imagen y es perpendicular a y = x",
       work: "<span class=\"ok\">(0, −4) — (−4, 0)</span> ⟂ y = x",
-      caption: "<span class=\"paso\">Paso 5c:</span> el segmento une el punto original con su imagen y es <span class=\"ok\">perpendicular</span> a <span class=\"hl-axis\">y = x</span>."
+      caption: "<span class=\"paso\">Paso 5c:</span> el segmento une el punto original <span class=\"hl-f\">(0, −4)</span> con su imagen <span class=\"hl-g\">(−4, 0)</span> y es <span class=\"ok\">perpendicular</span> a <span class=\"hl-axis\">y = x</span>."
     },
     {
       step: 5,
@@ -474,9 +476,69 @@ window.__INVERSA_CFG__ = {
       yxT: 1,
       showLTeach: true,
       lPick: true,
-      badge: "El segmento une el original con su imagen · ⟂ y = x",
+      badge: "El segmento une el punto original con su imagen y es perpendicular a y = x",
       work: "<span class=\"ok\">(−2, 2) — (2, −2)</span> ⟂ y = x",
-      caption: "<span class=\"paso\">Paso 5e:</span> otra vez: el segmento <span class=\"hl-f\">P</span>—<span class=\"hl-g\">P′</span> es <span class=\"ok\">perpendicular</span> al espejo <span class=\"hl-axis\">y = x</span>."
+      caption: "<span class=\"paso\">Paso 5e:</span> el segmento une <span class=\"hl-f\">(−2, 2)</span> con su imagen <span class=\"hl-g\">(2, −2)</span> y es <span class=\"ok\">perpendicular</span> a <span class=\"hl-axis\">y = x</span>."
+    },
+    {
+      step: 5,
+      anim: "lPath",
+      lIndex: 2,
+      dur: 900,
+      wait: 450,
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      showLTeach: true,
+      lPick: true,
+      badge: "L vertical · toco y = x y giro 90°",
+      work: "(−3, 5) → (−3, −3) → <span class=\"inv\">(5, −3)</span>",
+      caption: "<span class=\"paso\">Paso 5f:</span> retícula <span class=\"hl-f\">(−3, 5)</span>: vertical hasta <span class=\"hl-axis\">(−3, −3)</span> sobre y = x y giro 90° hasta <span class=\"hl-g\">(5, −3)</span>."
+    },
+    {
+      step: 5,
+      anim: "perpSeg",
+      lIndex: 2,
+      dur: 700,
+      wait: 900,
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      showLTeach: true,
+      lPick: true,
+      badge: "El segmento une el punto original con su imagen y es perpendicular a y = x",
+      work: "<span class=\"ok\">(−3, 5) — (5, −3)</span> ⟂ y = x",
+      caption: "<span class=\"paso\">Paso 5g:</span> <span class=\"hl-f\">(−3, 5)</span> se une con <span class=\"hl-g\">(5, −3)</span> · PP′ es <span class=\"ok\">perpendicular</span> a <span class=\"hl-axis\">y = x</span>."
+    },
+    {
+      step: 5,
+      anim: "lPath",
+      lIndex: 3,
+      dur: 900,
+      wait: 450,
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      showLTeach: true,
+      lPick: true,
+      badge: "L horizontal · toco y = x y giro 90°",
+      work: "(1, −7) → (−7, −7) → <span class=\"inv\">(−7, 1)</span>",
+      caption: "<span class=\"paso\">Paso 5h:</span> retícula <span class=\"hl-f\">(1, −7)</span>: horizontal hasta <span class=\"hl-axis\">(−7, −7)</span> y giro 90° hasta <span class=\"hl-g\">(−7, 1)</span>."
+    },
+    {
+      step: 5,
+      anim: "perpSeg",
+      lIndex: 3,
+      dur: 700,
+      wait: 900,
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      showLTeach: true,
+      lPick: true,
+      badge: "El segmento une el punto original con su imagen y es perpendicular a y = x",
+      work: "<span class=\"ok\">(1, −7) — (−7, 1)</span> ⟂ y = x",
+      caption: "<span class=\"paso\">Paso 5i:</span> <span class=\"hl-f\">(1, −7)</span> se une con <span class=\"hl-g\">(−7, 1)</span> · PP′ es <span class=\"ok\">perpendicular</span> a <span class=\"hl-axis\">y = x</span>."
     },
     {
       step: 6,
