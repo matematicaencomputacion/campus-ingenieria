@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 173 · Economía · 13 · palets · play</title>
+<title>Lección 159 · Economía · ingreso máximo · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -77,6 +77,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
 }
 .band-row:last-child { margin-bottom: 0; }
+.band-row.on { color: #e9eef7; font-weight: 700; }
 .band-swatch {
   width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
@@ -100,11 +101,30 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
   border-radius: 0 2px 2px 0; background: var(--accent);
 }
+.expr-row.phase-ask::before { background: var(--amber); }
 .expr-formula {
   font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.86rem;
   color: var(--ink); padding-left: 6px; line-height: 1.55;
 }
 .hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
+}
+.chip.teal { color: #2dd4bf; border-color: rgba(45,212,191,0.5); }
+.chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
+.chip.coral { color: #fb7185; border-color: rgba(251,113,133,0.5); }
+.chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
+.chip.purple { color: #c4b5fd; border-color: rgba(167,139,250,.5); }
+.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
+.chip.on { box-shadow: 0 0 10px rgba(255,191,0,.35); border-color: #FFBF00; color: #FFBF00; }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24;
+  margin-left: 6px;
+}
 .graph-wrap { position: relative; min-width: 0; }
 canvas#c {
   width: 100%; height: auto; display: block; border-radius: 10px;
@@ -134,6 +154,7 @@ canvas#c {
 .work-panel .ok { color: #5ad4a8; }
 .work-panel .bad { color: #ff7b7b; }
 .work-panel .paso { color: #60a5fa; }
+.work-panel .empty { color: #94a3b8; }
 .caption {
   margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
 }
@@ -167,6 +188,22 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .expr-formula .ok { color: #5ad4a8; }
 .expr-formula .hl { color: #FFBF00; }
 .expr-formula .bad { color: #ff7b7b; }
+.expr-formula .empty { color: #94a3b8; }
+.gloss-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.gloss-list li {
+  font-size: 0.78rem; line-height: 1.4; color: #9fb0c7;
+  padding: 7px 9px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.gloss-list li.on { color: #e9eef7; border-color: rgba(255,191,0,.45); background: rgba(255,191,0,.08); }
+.gloss-list .k { font-weight: 800; color: #fbbf24; font-family: ui-monospace, Menlo, monospace; }
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace;
+  font-weight: 800;
+}
+.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.88em; }
+.frac .num { border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.frac .den { padding-top: 1px; }
 </style>
 </head>
 <body>
@@ -174,8 +211,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 173</span> · Economía · 13 · palets · play
-        <span class="sub">venta 50 · costo 40/u. · fijo 50000/mes · clave 5000, 10000, 30000, p=52,3, x=3400</span>
+      <h1><span class="lesson-num">Lección 159</span> · Economía · ingreso máximo · play
+        <span class="sub">I = 100x − 2x² · máx en x=25, I=1250</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -191,41 +228,38 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" aria-label="Qué es esto, pasos y fórmula">
         <div class="contrast-card">
-          <p class="contrast-kicker">UDL · palets</p>
+          <p class="contrast-kicker">1 · Qué es esto</p>
           <ul class="contrast-bullets">
-            <li>Venden a <span class="hl">50</span>, cuestan <span class="hl">40</span> cada uno, más <span class="hl">50000</span> fijos al mes. I=50x · C=50000+40x · B=10x−50000.</li>
-            <li>a) umbral B=0 → 5000 · b) B=10% de I → 10000 · c) B=20% de C → 30000 · d) 4000 u. · precio · e) x=3400.</li>
+            <li>El <span class="hl">ingreso</span> I(x) = p(x)·x es lo que entra a la caja al vender x unidades.</li>
+            <li>Si p = 100 − 2x (demanda que baja), I es una <strong>parábola</strong> que abre hacia abajo → tiene un máximo.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Clave a–e</div>
-          <div class="band-row"><span class="band-swatch teal"></span><span>I=50x</span></div>
-          <div class="band-row"><span class="band-swatch amber"></span><span>C=50000+40x</span></div>
-          <div class="band-row"><span class="band-swatch purple"></span><span>B=10x−50000</span></div>
+          <div class="band-legend-title">Máximo de una parábola</div>
+          <div class="band-row"><span class="band-swatch teal"></span><span>I(x) = ax²+bx+c · vértice x = −b/(2a)</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> I, C, B</li>
-            <li data-step="2"><span class="n">2</span> a) B=0 → 5000</li>
-            <li data-step="3"><span class="n">3</span> b) B=0,1 I → 10000</li>
-            <li data-step="4"><span class="n">4</span> c) B=0,2 C → 30000</li>
-            <li data-step="5"><span class="n">5</span> d) 4000 u. · p</li>
-            <li data-step="6"><span class="n">6</span> e) x=3400</li>
+            <li data-step="1"><span class="n">1</span> Qué es ingreso</li>
+            <li data-step="2"><span class="n">2</span> Armar I(x) = p·x</li>
+            <li data-step="3"><span class="n">3</span> Parábola que abre hacia abajo</li>
+            <li data-step="4"><span class="n">4</span> Vértice x = −b/(2a) = 25</li>
+            <li data-step="5"><span class="n">5</span> I(25) = 1250</li>
+            <li data-step="6"><span class="n">6</span> Leer el máximo</li>
           </ol>
-        </div>
-        <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">I=50x · C=50000+40x · B=10x−50000</div>
-          <p class="hint-mini" id="hintMini">▶ Play</p>
+        </div>        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">p(x) = 100 − 2x</div>
+          <p class="hint-mini" id="hintMini">▶ Play · ingreso máximo</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-12-cafeteras-play.html" title="Lección 160: Economía · 12 · cafeteras · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-14-gas-play.html" title="Lección 161: Economía · 14 · gas · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Ingreso, costo y beneficio de palets"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-06-play.html" title="Lección 166: Economía · 06 · artículo de lujo · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-08-play.html" title="Lección 169: Economía · 08 · p(x)=60−x · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Ingreso cuadrático y máximo"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · palets: venta 50, costo 40, fijo 50000.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · ingreso I(x) y su máximo.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -235,7 +269,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Clave a–e: 5000 · 10000 · 30000 · p=52,3 · x=3400</p>
+    <p class="hint">I(x)=100x−2x² · vértice x=25 · I=1250</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -246,66 +280,66 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var EP = window.EconomiaPlay;
   var C = EP.COLORS;
   var canvas = document.getElementById("c");
+
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 32000, ymin: -60000, ymax: 280000,
-    xlabel: "palets x", ylabel: "u.m.",
-    xTicks: [0, 3400, 4000, 5000, 10000, 30000],
-    yTicks: [0, 50000, 100000, 200000]
+    xmin: 0, xmax: 55, ymin: 0, ymax: 1400,
+    xlabel: "cantidad x", ylabel: "ingreso I",
+    xTicks: [0, 10, 20, 25, 30, 40, 50],
+    yTicks: [0, 250, 500, 750, 1000, 1250]
   });
-  function Iof(x) { return 50 * x; }
-  function Cof(x) { return 50000 + 40 * x; }
-  function Bof(x) { return 10 * x - 50000; }
+  function Iof(x) { return 100 * x - 2 * x * x; }
   function draw(api) {
     var v = api.vis;
     g.size(); g.drawAxes();
-    if (v.I) g.plotFn(Iof, 0, 30000, { color: C.ingreso, lw: 2.4 });
-    if (v.C) g.plotFn(Cof, 0, 30000, { color: C.costo, lw: 2.4 });
-    if (v.B) g.plotFn(Bof, 0, 30000, { color: C.beneficio, lw: 2.8 });
-    if (v.a) { g.point(5000, 0, { color: C.amber }); g.label(5000, 8000, "a 5000", { color: C.amber }); }
-    if (v.b) { g.point(10000, Bof(10000), { color: C.teal }); g.label(10000, Bof(10000), "b 10000", { color: C.teal }); }
-    if (v.c) { g.point(30000, Bof(30000), { color: C.beneficio }); g.label(24000, Bof(30000), "c 30000", { color: C.beneficio }); }
-    if (v.d) { g.vLine(4000, { color: C.coral, lw: 1.4, dash: [5, 4] }); g.point(4000, Cof(4000), { color: C.coral }); }
-    if (v.e) { g.point(3400, Bof(3400), { color: C.empty }); g.label(3400, Bof(3400), "e 3400", { color: C.empty }); }
+    if (v.curve) g.plotFn(Iof, 0, 50, { color: C.ingreso, lw: 3.2 });
+    if (v.axis50) g.point(50, 0, { color: C.empty });
+    if (v.vert) {
+      g.vLine(25, { color: C.amber, lw: 1.6, dash: [5, 4] });
+      g.hLine(1250, { color: C.amber, lw: 1.4, dash: [5, 4] });
+      g.point(25, 1250, { color: C.amber });
+      g.label(25, 1250, "máx (25; 1250)", { color: C.amber });
+    }
     if (v.badge) g.badge(v.badge);
   }
   EP.bindPlay({
     totalPhases: 6,
-    idleCaption: "Presioná <strong>▶ Play</strong> · palets: venta 50, costo 40, fijo 50000.",
+    idleCaption: "Presioná <strong>▶ Play</strong> · ingreso I(x) y su máximo.",
     idleVis: {},
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1600, vis: { I: true, C: true, B: true, badge: "1 · I, C, B" },
-          work: '<span class="paso">1</span> · I=50x · C=50000+40x · B=10x−50000',
-          cap: 'Margen unitario 10. El fijo 50000 se paga todos los meses.',
-          htmls: [{ id: "exprFormula", value: "B = 10x − 50000" }] },
-        { phase: 2, wait: 1700, vis: { I: true, C: true, B: true, a: true, badge: "a) B=0" },
-          work: '<span class="paso">2</span> · <span class="ok">a) (50−40)x = 50000 → x = 5000</span>',
-          cap: 'Umbral: el margen de 10 cubre el fijo. Clave a) 5000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">a) x = 5000</span>' }] },
-        { phase: 3, wait: 1800, vis: { I: true, C: true, B: true, a: true, b: true, badge: "b) B=0,1 I" },
-          work: '<span class="paso">3</span> · 10x−50000 = 0,1·50x → 10x−5x=50000 → <span class="ok">x=10000</span>',
-          cap: 'Beneficio = 10% del ingreso. Clave b) 10000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">b) x = 10000</span>' }] },
-        { phase: 4, wait: 1900, vis: { I: true, C: true, B: true, a: true, b: true, c: true, badge: "c) B=0,2 C" },
-          work: '<span class="paso">4</span> · 10x−50000 = 0,2(40x+50000) → 10x−50000=8x+10000 → <span class="ok">x=30000</span>',
-          cap: 'Beneficio = 20% del costo. Clave c) 30000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">c) x = 30000</span>' }] },
-        { phase: 5, wait: 1900, vis: { I: true, C: true, B: true, a: true, d: true, badge: "d) 4000 u." },
-          work: '<span class="paso">5</span> · C(4000)=210000 · C̄=52,5 · <span class="ok">clave d) p=52,3</span>',
-          cap: 'A 4000 palets el costo medio es 52,5. La clave da el precio p=52,3 (cubrir costos).',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">d) 4000 u. · p = 52,3</span>' }] },
-        { phase: 6, wait: 1600, vis: { I: true, C: true, B: true, a: true, d: true, e: true, badge: "e) x=3400" },
-          work: '<span class="paso">6</span> · <span class="ok">e) x = 3400</span> · dato de clave',
-          cap: '<strong>Cierre:</strong> 5000, 10000, 30000, p=52,3, x=3400.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">e) x = 3400</span>' }] }
+        { phase: 1, wait: 1500, vis: { badge: "1 · qué es ingreso" },
+          work: '<span class="paso">1</span> · I = precio × cantidad · lo que entra a la caja',
+          cap: 'La demanda es p = 100 − 2x: para vender más, hay que bajar el precio.',
+          htmls: [{ id: "exprFormula", value: "p(x) = 100 − 2x" }] },
+        { phase: 2, wait: 1700, vis: { curve: true, axis50: true, badge: "I = p·x" },
+          work: '<span class="paso">2</span> · I(x) = (100−2x)·x = <span class="ok">100x − 2x²</span>',
+          cap: 'Multiplicamos: cada una de las x unidades se vende a (100−2x). Sale una cuadrática.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">I(x) = 100x − 2x²</span>' }] },
+        { phase: 3, wait: 1600, vis: { curve: true, axis50: true, badge: "abre hacia abajo" },
+          work: '<span class="paso">3</span> · a = −2 &lt; 0 → parábola hacia abajo → hay máximo',
+          cap: 'Como a es negativo, el ingreso sube y después baja (si regalás el producto, I=0 en x=50).',
+          htmls: [{ id: "exprFormula", value: "a = −2 &lt; 0 · hay máximo" }] },
+        { phase: 4, wait: 1800, vis: { curve: true, vert: true, badge: "x = −b/(2a) = 25" },
+          work: '<span class="paso">4</span> · x = −b/(2a) = −100 / (2·(−2)) = −100/−4 = <span class="ok">25</span>',
+          cap: 'El vértice está en x = −b/(2a). Acá b=100, a=−2 → x=25 unidades.',
+          htmls: [{ id: "exprFormula", value: "x_máx = 25" }] },
+        { phase: 5, wait: 1700, vis: { curve: true, vert: true, badge: "I(25)=1250" },
+          work: '<span class="paso">5</span> · I(25) = 100·25 − 2·25² = 2500 − 1250 = <span class="ok">1250</span>',
+          cap: 'Sustituimos x=25 en I. El ingreso máximo es 1250.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">I(25) = 1250</span>' }] },
+        { phase: 6, wait: 1500, vis: { curve: true, vert: true, badge: "máximo (25; 1250)" },
+          work: '<span class="ok">máximo en x=25 · I=1250</span>',
+          cap: '<strong>Cierre:</strong> para maximizar el ingreso hay que vender 25 unidades (p=100−50=50).',
+          htmls: [{ id: "exprFormula", value: "máx I = 1250 en x = 25" }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> palets · clave a–e: 5000, 10000, 30000, p=52,3, x=3400.', 'palets listo');
+        api.finish('<strong>Cierre:</strong> I=100x−2x² · máximo en x=25, I=1250.', 'ingreso listo');
       });
     }
   });
-  window.__L173 = { I: Iof, C: Cof, B: Bof, clave: [5000, 10000, 30000, 52.3, 3400] };
+  window.__L159 = { I: function (x) { return 100 * x - 2 * x * x; }, xmax: 25, Imax: 1250 };
 })();
+
 </script>
 </body>
 </html>

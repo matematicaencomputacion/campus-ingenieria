@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 170 · Economía · 10 · demanda x=10−… · play</title>
+<title>Lección 171 · Economía · 10 · demanda x=10−p/3 · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -174,8 +174,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 170</span> · Economía · 10 · demanda x=10−p/2 · play
-        <span class="sub">x = 10 − p/2 → p = 20 − 2x · I = 20x − 2x² · máx x=5, I=50</span>
+      <h1><span class="lesson-num">Lección 171</span> · Economía · 10 · demanda x=10−p/3 · play
+        <span class="sub">a) p=24→x=2 · b) x=9→p=3 · c) p_máx=30 · d) x_gratis=10 · e) gráfico</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -191,40 +191,40 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" aria-label="Qué es esto, pasos y fórmula">
         <div class="contrast-card">
-          <p class="contrast-kicker">UDL · despeje</p>
+          <p class="contrast-kicker">UDL · leer la demanda</p>
           <ul class="contrast-bullets">
-            <li>A veces la guía da la <span class="hl">cantidad en función del precio</span>: x = 10 − p/2.</li>
-            <li>Para el ingreso hace falta p en función de x: p = 20 − 2x, entonces I = 20x − 2x².</li>
+            <li>La guía da la cantidad: <span class="hl">x = 10 − p/3</span>. No hace falta I: hay que <strong>evaluar y despejar</strong>.</li>
+            <li>Equivalente: p = 30 − 3x. Precio máximo (x=0) es 30; si p=0 se piden 10 unidades.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Dos curvas</div>
-          <div class="band-row"><span class="band-swatch coral"></span><span>Coral — demanda p(x)</span></div>
-          <div class="band-row"><span class="band-swatch teal"></span><span>Teal — ingreso I(x)</span></div>
+          <div class="band-legend-title">Ítems a–e</div>
+          <div class="band-row"><span class="band-swatch coral"></span><span>demanda p = 30 − 3x</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span>puntos (2;24) (9;3) (0;30) (10;0)</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Leer x = 10 − p/2</li>
-            <li data-step="2"><span class="n">2</span> Despejar p = 20 − 2x</li>
-            <li data-step="3"><span class="n">3</span> Armar I = p·x</li>
-            <li data-step="4"><span class="n">4</span> Vértice x = 5</li>
-            <li data-step="5"><span class="n">5</span> I(5) = 50</li>
-            <li data-step="6"><span class="n">6</span> Cierre</li>
+            <li data-step="1"><span class="n">1</span> Leer x = 10 − p/3</li>
+            <li data-step="2"><span class="n">2</span> a) p=24 → x=2</li>
+            <li data-step="3"><span class="n">3</span> b) x=9 → p=3</li>
+            <li data-step="4"><span class="n">4</span> c) x=0 → p=30</li>
+            <li data-step="5"><span class="n">5</span> d) p=0 → x=10</li>
+            <li data-step="6"><span class="n">6</span> e) Gráfico</li>
           </ol>
         </div>
         <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">x = 10 − p/2</div>
+          <div class="expr-formula" id="exprFormula">x = 10 − p/3</div>
           <p class="hint-mini" id="hintMini">▶ Play</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-09-play.html" title="Lección 169: Economía · 09 · sillones · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-11-play.html" title="Lección 171: Economía · 11 · I, C y B · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Demanda invertida e ingreso"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-09-play.html" title="Lección 170: Economía · 09 · sillones · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-11-play.html" title="Lección 172: Economía · 11 · I, C y B · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Demanda x=10−p/3 y puntos a–d"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · demanda x=10−p/2: despejar p e I.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · demanda x=10−p/3: evaluar y graficar.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -234,7 +234,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">x=10−p/2 ⇒ p=20−2x · I=20x−2x² · máx (5; 50)</p>
+    <p class="hint">a) x=2 · b) p=3 · c) p=30 · d) x=10 · e) recta p=30−3x</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -246,64 +246,59 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var C = EP.COLORS;
   var canvas = document.getElementById("c");
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 12, ymin: -5, ymax: 55,
-    xlabel: "cantidad x", ylabel: "p · I",
-    xTicks: [0, 2, 5, 8, 10],
-    yTicks: [0, 10, 20, 32, 50]
+    xmin: -1, xmax: 12, ymin: -4, ymax: 34,
+    xlabel: "cantidad x", ylabel: "precio p",
+    xTicks: [0, 2, 9, 10],
+    yTicks: [0, 3, 24, 30]
   });
-  function pof(x) { return 20 - 2 * x; }
-  function Iof(x) { return 20 * x - 2 * x * x; }
+  function pof(x) { return 30 - 3 * x; }
   function draw(api) {
     var v = api.vis;
     g.size(); g.drawAxes();
-    if (v.pcurve) g.plotFn(pof, 0, 10, { color: C.demanda, lw: 2.2 });
-    if (v.curve) g.plotFn(Iof, 0, 10, { color: C.ingreso, lw: 3.2 });
-    if (v.vert) {
-      g.vLine(5, { color: C.amber, lw: 1.6, dash: [5, 4] });
-      g.point(5, 50, { color: C.amber });
-      g.label(5, 50, "máx I=50", { color: C.amber });
-      g.point(5, 10, { color: C.demanda });
-      g.label(5, 10, "p=10", { color: C.demanda, dy: 16 });
-    }
+    if (v.curve) g.plotFn(pof, 0, 10, { color: C.demanda, lw: 3.2 });
+    if (v.a) { g.point(2, 24, { color: C.amber }); g.label(2, 24, "a (2; 24)", { color: C.amber }); }
+    if (v.b) { g.point(9, 3, { color: C.teal }); g.label(9, 3, "b (9; 3)", { color: C.teal }); }
+    if (v.c) { g.point(0, 30, { color: C.beneficio }); g.label(0, 30, "c p=30", { color: C.beneficio }); }
+    if (v.d) { g.point(10, 0, { color: C.empty }); g.label(10, 0, "d x=10", { color: C.empty, dy: 16, baseline: "top" }); }
     if (v.badge) g.badge(v.badge);
   }
   EP.bindPlay({
     totalPhases: 6,
-    idleCaption: "Presioná <strong>▶ Play</strong> · demanda x=10−p/2: despejar p e I.",
+    idleCaption: "Presioná <strong>▶ Play</strong> · demanda x=10−p/3: evaluar y graficar.",
     idleVis: {},
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1500, vis: { badge: "1 · x en función de p" },
-          work: '<span class="paso">1</span> · x = 10 − p/2 · cantidad según el precio',
-          cap: 'Así viene a veces el enunciado. Todavía no se puede escribir I = p·x en x.',
-          htmls: [{ id: "exprFormula", value: "x = 10 − p/2" }] },
-        { phase: 2, wait: 1800, vis: { pcurve: true, badge: "despeje p(x)" },
-          work: '<span class="paso">2</span> · p/2 = 10 − x → p = <span class="ok">20 − 2x</span>',
-          cap: 'Despejamos p para tener el precio en función de la cantidad.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">p = 20 − 2x</span>' }] },
-        { phase: 3, wait: 1600, vis: { pcurve: true, curve: true, badge: "I = p·x" },
-          work: '<span class="paso">3</span> · I = (20−2x)·x = <span class="ok">20x − 2x²</span>',
-          cap: 'Recién ahora el ingreso es una función de x.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">I(x) = 20x − 2x²</span>' }] },
-        { phase: 4, wait: 1600, vis: { pcurve: true, curve: true, vert: true, badge: "x = 5" },
-          work: '<span class="paso">4</span> · x = −20 / (2·(−2)) = <span class="ok">5</span>',
-          cap: 'Vértice en x=5. Precio p=20−10=10.',
-          htmls: [{ id: "exprFormula", value: "x_máx = 5" }] },
-        { phase: 5, wait: 1500, vis: { pcurve: true, curve: true, vert: true, badge: "I(5)=50" },
-          work: '<span class="paso">5</span> · I(5) = 20·5 − 2·25 = <span class="ok">50</span>',
-          cap: 'Ingreso máximo 50. También I = 10·5.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">I(5) = 50</span>' }] },
-        { phase: 6, wait: 1400, vis: { pcurve: true, curve: true, vert: true, badge: "cierre" },
-          work: '<span class="ok">primero despejá p(x), después I = p·x</span>',
-          cap: '<strong>Cierre:</strong> si te dan x(p), invertí la demanda antes de maximizar.',
-          htmls: [{ id: "exprFormula", value: "máx I = 50 en x = 5" }] }
+        { phase: 1, wait: 1500, vis: { badge: "1 · x = 10 − p/3" },
+          work: '<span class="paso">1</span> · cantidad en función del precio · p/3 = 10 − x → p = 30 − 3x',
+          cap: 'Para graficar conviene p en función de x. Las preguntas a–d se pueden hacer en cualquiera de las dos.',
+          htmls: [{ id: "exprFormula", value: "x = 10 − p/3  ⇔  p = 30 − 3x" }] },
+        { phase: 2, wait: 1500, vis: { curve: true, a: true, badge: "a) p=24" },
+          work: '<span class="paso">2</span> · <span class="ok">a) x = 10 − 24/3 = 10 − 8 = 2</span>',
+          cap: 'Si el precio es 24, se venden 2 unidades.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">a) p=24 → x=2</span>' }] },
+        { phase: 3, wait: 1500, vis: { curve: true, a: true, b: true, badge: "b) x=9" },
+          work: '<span class="paso">3</span> · <span class="ok">b) 9 = 10 − p/3 → p/3 = 1 → p = 3</span>',
+          cap: 'Para vender 9 unidades hay que bajar el precio a 3.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">b) x=9 → p=3</span>' }] },
+        { phase: 4, wait: 1400, vis: { curve: true, a: true, b: true, c: true, badge: "c) p máx" },
+          work: '<span class="paso">4</span> · <span class="ok">c) x=0 → p=30</span> · precio máximo (nadie compra)',
+          cap: 'Intercepto vertical: el precio más alto del modelo.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">c) p_máx = 30</span>' }] },
+        { phase: 5, wait: 1400, vis: { curve: true, a: true, b: true, c: true, d: true, badge: "d) gratis" },
+          work: '<span class="paso">5</span> · <span class="ok">d) p=0 → x=10</span> · si es gratis piden 10',
+          cap: 'Intercepto horizontal: saturación a precio nulo.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">d) x = 10 si p=0</span>' }] },
+        { phase: 6, wait: 1400, vis: { curve: true, a: true, b: true, c: true, d: true, badge: "e) gráfico" },
+          work: '<span class="paso">6</span> · <span class="ok">e)</span> recta que pasa por (0;30) y (10;0)',
+          cap: '<strong>Cierre:</strong> a)2 · b)3 · c)30 · d)10 · e) p=30−3x.',
+          htmls: [{ id: "exprFormula", value: "e) p = 30 − 3x" }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> x=10−p/2 ⇒ p=20−2x · máx I=50 en x=5.', 'despeje listo');
+        api.finish('<strong>Cierre:</strong> x=10−p/3 · a)2 · b)p=3 · c)30 · d)10.', 'demanda lista');
       });
     }
   });
-  window.__L170 = { p: pof, I: Iof, xmax: 5, Imax: 50 };
+  window.__L171 = { xOfP: function (p) { return 10 - p / 3; }, pOfX: pof };
 })();
 </script>
 </body>

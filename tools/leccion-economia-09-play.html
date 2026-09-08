@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 169 · Economía · 09 · sillones p=1500−3x · play</title>
+<title>Lección 170 · Economía · 09 · sillones · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -174,8 +174,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 169</span> · Economía · 09 · sillones · play
-        <span class="sub">p = 1500 − 3x · I = 1500x − 3x² · máx x=250, I=187500</span>
+      <h1><span class="lesson-num">Lección 170</span> · Economía · 09 · sillones · play
+        <span class="sub">p=1500−3x · C=66500+20x · capacidad 300 · B(35)=−18375</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -193,38 +193,39 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="contrast-card">
           <p class="contrast-kicker">UDL · sillones</p>
           <ul class="contrast-bullets">
-            <li>Cada sillón se vende a <span class="hl">p = 1500 − 3x</span>.</li>
-            <li>I(x) = 1500x − 3x². Vértice x = 1500/6 = <strong>250</strong>, I = <strong>187 500</strong>.</li>
+            <li>Sillones a <span class="hl">p = 1500 − 3x</span>. Costo <span class="hl">C = 66500 + 20x</span>. La planta no pasa de <strong>300</strong> unidades.</li>
+            <li>I = 1500x − 3x² · B = I − C = −3x² + 1480x − 66500. En x=35 hay <span class="bad">pérdida</span> −18375.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Lenguaje visual</div>
-          <div class="band-row"><span class="band-swatch teal"></span><span>Teal — I(x)</span></div>
-          <div class="band-row"><span class="band-swatch amber"></span><span>Ámbar — máximo (250; 187500)</span></div>
+          <div class="band-legend-title">Tres curvas · Dom ≤ 300</div>
+          <div class="band-row"><span class="band-swatch teal"></span><span>I = 1500x − 3x²</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span>C = 66500 + 20x</span></div>
+          <div class="band-row"><span class="band-swatch purple"></span><span>B(35) = −18375</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Demanda de sillones</li>
-            <li data-step="2"><span class="n">2</span> Armar I = p·x</li>
-            <li data-step="3"><span class="n">3</span> a = −3 &lt; 0</li>
-            <li data-step="4"><span class="n">4</span> x = 250</li>
-            <li data-step="5"><span class="n">5</span> I(250) = 187500</li>
+            <li data-step="1"><span class="n">1</span> Datos y capacidad</li>
+            <li data-step="2"><span class="n">2</span> C = 66500+20x</li>
+            <li data-step="3"><span class="n">3</span> I = 1500x−3x²</li>
+            <li data-step="4"><span class="n">4</span> B = I−C</li>
+            <li data-step="5"><span class="n">5</span> B(35) = −18375</li>
             <li data-step="6"><span class="n">6</span> Cierre</li>
           </ol>
         </div>
         <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">p(x) = 1500 − 3x</div>
+          <div class="expr-formula" id="exprFormula">p=1500−3x · C=66500+20x · x≤300</div>
           <p class="hint-mini" id="hintMini">▶ Play</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-08-play.html" title="Lección 168: Economía · 08 · p(x)=60−x · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-10-play.html" title="Lección 170: Economía · 10 · demanda x=10−… · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Ingreso por venta de sillones"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-08-play.html" title="Lección 169: Economía · 08 · p(x)=60−x · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-10-play.html" title="Lección 171: Economía · 10 · demanda x=10−p/3 · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Ingreso, costo y beneficio de sillones"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · sillones p=1500−3x.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · sillones: I, C y B(35).</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -234,7 +235,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">I=1500x−3x² · x=250 · I=187500 · p=750</p>
+    <p class="hint">B=−3x²+1480x−66500 · B(35)=−18375 · pérdida</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -246,61 +247,65 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var C = EP.COLORS;
   var canvas = document.getElementById("c");
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 520, ymin: 0, ymax: 210000,
-    xlabel: "sillones x", ylabel: "ingreso I",
-    xTicks: [0, 100, 250, 400, 500],
-    yTicks: [0, 50000, 100000, 150000, 187500]
+    xmin: 0, xmax: 310, ymin: -80000, ymax: 220000,
+    xlabel: "sillones x", ylabel: "u.m.",
+    xTicks: [0, 35, 100, 200, 300],
+    yTicks: [-18375, 0, 66500, 120000, 187500]
   });
   function Iof(x) { return 1500 * x - 3 * x * x; }
+  function Cof(x) { return 66500 + 20 * x; }
+  function Bof(x) { return Iof(x) - Cof(x); }
   function draw(api) {
     var v = api.vis;
     g.size(); g.drawAxes();
-    if (v.curve) g.plotFn(Iof, 0, 500, { color: C.ingreso, lw: 3.2 });
-    if (v.vert) {
-      g.vLine(250, { color: C.amber, lw: 1.6, dash: [5, 4] });
-      g.hLine(187500, { color: C.amber, lw: 1.4, dash: [5, 4] });
-      g.point(250, 187500, { color: C.amber });
-      g.label(250, 187500, "máx (250; 187500)", { color: C.amber });
+    if (v.cap) g.vLine(300, { color: C.empty, lw: 1.6, dash: [4, 4] });
+    if (v.I) g.plotFn(Iof, 0, 300, { color: C.ingreso, lw: 2.6 });
+    if (v.C) g.plotFn(Cof, 0, 300, { color: C.costo, lw: 2.4 });
+    if (v.B) g.plotFn(Bof, 0, 300, { color: C.beneficio, lw: 2.8 });
+    if (v.p35) {
+      g.vLine(35, { color: C.coral, lw: 1.5, dash: [5, 4] });
+      g.point(35, Bof(35), { color: C.coral });
+      g.label(35, Bof(35), "B(35)=−18375", { color: C.coral });
     }
     if (v.badge) g.badge(v.badge);
   }
   EP.bindPlay({
     totalPhases: 6,
-    idleCaption: "Presioná <strong>▶ Play</strong> · sillones p=1500−3x.",
+    idleCaption: "Presioná <strong>▶ Play</strong> · sillones: I, C y B(35).",
     idleVis: {},
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1400, vis: { badge: "1 · p = 1500 − 3x" },
-          work: '<span class="paso">1</span> · precio de lista 1500 · baja 3 por cada sillón extra',
-          cap: 'A x=0, p=1500. A más sillones, el mercado exige un precio más bajo.',
-          htmls: [{ id: "exprFormula", value: "p(x) = 1500 − 3x" }] },
-        { phase: 2, wait: 1600, vis: { curve: true, badge: "I = 1500x − 3x²" },
-          work: '<span class="paso">2</span> · I(x) = (1500−3x)·x = <span class="ok">1500x − 3x²</span>',
-          cap: 'Ingreso = precio × cantidad. Sale una cuadrática.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">I(x) = 1500x − 3x²</span>' }] },
-        { phase: 3, wait: 1400, vis: { curve: true, badge: "abre hacia abajo" },
-          work: '<span class="paso">3</span> · a = −3 &lt; 0 → hay máximo',
-          cap: 'p se anula en x=500. Ahí I=0 otra vez.',
-          htmls: [{ id: "exprFormula", value: "a = −3 &lt; 0" }] },
-        { phase: 4, wait: 1700, vis: { curve: true, vert: true, badge: "x = 250" },
-          work: '<span class="paso">4</span> · x = −1500 / (2·(−3)) = 1500/6 = <span class="ok">250</span>',
-          cap: 'Doscientos cincuenta sillones. Precio p(250)=1500−750=750.',
-          htmls: [{ id: "exprFormula", value: "x_máx = 250" }] },
-        { phase: 5, wait: 1700, vis: { curve: true, vert: true, badge: "I=187500" },
-          work: '<span class="paso">5</span> · I(250) = 1500·250 − 3·62500 = 375000 − 187500 = <span class="ok">187500</span>',
-          cap: 'Ingreso máximo: 187 500. También I = 750·250.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">I(250) = 187500</span>' }] },
-        { phase: 6, wait: 1400, vis: { curve: true, vert: true, badge: "cierre" },
-          work: '<span class="ok">máx en x=250 · I=187500 · p=750</span>',
-          cap: '<strong>Cierre:</strong> vender más de 250 sillones baja el ingreso.',
-          htmls: [{ id: "exprFormula", value: "máx I = 187500" }] }
+        { phase: 1, wait: 1500, vis: { cap: true, badge: "1 · capacidad 300" },
+          work: '<span class="paso">1</span> · p = 1500 − 3x · x ∈ [0, 300]',
+          cap: 'La planta no fabrica más de 300 sillones. El dominio del problema es un intervalo cerrado.',
+          htmls: [{ id: "exprFormula", value: "p = 1500 − 3x · x ≤ 300" }] },
+        { phase: 2, wait: 1500, vis: { cap: true, C: true, badge: "2 · C" },
+          work: '<span class="paso">2</span> · C(x) = <span class="ok">66500 + 20x</span> · fijo 66500 + 20 por unidad',
+          cap: 'Aunque no vendas nada, ya hay 66500 de costo fijo.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C = 66500 + 20x</span>' }] },
+        { phase: 3, wait: 1600, vis: { cap: true, C: true, I: true, badge: "3 · I" },
+          work: '<span class="paso">3</span> · I(x) = (1500−3x)·x = <span class="ok">1500x − 3x²</span>',
+          cap: 'Ingreso = precio × cantidad. No es el beneficio.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">I = 1500x − 3x²</span>' }] },
+        { phase: 4, wait: 1700, vis: { cap: true, C: true, I: true, B: true, badge: "4 · B = I−C" },
+          work: '<span class="paso">4</span> · B = (1500x−3x²) − (66500+20x) = <span class="ok">−3x² + 1480x − 66500</span>',
+          cap: 'Restamos término a término. El −20x se come parte del 1500x.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B = −3x² + 1480x − 66500</span>' }] },
+        { phase: 5, wait: 1900, vis: { cap: true, C: true, I: true, B: true, p35: true, badge: "5 · B(35)" },
+          work: '<span class="paso">5</span> · B(35) = −3·1225 + 1480·35 − 66500 = −3675 + 51800 − 66500 = <span class="bad">−18375</span>',
+          cap: 'Treinta y cinco sillones: <strong>pérdida</strong> 18375. El fijo todavía pesa más que el margen.',
+          htmls: [{ id: "exprFormula", value: '<span class="bad">B(35) = −18375 · pérdida</span>' }] },
+        { phase: 6, wait: 1400, vis: { cap: true, C: true, I: true, B: true, p35: true, badge: "cierre" },
+          work: '<span class="ok">C=66500+20x · I=1500x−3x² · B(35)=−18375</span>',
+          cap: '<strong>Cierre:</strong> a 35 unidades la empresa pierde. B&lt;0 no es un error de cuenta.',
+          htmls: [{ id: "exprFormula", value: "B(35) = −18375" }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> sillones · máx x=250, I=187500, p=750.', 'sillones listo');
+        api.finish('<strong>Cierre:</strong> sillones · B=−3x²+1480x−66500 · B(35)=−18375 (pérdida).', 'sillones listo');
       });
     }
   });
-  window.__L169 = { I: Iof, xmax: 250, Imax: 187500 };
+  window.__L170 = { I: Iof, C: Cof, B: Bof, B35: -18375 };
 })();
 </script>
 </body>

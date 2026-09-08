@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 168 · Economía · 08 · p(x)=60−x en cientos · play</title>
+<title>Lección 169 · Economía · 08 · p(x)=60−x en cientos · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -174,8 +174,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 168</span> · Economía · 08 · p(x)=60−x · play
-        <span class="sub">x en cientos · I = 60x − x² · máx x=30 cientos = 3000 u.</span>
+      <h1><span class="lesson-num">Lección 169</span> · Economía · 08 · p(x)=60−x · play
+        <span class="sub">p en miles $ · x en cientos · I=60x−x² · máx x=30, I=900</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -193,38 +193,38 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="contrast-card">
           <p class="contrast-kicker">UDL · unidades</p>
           <ul class="contrast-bullets">
-            <li>x se mide en <span class="hl">cientos</span>: x = 1 son 100 unidades reales.</li>
-            <li>p(x) = 60 − x. I(x) = 60x − x². El vértice x = 30 cientos = <strong>3000 unidades</strong>.</li>
+            <li>p(x) = 60 − x está en <span class="hl">miles de $</span>. x se mide en <span class="hl">cientos</span> de unidades.</li>
+            <li>I(x) = x(60−x) = 60x − x². Máximo en x = 30 cientos, I<sub>máx</sub> = 900.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Escala</div>
-          <div class="band-row"><span class="band-swatch teal"></span><span>Teal — I en escala de cientos</span></div>
-          <div class="band-row"><span class="band-swatch amber"></span><span>Ámbar — máximo x=30</span></div>
+          <div class="band-legend-title">Máximo</div>
+          <div class="band-row"><span class="band-swatch teal"></span><span>I = 60x − x²</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span>vértice x=30 · I=900</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> x en cientos</li>
-            <li data-step="2"><span class="n">2</span> Armar I = p·x</li>
+            <li data-step="1"><span class="n">1</span> Unidades</li>
+            <li data-step="2"><span class="n">2</span> I = x(60−x)</li>
             <li data-step="3"><span class="n">3</span> Vértice x = 30</li>
-            <li data-step="4"><span class="n">4</span> Pasar a unidades</li>
-            <li data-step="5"><span class="n">5</span> p = 0 en x = 60</li>
+            <li data-step="4"><span class="n">4</span> I(30) = 900</li>
+            <li data-step="5"><span class="n">5</span> p(30) = 30</li>
             <li data-step="6"><span class="n">6</span> Cierre</li>
           </ol>
         </div>
         <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">p(x) = 60 − x · x en cientos</div>
+          <div class="expr-formula" id="exprFormula">p(x) = 60 − x · miles $ · x en cientos</div>
           <p class="hint-mini" id="hintMini">▶ Play</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-07-ingreso-play.html" title="Lección 167: Economía · 07 · ingreso máximo · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-09-play.html" title="Lección 169: Economía · 09 · sillones · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Ingreso con x en cientos de unidades"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-07-ingreso-play.html" title="Lección 159: Economía · 07 · ingreso máximo · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-09-play.html" title="Lección 170: Economía · 09 · sillones · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Ingreso con x en cientos y p en miles"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · p(x)=60−x, con x en cientos.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · p=60−x (miles $; x en cientos).</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -234,7 +234,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">x=1 → 100 u. · I=60x−x² · máx 30 cientos = 3000 u.</p>
+    <p class="hint">I=60x−x² · x_máx=30 cientos · I_máx=900</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -247,9 +247,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var canvas = document.getElementById("c");
   var g = new EP.Graph(canvas, {
     xmin: 0, xmax: 70, ymin: 0, ymax: 1000,
-    xlabel: "x (cientos)", ylabel: "ingreso I",
+    xlabel: "x (cientos)", ylabel: "I (miles $)",
     xTicks: [0, 10, 20, 30, 40, 50, 60],
-    yTicks: [0, 250, 500, 750, 900, 1000]
+    yTicks: [0, 250, 500, 750, 900]
   });
   function Iof(x) { return 60 * x - x * x; }
   function draw(api) {
@@ -266,41 +266,41 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
   EP.bindPlay({
     totalPhases: 6,
-    idleCaption: "Presioná <strong>▶ Play</strong> · p(x)=60−x, con x en cientos.",
+    idleCaption: "Presioná <strong>▶ Play</strong> · p=60−x (miles $; x en cientos).",
     idleVis: {},
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1500, vis: { badge: "1 · x en cientos" },
-          work: '<span class="paso">1</span> · x = 1 significa <span class="hl">100 unidades</span>',
-          cap: 'La guía mide la cantidad en cientos. No mezcles x con unidades reales hasta el final.',
-          htmls: [{ id: "exprFormula", value: "p(x) = 60 − x · x en cientos" }] },
-        { phase: 2, wait: 1600, vis: { curve: true, badge: "I = 60x − x²" },
-          work: '<span class="paso">2</span> · I(x) = (60−x)·x = <span class="ok">60x − x²</span>',
-          cap: 'Misma receta: precio por cantidad. La parábola vive en la escala de cientos.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">I(x) = 60x − x²</span>' }] },
-        { phase: 3, wait: 1600, vis: { curve: true, vert: true, badge: "x = 30 cientos" },
-          work: '<span class="paso">3</span> · x = −60/(2·(−1)) = <span class="ok">30</span> cientos',
-          cap: 'Vértice en x=30. I(30)=60·30−900=900 (en esta escala).',
+        { phase: 1, wait: 1500, vis: { badge: "1 · unidades" },
+          work: '<span class="paso">1</span> · p en <span class="hl">miles de $</span> · x en <span class="hl">cientos</span>',
+          cap: 'x = 1 son 100 unidades reales. No conviertas hasta que te lo pidan.',
+          htmls: [{ id: "exprFormula", value: "p(x) = 60 − x" }] },
+        { phase: 2, wait: 1600, vis: { curve: true, badge: "I = x(60−x)" },
+          work: '<span class="paso">2</span> · I(x) = x(60−x) = <span class="ok">60x − x²</span>',
+          cap: 'Misma receta: ingreso = precio × cantidad, en esta escala.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">I = 60x − x²</span>' }] },
+        { phase: 3, wait: 1600, vis: { curve: true, vert: true, badge: "x = 30" },
+          work: '<span class="paso">3</span> · x = −60/(2·(−1)) = <span class="ok">30</span> cientos = 3000 u.',
+          cap: 'Vértice de la parábola. a=−1 &lt; 0 → hay máximo.',
           htmls: [{ id: "exprFormula", value: "x_máx = 30 cientos" }] },
-        { phase: 4, wait: 1600, vis: { curve: true, vert: true, badge: "3000 unidades" },
-          work: '<span class="paso">4</span> · 30 cientos × 100 = <span class="ok">3000 unidades</span>',
-          cap: 'Si preguntan “¿cuántas unidades?”, multiplicá por 100.',
-          htmls: [{ id: "exprFormula", value: "30 cientos = 3000 u." }] },
-        { phase: 5, wait: 1400, vis: { curve: true, vert: true, badge: "p=0 en x=60" },
-          work: '<span class="paso">5</span> · p(60)=0 · 60 cientos = 6000 u.',
-          cap: 'El precio se anula a 60 cientos. Más allá no hay ingreso.',
-          htmls: [{ id: "exprFormula", value: "p(60) = 0" }] },
+        { phase: 4, wait: 1500, vis: { curve: true, vert: true, badge: "I=900" },
+          work: '<span class="paso">4</span> · I(30) = 60·30 − 900 = <span class="ok">900</span>',
+          cap: 'Ingreso máximo 900 (miles de $ en esta escala).',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">I_máx = 900</span>' }] },
+        { phase: 5, wait: 1400, vis: { curve: true, vert: true, badge: "p(30)=30" },
+          work: '<span class="paso">5</span> · p(30) = 60 − 30 = 30 miles $ / u.',
+          cap: 'En el máximo, el precio no es el más alto: es la mitad del intercepto.',
+          htmls: [{ id: "exprFormula", value: "p(30) = 30" }] },
         { phase: 6, wait: 1400, vis: { curve: true, vert: true, badge: "cierre" },
-          work: '<span class="ok">máx en 30 cientos = 3000 u. · I=900</span>',
-          cap: '<strong>Cierre:</strong> leé la unidad del enunciado antes de despejar el vértice.',
-          htmls: [{ id: "exprFormula", value: "máx · 3000 u." }] }
+          work: '<span class="ok">máx en x=30 · I=900</span>',
+          cap: '<strong>Cierre:</strong> I=60x−x² · máximo x=30, I=900.',
+          htmls: [{ id: "exprFormula", value: "I_máx = 900 en x = 30" }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> p=60−x (x en cientos) · máx x=30 → 3000 unidades.', 'cientos listo');
+        api.finish('<strong>Cierre:</strong> p=60−x (miles $; x en cientos) · máx x=30, I=900.', 'cientos listo');
       });
     }
   });
-  window.__L168 = { I: Iof, xmax: 30, Imax: 900 };
+  window.__L169 = { I: Iof, xmax: 30, Imax: 900 };
 })();
 </script>
 </body>

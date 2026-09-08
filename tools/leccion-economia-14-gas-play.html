@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 173 · Economía · 13 · palets · play</title>
+<title>Lección 161 · Economía · gas · tramos · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -77,6 +77,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
 }
 .band-row:last-child { margin-bottom: 0; }
+.band-row.on { color: #e9eef7; font-weight: 700; }
 .band-swatch {
   width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
@@ -100,11 +101,30 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
   border-radius: 0 2px 2px 0; background: var(--accent);
 }
+.expr-row.phase-ask::before { background: var(--amber); }
 .expr-formula {
   font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.86rem;
   color: var(--ink); padding-left: 6px; line-height: 1.55;
 }
 .hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
+}
+.chip.teal { color: #2dd4bf; border-color: rgba(45,212,191,0.5); }
+.chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
+.chip.coral { color: #fb7185; border-color: rgba(251,113,133,0.5); }
+.chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
+.chip.purple { color: #c4b5fd; border-color: rgba(167,139,250,.5); }
+.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
+.chip.on { box-shadow: 0 0 10px rgba(255,191,0,.35); border-color: #FFBF00; color: #FFBF00; }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24;
+  margin-left: 6px;
+}
 .graph-wrap { position: relative; min-width: 0; }
 canvas#c {
   width: 100%; height: auto; display: block; border-radius: 10px;
@@ -134,6 +154,7 @@ canvas#c {
 .work-panel .ok { color: #5ad4a8; }
 .work-panel .bad { color: #ff7b7b; }
 .work-panel .paso { color: #60a5fa; }
+.work-panel .empty { color: #94a3b8; }
 .caption {
   margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
 }
@@ -167,6 +188,22 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .expr-formula .ok { color: #5ad4a8; }
 .expr-formula .hl { color: #FFBF00; }
 .expr-formula .bad { color: #ff7b7b; }
+.expr-formula .empty { color: #94a3b8; }
+.gloss-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.gloss-list li {
+  font-size: 0.78rem; line-height: 1.4; color: #9fb0c7;
+  padding: 7px 9px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.gloss-list li.on { color: #e9eef7; border-color: rgba(255,191,0,.45); background: rgba(255,191,0,.08); }
+.gloss-list .k { font-weight: 800; color: #fbbf24; font-family: ui-monospace, Menlo, monospace; }
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace;
+  font-weight: 800;
+}
+.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.88em; }
+.frac .num { border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.frac .den { padding-top: 1px; }
 </style>
 </head>
 <body>
@@ -174,8 +211,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 173</span> · Economía · 13 · palets · play
-        <span class="sub">venta 50 · costo 40/u. · fijo 50000/mes · clave 5000, 10000, 30000, p=52,3, x=3400</span>
+      <h1><span class="lesson-num">Lección 161</span> · Economía · gas · tramos · play
+        <span class="sub">clave · formas cerradas 0,08x+20 | 0,06x+21 | 0,05x+22,5</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -183,7 +220,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/6</span>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/8</span>
     </div>
   </header>
 
@@ -191,41 +228,42 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" aria-label="Qué es esto, pasos y fórmula">
         <div class="contrast-card">
-          <p class="contrast-kicker">UDL · palets</p>
+          <p class="contrast-kicker">1 · Qué es esto</p>
           <ul class="contrast-bullets">
-            <li>Venden a <span class="hl">50</span>, cuestan <span class="hl">40</span> cada uno, más <span class="hl">50000</span> fijos al mes. I=50x · C=50000+40x · B=10x−50000.</li>
-            <li>a) umbral B=0 → 5000 · b) B=10% de I → 10000 · c) B=20% de C → 30000 · d) 4000 u. · precio · e) x=3400.</li>
+            <li>Una tarifa <span class="hl">a tramos</span> cambia el precio del m³ según cuánto ya consumiste.</li>
+            <li>Hay un <span class="hl">cargo fijo</span> de 20 u.m. (se paga siempre) y tres precios variables.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Clave a–e</div>
-          <div class="band-row"><span class="band-swatch teal"></span><span>I=50x</span></div>
-          <div class="band-row"><span class="band-swatch amber"></span><span>C=50000+40x</span></div>
-          <div class="band-row"><span class="band-swatch purple"></span><span>B=10x−50000</span></div>
+          <div class="band-legend-title">Tramos del gas</div>
+          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">0≤x≤50</strong> · 0,08 u.m./m³</span></div>
+          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">50&lt;x≤150</strong> · 0,06 los siguientes</span></div>
+          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">x&gt;150</strong> · 0,05 el resto</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> I, C, B</li>
-            <li data-step="2"><span class="n">2</span> a) B=0 → 5000</li>
-            <li data-step="3"><span class="n">3</span> b) B=0,1 I → 10000</li>
-            <li data-step="4"><span class="n">4</span> c) B=0,2 C → 30000</li>
-            <li data-step="5"><span class="n">5</span> d) 4000 u. · p</li>
-            <li data-step="6"><span class="n">6</span> e) x=3400</li>
+            <li data-step="1"><span class="n">1</span> Qué es cargo fijo + tramos</li>
+            <li data-step="2"><span class="n">2</span> Tramo 1 · 0,08x+20</li>
+            <li data-step="3"><span class="n">3</span> Empalme x=50 → 24</li>
+            <li data-step="4"><span class="n">4</span> Tramo 2 · 24+0,06(x−50)</li>
+            <li data-step="5"><span class="n">5</span> Expandir → 0,06x+21</li>
+            <li data-step="6"><span class="n">6</span> Empalme x=150 → 30</li>
+            <li data-step="7"><span class="n">7</span> Expandir → 0,05x+22,5</li>
+            <li data-step="8"><span class="n">8</span> Clave · tres formas cerradas</li>
           </ol>
-        </div>
-        <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">I=50x · C=50000+40x · B=10x−50000</div>
-          <p class="hint-mini" id="hintMini">▶ Play</p>
+        </div>        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">C(x) a tramos</div>
+          <p class="hint-mini" id="hintMini">▶ Play · tramos → formas cerradas de la clave</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-12-cafeteras-play.html" title="Lección 160: Economía · 12 · cafeteras · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-14-gas-play.html" title="Lección 161: Economía · 14 · gas · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Ingreso, costo y beneficio de palets"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-13-play.html" title="Lección 173: Economía · 13 · palets · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-15-editor-play.html" title="Lección 162: Economía · editor · tramos · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Factura de gas a tramos"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · palets: venta 50, costo 40, fijo 50000.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · de los tramos a las formas cerradas de la clave.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -235,7 +273,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Clave a–e: 5000 · 10000 · 30000 · p=52,3 · x=3400</p>
+    <p class="hint">Clave: C(x)=0,08x+20 (x≤50) | 0,06x+21 (50&lt;x≤150) | 0,05x+22,5 (x&gt;150)</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -246,66 +284,89 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var EP = window.EconomiaPlay;
   var C = EP.COLORS;
   var canvas = document.getElementById("c");
+
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 32000, ymin: -60000, ymax: 280000,
-    xlabel: "palets x", ylabel: "u.m.",
-    xTicks: [0, 3400, 4000, 5000, 10000, 30000],
-    yTicks: [0, 50000, 100000, 200000]
+    xmin: 0, xmax: 260, ymin: 0, ymax: 40,
+    xlabel: "m³  x", ylabel: "cargo C (u.m.)",
+    xTicks: [0, 50, 100, 150, 200, 250],
+    yTicks: [0, 10, 20, 24, 30, 40]
   });
-  function Iof(x) { return 50 * x; }
-  function Cof(x) { return 50000 + 40 * x; }
-  function Bof(x) { return 10 * x - 50000; }
+  function C1(x) { return 0.08 * x + 20; }
+  function C2(x) { return 0.06 * x + 21; }
+  function C3(x) { return 0.05 * x + 22.5; }
   function draw(api) {
     var v = api.vis;
     g.size(); g.drawAxes();
-    if (v.I) g.plotFn(Iof, 0, 30000, { color: C.ingreso, lw: 2.4 });
-    if (v.C) g.plotFn(Cof, 0, 30000, { color: C.costo, lw: 2.4 });
-    if (v.B) g.plotFn(Bof, 0, 30000, { color: C.beneficio, lw: 2.8 });
-    if (v.a) { g.point(5000, 0, { color: C.amber }); g.label(5000, 8000, "a 5000", { color: C.amber }); }
-    if (v.b) { g.point(10000, Bof(10000), { color: C.teal }); g.label(10000, Bof(10000), "b 10000", { color: C.teal }); }
-    if (v.c) { g.point(30000, Bof(30000), { color: C.beneficio }); g.label(24000, Bof(30000), "c 30000", { color: C.beneficio }); }
-    if (v.d) { g.vLine(4000, { color: C.coral, lw: 1.4, dash: [5, 4] }); g.point(4000, Cof(4000), { color: C.coral }); }
-    if (v.e) { g.point(3400, Bof(3400), { color: C.empty }); g.label(3400, Bof(3400), "e 3400", { color: C.empty }); }
+    if (v.t1) {
+      g.segment(0, C1(0), 50, C1(50), { color: C.amber, lw: 3.4 });
+      g.point(0, 20, { color: C.amber });
+      if (v.join50) g.point(50, 24, { color: C.amber });
+    }
+    if (v.t2) {
+      g.segment(50, C2(50), 150, C2(150), { color: C.teal, lw: 3.4 });
+      if (v.join150) g.point(150, 30, { color: C.teal });
+    }
+    if (v.t3) {
+      g.segment(150, C3(150), 250, C3(250), { color: C.coral, lw: 3.4 });
+      g.point(250, C3(250), { color: C.coral, open: true });
+    }
     if (v.badge) g.badge(v.badge);
   }
   EP.bindPlay({
-    totalPhases: 6,
-    idleCaption: "Presioná <strong>▶ Play</strong> · palets: venta 50, costo 40, fijo 50000.",
+    totalPhases: 8,
+    idleCaption: "Presioná <strong>▶ Play</strong> · de los tramos a las formas cerradas de la clave.",
     idleVis: {},
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1600, vis: { I: true, C: true, B: true, badge: "1 · I, C, B" },
-          work: '<span class="paso">1</span> · I=50x · C=50000+40x · B=10x−50000',
-          cap: 'Margen unitario 10. El fijo 50000 se paga todos los meses.',
-          htmls: [{ id: "exprFormula", value: "B = 10x − 50000" }] },
-        { phase: 2, wait: 1700, vis: { I: true, C: true, B: true, a: true, badge: "a) B=0" },
-          work: '<span class="paso">2</span> · <span class="ok">a) (50−40)x = 50000 → x = 5000</span>',
-          cap: 'Umbral: el margen de 10 cubre el fijo. Clave a) 5000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">a) x = 5000</span>' }] },
-        { phase: 3, wait: 1800, vis: { I: true, C: true, B: true, a: true, b: true, badge: "b) B=0,1 I" },
-          work: '<span class="paso">3</span> · 10x−50000 = 0,1·50x → 10x−5x=50000 → <span class="ok">x=10000</span>',
-          cap: 'Beneficio = 10% del ingreso. Clave b) 10000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">b) x = 10000</span>' }] },
-        { phase: 4, wait: 1900, vis: { I: true, C: true, B: true, a: true, b: true, c: true, badge: "c) B=0,2 C" },
-          work: '<span class="paso">4</span> · 10x−50000 = 0,2(40x+50000) → 10x−50000=8x+10000 → <span class="ok">x=30000</span>',
-          cap: 'Beneficio = 20% del costo. Clave c) 30000.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">c) x = 30000</span>' }] },
-        { phase: 5, wait: 1900, vis: { I: true, C: true, B: true, a: true, d: true, badge: "d) 4000 u." },
-          work: '<span class="paso">5</span> · C(4000)=210000 · C̄=52,5 · <span class="ok">clave d) p=52,3</span>',
-          cap: 'A 4000 palets el costo medio es 52,5. La clave da el precio p=52,3 (cubrir costos).',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">d) 4000 u. · p = 52,3</span>' }] },
-        { phase: 6, wait: 1600, vis: { I: true, C: true, B: true, a: true, d: true, e: true, badge: "e) x=3400" },
-          work: '<span class="paso">6</span> · <span class="ok">e) x = 3400</span> · dato de clave',
-          cap: '<strong>Cierre:</strong> 5000, 10000, 30000, p=52,3, x=3400.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">e) x = 3400</span>' }] }
+        { phase: 1, wait: 1700, vis: { badge: "1 · fijo 20 + tramos" },
+          work: '<span class="paso">1</span> · fijo 20 + 0,08 / 0,06 / 0,05 según los m³',
+          cap: 'Los primeros 50 m³ salen 0,08; los que siguen hasta 150 salen 0,06; el resto, 0,05. El fijo se suma siempre. Después se <strong>expanden</strong> a la forma de la clave.',
+          htmls: [{ id: "exprFormula", value: "fijo 20 + 0,08 / 0,06 / 0,05" }] },
+        { phase: 2, wait: 1700, vis: { t1: true, badge: "tramo 1 · cerrado" },
+          work: '<span class="paso">2</span> · x≤50: C(x)=20+0,08x = <span class="ok">0,08x+20</span>',
+          cap: 'En el primer tramo no hay “siguientes”: todos los m³ a 0,08. Ya está en forma cerrada (la de la clave).',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,08x+20</span> &nbsp; x≤50' }] },
+        { phase: 3, wait: 1600, vis: { t1: true, join50: true, badge: "C(50)=24" },
+          work: '<span class="paso">3</span> · C(50)=0,08·50+20=<span class="ok">24</span> · empalme',
+          cap: 'El segundo tramo <strong>sigue desde 24</strong>. Por eso se escribe primero 24 + 0,06(x−50) (solo los m³ después de 50).',
+          htmls: [{ id: "exprFormula", value: "C(50)=24 · continuo" }] },
+        { phase: 4, wait: 1800, vis: { t1: true, join50: true, t2: true, badge: "tramo 2 · con (x−50)" },
+          work: '<span class="paso">4</span> · 50&lt;x≤150: C=24+0,06(x−50)',
+          cap: 'Esta es la escritura “por tramos”. Ahora se distribuye para llegar a la forma cerrada de la clave.',
+          htmls: [{ id: "exprFormula", value: "C(x)=24+0,06(x−50)" }] },
+        { phase: 5, wait: 2000, vis: { t1: true, join50: true, t2: true, badge: "0,06x+21" },
+          work: '<span class="paso">5</span> · 24+0,06x−3 = <span class="ok">0,06x+21</span>',
+          cap: '0,06(x−50)=0,06x−3. Entonces 24−3+0,06x. Misma recta, otra escritura. En x=150: 0,06·150+21=30.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,06x+21</span> &nbsp; 50&lt;x≤150' }] },
+        { phase: 6, wait: 1600, vis: { t1: true, join50: true, t2: true, join150: true, badge: "C(150)=30" },
+          work: '<span class="paso">6</span> · C(150)=30 · tercer tramo arranca ahí',
+          cap: 'Otra vez empalme: el resto se suma a 30, a 0,05 por m³ extra: 30+0,05(x−150).',
+          htmls: [{ id: "exprFormula", value: "C(150)=30 · continuo" }] },
+        { phase: 7, wait: 2000, vis: { t1: true, join50: true, t2: true, join150: true, t3: true, badge: "0,05x+22,5" },
+          work: '<span class="paso">7</span> · 30+0,05x−7,5 = <span class="ok">0,05x+22,5</span>',
+          cap: '0,05(x−150)=0,05x−7,5. Entonces 30−7,5+0,05x. Forma cerrada del tercer tramo.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">C(x)=0,05x+22,5</span> &nbsp; x&gt;150' }] },
+        { phase: 8, wait: 1800, vis: { t1: true, join50: true, t2: true, join150: true, t3: true, badge: "clave · continuo" },
+          work: '<span class="paso">8</span> · tres formas cerradas · <span class="ok">polígono continuo</span>',
+          cap: '<strong>Cierre:</strong> 0,08x+20 | 0,06x+21 | 0,05x+22,5. Equivalente a sumar tramos. El gráfico no salta.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">0,08x+20 | 0,06x+21 | 0,05x+22,5</span>' }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> palets · clave a–e: 5000, 10000, 30000, p=52,3, x=3400.', 'palets listo');
+        api.finish('<strong>Cierre:</strong> C=0,08x+20 (x≤50) | 0,06x+21 (50&lt;x≤150) | 0,05x+22,5 (x&gt;150).', 'gas listo');
       });
     }
   });
-  window.__L173 = { I: Iof, C: Cof, B: Bof, clave: [5000, 10000, 30000, 52.3, 3400] };
+  window.__L161 = {
+    C: function (x) {
+      if (x <= 50) return 0.08 * x + 20;
+      if (x <= 150) return 0.06 * x + 21;
+      return 0.05 * x + 22.5;
+    },
+    closed: { t1: [0.08, 20], t2: [0.06, 21], t3: [0.05, 22.5] },
+    knots: [[0, 20], [50, 24], [150, 30]]
+  };
 })();
+
 </script>
 </body>
 </html>
