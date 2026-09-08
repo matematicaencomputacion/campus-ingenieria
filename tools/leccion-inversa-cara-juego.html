@@ -182,7 +182,8 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .dsm-table tr.done td.mir { color: #86efac; }
 .graph-wrap { position: relative; min-width: 0; }
 canvas#c {
-  width: 100%; height: auto; display: block; border-radius: 10px;
+  width: auto; max-width: 100%; max-height: 70vh; height: auto;
+  display: block; margin: 0 auto; border-radius: 10px;
   background: var(--graph-bg); touch-action: none;
   border: 1px solid #cbd5e1;
 }
@@ -211,7 +212,7 @@ canvas#c.clickable { cursor: crosshair; }
 .lesson-nav .chev { display: block; width: 0; height: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
 .lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
 .lesson-nav.next .chev { border-left: 18px solid var(--mast); }
-.prompt { margin: 0; font-size: 0.95rem; color: var(--muted); line-height: 1.45; min-height: 1.4em; }
+.prompt { margin: 0; font-size: 0.95rem; color: var(--muted); line-height: 1.45; min-height: 3.2em; padding: 8px 12px; border-radius: 10px; }
 .prompt strong { color: var(--ink); }
 .prompt .hl-p { color: #c084fc; font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
 .prompt .hl-g { color: #86efac; font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
@@ -221,7 +222,7 @@ canvas#c.clickable { cursor: crosshair; }
 .prompt.bad { color: #f5e6a8; }
 .prompt.attention {
   background: rgba(210, 180, 100, 0.22); border: 1px solid rgba(255, 191, 0, 0.45);
-  border-radius: 10px; padding: 8px 12px; box-shadow: 0 0 14px rgba(255, 191, 0, 0.28);
+  box-shadow: 0 0 14px rgba(255, 191, 0, 0.28);
 }
 .bottom-bar { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
 .hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
@@ -243,7 +244,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .graph-wrap.flash-ok { animation: flashOk .45s ease; }
 .graph-wrap.flash-bad { animation: flashBad .45s ease; }
 .measure-hud {
-  position: absolute; left: 14px; bottom: 14px; z-index: 4;
+  position: absolute; right: 48px; top: 12px; z-index: 4;
   background: rgba(15, 23, 42, 0.92); color: #e9eef7;
   border: 1px solid rgba(255,191,0,0.45); border-radius: 10px;
   padding: 8px 12px; font-family: ui-monospace, Menlo, monospace;
@@ -367,6 +368,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
-<script src="leccion-inversa-cara-juego.js?v=20260908"></script>
+<script src="leccion-inversa-cara-juego.js?v=20260908d"></script>
 </body>
 </html>

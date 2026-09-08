@@ -19,12 +19,12 @@
   var PAD = { l: 52, r: 48, t: 36, b: 48 };
   var XMIN = -11;
   var XMAX = 11;
-  var YMIN = -16;
-  var YMAX = 11;
+  var YMIN = -12;
+  var YMAX = 10;
   var DOM_LO = -9;
   var DOM_HI = -1;
   var BIG_R = 14;
-  var SNAP_TOL = 0.55;
+  var SNAP_TOL = 0.7;
   var SHIFTS = [-2, -1, 0, 1, 2];
 
   var SHAPES = {
@@ -178,8 +178,8 @@
     var cell = 48;
     var w = Math.round(PAD.l + spanX * cell + PAD.r);
     var hh = Math.round(PAD.t + spanY * cell + PAD.b);
-    if (w > 1100 || hh > 900) {
-      cell = Math.max(22, Math.floor(Math.min((1100 - PAD.l - PAD.r) / spanX, (900 - PAD.t - PAD.b) / spanY)));
+    if (w > 1100 || hh > 820) {
+      cell = Math.max(22, Math.floor(Math.min((1100 - PAD.l - PAD.r) / spanX, (820 - PAD.t - PAD.b) / spanY)));
       w = Math.round(PAD.l + spanX * cell + PAD.r);
       hh = Math.round(PAD.t + spanY * cell + PAD.b);
     }
@@ -227,7 +227,7 @@
   }
 
   function setPrompt(html, cls) {
-    promptEl.className = "prompt" + (cls ? (" " + cls) : "");
+    promptEl.className = "prompt attention" + (cls ? (" " + cls) : "");
     promptEl.innerHTML = html;
   }
 
@@ -252,6 +252,16 @@
     if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
   }
 
+  function pickShift(shape) {
+    var opts = SHIFTS.filter(function (k) {
+      return shape.points0.every(function (p) {
+        return Math.abs(p.x - (p.y + k)) > 0.6;
+      });
+    });
+    if (!opts.length) throw new Error("INVERSA JUEGO: ningún corrimiento deja los puntos fuera de y = x");
+    return pick(opts);
+  }
+
   function dealRound() {
     var ids = ["sonrisa", "triste"];
     var id = pick(ids);
@@ -262,7 +272,7 @@
     if (!shape) throw new Error("INVERSA JUEGO: forma desconocida " + id);
     state.shape = shape;
     state.lastShapeId = id;
-    state.k = pick(SHIFTS);
+    state.k = pickShift(shape);
     state.points = shape.points0.map(function (p) {
       return { x: p.x, y: p.y + state.k };
     });
@@ -863,7 +873,7 @@
 
   sizeCanvas();
   canvas.addEventListener("pointermove", onMove);
-  canvas.addEventListener("pointerdown", onClick);
+  canvas.addEventListener("click", onClick);
   canvas.addEventListener("pointerleave", onLeave);
   pauseBtn.addEventListener("click", togglePause);
   restartBtn.addEventListener("click", restart);
@@ -883,7 +893,11 @@
     draw: draw,
     restart: restart,
     dealRound: dealRound,
-    startRound: startRound
+    startRound: startRound,
+    worldToScreen: worldToScreen,
+    screenToWorld: screenToWorld,
+    mirrorOf: mirrorOf,
+    pivotOf: pivotOf
   };
 
   startRound(false);
