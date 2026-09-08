@@ -308,6 +308,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       fLabel: "f(x) = 1 / x",
       xmin: -5, xmax: 5,
       forbidden: [0],
+      approachFrom: 1,
+      f: function (x) { return 1 / x; },
       safe: [
         { x: 5, y: 0.2, label: "f(5) = 1/5 = 0,2" },
         { x: -2, y: -0.5, label: "f(−2) = 1/(−2) = −0,5" }
@@ -321,6 +323,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       fLabel: "f(x) = 1 / (x − 2)",
       xmin: -2, xmax: 6,
       forbidden: [2],
+      approachFrom: 1,
+      f: function (x) { return 1 / (x - 2); },
       safe: [
         { x: 5, y: 1 / 3, label: "f(5) = 1/3 ≈ 0,333" },
         { x: 0, y: -0.5, label: "f(0) = 1/(−2) = −0,5" }
@@ -334,6 +338,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       fLabel: "f(x) = (x+1)/(x²−3x+2)",
       xmin: -2, xmax: 5,
       forbidden: [1, 2],
+      approachFrom: -1,
+      f: function (x) { return (x + 1) / ((x - 1) * (x - 2)); },
       safe: [
         { x: 0, y: 0.5, label: "f(0) = 1/2 = 0,5" },
         { x: -1, y: 0, label: "f(−1) = 0  ← numerador = 0 (C⁰)", zeroNum: true }
@@ -756,15 +762,51 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.calcResult = fmtNum(s.y);
     state.history.push({ text: s.label, error: false });
     setWork((s.zeroNum
-      ? '<span class="ok">Numerador = 0</span> → <span class="ok">f(' + fmtNum(s.x) + ") = 0</span> · cero de la función (C⁰)"
-      : 'Valor seguro · <span class="ok">' + s.label + "</span>"));
+      ? '<span class="ok">Numerador = 0</span> → <span class="ok">f(' + fmtNum(s.x) + ') = 0</span> · cero de la función (C⁰)'
+      : 'Valor seguro · <span class="ok">' + s.label + '</span>'));
     setCaption(s.zeroNum
-      ? 'Ojo al contraste: en <span class="hl-t">x = ' + fmtNum(s.x) + "</span> el <span class=\"ok\">numerador</span> es 0 → la cuenta da <strong class=\"ok\">0</strong> (sí hay imagen)."
-      : 'Calculamos <span class="hl-curve">f(' + fmtNum(s.x) + ")</span> = <span class=\"ok\">" + fmtNum(s.y) + "</span> · todo bien, hay imagen.");
+      ? 'Ojo al contraste: en <span class="hl-t">x = ' + fmtNum(s.x) + '</span> el <span class="ok">numerador</span> es 0 → la cuenta da <strong class="ok">0</strong> (sí hay imagen).'
+      : 'Calculamos <span class="hl-curve">f(' + fmtNum(s.x) + ')</span> = <span class="ok">' + fmtNum(s.y) + '</span> · todo bien, hay imagen.');
     bip("ok");
     updateSidePanel();
     draw();
     later(s.zeroNum ? 1600 : 1200, function () { if (onDone) onDone(); });
+  }
+
+  /** Acercamiento de a 0,1 hacia el prohibido: z±0,5 … z±0,1 */
+  function buildApproach(z, e) {
+    var dir = e.approachFrom == null ? 1 : e.approachFrom;
+    var steps = [];
+    var tenths;
+    for (tenths = 5; tenths >= 1; tenths--) {
+      var x = Math.round((z + dir * (tenths / 10)) * 10) / 10;
+      var y = e.f(x);
+      if (!isFinite(y)) continue;
+      steps.push({
+        x: x,
+        y: y,
+        label: "f(" + fmtNum(x) + ") = " + fmtNum(y),
+        approach: true
+      });
+    }
+    return steps;
+  }
+
+  function showApproach(step, z, onDone) {
+    var e = ex();
+    var s = step;
+    if (!s) { if (onDone) onDone(); return; }
+    state.phase = "approach";
+    state.calcMode = "ok";
+    state.calcExpr = "f(" + fmtNum(s.x) + ")";
+    state.calcResult = fmtNum(s.y);
+    state.history.push({ text: s.label + " · cerca…", error: false });
+    setWork('Nos acercamos de a <span class="hl">0,1</span> al prohibido <span class="bad">x = ' + fmtNum(z) + '</span> · <span class="ok">' + s.label + '</span>');
+    setCaption('Paso <span class="hl-t">' + fmtNum(s.x) + '</span> → imagen <span class="ok">' + fmtNum(s.y) + '</span> · la cuenta <strong>todavía se puede</strong>…');
+    bip("ok");
+    updateSidePanel();
+    draw();
+    later(700, function () { if (onDone) onDone(); });
   }
 
   function showForbidden(k, onDone) {
@@ -787,7 +829,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       state.showBand = true;
       state.revealedForbidden = k + 1;
       state.flashForbidden = k;
-      setCaption('Ese <span class="bad">x = ' + fmtNum(z) + "</span> es el <strong>número prohibido</strong> (anulador del denominador) · círculo gris en la recta.");
+      setCaption('Ese <span class="bad">x = ' + fmtNum(z) + '</span> es el <strong>número prohibido</strong> (anulador del denominador) · círculo gris en la recta.');
       draw();
       later(700, function () {
         state.flashForbidden = -1;
@@ -810,8 +852,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     resetVisualsForExample();
     draw();
 
-    setWork('ejemplo ' + e.id + "/" + EXAMPLES.length + ' · <span class="hl">' + e.title + "</span>");
-    setCaption('Ejemplo <strong>' + e.id + "</strong>: <span class=\"hl-curve\">" + e.title + "</span> · primero valores <span class=\"ok\">seguros</span>.");
+    setWork('ejemplo ' + e.id + '/' + EXAMPLES.length + ' · <span class="hl">' + e.title + '</span>');
+    setCaption('Ejemplo <strong>' + e.id + '</strong>: <span class="hl-curve">' + e.title + '</span> · primero valores <span class="ok">seguros</span>.');
     bip("ok");
 
     later(800, function () {
@@ -831,10 +873,28 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             function nextForb() {
               if (!state.playing) return;
               if (fi < e.forbidden.length) {
-                showForbidden(fi, function () {
-                  fi++;
-                  later(450, nextForb);
-                });
+                var z = e.forbidden[fi];
+                var approach = buildApproach(z, e);
+                var ai = 0;
+                setCaption('Ahora nos acercamos al <span class="bad">número prohibido</span> <strong>x = ' + fmtNum(z) + '</span> de a <span class="hl">0,1</span>…');
+                function nextApproach() {
+                  if (!state.playing) return;
+                  if (ai < approach.length) {
+                    showApproach(approach[ai], z, function () {
+                      ai++;
+                      later(180, nextApproach);
+                    });
+                  } else {
+                    later(350, function () {
+                      if (!state.playing) return;
+                      showForbidden(fi, function () {
+                        fi++;
+                        later(450, nextForb);
+                      });
+                    });
+                  }
+                }
+                later(400, nextApproach);
               } else {
                 later(350, function () {
                   if (!state.playing) return;
