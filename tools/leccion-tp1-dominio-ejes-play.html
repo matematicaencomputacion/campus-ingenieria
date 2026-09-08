@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 137 · Recta · 6.1 · explícita · play</title>
+<title>Lección 155 · TP1 §2 · Dom y ejes 2.1–2.8 · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -11,7 +11,6 @@
   --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #2dd4bf;
   --coral: #fb7185; --row: #121a27; --row-border: #2a3548;
   --graph-bg: #f8fafc; --axes-black: #111111;
-  --rise: #34d399; --run: #60a5fa;
 }
 * { box-sizing: border-box; }
 body {
@@ -64,79 +63,71 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .contrast-bullets .hl { color: #FFBF00; }
 .contrast-bullets .ok { color: #5ad4a8; }
-.band-legend {
-  margin: 0; padding: 8px 10px; border-radius: 8px;
-  border: 1px solid #2a3a52; background: #121a28;
+.contrast-bullets .bad { color: #ff7b7b; }
+.rule-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(90,212,168,0.4);
+  background: linear-gradient(135deg, rgba(90,212,168,0.12), rgba(18,26,39,0.95));
 }
+.rule-card-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #5ad4a8; margin: 0 0 6px;
+}
+.rule-card-body { margin: 0; font-size: 0.86rem; line-height: 1.45; color: var(--ink); font-weight: 650; }
+.rule-card-body .hl { color: #FFBF00; }
+.rule-card-body .ok { color: #5ad4a8; }
+.band-legend { margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #121a28; }
 .band-legend-title {
   font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
   color: #93c5fd; margin: 0 0 8px;
 }
-.band-row {
-  display: flex; align-items: flex-start; gap: 10px; margin: 0 0 7px;
-  font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
-}
+.band-row { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 7px; font-size: 0.8rem; line-height: 1.35; color: #9fb0c7; }
 .band-row:last-child { margin-bottom: 0; }
-.band-swatch {
-  width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
-}
+.band-swatch { width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px; box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset; }
 .band-swatch.gray { background: #64748b; }
+.band-swatch.red { background: #ef4444; }
 .band-swatch.green { background: #22c55e; }
-.band-swatch.amber { background: #f59e0b; }
 .band-swatch.teal { background: #2dd4bf; }
+.band-swatch.amber { background: #f59e0b; }
 .band-swatch.coral { background: #fb7185; }
-.band-swatch.run { background: #60a5fa; }
+.band-swatch.purple { background: #a78bfa; }
 .band-row strong.g { color: #94a3b8; }
+.band-row strong.r { color: #ef4444; }
 .band-row strong.v { color: #22c55e; }
-.band-row strong.a { color: #f59e0b; }
 .band-row strong.t { color: #2dd4bf; }
+.band-row strong.a { color: #f59e0b; }
 .band-row strong.c { color: #fb7185; }
-.band-row strong.r { color: #60a5fa; }
-.expr-row {
-  background: var(--row); border: 1px solid var(--row-border);
-  border-radius: 8px; padding: 10px 12px; position: relative;
-}
-.expr-row::before {
-  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
-  border-radius: 0 2px 2px 0; background: var(--accent);
-}
-.expr-row.phase-ask::before { background: var(--ok); }
-.expr-formula {
-  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.84rem;
-  color: var(--ink); padding-left: 6px; line-height: 1.55;
-}
+.expr-row { background: var(--row); border: 1px solid var(--row-border); border-radius: 8px; padding: 10px 12px; position: relative; }
+.expr-row::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 2px 2px 0; background: var(--accent); }
+.expr-row.phase-ask::before { background: var(--amber); }
+.expr-formula { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.86rem; color: var(--ink); padding-left: 6px; line-height: 1.55; }
 .hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
-.chip {
-  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
-  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
-}
+.chip { font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700; padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink); }
 .chip.teal { color: #2dd4bf; border-color: rgba(45,212,191,0.5); }
 .chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
 .chip.coral { color: #fb7185; border-color: rgba(251,113,133,0.5); }
 .chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
-.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
 .chip.bad { color: #ff7b7b; border-color: rgba(255,123,123,0.45); }
+.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
 .mode-tag {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
   background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.4); color: var(--accent);
   margin-left: 6px;
 }
-.rule-list {
-  margin: 6px 0 0; padding: 0 0 0 22px; font-size: 0.78rem; color: var(--muted); line-height: 1.55;
-}
+.rule-list { margin: 6px 0 0; padding: 0 0 0 22px; font-size: 0.78rem; color: var(--muted); line-height: 1.55; }
 .rule-list li { margin: 2px 0; }
 .rule-list strong { color: var(--ink); }
 .rule-list .ok { color: #5ad4a8; }
 .rule-list .bad { color: #ff7b7b; }
+.rule-list .empty { color: #94a3b8; }
+.ex-progress { display: flex; gap: 5px; padding: 2px 4px; flex-wrap: wrap; }
+.ex-dot { width: 10px; height: 10px; border-radius: 50%; background: #2a3548; border: 1px solid #3b4a63; }
+.ex-dot.on { background: var(--accent); border-color: var(--mast); box-shadow: 0 0 8px rgba(56,189,248,.55); }
+.ex-dot.done { background: #5ad4a8; border-color: rgba(90,212,168,.6); }
 .graph-wrap { position: relative; min-width: 0; }
-canvas#c {
-  width: 100%; height: auto; display: block; border-radius: 10px;
-  background: var(--graph-bg); touch-action: none;
-  border: 1px solid #cbd5e1;
-}
+canvas#c { width: 100%; height: auto; display: block; border-radius: 10px; background: var(--graph-bg); touch-action: none; border: 1px solid #cbd5e1; }
 .lesson-nav {
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
   transition: opacity .15s; filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
@@ -160,23 +151,10 @@ canvas#c {
 .work-panel .ok { color: #5ad4a8; }
 .work-panel .bad { color: #ff7b7b; }
 .work-panel .paso { color: #60a5fa; }
-.frac {
-  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
-  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace;
-  font-weight: 800;
-}
-.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.88em; }
-.frac .num { color: var(--rise); border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
-.frac .den { color: var(--run); padding-top: 1px; }
-.caption {
-  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
-}
+.work-panel .empty { color: #94a3b8; }
+.caption { margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45; }
 .caption strong { color: var(--ink); }
-.caption .hl-t { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-v { color: #22c55e; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-amber { color: #FFBF00; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-teal { color: #2dd4bf; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-coral { color: #fb7185; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl { color: #FFBF00; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 .caption .ok { color: #5ad4a8; font-weight: 800; }
 .caption .bad { color: #ff7b7b; font-weight: 800; }
 .caption .paso { color: #60a5fa; font-weight: 800; }
@@ -194,19 +172,23 @@ canvas#c {
 .sound-meter.live .sound-meter-level { color: var(--ink); }
 a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .hint { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
-.expr-formula .hl-amber { color: #FFBF00; }
-.expr-formula .hl-teal { color: #2dd4bf; }
-.expr-formula .hl-coral { color: #fb7185; }
-.expr-formula .hl-v { color: #5ad4a8; }
-.expr-formula .bad { color: #ff7b7b; }
-.steps-box {
-  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
-}
+.steps-box { margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522; }
 .steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
 .steps-box li { margin: 3px 0; }
 .steps-box li.on { color: #e9eef7; font-weight: 700; }
 .steps-box li.done { color: #5ad4a8; }
 .steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.expr-formula .ok { color: #5ad4a8; }
+.expr-formula .hl { color: #FFBF00; }
+.expr-formula .bad { color: #ff7b7b; }
+.expr-formula .empty { color: #94a3b8; }
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.12em; font-family: ui-monospace, Menlo, monospace; font-weight: 800;
+}
+.frac .num, .frac .den { display: block; padding: 0 0.2em; font-size: 0.88em; }
+.frac .num { border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.frac .den { padding-top: 1px; }
 </style>
 </head>
 <body>
@@ -214,8 +196,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 137</span> · Recta · 6.1 · explícita · play
-        <span class="sub">(0; 0) y (2; 1) → y = (1/2)x</span>
+      <h1><span class="lesson-num">Lección 155</span> · TP1 §2 · Dom y ejes 2.1–2.8 · play
+        <span class="sub">dominio + ∩x + ∩y</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -223,68 +205,53 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/4</span>
+      <span class="score" id="loopEl">Ej. <strong>—</strong>/8</span>
     </div>
   </header>
 
   <div class="card">
     <div class="main-stage">
-      <aside class="expr-panel" aria-label="Método y fórmula">
-        <div class="contrast-card">
-          <p class="contrast-kicker">Método · dos puntos → explícita</p>
-          <ul class="contrast-bullets">
-            <li><span class="hl">1 · Puntos</span> — marcar P₁ y P₂.</li>
-            <li><span class="hl">2 · Pendiente</span> — m = (y₂−y₁)/(x₂−x₁) si x₂≠x₁.</li>
-            <li><span class="hl">3 · Explícita</span> — punto-pendiente → y = mx + b.</li>
-            <li><span class="ok">4 · Gráfico</span> — recta completa · puntos ● · Dom.</li>
-          </ul>
+      <aside class="expr-panel" aria-label="Regla y procedimiento">
+        <div class="rule-card">
+          <p class="rule-card-kicker">Dom + ejes</p>
+          <p class="rule-card-body">Primero <span class="hl">Dom</span>. Después ∩y (x=0) y ∩x (y=0), si existen en el dominio.</p>
         </div>
-
-        <div class="band-legend" aria-label="Leyenda visual">
+        <div class="band-legend">
           <div class="band-legend-title">Lenguaje visual</div>
-          <div class="band-row"><span class="band-swatch amber" aria-hidden="true"></span><span><strong class="a">Ámbar</strong> — P₁</span></div>
-          <div class="band-row"><span class="band-swatch coral" aria-hidden="true"></span><span><strong class="c">Coral</strong> — P₂</span></div>
-          <div class="band-row"><span class="band-swatch run" aria-hidden="true"></span><span><strong class="r">Azul</strong> — Δx (correr)</span></div>
-          <div class="band-row"><span class="band-swatch green" aria-hidden="true"></span><span><strong class="v">Verde</strong> — Δy · Dom = ℝ</span></div>
-          <div class="band-row"><span class="band-swatch teal" aria-hidden="true"></span><span><strong class="t">Teal</strong> — recta y = mx + b</span></div>
+          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">Teal</strong> — curva</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">Ámbar</strong> — ∩x</span></div>
+          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">Coral</strong> — ∩y</span></div>
+          <div class="band-row"><span class="band-swatch gray"></span><span><strong class="g">Gris</strong> — polo / fuera de Dom</span></div>
         </div>
+        <div class="ex-progress" id="exProgress"><span class="ex-dot"></span><span class="ex-dot"></span><span class="ex-dot"></span><span class="ex-dot"></span><span class="ex-dot"></span><span class="ex-dot"></span><span class="ex-dot"></span><span class="ex-dot"></span></div>
 
         <div class="steps-box" aria-label="Pasos">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Marcar P₁(0; 0) y P₂(2; 1)</li>
-            <li data-step="2"><span class="n">2</span> Pendiente m = (1−0)/(2−0) = 1/2</li>
-            <li data-step="3"><span class="n">3</span> Explícita y = (1/2)x · origen</li>
-            <li data-step="4"><span class="n">4</span> Recta completa · puntos ● · Dom = ℝ</li>
+            <li data-step="1"><span class="n">1</span> Fórmula</li>
+            <li data-step="2"><span class="n">2</span> Dominio</li>
+            <li data-step="3"><span class="n">3</span> ∩y (x=0)</li>
+            <li data-step="4"><span class="n">4</span> ∩x (y=0)</li>
+            <li data-step="5"><span class="n">5</span> Siguiente ejercicio</li>
           </ol>
         </div>
-
         <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula"></div>
-          <p class="hint-mini" id="hintMini">▶ Play · puntos → pendiente → explícita → gráfico</p>
+          <div class="expr-formula" id="exprFormula">…</div>
+          <p class="hint-mini" id="hintMini">▶ Play</p>
         </div>
-
-        <div class="expr-row" id="domainRow">
-          <div class="expr-formula" id="exprDomain">y = <span class="hl-v">…</span></div>
-          <div class="chips" id="chipBox"></div>
-        </div>
-
         <div class="expr-row phase-ask">
           <span class="mode-tag">Play</span>
-          <ul class="rule-list">
-            <li>Pasa por el <strong>origen</strong> → b = 0</li>
-            <li>m = 1/2 → <strong class="ok">y = (1/2)x</strong></li>
-            <li>Dom = <strong class="ok">ℝ</strong></li>
-          </ul>
+          <ul class="rule-list" id="ruleList"></ul>
+          <div class="chips" id="chipBox"></div>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-lineal-54-play.html" title="Lección 159: Lineal · 5.4 · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-recta-62-play.html" title="Lección 138: Recta · 6.2 · vertical · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Lección 137 · Recta · 6.1 · explícita"></canvas>
+        <a class="lesson-nav prev" href="leccion-dominio-exponencial-regla-play.html" title="Lección 125: Dominio · exponencial · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-trozos-31-play.html" title="Lección 126: A trozos · hoja 3.1 · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Dominio e interceptos 2.1 a 2.8"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · puntos (0; 0) y (2; 1) → pendiente → y = (1/2)x.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · 2.1 a 2.8 · Dom + cortes con los ejes.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -294,24 +261,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Hoja 6.1 · origen · m = 1/2 · <strong style="color:#5ad4a8">y = (1/2)x</strong> · Dom = ℝ</p>
+    <p class="hint">Clave · 2.1 ℝ (3;0)(0;1) · 2.2 ℝ∖{'{'}1,2{'}'} (−1;0)(0;1/2) · 2.3 ℝ sin ∩x (0;−5) · 2.4 ℝ (−1;0)(0;1/4) · 2.5 (−∞,3/2] (3/2;0)(0;√3) · 2.6 ℝ sin ∩x (0;1) · 2.7 (0,∞) (1;0) sin ∩y · 2.8 ℝ∖{'{'}1{'}'} (3/2;0)(0;−3)</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
-<script>
-window.__RECTA_CFG__ = {
-  exportName: "__L137",
-  sheet: "6.1",
-  kind: "explicit",
-  p1: { x: 0, y: 0 },
-  p2: { x: 2, y: 1 },
-  mNum: 1, mDen: 2,
-  bNum: 0, bDen: 1,
-  throughOrigin: true,
-  xmin: -2, xmax: 6, ymin: -2, ymax: 4,
-  captionIdle: "Presioná <strong>▶ Play</strong> · puntos (0; 0) y (2; 1) → pendiente → y = (1/2)x."
-};
-</script>
-<script src="leccion-recta-explicit-play.js?v=20260908b"></script>
+<script src="leccion-tp1-dominio-ejes-play.js?v=20260908"></script>
 </body>
 </html>
