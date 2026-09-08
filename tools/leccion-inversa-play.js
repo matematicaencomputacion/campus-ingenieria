@@ -441,6 +441,7 @@
       g = item.geom;
       t1 = Math.max(0, Math.min(1, item.t1 || 0));
       t2 = Math.max(0, Math.min(1, item.t2 || 0));
+      tip = null;
       a = worldToScreen(g.start.x, g.start.y);
       ctx.save();
       ctx.strokeStyle = item.done ? "rgba(124,58,237,0.78)" : LPATH;
