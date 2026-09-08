@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 163 · Economía · equilibrio · play</title>
+<title>Lección 164 · Economía · beneficio · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -211,8 +211,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 163</span> · Economía · equilibrio · play
-        <span class="sub">S = D · (3; 16)</span>
+      <h1><span class="lesson-num">Lección 164</span> · Economía · beneficio · play
+        <span class="sub">I · B · B(100) · máximo (175; 5525)</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -220,7 +220,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/6</span>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/7</span>
     </div>
   </header>
 
@@ -230,38 +230,39 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="contrast-card">
           <p class="contrast-kicker">1 · Qué es esto</p>
           <ul class="contrast-bullets">
-            <li>El <span class="hl">equilibrio</span> es el punto donde oferta y demanda coinciden: misma cantidad x y mismo precio p.</li>
-            <li>Se resuelve <strong>S(x) = D(x)</strong>. La cantidad no puede ser negativa: si aparece x&lt;0, se descarta.</li>
+            <li>El <span class="hl">ingreso</span> I es lo que entra: precio × cantidad. El <span class="hl">beneficio</span> B = I − C es lo que queda.</li>
+            <li>El <span class="hl">beneficio medio</span> es B/x (por unidad). El máximo de B está donde la curva deja de subir (pendiente 0).</li>
           </ul>
         </div>
         <div class="band-legend">
           <div class="band-legend-title">Datos</div>
-          <div class="band-row"><span class="band-swatch green"></span><span><strong class="v">Oferta S</strong> · S(x) = 4x + 4</span></div>
-          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">Demanda D</strong> · D(x) = 25 − x²</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">Costo</strong> · C(x) = (1/10)x² − 10x + 600</span></div>
+          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">Demanda</strong> · x = −10p + 600 → p = 60 − x/10</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Qué es equilibrio</li>
-            <li data-step="2"><span class="n">2</span> a) Igualar S = D</li>
-            <li data-step="3"><span class="n">3</span> a) x² + 4x − 21 = 0</li>
-            <li data-step="4"><span class="n">4</span> a) x = 3 (descartar −7)</li>
-            <li data-step="5"><span class="n">5</span> b) p = 16</li>
-            <li data-step="6"><span class="n">6</span> c) Gráfico · marcar (3; 16)</li>
+            <li data-step="1"><span class="n">1</span> Qué es I, B y B medio</li>
+            <li data-step="2"><span class="n">2</span> a) Armar I(x) = p·x</li>
+            <li data-step="3"><span class="n">3</span> b) B = I − C</li>
+            <li data-step="4"><span class="n">4</span> c) B(100) y medio</li>
+            <li data-step="5"><span class="n">5</span> d) pendiente B′ = 0 → x=175</li>
+            <li data-step="6"><span class="n">6</span> d) B<sub>máx</sub> = 5525</li>
+            <li data-step="7"><span class="n">7</span> e) Gráfico · vértice</li>
           </ol>
         </div>
         <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">S(x) = 4x + 4<br>D(x) = 25 − x²</div>
-          <p class="hint-mini" id="hintMini">▶ Play · equilibrio: igualar, precio, gráfico</p>
+          <div class="expr-formula" id="exprFormula">C(x) = (1/10)x² − 10x + 600<br>p(x) = 60 − x/10</div>
+          <p class="hint-mini" id="hintMini">▶ Play · ingreso, beneficio, máximo</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-15-editor-play.html" title="Lección 162: Economía · editor · tramos · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-18-beneficio-play.html" title="Lección 164: Economía · beneficio · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Equilibrio oferta y demanda"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-17-equilibrio-play.html" title="Lección 163: Economía · equilibrio · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <span class="lesson-nav next" aria-disabled="true" title="Fin de aplicaciones económicas" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <canvas id="c" width="900" height="640" aria-label="Beneficio B(x) y su máximo"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · equilibrio: igualar S=D, precio y gráfico.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · ingreso, beneficio, B(100) y el máximo.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -271,7 +272,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Equilibrio · S=4x+4 · D=25−x² · x=3 · p=16</p>
+    <p class="hint">B = 70x − x²/5 − 600 · B(100)=4400 · máx en x=175, B=5525</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -284,78 +285,77 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var canvas = document.getElementById("c");
 
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 6, ymin: 0, ymax: 28,
-    xlabel: "cantidad x", ylabel: "precio p",
-    xTicks: [0, 1, 2, 3, 4, 5, 6],
-    yTicks: [0, 4, 8, 12, 16, 20, 24, 28]
+    xmin: 0, xmax: 360, ymin: -800, ymax: 6200,
+    xlabel: "cantidad x", ylabel: "beneficio B",
+    xTicks: [0, 50, 100, 175, 250, 350],
+    yTicks: [0, 2000, 4000, 4400, 5525],
+    yFmt: function (n) { return EP.fmtNum(n, 0); }
   });
-  function Sof(x) { return 4 * x + 4; }
-  function Dof(x) { return 25 - x * x; }
+  function Bof(x) { return 70 * x - (x * x) / 5 - 600; }
   function draw(api) {
     var v = api.vis;
     g.size(); g.drawAxes();
-    if (v.S) {
-      g.plotFn(Sof, 0, 6, { color: C.oferta, lw: 3.2 });
-      g.label(4.4, Sof(4.4), "S oferta", { color: C.oferta });
+    if (v.curve) g.plotFn(Bof, 0, 350, { color: C.beneficio, lw: 3.2 });
+    if (v.P100) {
+      g.vLine(100, { color: C.teal, lw: 1.4, dash: [4, 4] });
+      g.point(100, 4400, { color: C.teal });
+      g.label(100, 4400, "B(100)=4400", { color: C.teal, dy: 16, baseline: "top", dx: 8 });
     }
-    if (v.D) {
-      g.plotFn(Dof, 0, 5, { color: C.demanda, lw: 3.2 });
-      g.label(0.15, 24.2, "D demanda", { color: C.demanda });
+    if (v.vert) {
+      g.vLine(175, { color: C.amber, lw: 1.6, dash: [5, 4] });
+      g.hLine(5525, { color: C.amber, lw: 1.4, dash: [5, 4] });
+      g.point(175, 5525, { color: C.amber });
+      g.label(175, 5525, "máx (175; 5525)", { color: C.amber });
     }
-    if (v.eq) {
-      g.vLine(3, { color: C.purple, lw: 1.5, dash: [5, 4] });
-      g.hLine(16, { color: C.purple, lw: 1.4, dash: [5, 4] });
-      g.point(3, 16, { color: C.purple });
-      g.label(3, 16, "E(3; 16)", { color: C.purple });
-    }
-    if (v.discard) {
-      g.badge("x = −7 se descarta (cantidad < 0)");
-    } else if (v.badge) {
-      g.badge(v.badge);
-    }
+    if (v.badge) g.badge(v.badge);
   }
   EP.bindPlay({
-    totalPhases: 6,
-    idleCaption: "Presioná <strong>▶ Play</strong> · equilibrio: igualar S=D, precio y gráfico.",
-    idleVis: {},
+    totalPhases: 7,
+    idleCaption: "Presioná <strong>▶ Play</strong> · ingreso, beneficio, B(100) y el máximo.",
+    idleVis: { curve: true },
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1700, vis: { S: true, D: true, badge: "1 · qué es equilibrio" },
-          work: '<span class="paso">1</span> · equilibrio = misma x y mismo p para oferta y demanda',
-          cap: 'La <span class="ok">oferta</span> S sube (recta). La <span class="bad">demanda</span> D baja (parábola). Donde se cruzan, el mercado se equilibra.',
-          htmls: [{ id: "exprFormula", value: "S(x) = 4x + 4<br>D(x) = 25 − x²" }] },
-        { phase: 2, wait: 1800, vis: { S: true, D: true, badge: "a) S = D" },
-          work: '<span class="paso">2</span> · 4x + 4 = 25 − x²',
-          cap: '<span class="hl">a)</span> Igualamos las dos fórmulas: el precio de oferta y el de demanda tienen que ser el mismo.',
-          htmls: [{ id: "exprFormula", value: "4x + 4 = 25 − x²" }] },
-        { phase: 3, wait: 1900, vis: { S: true, D: true, badge: "x² + 4x − 21 = 0" },
-          work: '<span class="paso">3</span> · x² + 4x + 4 − 25 = 0 → <span class="ok">x² + 4x − 21 = 0</span>',
-          cap: 'Pasamos todo a un lado: x² + 4x − 21 = 0. Discriminante 16+84=100 → x = (−4 ± 10)/2.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">x² + 4x − 21 = 0</span>' }] },
-        { phase: 4, wait: 1800, vis: { S: true, D: true, discard: true },
-          work: '<span class="paso">4</span> · x = 3 o x = −7 · <span class="bad">−7 se descarta</span> (x ≥ 0)',
-          cap: 'Las raíces son 3 y −7. Una cantidad negativa no tiene sentido en el mercado → nos quedamos con <span class="ok">x = 3</span>.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">x = 3</span> · <span class="bad">x = −7 no</span>' }] },
-        { phase: 5, wait: 1700, vis: { S: true, D: true, eq: true, badge: "b) p = 16" },
-          work: '<span class="paso">5</span> · p = S(3) = 4·3 + 4 = <span class="ok">16</span> · D(3)=25−9=16 ✓',
-          cap: '<span class="hl">b)</span> El precio de equilibrio es el de cualquiera de las dos: p = 16.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">p = 16</span>' }] },
-        { phase: 6, wait: 1600, vis: { S: true, D: true, eq: true, badge: "c) E(3; 16)" },
-          work: '<span class="paso">6</span> · <span class="ok">E(3; 16)</span> · cruce de S y D',
-          cap: '<span class="hl">c)</span> En el gráfico: recta S, parábola D, y el punto de equilibrio <span class="ok">(3; 16)</span>.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">equilibrio E(3; 16)</span>' }] }
+        { phase: 1, wait: 1800, vis: { curve: true, badge: "1 · I, B, B medio" },
+          work: '<span class="paso">1</span> · I = p·x · B = I − C · B medio = B/x',
+          cap: 'La demanda viene como x = −10p + 600. Despejamos p: p = 60 − x/10. Con eso armamos el ingreso.',
+          htmls: [{ id: "exprFormula", value: "p = 60 − x/10<br>C(x) = (1/10)x² − 10x + 600" }] },
+        { phase: 2, wait: 1900, vis: { curve: true, badge: "a) I = p·x" },
+          work: '<span class="paso">2</span> · I(x) = (60 − x/10)·x = <span class="ok">60x − x²/10</span>',
+          cap: '<span class="hl">a)</span> Cada una de las x unidades se vende a p. Multiplicamos y queda una cuadrática.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">I(x) = 60x − x²/10</span>' }] },
+        { phase: 3, wait: 2000, vis: { curve: true, badge: "b) B = I − C" },
+          work: '<span class="paso">3</span> · B = 60x − x²/10 − ((1/10)x² − 10x + 600) = <span class="ok">70x − x²/5 − 600</span>',
+          cap: '<span class="hl">b)</span> Restamos: −x²/10 − x²/10 = −x²/5 y 60x − (−10x) = 70x. El gráfico ya es esa B(x).',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B(x) = 70x − x²/5 − 600</span>' }] },
+        { phase: 4, wait: 1800, vis: { curve: true, P100: true, badge: "c) B(100)=4400" },
+          work: '<span class="paso">4</span> · B(100)=7000 − 2000 − 600 = <span class="ok">4400</span> · medio = 4400/100 = <span class="ok">44</span>',
+          cap: '<span class="hl">c)</span> Sustituimos x=100. El <strong>beneficio medio</strong> es lo que queda por unidad: 44.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B(100)=4400 · B̄(100)=44</span>' }] },
+        { phase: 5, wait: 2000, vis: { curve: true, P100: true, vert: true, badge: "d) B′ = 0" },
+          work: '<span class="paso">5</span> · B′(x) = 70 − (2/5)x = 0 → x = 70·5/2 = <span class="ok">175</span>',
+          cap: '<span class="hl">d)</span> B′ es la <strong>pendiente</strong> de B. Se anula donde B deja de subir (el máximo). Equivale al vértice x = −b/(2a).',
+          htmls: [{ id: "exprFormula", value: "B′ = 70 − (2/5)x = 0 → x = 175" }] },
+        { phase: 6, wait: 1800, vis: { curve: true, P100: true, vert: true, badge: "B(175)=5525" },
+          work: '<span class="paso">6</span> · B(175)=70·175 − 175²/5 − 600 = 12250 − 6125 − 600 = <span class="ok">5525</span>',
+          cap: 'Sustituimos x=175 en B. El beneficio máximo es 5525.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">B<sub>máx</sub> = 5525</span>' }] },
+        { phase: 7, wait: 1600, vis: { curve: true, P100: true, vert: true, badge: "e) vértice (175; 5525)" },
+          work: '<span class="paso">7</span> · parábola hacia abajo · vértice <span class="ok">(175; 5525)</span>',
+          cap: '<span class="hl">e)</span> El gráfico de B marca el máximo. A 100 unidades se gana 4400; en el vértice se gana más: 5525.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">máx B = 5525 en x = 175</span>' }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> S=D → x=3 (se descarta −7) · p=16 · punto <span class="ok">(3; 16)</span>.', 'equilibrio listo');
+        api.finish('<strong>Cierre:</strong> I=60x−x²/10 · B=70x−x²/5−600 · B(100)=4400 · máx (175; 5525).', 'beneficio listo');
       });
     }
   });
-  window.__L163 = {
-    S: function (x) { return 4 * x + 4; },
-    D: function (x) { return 25 - x * x; },
-    x: 3,
-    p: 16,
-    discarded: -7
+  window.__L164 = {
+    I: function (x) { return 60 * x - x * x / 10; },
+    B: function (x) { return 70 * x - x * x / 5 - 600; },
+    B100: 4400,
+    avg100: 44,
+    xmax: 175,
+    Bmax: 5525
   };
 })();
 
