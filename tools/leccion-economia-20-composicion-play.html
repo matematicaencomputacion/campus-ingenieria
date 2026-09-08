@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 164 · Economía · beneficio · play</title>
+<title>Lección 165 · Economía · composición C∘x · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -211,8 +211,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 164</span> · Economía · beneficio · play
-        <span class="sub">I · B · B(100) · máximo (175; 5525)</span>
+      <h1><span class="lesson-num">Lección 165</span> · Economía · composición C∘x · play
+        <span class="sub">máquinas t → x → C · 0≤t≤5</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -230,39 +230,39 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="contrast-card">
           <p class="contrast-kicker">1 · Qué es esto</p>
           <ul class="contrast-bullets">
-            <li>El <span class="hl">ingreso</span> I es lo que entra: precio × cantidad. El <span class="hl">beneficio</span> B = I − C es lo que queda.</li>
-            <li>El <span class="hl">beneficio medio</span> es B/x (por unidad). El máximo de B está donde la curva deja de subir (pendiente 0).</li>
+            <li>Componer <span class="hl">C∘x</span> = primero la caja <strong>x</strong> (horas → unidades), después la caja <strong>C</strong> (unidades → costo).</li>
+            <li>El orden importa: entra t, sale x(t), y eso entra a C. Dominio: <span class="hl">0 ≤ t ≤ 5</span> horas.</li>
           </ul>
         </div>
         <div class="band-legend">
-          <div class="band-legend-title">Datos</div>
-          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">Costo</strong> · C(x) = (1/10)x² − 10x + 600</span></div>
-          <div class="band-row"><span class="band-swatch coral"></span><span><strong class="c">Demanda</strong> · x = −10p + 600 → p = 60 − x/10</span></div>
+          <div class="band-legend-title">Cajas</div>
+          <div class="band-row"><span class="band-swatch teal"></span><span><strong class="t">x(t) = 25t</strong> · unidades por hora</span></div>
+          <div class="band-row"><span class="band-swatch amber"></span><span><strong class="a">C(x) = x² + x + 500</strong> · costo</span></div>
         </div>
         <div class="steps-box" aria-label="Pasos con nombre">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Qué es I, B y B medio</li>
-            <li data-step="2"><span class="n">2</span> a) Armar I(x) = p·x</li>
-            <li data-step="3"><span class="n">3</span> b) B = I − C</li>
-            <li data-step="4"><span class="n">4</span> c) B(100) y medio</li>
-            <li data-step="5"><span class="n">5</span> d) pendiente B′ = 0 → x=175</li>
-            <li data-step="6"><span class="n">6</span> d) B<sub>máx</sub> = 5525</li>
-            <li data-step="7"><span class="n">7</span> e) Gráfico · vértice</li>
+            <li data-step="1"><span class="n">1</span> Qué es C∘x · dos cajas</li>
+            <li data-step="2"><span class="n">2</span> a) Pegar C(x(t))</li>
+            <li data-step="3"><span class="n">3</span> b) t=3 por las cajas</li>
+            <li data-step="4"><span class="n">4</span> b) (C∘x)(3)=6200</li>
+            <li data-step="5"><span class="n">5</span> c) promedio = total / tiempo</li>
+            <li data-step="6"><span class="n">6</span> d) t=5 → 16250</li>
+            <li data-step="7"><span class="n">7</span> d) ¿supera 11000?</li>
           </ol>
         </div>
         <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">C(x) = (1/10)x² − 10x + 600<br>p(x) = 60 − x/10</div>
-          <p class="hint-mini" id="hintMini">▶ Play · ingreso, beneficio, máximo</p>
+          <div class="expr-formula" id="exprFormula">x(t) = 25t<br>C(x) = x² + x + 500</div>
+          <p class="hint-mini" id="hintMini">▶ Play · t entra a x, sale a C</p>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-economia-17-equilibrio-play.html" title="Lección 163: Economía · equilibrio · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-economia-20-composicion-play.html" title="Lección 165: Economía · composición C∘x · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Beneficio B(x) y su máximo"></canvas>
+        <a class="lesson-nav prev" href="leccion-economia-18-beneficio-play.html" title="Lección 164: Economía · beneficio · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <span class="lesson-nav next" aria-disabled="true" title="Fin de aplicaciones económicas" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <canvas id="c" width="900" height="640" aria-label="Composición C∘x · máquinas y gráfico"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · ingreso, beneficio, B(100) y el máximo.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · t entra a la caja x, sale a la caja C.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -272,7 +272,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">B = 70x − x²/5 − 600 · B(100)=4400 · máx en x=175, B=5525</p>
+    <p class="hint">(C∘x)(t)=625t²+25t+500 · t=3 → 6200 · promedio 2066,67/h · t=5 → 16250 &gt; 11000</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -283,79 +283,210 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var EP = window.EconomiaPlay;
   var C = EP.COLORS;
   var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
 
   var g = new EP.Graph(canvas, {
-    xmin: 0, xmax: 360, ymin: -800, ymax: 6200,
-    xlabel: "cantidad x", ylabel: "beneficio B",
-    xTicks: [0, 50, 100, 175, 250, 350],
-    yTicks: [0, 2000, 4000, 4400, 5525],
+    xmin: 0, xmax: 5.4, ymin: 0, ymax: 18000,
+    xlabel: "horas t", ylabel: "costo (C∘x)",
+    xTicks: [0, 1, 2, 3, 4, 5],
+    yTicks: [0, 5000, 6200, 11000, 16250],
     yFmt: function (n) { return EP.fmtNum(n, 0); }
   });
-  function Bof(x) { return 70 * x - (x * x) / 5 - 600; }
-  function draw(api) {
-    var v = api.vis;
-    g.size(); g.drawAxes();
-    if (v.curve) g.plotFn(Bof, 0, 350, { color: C.beneficio, lw: 3.2 });
-    if (v.P100) {
-      g.vLine(100, { color: C.teal, lw: 1.4, dash: [4, 4] });
-      g.point(100, 4400, { color: C.teal });
-      g.label(100, 4400, "B(100)=4400", { color: C.teal, dy: 16, baseline: "top", dx: 8 });
-    }
-    if (v.vert) {
-      g.vLine(175, { color: C.amber, lw: 1.6, dash: [5, 4] });
-      g.hLine(5525, { color: C.amber, lw: 1.4, dash: [5, 4] });
-      g.point(175, 5525, { color: C.amber });
-      g.label(175, 5525, "máx (175; 5525)", { color: C.amber });
+
+  function Cx(t) { return 625 * t * t + 25 * t + 500; }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawBox(box, letter, formula, color, active) {
+    ctx.save();
+    if (active) { ctx.shadowColor = color; ctx.shadowBlur = 18; }
+    roundRect(box.x, box.y, box.w, box.h, 14);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.lineWidth = active ? 4 : 2.5;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    roundRect(box.x + 10, box.y - 14, 40, 26, 7);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 15px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(letter, box.x + 30, box.y - 1);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "700 14px ui-monospace, Menlo, monospace";
+    ctx.fillText(formula, box.x + box.w / 2, box.y + box.h / 2 + 6);
+    ctx.fillStyle = color;
+    roundRect(box.x - 7, box.y + box.h / 2 - 9, 9, 18, 3);
+    ctx.fill();
+    roundRect(box.x + box.w - 2, box.y + box.h / 2 - 9, 9, 18, 3);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawArrow(x1, y1, x2, y2, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    var ang = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 11 * Math.cos(ang - 0.4), y2 - 11 * Math.sin(ang - 0.4));
+    ctx.lineTo(x2 - 11 * Math.cos(ang + 0.4), y2 - 11 * Math.sin(ang + 0.4));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawToken(x, y, label) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = "#f59e0b";
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = "#0b1018";
+    ctx.font = "800 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, x, y + 1);
+    ctx.restore();
+  }
+
+  function drawMachines(v) {
+    var W = canvas.width, H = canvas.height;
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "800 17px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("Cadena  x  →  C     ·     (C ∘ x)", W / 2, 14);
+
+    var boxW = Math.min(200, W * 0.28);
+    var boxH = Math.min(132, H * 0.34);
+    var y = H * 0.30;
+    var gap = Math.min(100, W * 0.13);
+    var total = boxW * 2 + gap;
+    var x0 = (W - total) / 2;
+    var left = { x: x0, y: y, w: boxW, h: boxH };
+    var right = { x: x0 + boxW + gap, y: y, w: boxW, h: boxH };
+    var midY = y + boxH / 2;
+    var inX = x0 - 64;
+    var midX = x0 + boxW + gap / 2;
+    var outX = x0 + total + 64;
+
+    drawBox(left, "x", "25 · t", C.teal, v.pulse === "x");
+    drawBox(right, "C", "u² + u + 500", C.costo, v.pulse === "C");
+    drawArrow(inX + 18, midY, left.x - 10, midY, "#64748b");
+    drawArrow(left.x + left.w + 8, midY, right.x - 10, midY, "#64748b");
+    drawArrow(right.x + right.w + 8, midY, outX - 10, midY, "#64748b");
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "700 12px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("t horas", inX - 4, midY - 28);
+    ctx.fillText("unidades", midX, midY - 28);
+    ctx.fillText("costo", outX + 4, midY - 28);
+
+    if (v.token === "in") drawToken(inX, midY, v.tLabel || "t");
+    if (v.token === "mid") drawToken(midX, midY, v.xLabel || "x");
+    if (v.token === "out") drawToken(outX, midY, v.cLabel || "C");
+
+    if (v.note) {
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 15px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(v.note, W / 2, H - 36);
     }
     if (v.badge) g.badge(v.badge);
   }
+
+  function draw(api) {
+    var v = api.vis;
+    g.size();
+    if (v.mode === "graph") {
+      g.drawAxes();
+      g.plotFn(Cx, 0, 5, { color: C.costo, lw: 3.2 });
+      g.hLine(11000, { color: C.coral, lw: 2, dash: [6, 4], alpha: 0.9 });
+      g.label(0.15, 11800, "límite 11000", { color: C.coral, dx: 8, dy: -4 });
+      if (v.P3) {
+        g.point(3, 6200, { color: C.teal });
+        g.label(3, 6200, "t=3 · 6200", { color: C.teal, dy: 18, baseline: "top" });
+      }
+      if (v.P5) {
+        g.point(5, 16250, { color: C.coral });
+        g.label(3.55, 16250, "t=5 · 16250", { color: C.coral, align: "left", dx: 8 });
+      }
+      if (v.badge) g.badge(v.badge);
+      return;
+    }
+    drawMachines(v);
+  }
+
   EP.bindPlay({
     totalPhases: 7,
-    idleCaption: "Presioná <strong>▶ Play</strong> · ingreso, beneficio, B(100) y el máximo.",
-    idleVis: { curve: true },
+    idleCaption: "Presioná <strong>▶ Play</strong> · t entra a la caja x, sale a la caja C.",
+    idleVis: { mode: "machines", pulse: null, token: "in", tLabel: "t" },
     draw: draw,
     run: function (api) {
       api.runSequence([
-        { phase: 1, wait: 1800, vis: { curve: true, badge: "1 · I, B, B medio" },
-          work: '<span class="paso">1</span> · I = p·x · B = I − C · B medio = B/x',
-          cap: 'La demanda viene como x = −10p + 600. Despejamos p: p = 60 − x/10. Con eso armamos el ingreso.',
-          htmls: [{ id: "exprFormula", value: "p = 60 − x/10<br>C(x) = (1/10)x² − 10x + 600" }] },
-        { phase: 2, wait: 1900, vis: { curve: true, badge: "a) I = p·x" },
-          work: '<span class="paso">2</span> · I(x) = (60 − x/10)·x = <span class="ok">60x − x²/10</span>',
-          cap: '<span class="hl">a)</span> Cada una de las x unidades se vende a p. Multiplicamos y queda una cuadrática.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">I(x) = 60x − x²/10</span>' }] },
-        { phase: 3, wait: 2000, vis: { curve: true, badge: "b) B = I − C" },
-          work: '<span class="paso">3</span> · B = 60x − x²/10 − ((1/10)x² − 10x + 600) = <span class="ok">70x − x²/5 − 600</span>',
-          cap: '<span class="hl">b)</span> Restamos: −x²/10 − x²/10 = −x²/5 y 60x − (−10x) = 70x. El gráfico ya es esa B(x).',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">B(x) = 70x − x²/5 − 600</span>' }] },
-        { phase: 4, wait: 1800, vis: { curve: true, P100: true, badge: "c) B(100)=4400" },
-          work: '<span class="paso">4</span> · B(100)=7000 − 2000 − 600 = <span class="ok">4400</span> · medio = 4400/100 = <span class="ok">44</span>',
-          cap: '<span class="hl">c)</span> Sustituimos x=100. El <strong>beneficio medio</strong> es lo que queda por unidad: 44.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">B(100)=4400 · B̄(100)=44</span>' }] },
-        { phase: 5, wait: 2000, vis: { curve: true, P100: true, vert: true, badge: "d) B′ = 0" },
-          work: '<span class="paso">5</span> · B′(x) = 70 − (2/5)x = 0 → x = 70·5/2 = <span class="ok">175</span>',
-          cap: '<span class="hl">d)</span> B′ es la <strong>pendiente</strong> de B. Se anula donde B deja de subir (el máximo). Equivale al vértice x = −b/(2a).',
-          htmls: [{ id: "exprFormula", value: "B′ = 70 − (2/5)x = 0 → x = 175" }] },
-        { phase: 6, wait: 1800, vis: { curve: true, P100: true, vert: true, badge: "B(175)=5525" },
-          work: '<span class="paso">6</span> · B(175)=70·175 − 175²/5 − 600 = 12250 − 6125 − 600 = <span class="ok">5525</span>',
-          cap: 'Sustituimos x=175 en B. El beneficio máximo es 5525.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">B<sub>máx</sub> = 5525</span>' }] },
-        { phase: 7, wait: 1600, vis: { curve: true, P100: true, vert: true, badge: "e) vértice (175; 5525)" },
-          work: '<span class="paso">7</span> · parábola hacia abajo · vértice <span class="ok">(175; 5525)</span>',
-          cap: '<span class="hl">e)</span> El gráfico de B marca el máximo. A 100 unidades se gana 4400; en el vértice se gana más: 5525.',
-          htmls: [{ id: "exprFormula", value: '<span class="ok">máx B = 5525 en x = 175</span>' }] }
+        { phase: 1, wait: 1800, vis: { mode: "machines", pulse: "x", token: "in", tLabel: "t", badge: "1 · dos cajas" },
+          work: '<span class="paso">1</span> · primero x(t), después C(x) · eso es C∘x',
+          cap: 't son <strong>horas</strong> (0 a 5). La caja x convierte horas en unidades (25 por hora). La caja C convierte unidades en costo.',
+          htmls: [{ id: "exprFormula", value: "x(t)=25t &nbsp;→&nbsp; C(x)=x²+x+500" }] },
+        { phase: 2, wait: 2000, vis: { mode: "machines", pulse: "C", token: "mid", xLabel: "25t", badge: "a) pegar C(x(t))" },
+          work: '<span class="paso">2</span> · C(25t)=(25t)²+25t+500 = <span class="ok">625t² + 25t + 500</span>',
+          cap: '<span class="hl">a)</span> Se pega: donde C veía x, ahora va 25t. (C∘x)(t) ya es costo en función del tiempo.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">(C∘x)(t) = 625t² + 25t + 500</span>' }] },
+        { phase: 3, wait: 1800, vis: { mode: "machines", pulse: "x", token: "in", tLabel: "3", badge: "b) t = 3 entra" },
+          work: '<span class="paso">3</span> · t=3 → x(3)=25·3=<span class="ok">75</span> unidades',
+          cap: '<span class="hl">b)</span> El token 3 entra a la primera caja. Salen 75 unidades (no confundir con C(3) de 3 unidades).',
+          htmls: [{ id: "exprFormula", value: "x(3) = 75" }] },
+        { phase: 4, wait: 1800, vis: { mode: "machines", pulse: "C", token: "out", cLabel: "6200", note: "C(75) = 75² + 75 + 500 = 6200", badge: "(C∘x)(3)=6200" },
+          work: '<span class="paso">4</span> · C(75)=5625+75+500 = <span class="ok">6200</span>',
+          cap: 'Esas 75 unidades entran a C. A las 3 horas el costo total es 6200. Eso es (C∘x)(3), no C(x=3).',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">(C∘x)(3) = 6200</span>' }] },
+        { phase: 5, wait: 2200, vis: { mode: "machines", token: "out", cLabel: "÷3", note: "promedio = total / tiempo = 6200 / 3 ≈ 2066,67  (no es C/x)", badge: "c) total ÷ horas" },
+          work: '<span class="paso">5</span> · 6200 / 3 ≈ <span class="ok">2066,67</span> por hora · no es costo por unidad',
+          cap: '<span class="hl">c)</span> Acá “promedio” es <strong>total / tiempo</strong> (cuánto sale cada hora). Costo medio por unidad sería 6200/75 ≈ 82,67 — otra cuenta.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">6200/3 ≈ 2066,67</span> por hora' }] },
+        { phase: 6, wait: 1800, vis: { mode: "graph", P3: true, P5: true, badge: "d) t=5 → 16250" },
+          work: '<span class="paso">6</span> · (C∘x)(5)=625·25+125+500 = <span class="ok">16250</span>',
+          cap: '<span class="hl">d)</span> A las 5 horas (tope del dominio) el costo es 16250. La raya coral es el límite 11000.',
+          htmls: [{ id: "exprFormula", value: '<span class="ok">(C∘x)(5) = 16250</span>' }] },
+        { phase: 7, wait: 1700, vis: { mode: "graph", P3: true, P5: true, badge: "16250 > 11000 · sí" },
+          work: '<span class="paso">7</span> · 16250 &gt; 11000 → <span class="bad">sí se supera</span> el límite',
+          cap: 'En t=5 el punto queda <strong>arriba</strong> de la raya 11000. El presupuesto no alcanza para las 5 horas.',
+          htmls: [{ id: "exprFormula", value: '<span class="bad">16250 &gt; 11000</span> · se supera' }] }
       ], function () {
-        api.finish('<strong>Cierre:</strong> I=60x−x²/10 · B=70x−x²/5−600 · B(100)=4400 · máx (175; 5525).', 'beneficio listo');
+        api.finish('<strong>Cierre:</strong> (C∘x)(t)=625t²+25t+500 · t=3 → 6200 · promedio 2066,67/h · t=5 → 16250&gt;11000.', 'composición lista');
       });
     }
   });
-  window.__L164 = {
-    I: function (x) { return 60 * x - x * x / 10; },
-    B: function (x) { return 70 * x - x * x / 5 - 600; },
-    B100: 4400,
-    avg100: 44,
-    xmax: 175,
-    Bmax: 5525
+  window.__L165 = {
+    Cx: function (t) { return 625 * t * t + 25 * t + 500; },
+    t3: 6200,
+    avg3: 6200 / 3,
+    t5: 16250,
+    limit: 11000
   };
 })();
 
