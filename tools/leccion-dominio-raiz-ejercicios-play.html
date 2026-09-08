@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 122 · Dominio · con denominador · hoja 2 · play</title>
+<title>Lección 124 · Dominio · raíz · hoja 2 · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -49,18 +49,19 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .rule-card {
   margin: 0; padding: 10px 12px; border-radius: 10px;
-  border: 1px solid rgba(251,113,133,0.45);
-  background: linear-gradient(135deg, rgba(251,113,133,0.14), rgba(18,26,39,0.95));
-  box-shadow: 0 0 18px rgba(251,113,133,0.12);
+  border: 1px solid rgba(90,212,168,0.4);
+  background: linear-gradient(135deg, rgba(90,212,168,0.12), rgba(18,26,39,0.95));
+  box-shadow: 0 0 18px rgba(90,212,168,0.10);
 }
 .rule-card-kicker {
   font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-  color: #fb7185; margin: 0 0 6px;
+  color: #5ad4a8; margin: 0 0 6px;
 }
 .rule-card-body {
   margin: 0; font-size: 0.86rem; line-height: 1.45; color: var(--ink); font-weight: 650;
 }
 .rule-card-body .hl { color: #FFBF00; }
+.rule-card-body .ok { color: #5ad4a8; }
 .rule-card-body .bad { color: #ff7b7b; }
 .band-legend {
   margin: 0; padding: 8px 10px; border-radius: 8px;
@@ -121,6 +122,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .rule-list strong { color: var(--ink); }
 .rule-list .ok { color: #5ad4a8; }
 .rule-list .bad { color: #ff7b7b; }
+.rule-list .hl { color: #FFBF00; }
 .rule-list .empty { color: #94a3b8; }
 .ex-progress { display: flex; gap: 5px; padding: 2px 4px; flex-wrap: wrap; }
 .ex-dot {
@@ -187,7 +189,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .expr-formula .hl-curve { color: #2dd4bf; }
 .expr-formula .hl-g { color: #f59e0b; }
 .expr-formula .hl-v { color: #22c55e; }
-.expr-formula .bad { color: #ff7b7b; }
+.expr-formula .ok { color: #5ad4a8; }
 .steps-box {
   margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
 }
@@ -203,8 +205,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 122</span> · Dominio · con denominador · hoja 2 · play
-        <span class="sub">anuladores · asíntotas · 2.2 / 2.4 / 2.8</span>
+      <h1><span class="lesson-num">Lección 124</span> · Dominio · raíz · hoja 2 · play
+        <span class="sub">2.5 · práctica · ¡cuidado al dividir por negativo!</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -212,7 +214,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Ej. <strong>2.2</strong>/3</span>
+      <span class="score" id="loopEl">Ej. <strong>2.5</strong>/3</span>
     </div>
   </header>
 
@@ -220,10 +222,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" aria-label="Regla y ejemplo">
         <div class="rule-card" id="ruleCard">
-          <p class="rule-card-kicker">Regla · den ≠ 0</p>
+          <p class="rule-card-kicker">Hoja 2 · raíz · rad ≥ 0</p>
           <p class="rule-card-body">
-            El <span class="hl">denominador no puede ser cero</span>.
-            Los x que <span class="bad">anulan</span> el den se sacan del dominio.
+            Radicando <span class="ok">≥ 0</span>. Si al despejar
+            <span class="hl">dividís por un negativo</span>,
+            la desigualdad <span class="bad">se invierte</span>.
           </p>
         </div>
 
@@ -231,20 +234,20 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
           <div class="band-legend-title">Banda de dominio (eje X)</div>
           <div class="band-row">
             <span class="band-swatch gray" aria-hidden="true"></span>
-            <span><strong class="g">Círculo gris</strong> — anulador (fuera de Dom).</span>
+            <span><strong class="g">Gris</strong> — fuera (radicando &lt; 0).</span>
           </div>
           <div class="band-row">
             <span class="band-swatch green" aria-hidden="true"></span>
-            <span><strong class="v">Verde</strong> — en el dominio (den ≠ 0).</span>
+            <span><strong class="v">Verde</strong> — Dom · extremo cerrado ∈ Dom.</span>
           </div>
         </div>
 
         <div class="steps-box" aria-label="Pasos del procedimiento">
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Mirar fórmula · ¿hay den con x?</li>
-            <li data-step="2"><span class="n">2</span> Factorizar / hallar anuladores</li>
-            <li data-step="3"><span class="n">3</span> Marcar cada uno (gris + asíntota)</li>
-            <li data-step="4"><span class="n">4</span> Banda Dom · escribir notación</li>
+            <li data-step="1"><span class="n">1</span> Fórmula · destacar radicando</li>
+            <li data-step="2"><span class="n">2</span> radicando ≥ 0</li>
+            <li data-step="3"><span class="n">3</span> Despejar (¿voltea?)</li>
+            <li data-step="4"><span class="n">4</span> Banda + Dom</li>
           </ol>
         </div>
 
@@ -252,40 +255,40 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
         <div class="expr-row" id="formulaRow">
           <div class="expr-formula" id="exprFormula">
-            <span class="hl-curve">f(x) = (x+1)/(x²−3x+2)</span><br>
-            <span style="color:#8b9bb4;font-size:0.82rem">Ej. 2.2</span>
+            <span class="hl-curve">f(x) = √(3 − 2x)</span><br>
+            <span style="color:#8b9bb4;font-size:0.82rem">Ej. 2.5 · ¡voltea al ÷ (−2)!</span>
           </div>
           <p class="hint-mini" id="hintMini">Presioná ▶ Play · procedimiento paso a paso</p>
         </div>
 
         <div class="expr-row" id="domainRow">
           <div class="expr-formula" id="exprDomain">
-            Dom(f) = <span class="hl-v">ℝ ∖ {1, 2}</span>
+            Dom = <span class="hl-v">(−∞, 3/2]</span>
           </div>
           <div class="chips" id="chipBox">
-            <span class="chip teal">racional</span>
-            <span class="chip coral">den ≠ 0</span>
-            <span class="chip gray">anuladores</span>
+            <span class="chip teal">Ej. 2.5</span>
+            <span class="chip coral">÷ (−2) → voltea</span>
+            <span class="chip green">(−∞, 3/2]</span>
           </div>
         </div>
 
         <div class="expr-row phase-ask" id="signRow">
-          <span class="mode-tag">Anuladores</span>
+          <span class="mode-tag">Despeje</span>
           <ul class="rule-list" id="ruleList">
-            <li>Igualá el den a <strong class="bad">0</strong></li>
-            <li>Esos x → <strong class="empty">círculo gris</strong></li>
-            <li>Dom = ℝ menos esos valores</li>
+            <li>3 − 2x ≥ 0</li>
+            <li>−2x ≥ −3</li>
+            <li><strong class="hl">÷ (−2)</strong> → <strong class="bad">invierte</strong> → x ≤ 3/2</li>
           </ul>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-dominio-sin-denominador-play.html" title="Lección 121: Dominio · sin denominador · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-dominio-raiz-regla-play.html" title="Lección 123: Dominio · raíz · radicando ≥ 0 · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Dominio · con denominador · hoja 2"></canvas>
+        <a class="lesson-nav prev" href="leccion-dominio-raiz-regla-play.html" title="Lección 123: Dominio · raíz · radicando ≥ 0 · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <span class="lesson-nav next" aria-disabled="true" title="Fin de la serie (por ahora)" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <canvas id="c" width="900" height="640" aria-label="Dominio · raíz · hoja 2 · ejercicios"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · procedimiento <span class="paso">paso a paso</span> para Ej. 2.2, 2.4 y 2.8.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · Ej. <span class="paso">2.5</span> (voltea) y dos prácticas.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -295,7 +298,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Hoja ejercicio 2 · <strong style="color:#64748b">círculo gris = anulador</strong> · <strong style="color:#22c55e">verde = Dom</strong> · contraste <strong style="color:#5ad4a8">2.4</strong>: den = x²+4 nunca es 0 en ℝ</p>
+    <p class="hint">Hoja 2 · <strong style="color:#FFBF00">2.5</strong>: al dividir por −2 la desigualdad <strong style="color:#ff7b7b">se invierte</strong> · Dom = (−∞, 3/2] · prácticas √(x−4) y √(2x+1)</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -309,11 +312,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var TEAL = "#0d9488";
   var GREEN = "#22c55e";
   var EMPTY = "#64748b";
-  var GUIDE = "#94a3b8";
-  var AMBER = "#d97706";
-  var CORAL = "#e11d48";
   var BAND_H = 14;
-  var GHOST = "rgba(245,158,11,0.35)";
   var PAD = { l: 48, r: 36, t: 28, b: 52 };
 
   var canvas = document.getElementById("c");
@@ -337,52 +336,56 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   var EXAMPLES = [
     {
-      id: "2.2",
-      sheet: "2.2",
-      title: "dos polos",
-      fHtml: '<span class="hl-curve">f(x) = (x + 1) / (x² − 3x + 2)</span><br><span style="color:#8b9bb4;font-size:0.82rem">den = <span class="hl-g">(x−1)(x−2)</span></span>',
-      denHtml: "x² − 3x + 2 = (x−1)(x−2)",
-      denFact: "(x−1)(x−2)",
-      domainSet: "ℝ ∖ {1, 2}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ ∖ {1, 2}</span>',
-      zeros: [1, 2],
-      xmin: -1.5, xmax: 4.5, ymin: -6, ymax: 6,
-      f: function (x) { return (x + 1) / ((x - 1) * (x - 2)); },
-      g: function (x) { return (x - 1) * (x - 2); },
-      tip: "Factorizá el den · anuladores x=1 y x=2",
-      surprise: false
+      id: "2.5",
+      sheet: "2.5",
+      title: "√(3−2x) · voltea",
+      fHtml: '<span class="hl-curve">f(x) = √(3 − 2x)</span><br><span style="color:#8b9bb4;font-size:0.82rem">Ej. 2.5 · radicando: <span class="hl-g">3 − 2x</span></span>',
+      radHtml: "3 − 2x",
+      ineqHtml: "3 − 2x ≥ 0",
+      midHtml: "−2x ≥ −3",
+      solveHtml: "x ≤ 3/2",
+      flip: true,
+      flipNote: "÷ (−2) → la desigualdad SE INVIERTE",
+      domainSet: "(−∞, 3/2]",
+      domainHtml: 'Dom(f) = <span class="hl-v">(−∞, 3/2]</span>',
+      end: 1.5, closed: true, side: "left",
+      xmin: -2, xmax: 5, ymin: -1, ymax: 3,
+      f: function (x) { return x <= 1.5 ? Math.sqrt(3 - 2 * x) : NaN; },
+      tip: "¡Cuidado! ÷ (−2) invierte → x ≤ 3/2"
     },
     {
-      id: "2.4",
-      sheet: "2.4",
-      title: "sin ceros reales",
-      fHtml: '<span class="hl-curve">f(x) = (x + 1) / (x² + 4)</span><br><span style="color:#8b9bb4;font-size:0.82rem">den = <span class="hl-g">x² + 4</span> ≥ 4 &gt; 0</span>',
-      denHtml: "x² + 4 ≥ 4 > 0",
-      denFact: "x² + 4",
-      domainSet: "ℝ",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ</span> <span style="color:#5ad4a8">· ¡sorpresa!</span>',
-      zeros: [],
-      xmin: -5, xmax: 5, ymin: -0.6, ymax: 0.7,
-      f: function (x) { return (x + 1) / (x * x + 4); },
-      g: function (x) { return x * x + 4; },
-      tip: "x²+4 nunca es 0 en ℝ → Dom = ℝ",
-      surprise: true
+      id: "prac-x4",
+      sheet: "P1",
+      title: "√(x−4)",
+      fHtml: '<span class="hl-curve">f(x) = √(x − 4)</span><br><span style="color:#8b9bb4;font-size:0.82rem">Práctica · radicando: <span class="hl-g">x − 4</span></span>',
+      radHtml: "x − 4",
+      ineqHtml: "x − 4 ≥ 0",
+      midHtml: null,
+      solveHtml: "x ≥ 4",
+      flip: false,
+      domainSet: "[4, ∞)",
+      domainHtml: 'Dom(f) = <span class="hl-v">[4, ∞)</span>',
+      end: 4, closed: true, side: "right",
+      xmin: 0, xmax: 10, ymin: -1, ymax: 3,
+      f: function (x) { return x >= 4 ? Math.sqrt(x - 4) : NaN; },
+      tip: "x − 4 ≥ 0 → x ≥ 4 · Dom = [4, ∞)"
     },
     {
-      id: "2.8",
-      sheet: "2.8",
-      title: "un polo",
-      fHtml: '<span class="hl-curve">g(x) = 1/(x − 1) − 2</span><br><span style="color:#8b9bb4;font-size:0.82rem">den = <span class="hl-g">x − 1</span></span>',
-      denHtml: "x − 1 = 0 → x = 1",
-      denFact: "x − 1",
-      domainSet: "ℝ ∖ {1}",
-      domainHtml: 'Dom(g) = <span class="hl-v">ℝ ∖ {1}</span>',
-      zeros: [1],
-      xmin: -2, xmax: 5, ymin: -5, ymax: 5,
-      f: function (x) { return 1 / (x - 1) - 2; },
-      g: function (x) { return x - 1; },
-      tip: "Un solo anulador: x = 1",
-      surprise: false
+      id: "prac-2x1",
+      sheet: "P2",
+      title: "√(2x+1)",
+      fHtml: '<span class="hl-curve">f(x) = √(2x + 1)</span><br><span style="color:#8b9bb4;font-size:0.82rem">Práctica · radicando: <span class="hl-g">2x + 1</span></span>',
+      radHtml: "2x + 1",
+      ineqHtml: "2x + 1 ≥ 0",
+      midHtml: "2x ≥ −1",
+      solveHtml: "x ≥ −1/2",
+      flip: false,
+      domainSet: "[−1/2, ∞)",
+      domainHtml: 'Dom(f) = <span class="hl-v">[−1/2, ∞)</span>',
+      end: -0.5, closed: true, side: "right",
+      xmin: -3, xmax: 4, ymin: -1, ymax: 3,
+      f: function (x) { return x >= -0.5 ? Math.sqrt(2 * x + 1) : NaN; },
+      tip: "2x + 1 ≥ 0 → x ≥ −1/2"
     }
   ];
 
@@ -395,13 +398,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     exIndex: 0,
     phase: "idle",
     step: 0,
-    revealedZeros: 0,
     showCurve: false,
-    showAsymptotes: false,
-    showGhostG: false,
     bandReveal: 0,
-    punchFlash: -1,
-    curveAlpha: 1
+    curveAlpha: 1,
+    punchFlash: false,
+    showEndDot: false,
+    flipFlash: false
   };
 
   function ex() { return EXAMPLES[state.exIndex]; }
@@ -417,7 +419,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     return id;
   }
   function fmtNum(n) {
+    if (n == null || !isFinite(n)) return "—";
     if (Object.is(n, -0) || Math.abs(n) < 1e-12) return "0";
+    if (Math.abs(n - 1.5) < 1e-9) return "3/2";
+    if (Math.abs(n + 0.5) < 1e-9) return "−1/2";
     if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n)).replace("-", "−");
     return String(Math.round(n * 100) / 100).replace("-", "−");
   }
@@ -464,29 +469,20 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     exprFormula.innerHTML = e.fHtml;
     exprDomain.innerHTML = e.domainHtml;
     hintMini.textContent = e.tip;
-    formulaRow.classList.toggle("surprise", !!e.surprise);
-    var chips = "";
-    chips += '<span class="chip teal">Ej. ' + e.sheet + "</span>";
-    chips += '<span class="chip coral">den: ' + e.denFact + "</span>";
-    if (e.zeros.length === 0) {
-      chips += '<span class="chip green">sin ceros reales</span>';
-      chips += '<span class="chip green">Dom = ℝ</span>';
-    } else {
-      chips += '<span class="chip bad">{' + e.zeros.map(fmtNum).join(", ") + "}</span>";
-      chips += '<span class="chip gray">fuera</span>';
-    }
+    formulaRow.classList.add("surprise");
+    var chips = '<span class="chip teal">Ej. ' + e.sheet + "</span>";
+    chips += '<span class="chip coral">rad: ' + e.radHtml + "</span>";
+    if (e.flip) chips += '<span class="chip bad">÷ (−) voltea</span>';
+    chips += '<span class="chip green">' + e.domainSet + "</span>";
     chipBox.innerHTML = chips;
-
     var lis = "";
-    if (e.zeros.length === 0) {
-      lis += '<li><span class="ok">' + e.denHtml + "</span></li>";
-      lis += '<li>ningún anulador → <strong class="ok">Dom = ℝ</strong></li>';
-      lis += "<li>curva suave · sin asíntota vertical</li>";
-    } else {
-      lis += "<li>Anuladores: <strong class=\"bad\">{" + e.zeros.map(fmtNum).join(", ") + "}</strong></li>";
-      lis += "<li>Se sacan → <strong class=\"empty\">círculo gris</strong></li>";
-      lis += "<li>Dom = <strong class=\"ok\">" + e.domainSet + "</strong></li>";
+    lis += "<li>Radicando: <strong>" + e.radHtml + "</strong></li>";
+    lis += "<li><strong class=\"ok\">" + e.ineqHtml + "</strong></li>";
+    if (e.midHtml) lis += "<li>" + e.midHtml + "</li>";
+    if (e.flip) {
+      lis += "<li><strong class=\"hl\">÷ (−2)</strong> → <strong class=\"bad\">INVIERTE</strong></li>";
     }
+    lis += "<li>Dom = <strong class=\"ok\">" + e.domainSet + "</strong></li>";
     ruleList.innerHTML = lis;
     loopEl.innerHTML = "Ej. <strong>" + e.sheet + "</strong>/" + EXAMPLES.length;
     buildProgress();
@@ -522,7 +518,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = GRAPH_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.strokeStyle = GRID;
     ctx.lineWidth = 1;
     var xi, yi, p0, p1;
@@ -534,7 +529,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       p0 = worldToScreen(e.xmin, yi); p1 = worldToScreen(e.xmax, yi);
       ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
     }
-
     var ox = worldToScreen(0, 0);
     ctx.strokeStyle = BLACK;
     ctx.lineWidth = 2;
@@ -544,7 +538,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.beginPath();
     if (0 >= e.xmin && 0 <= e.xmax) { ctx.moveTo(ox.x, PAD.t); ctx.lineTo(ox.x, canvas.height - PAD.b); }
     ctx.stroke();
-
     ctx.fillStyle = BLACK;
     ctx.font = "600 12px ui-monospace, Menlo, monospace";
     ctx.textAlign = "center";
@@ -558,6 +551,16 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.fillStyle = BLACK;
       ctx.fillText(String(xt).replace("-", "−"), sx.x, sx.y + 8);
     }
+    /* special tick for 3/2 if in range */
+    if (e.end === 1.5 && e.end > e.xmin && e.end < e.xmax) {
+      var s15 = worldToScreen(1.5, 0);
+      ctx.strokeStyle = BLACK;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(s15.x, s15.y - 4); ctx.lineTo(s15.x, s15.y + 4); ctx.stroke();
+      ctx.fillStyle = BLACK;
+      ctx.font = "600 11px ui-monospace, Menlo, monospace";
+      ctx.fillText("3/2", s15.x, s15.y + 8);
+    }
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     for (var yt = Math.ceil(e.ymin); yt <= Math.floor(e.ymax); yt++) {
@@ -569,7 +572,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.fillStyle = BLACK;
       ctx.fillText(fmtNum(yt), sy.x - 8, sy.y);
     }
-
     ctx.fillStyle = BLACK;
     ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
     ctx.textAlign = "left";
@@ -578,95 +580,14 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     var oxX = (0 >= e.xmin && 0 <= e.xmax) ? ox.x : PAD.l;
     ctx.fillText("x", canvas.width - PAD.r - 16, Math.min(canvas.height - 18, oxY + 18));
     ctx.fillText("y", Math.max(10, oxX + 10), PAD.t + 16);
-
-    if (0 >= e.xmin && 0 <= e.xmax && 0 >= e.ymin && 0 <= e.ymax) {
-      ctx.textAlign = "right";
-      ctx.textBaseline = "top";
-      ctx.font = "600 12px ui-monospace, Menlo, monospace";
-      ctx.fillText("0", ox.x - 8, ox.y + 8);
-    }
   }
 
-  function nearZero(x, zeros, eps) {
-    eps = eps == null ? 0.04 : eps;
-    for (var i = 0; i < zeros.length; i++) {
-      if (Math.abs(x - zeros[i]) < eps) return true;
-    }
-    return false;
-  }
-
-  function drawGhostG() {
-    if (!state.showGhostG) return;
-    var e = ex();
-    var steps = 360;
-    var first = true;
-    var i, x, y, s, prevY = null;
-    ctx.save();
-    ctx.strokeStyle = GHOST;
-    ctx.lineWidth = 1.6;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    for (i = 0; i <= steps; i++) {
-      x = e.xmin + (e.xmax - e.xmin) * (i / steps);
-      y = e.g(x);
-      if (!isFinite(y) || y < e.ymin - 0.5 || y > e.ymax + 0.5) {
-        first = true; prevY = null; continue;
-      }
-      var yDraw = Math.max(e.ymin - 0.2, Math.min(e.ymax + 0.2, y));
-      s = worldToScreen(x, yDraw);
-      if (first || (prevY != null && Math.abs(y - prevY) > (e.ymax - e.ymin) * 0.85)) {
-        ctx.moveTo(s.x, s.y); first = false;
-      } else {
-        ctx.lineTo(s.x, s.y);
-      }
-      prevY = y;
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = AMBER;
-    ctx.globalAlpha = 0.75;
-    ctx.font = "700 11px ui-monospace, Menlo, monospace";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    ctx.fillText("den", PAD.l + 8, PAD.t + 4);
-    ctx.restore();
-  }
-
-  function drawAsymptotes() {
-    if (!state.showAsymptotes) return;
-    var e = ex();
-    var n = Math.min(state.revealedZeros, e.zeros.length);
-    for (var i = 0; i < n; i++) {
-      var z = e.zeros[i];
-      var a = worldToScreen(z, e.ymin);
-      var b = worldToScreen(z, e.ymax);
-      ctx.save();
-      ctx.strokeStyle = GUIDE;
-      ctx.lineWidth = 1.7;
-      ctx.setLineDash([5, 5]);
-      ctx.globalAlpha = 0.9;
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = CORAL;
-      ctx.globalAlpha = 0.95;
-      ctx.font = "700 11px ui-monospace, Menlo, monospace";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-      var labelY = PAD.t + 4 + (i % 3) * 14;
-      ctx.fillText("x = " + fmtNum(z), a.x + 6, labelY);
-      ctx.restore();
-    }
-  }
-
-  function drawRationalCurve() {
+  function drawCurve() {
     if (!state.showCurve) return;
     var e = ex();
-    var steps = 520;
+    var steps = 420;
     var first = true;
-    var i, x, y, s, prevX = null;
+    var i, x, y, s, prevY = null;
     var yPad = (e.ymax - e.ymin) * 0.02;
     ctx.save();
     ctx.strokeStyle = TEAL;
@@ -677,38 +598,53 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.beginPath();
     for (i = 0; i <= steps; i++) {
       x = e.xmin + (e.xmax - e.xmin) * (i / steps);
-      if (nearZero(x, e.zeros, 0.055)) { first = true; prevX = x; continue; }
       y = e.f(x);
       if (!isFinite(y) || y < e.ymin - yPad || y > e.ymax + yPad) {
-        first = true; prevX = x; continue;
+        first = true; prevY = null; continue;
       }
       s = worldToScreen(x, y);
-      if (first || (prevX != null && Math.abs(x - prevX) > (e.xmax - e.xmin) / steps * 3)) {
+      if (first || (prevY != null && Math.abs(y - prevY) > (e.ymax - e.ymin) * 0.9)) {
         ctx.moveTo(s.x, s.y); first = false;
       } else {
         ctx.lineTo(s.x, s.y);
       }
-      prevX = x;
+      prevY = y;
     }
     ctx.stroke();
     ctx.restore();
   }
 
+  function drawFlipBadge() {
+    if (!state.flipFlash) return;
+    ctx.save();
+    ctx.fillStyle = "rgba(251, 113, 133, 0.14)";
+    ctx.strokeStyle = "#fb7185";
+    ctx.lineWidth = 2.5;
+    var bx = PAD.l + 10, by = PAD.t + 10, bw = 260, bh = 44;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 8);
+    else ctx.rect(bx, by, bw, bh);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#fb7185";
+    ctx.font = "800 13px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("⚠ ÷ (−2) → INVIERTE", bx + 12, by + bh / 2);
+    ctx.restore();
+  }
+
   function drawDomainBand() {
-    var e = ex();
     if (state.bandReveal <= 0.001) return;
+    var e = ex();
     var ox = worldToScreen(0, 0);
     var y = (0 >= e.ymin && 0 <= e.ymax) ? ox.y : (canvas.height - PAD.b - 8);
     var revealX = e.xmin + (e.xmax - e.xmin) * Math.min(1, state.bandReveal);
-
     function xPx(xw) { return worldToScreen(xw, 0).x; }
-
     function strokeSeg(x0, x1, color) {
       var a = Math.max(x0, e.xmin);
       var b = Math.min(x1, revealX);
       if (b <= a + 1e-6) return;
-      var pa = xPx(a);
-      var pb = xPx(b);
+      var pa = xPx(a), pb = xPx(b);
       if (pb <= pa + 1) return;
       ctx.save();
       ctx.strokeStyle = color;
@@ -721,31 +657,20 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.stroke();
       ctx.restore();
     }
-
-    var zeros = e.zeros.slice(0, state.revealedZeros).slice().sort(function (a, b) { return a - b; });
     var rPx = BAND_H / 2 + 1;
     var worldPerPx = (e.xmax - e.xmin) / Math.max(1, (canvas.width - PAD.l - PAD.r));
     var punchW = rPx * worldPerPx * 1.08;
-
-    if (zeros.length === 0) {
-      strokeSeg(e.xmin, e.xmax, GREEN);
-      return;
+    var end = e.end;
+    if (e.side === "right") {
+      strokeSeg(e.xmin, end - punchW, EMPTY);
+      strokeSeg(end + punchW, e.xmax, GREEN);
+    } else {
+      strokeSeg(e.xmin, end - punchW, GREEN);
+      strokeSeg(end + punchW, e.xmax, EMPTY);
     }
-
-    var cursor = e.xmin;
-    zeros.forEach(function (z) {
-      var left = z - punchW;
-      var right = z + punchW;
-      if (left > cursor) strokeSeg(cursor, left, GREEN);
-      cursor = right;
-    });
-    if (cursor < e.xmax) strokeSeg(cursor, e.xmax, GREEN);
-
-    zeros.forEach(function (z) {
-      if (z > revealX + 1e-9) return;
-      var px = xPx(z);
-      var flash = state.punchFlash >= 0 && Math.abs(e.zeros[state.punchFlash] - z) < 1e-9;
-      var r = flash ? (BAND_H / 2 + 4) : (BAND_H / 2 + 1);
+    if (state.showEndDot && end <= revealX + 1e-9) {
+      var px = xPx(end);
+      var r = state.punchFlash ? (BAND_H / 2 + 4) : (BAND_H / 2 + 1);
       ctx.save();
       ctx.beginPath();
       ctx.arc(px, y, r + 3, 0, Math.PI * 2);
@@ -753,33 +678,42 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.fill();
       ctx.beginPath();
       ctx.arc(px, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = EMPTY;
-      ctx.globalAlpha = flash ? 1 : 0.95;
-      ctx.fill();
-      ctx.strokeStyle = "#94a3b8";
-      ctx.lineWidth = 2;
+      if (e.closed) {
+        ctx.fillStyle = GREEN;
+        ctx.globalAlpha = 0.98;
+        ctx.fill();
+        ctx.strokeStyle = "#166534";
+      } else {
+        ctx.fillStyle = GRAPH_BG;
+        ctx.fill();
+        ctx.strokeStyle = EMPTY;
+      }
+      ctx.lineWidth = 2.2;
       ctx.globalAlpha = 1;
       ctx.stroke();
+      ctx.fillStyle = e.closed ? GREEN : EMPTY;
+      ctx.font = "700 11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(fmtNum(end) + (e.closed ? " ∈ Dom" : " ∉ Dom"), px, y - r - 8);
       ctx.restore();
-    });
+    }
   }
 
   function draw() {
     drawAxes();
-    drawGhostG();
-    drawAsymptotes();
-    drawRationalCurve();
+    drawCurve();
     drawDomainBand();
+    drawFlipBadge();
   }
 
   function resetVisualsForExample() {
-    state.revealedZeros = 0;
     state.showCurve = false;
-    state.showAsymptotes = false;
-    state.showGhostG = false;
     state.bandReveal = 0;
-    state.punchFlash = -1;
     state.curveAlpha = 1;
+    state.punchFlash = false;
+    state.showEndDot = false;
+    state.flipFlash = false;
     state.phase = "idle";
     setStepUI(0);
   }
@@ -800,7 +734,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     stopBtn.disabled = true;
     loadExample(0);
     setWork("");
-    setCaption('Presioná <strong>▶ Play</strong> · procedimiento <span class="paso">paso a paso</span> para Ej. 2.2, 2.4 y 2.8.');
+    setCaption('Presioná <strong>▶ Play</strong> · Ej. <span class="paso">2.5</span> (voltea) y dos prácticas.');
   }
 
   function animateBand(durationMs, onDone) {
@@ -824,49 +758,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.raf = requestAnimationFrame(frame);
   }
 
-  function revealZeroAt(k, onDone) {
-    var e = ex();
-    if (k >= e.zeros.length) { if (onDone) onDone(); return; }
-    state.phase = "zero";
-    state.revealedZeros = k + 1;
-    state.showAsymptotes = true;
-    state.punchFlash = k;
-    var z = e.zeros[k];
-    setWork('<span class="paso">Paso 3</span> · anulador · den(<span class="hl">' + fmtNum(z) + '</span>) = 0 → <span class="bad">x = ' + fmtNum(z) + " ∉ Dom</span>");
-    setCaption('<span class="paso">Paso 3:</span> Anulador <span class="bad">x = ' + fmtNum(z) + "</span> · círculo gris + asíntota vertical. Se <strong>saca</strong> del dominio.");
-    bip("bad");
-    draw();
-    later(780, function () {
-      state.punchFlash = -1;
-      draw();
-      if (onDone) onDone();
-    });
-  }
-
-  function revealZerosSeq(onDone) {
-    var e = ex();
-    if (!e.zeros.length) {
-      state.revealedZeros = 0;
-      state.showAsymptotes = false;
-      setWork('<span class="paso">Paso 3</span> · <span class="ok">den ≠ 0</span> para todo x ∈ ℝ · <span class="ok">ningún anulador</span>');
-      setCaption('<span class="paso">Paso 3:</span> <span class="ok">¡Contraste!</span> <span class="hl-curve">x² + 4</span> nunca se anula en ℝ → no hay asíntota vertical.');
-      bip("ok");
-      draw();
-      later(1000, function () { if (onDone) onDone(); });
-      return;
-    }
-    var k = 0;
-    function next() {
-      if (!state.playing) return;
-      revealZeroAt(k, function () {
-        k++;
-        if (k < e.zeros.length) later(420, next);
-        else if (onDone) onDone();
-      });
-    }
-    next();
-  }
-
   function runOneExample(onDone) {
     var e = ex();
     updateSidePanel();
@@ -874,83 +765,88 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     resetVisualsForExample();
     draw();
 
-    /* Paso 1 */
+    /* Paso 1 — fórmula */
     setStepUI(1);
-    setWork('<span class="paso">Paso 1</span> · Ej. <span class="hl">' + e.sheet + "</span> · mirá la fórmula");
-    setCaption('<span class="paso">Paso 1:</span> Ej. <strong>' + e.sheet + "</strong>. ¿Hay un <strong>denominador que dependa de x</strong>?");
+    setWork('<span class="paso">Paso 1</span> · Ej. <span class="hl">' + e.sheet + "</span> · radicando = <span class=\"hl\">" + e.radHtml + "</span>");
+    setCaption('<span class="paso">Paso 1:</span> Fórmula <span class="hl-curve">Ej. ' + e.sheet + "</span>. Destacamos el radicando: <span class=\"hl-t\">" + e.radHtml + "</span>.");
     bip("ok");
 
     later(1100, function () {
       if (!state.playing) return;
-      setWork('<span class="paso">Paso 1</span> · <span class="bad">SÍ</span> · hay denominador con x · Regla: den ≠ 0');
-      setCaption('<span class="paso">Paso 1:</span> <span class="bad">Sí</span> hay denominador con x. Recordatorio: el den <strong>no puede ser 0</strong>.');
-      state.showGhostG = true;
-      draw();
-      bip("ok");
-    });
-
-    later(2400, function () {
-      if (!state.playing) return;
-      /* Paso 2 */
+      /* Paso 2 — rad ≥ 0 */
       setStepUI(2);
-      setWork('<span class="paso">Paso 2</span> · den: <span class="hl">' + e.denHtml + "</span>");
-      if (e.zeros.length === 0) {
-        setCaption('<span class="paso">Paso 2:</span> Estudiamos el den: <span class="hl-t">' + e.denFact + "</span>. ¿Se anula en algún x real?");
-      } else {
-        setCaption('<span class="paso">Paso 2:</span> Factorizamos / resolvemos den = 0: <span class="hl-t">' + e.denHtml + "</span>.");
-      }
+      setWork('<span class="paso">Paso 2</span> · <span class="ok">' + e.ineqHtml + "</span>");
+      setCaption('<span class="paso">Paso 2:</span> Regla: <span class="ok">' + e.ineqHtml + "</span>.");
       bip("ok");
     });
 
-    later(3800, function () {
+    later(2300, function () {
       if (!state.playing) return;
-      /* Paso 3 — revelar anuladores uno a uno */
+      /* Paso 3 — despejar */
       setStepUI(3);
-      revealZerosSeq(function () {
-        if (!state.playing) return;
-        later(450, function () {
+      if (e.flip) {
+        setWork('<span class="paso">Paso 3</span> · ' + e.midHtml + ' · <span class="bad">÷ (−2) INVIERTE</span>');
+        setCaption('<span class="paso">Paso 3:</span> Pasamos a <span class="hl-t">' + e.midHtml + '</span>. Ahora <strong class="bad">dividimos por −2</strong> → la desigualdad <strong class="bad">se invierte</strong>.');
+        state.flipFlash = true;
+        draw();
+        bip("bad");
+        later(1400, function () {
           if (!state.playing) return;
-          state.showCurve = true;
-          state.curveAlpha = 0;
-          var t0 = null;
-          var dur = delay(700);
-          function fade(now) {
-            if (!state.playing) return;
-            if (t0 == null) t0 = now;
-            var u = Math.min(1, (now - t0) / dur);
-            state.curveAlpha = u;
-            draw();
-            if (u < 1) state.raf = requestAnimationFrame(fade);
-            else {
-              state.raf = 0;
-              state.curveAlpha = 1;
-              setCaption('<span class="paso">Paso 3:</span> Curva dibujada' + (e.zeros.length ? " · ramas separadas por las asíntotas." : " · suave, sin polos."));
-              later(500, function () {
-                if (!state.playing) return;
-                /* Paso 4 */
-                setStepUI(4);
-                setWork('<span class="paso">Paso 4</span> · pintamos Dom · escribimos notación');
-                setCaption('<span class="paso">Paso 4:</span> Pintamos la banda: <span class="hl-v">verde = Dom</span>' + (e.zeros.length ? ' · <span class="empty">gris = anuladores</span>.' : ' · toda la recta.'));
-                animateBand(1400, function () {
-                  if (!state.playing) return;
-                  setWork('Dom = <span class="ok">' + e.domainSet + "</span> · Ej. " + e.sheet);
-                  if (e.surprise) {
-                    setCaption('<strong>Cierre Ej. ' + e.sheet + ':</strong> den nunca es 0 → <span class="ok">Dom = ℝ</span>. Misma regla: solo se sacan anuladores… ¡y aquí no hay!');
-                  } else {
-                    setCaption('<strong>Cierre Ej. ' + e.sheet + ':</strong> Dom = <span class="hl-v">' + e.domainSet + "</span> · gris = anuladores · verde = dominio.");
-                  }
-                  bip("ok");
-                  later(1700, function () {
-                    if (!state.playing) return;
-                    if (onDone) onDone();
-                  });
-                });
-              });
-            }
-          }
-          state.raf = requestAnimationFrame(fade);
+          setWork('<span class="paso">Paso 3</span> · resultado: <span class="ok">' + e.solveHtml + "</span>");
+          setCaption('<span class="paso">Paso 3:</span> Tras invertir: <span class="ok">' + e.solveHtml + "</span> · Dom = <span class=\"hl-v\">" + e.domainSet + "</span>.");
+          bip("ok");
         });
-      });
+      } else {
+        var mid = e.midHtml ? (" · " + e.midHtml) : "";
+        setWork('<span class="paso">Paso 3</span> · despejar → <span class="ok">' + e.solveHtml + "</span>");
+        setCaption('<span class="paso">Paso 3:</span> Despejamos' + mid + ': <span class="hl-t">' + e.solveHtml + "</span>.");
+        bip("ok");
+      }
+    });
+
+    var bandAt = e.flip ? 5200 : 3600;
+    later(bandAt, function () {
+      if (!state.playing) return;
+      state.flipFlash = false;
+      state.showCurve = true;
+      state.curveAlpha = 0;
+      var t0 = null;
+      var dur = delay(650);
+      function fade(now) {
+        if (!state.playing) return;
+        if (t0 == null) t0 = now;
+        var u = Math.min(1, (now - t0) / dur);
+        state.curveAlpha = u;
+        draw();
+        if (u < 1) state.raf = requestAnimationFrame(fade);
+        else {
+          state.raf = 0;
+          state.curveAlpha = 1;
+          /* Paso 4 */
+          setStepUI(4);
+          state.showEndDot = true;
+          state.punchFlash = true;
+          setWork('<span class="paso">Paso 4</span> · banda + Dom = <span class="ok">' + e.domainSet + "</span>");
+          setCaption('<span class="paso">Paso 4:</span> <span class="hl-v">verde = Dom</span> · <span class="empty">gris = fuera</span> · extremo cerrado ∈ Dom.');
+          animateBand(1300, function () {
+            if (!state.playing) return;
+            state.punchFlash = false;
+            draw();
+            setWork('Dom = <span class="ok">' + e.domainSet + "</span> · Ej. " + e.sheet);
+            if (e.flip) {
+              setCaption('<strong>Cierre Ej. ' + e.sheet + ':</strong> Dom = <span class="hl-v">' + e.domainSet + '</span>. Recordá: <span class="bad">÷ por negativo → invierte</span>.');
+            } else {
+              setCaption('<strong>Cierre Ej. ' + e.sheet + ':</strong> Dom = <span class="hl-v">' + e.domainSet + "</span>.");
+            }
+            bip("ok");
+            later(1600, function () {
+              if (!state.playing) return;
+              if (onDone) onDone();
+            });
+          });
+        }
+      }
+      state.raf = requestAnimationFrame(fade);
     });
   }
 
@@ -960,13 +856,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     stopBtn.disabled = true;
     state.bandReveal = 1;
     state.showCurve = true;
-    state.showAsymptotes = true;
-    state.revealedZeros = ex().zeros.length;
+    state.showEndDot = true;
     setStepUI(4);
     draw();
     buildProgress();
-    setWork('Regla · Dom = <span class="ok">ℝ ∖ {ceros del den}</span>');
-    setCaption('<strong>Cierre:</strong> den <span class="bad">≠ 0</span>. Sacá esos x · círculo gris + asíntota. Si el den no se anula (2.4), Dom = <span class="ok">ℝ</span>.');
+    setWork('Hoja 2 · raíz · Dom = <span class="ok">rad ≥ 0</span>');
+    setCaption('<strong>Cierre:</strong> 2.5 Dom = <span class="hl-v">(−∞, 3/2]</span> (voltea) · P1 [4, ∞) · P2 [−1/2, ∞). Fin de la serie por ahora.');
     bip("ok");
   }
 
@@ -980,8 +875,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     stopBtn.disabled = false;
     loadExample(0);
 
-    setWork('<span class="paso">Procedimiento</span> · dominio con denominador');
-    setCaption('<strong>Arranque:</strong> Ej. 2.2, 2.4 y 2.8 · hallamos Dom <span class="paso">paso a paso</span> (den ≠ 0).');
+    setWork('<span class="paso">Procedimiento</span> · dominio con raíz');
+    setCaption('<strong>Arranque:</strong> Ej. 2.5 (¡voltea!) y dos prácticas · <span class="paso">paso a paso</span>.');
     bip("ok");
 
     later(1000, function () {
@@ -1010,7 +905,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.playing = false;
     playBtn.disabled = false;
     stopBtn.disabled = true;
-    setCaption("Detenido · ▶ Play para repetir el procedimiento · o Reiniciar.");
+    setCaption("Detenido · ▶ Play para repetir · o Reiniciar.");
   }
 
   playBtn.addEventListener("click", runPlay);
@@ -1030,7 +925,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
   });
 
-  window.__L122 = { EXAMPLES: EXAMPLES, loadExample: loadExample, state: state };
+  window.__L124 = { EXAMPLES: EXAMPLES, loadExample: loadExample, state: state };
   resetView();
 })();
 </script>
