@@ -124,9 +124,9 @@
   function explicitText() {
     if (isVertical()) return "no existe";
     var m = mText();
-    if (CFG.bNum === 0) return "y = " + m + "x";
+    if (CFG.bNum === 0) return "y = (" + m + ")x";
     var sign = CFG.bNum < 0 ? " − " : " + ";
-    return "y = " + m + "x" + sign + fracText(Math.abs(CFG.bNum), CFG.bDen);
+    return "y = (" + m + ")x" + sign + fracText(Math.abs(CFG.bNum), CFG.bDen);
   }
 
   function pointSlopeText() {
@@ -137,7 +137,7 @@
     if (x1 === 0) xPart = "x";
     else if (x1 < 0) xPart = "(x + " + fmtNum(-x1) + ")";
     else xPart = "(x − " + fmtNum(x1) + ")";
-    return yLeft + " = " + mText() + xPart;
+    return yLeft + " = (" + mText() + ")" + (x1 === 0 ? "x" : xPart);
   }
 
   function mHtml() { return fracHtml(CFG.mNum, CFG.mDen); }
@@ -145,10 +145,10 @@
   function explicitHtml() {
     if (isVertical()) return "no existe";
     var m = fracHtml(CFG.mNum, CFG.mDen);
-    if (CFG.bNum === 0) return "y = " + m + "x";
+    if (CFG.bNum === 0) return "y = " + m + "·x";
     var bAbs = fracHtml(Math.abs(CFG.bNum), CFG.bDen);
     var sign = CFG.bNum < 0 ? " − " : " + ";
-    return "y = " + m + "x" + sign + bAbs;
+    return "y = " + m + "·x" + sign + bAbs;
   }
 
   function pointSlopeHtml() {
@@ -430,7 +430,13 @@
       ctx.textBaseline = "top";
       var midRun = { x: (a.x + corner.x) / 2, y: a.y };
       var dx = CFG.p2.x - CFG.p1.x;
-      ctx.fillText("Δx = " + fmtNum(dx), midRun.x, midRun.y + 8);
+      if (Math.abs(dx) < 1e-9) {
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        ctx.fillText("Δx = 0", a.x - 10, a.y - 8);
+      } else {
+        ctx.fillText("Δx = " + fmtNum(dx), midRun.x, midRun.y + 8);
+      }
     }
     if (state.showRise) {
       ctx.strokeStyle = RISE;
@@ -617,8 +623,8 @@
     drawSlopeTriangle();
     drawLine();
     drawVlt();
-    drawPoint(CFG.p1, AMBER, state.showP1, state.hlP1, state.pointsFilled, "right");
-    drawPoint(CFG.p2, CORAL, state.showP2, state.hlP2, state.pointsFilled, isVertical() ? "left" : "right");
+    drawPoint(CFG.p1, AMBER, state.showP1, state.hlP1, state.pointsFilled, CFG.p1.x >= 0 ? "right" : "left");
+    drawPoint(CFG.p2, CORAL, state.showP2, state.hlP2, state.pointsFilled, isVertical() ? "left" : (CFG.p2.x >= 0 ? "right" : "left"));
     drawEqBadge();
   }
 
