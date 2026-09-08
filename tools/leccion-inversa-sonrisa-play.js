@@ -514,6 +514,7 @@
       drawDashed(a, f, AMBER, 1.5, [4, 5]);
       drawDashed(f, b, AMBER, 1.5, [4, 5]);
       ctx.restore();
+      drawPivot(F);
     }
   }
 
@@ -652,10 +653,10 @@
     ctx.fillStyle = "rgba(22,101,52,0.92)";
     ctx.strokeStyle = GREEN;
     ctx.lineWidth = 2;
-    var bw = Math.min(420, canvas.width - PAD.l - PAD.r - 16);
+    var bw = Math.min(400, canvas.width - PAD.l - PAD.r - 16);
     var bx = PAD.l + 8;
-    var by = PAD.t + 8;
     var bh = 36;
+    var by = canvas.height - PAD.b - bh - 10;
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 8);
     else ctx.rect(bx, by, bw, bh);
