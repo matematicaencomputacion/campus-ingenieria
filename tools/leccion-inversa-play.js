@@ -16,8 +16,9 @@
   var CORAL = "#e11d48";
   var AMBER = "#d97706";
   var GREEN = "#16a34a";
+  var INDIGO = "#5b21b6";
   var EMPTY = "#64748b";
-  var LPATH = "#7c3aed";
+  var PERP_DASH = "rgba(217,119,6,0.62)";
   var PAD = { l: 52, r: 48, t: 36, b: 48 };
   var XMIN = CFG.xmin;
   var XMAX = CFG.xmax;
@@ -56,13 +57,61 @@
     showMeet: false,
     showFAsy: false,
     showInvAsy: false,
-    showLPaths: false,
-    lItems: [],
+    showLTeach: false,
+    lPick: false,
+    lAnim: null,
+    lDone: [],
+    perpAnim: null,
+    perpDone: [],
     badge: "",
     pulse: 0
   };
 
   function delay(ms) { return ms * (state.speedFactor || 1); }
+
+  function easeInOut(u) {
+    return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+  }
+
+  function fmtPt(x, y) {
+    return "(" + fmtTick(x) + ", " + fmtTick(y) + ")";
+  }
+
+  function lRoute(pt) {
+    var a = pt.x;
+    var b = pt.y;
+    var first = pt.first;
+    if (first === "vert") {
+      return { corner: { x: a, y: a }, end: { x: b, y: a }, first: first };
+    }
+    if (first === "horiz") {
+      return { corner: { x: b, y: b }, end: { x: b, y: a }, first: first };
+    }
+    throw new Error("INVERSA: lPoints.first debe ser \"vert\" o \"horiz\"");
+  }
+
+  function lerpPt(a, b, t) {
+    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+  }
+
+  function wrapBadgeText(text, maxWidth) {
+    ctx.font = "800 13px Segoe UI, system-ui, sans-serif";
+    var words = String(text).split(" ");
+    var lines = [];
+    var cur = "";
+    var i, trial;
+    for (i = 0; i < words.length; i++) {
+      trial = cur ? cur + " " + words[i] : words[i];
+      if (cur && ctx.measureText(trial).width > maxWidth) {
+        lines.push(cur);
+        cur = words[i];
+      } else {
+        cur = trial;
+      }
+    }
+    if (cur) lines.push(cur);
+    return lines.length ? lines : [text];
+  }
 
   function clearTimers() {
     state.timers.forEach(function (id) { clearTimeout(id); });
@@ -203,54 +252,6 @@
       ctx.font = "600 12px ui-monospace, Menlo, monospace";
       ctx.fillText("0", ox.x - 8, ox.y + 8);
     }
-  }
-
-  function lerpPt(a, b, t) {
-    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-  }
-
-  function easeInOut(u) {
-    return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-  }
-
-  function lGeom(spec) {
-    if (!spec || spec.x == null) throw new Error("INVERSA: lPath requiere x");
-    var x = spec.x;
-    var y = spec.y != null ? spec.y : CFG.f(x);
-    var first = spec.first;
-    var start = { x: x, y: y };
-    var end = { x: y, y: x };
-    var corner;
-    switch (first) {
-      case "v":
-        corner = { x: x, y: x };
-        break;
-      case "h":
-        corner = { x: y, y: y };
-        break;
-      default: {
-        var _exhaustive = first;
-        throw new Error("INVERSA: lPath.first debe ser \"v\" o \"h\", no " + _exhaustive);
-      }
-    }
-    return { start: start, corner: corner, end: end, first: first };
-  }
-
-  function wrapBadgeLines(text, maxW) {
-    var words = String(text).split(/\s+/);
-    var lines = [];
-    var cur = "";
-    var i, trial;
-    for (i = 0; i < words.length; i++) {
-      trial = cur ? cur + " " + words[i] : words[i];
-      if (!cur || ctx.measureText(trial).width <= maxW) cur = trial;
-      else {
-        lines.push(cur);
-        cur = words[i];
-      }
-    }
-    if (cur) lines.push(cur);
-    return lines;
   }
 
   function drawDashed(a, b, color, lw) {
@@ -419,89 +420,6 @@
     }
   }
 
-  function drawDot(x, y, r, fill) {
-    var p = worldToScreen(x, y);
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-    ctx.fillStyle = fill;
-    ctx.fill();
-    ctx.strokeStyle = "#0f172a";
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-    ctx.restore();
-    return p;
-  }
-
-  function drawLPaths() {
-    if (!state.showLPaths || !state.lItems || !state.lItems.length) return;
-    var i, item, g, t1, t2, a, c, tip, tipPt, pStart, pEnd;
-    for (i = 0; i < state.lItems.length; i++) {
-      item = state.lItems[i];
-      g = item.geom;
-      t1 = Math.max(0, Math.min(1, item.t1 || 0));
-      t2 = Math.max(0, Math.min(1, item.t2 || 0));
-      tip = null;
-      a = worldToScreen(g.start.x, g.start.y);
-      ctx.save();
-      ctx.strokeStyle = item.done ? "rgba(124,58,237,0.78)" : LPATH;
-      ctx.lineWidth = 2.8;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      if (t1 > 0.001) {
-        tipPt = lerpPt(g.start, g.corner, t1);
-        tip = worldToScreen(tipPt.x, tipPt.y);
-        ctx.lineTo(tip.x, tip.y);
-      }
-      if (t1 >= 0.999 && t2 > 0.001) {
-        tipPt = lerpPt(g.corner, g.end, t2);
-        tip = worldToScreen(tipPt.x, tipPt.y);
-        c = worldToScreen(g.corner.x, g.corner.y);
-        ctx.lineTo(c.x, c.y);
-        ctx.lineTo(tip.x, tip.y);
-      }
-      ctx.stroke();
-      ctx.restore();
-
-      pStart = drawDot(g.start.x, g.start.y, 5.2, TEAL);
-      ctx.save();
-      ctx.fillStyle = TEAL;
-      ctx.font = "700 11px ui-monospace, Menlo, monospace";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "bottom";
-      ctx.fillText("(" + fmtTick(g.start.x) + "," + fmtTick(g.start.y) + ")", pStart.x + 8, pStart.y - 6);
-      ctx.restore();
-
-      if (t1 >= 0.92) {
-        drawDot(g.corner.x, g.corner.y, 4.2, AMBER);
-      }
-      if (t2 > 0.88) {
-        pEnd = drawDot(g.end.x, g.end.y, 5.2, CORAL);
-        ctx.save();
-        ctx.fillStyle = CORAL;
-        ctx.font = "700 11px ui-monospace, Menlo, monospace";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "bottom";
-        ctx.fillText("(" + fmtTick(g.end.x) + "," + fmtTick(g.end.y) + ")", pEnd.x + 8, pEnd.y - 6);
-        ctx.restore();
-      }
-      if (!item.done && tip) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(tip.x, tip.y, 4.4, 0, Math.PI * 2);
-        ctx.fillStyle = LPATH;
-        ctx.fill();
-        ctx.strokeStyle = "#ede9fe";
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-  }
-
   function drawMeet() {
     if (!state.showMeet || !CFG.meet || !CFG.meet.length) return;
     var i, m, p, r;
@@ -530,21 +448,163 @@
     }
   }
 
+  function drawLabeledDot(x, y, fill, label) {
+    var p = worldToScreen(x, y);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    if (label) {
+      ctx.fillStyle = fill;
+      ctx.font = "700 11px ui-monospace, Menlo, monospace";
+      ctx.textBaseline = "bottom";
+      if (x < -0.05) {
+        ctx.textAlign = "right";
+        ctx.fillText(label, p.x - 8, p.y - 6);
+      } else {
+        ctx.textAlign = "left";
+        ctx.fillText(label, p.x + 8, p.y - 6);
+      }
+    }
+    ctx.restore();
+  }
+
+  function strokePoly(pts, color, lw, dashed) {
+    if (!pts || pts.length < 2) return;
+    var i, s;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lw || 2.4;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    if (dashed) ctx.setLineDash(dashed);
+    ctx.beginPath();
+    s = worldToScreen(pts[0].x, pts[0].y);
+    ctx.moveTo(s.x, s.y);
+    for (i = 1; i < pts.length; i++) {
+      s = worldToScreen(pts[i].x, pts[i].y);
+      ctx.lineTo(s.x, s.y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawPivot(pt) {
+    var p = worldToScreen(pt.x, pt.y);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = AMBER;
+    ctx.fill();
+    ctx.strokeStyle = "#fde68a";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawRightAngleMark(mid) {
+    var s = 0.32;
+    var verts = [
+      { x: mid.x + s, y: mid.y },
+      { x: mid.x, y: mid.y + s },
+      { x: mid.x - s, y: mid.y },
+      { x: mid.x, y: mid.y - s }
+    ];
+    var i, p;
+    ctx.save();
+    ctx.beginPath();
+    p = worldToScreen(verts[0].x, verts[0].y);
+    ctx.moveTo(p.x, p.y);
+    for (i = 1; i < verts.length; i++) {
+      p = worldToScreen(verts[i].x, verts[i].y);
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "rgba(217,119,6,0.18)";
+    ctx.fill();
+    ctx.strokeStyle = AMBER;
+    ctx.lineWidth = 1.7;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawLPathFull(path) {
+    strokePoly([path.start, path.corner, path.end], INDIGO, 2.7, [11, 5]);
+    drawPivot(path.corner);
+  }
+
+  function drawLTeach() {
+    if (!state.showLTeach) return;
+    var i, pt, path, head, travelling;
+    if (state.lPick && CFG.lPoints) {
+      for (i = 0; i < CFG.lPoints.length; i++) {
+        pt = CFG.lPoints[i];
+        drawLabeledDot(pt.x, pt.y, TEAL, fmtPt(pt.x, pt.y));
+      }
+    }
+    for (i = 0; i < state.lDone.length; i++) {
+      path = state.lDone[i];
+      drawLPathFull(path);
+      drawLabeledDot(path.end.x, path.end.y, CORAL, fmtPt(path.end.x, path.end.y));
+    }
+    if (state.lAnim) {
+      path = state.lAnim;
+      if (path.stage === "leg1") {
+        head = lerpPt(path.start, path.corner, path.t);
+        strokePoly([path.start, head], INDIGO, 3.05, null);
+        if (path.t > 0.92) drawPivot(path.corner);
+        travelling = head;
+      } else if (path.stage === "leg2") {
+        head = lerpPt(path.corner, path.end, path.t);
+        strokePoly([path.start, path.corner, head], INDIGO, 3.05, null);
+        drawPivot(path.corner);
+        travelling = head;
+      } else {
+        throw new Error("INVERSA: lAnim.stage desconocido: " + path.stage);
+      }
+      drawLabeledDot(travelling.x, travelling.y, INDIGO, "");
+    }
+  }
+
+  function drawPerpTeach() {
+    if (!state.showLTeach) return;
+    var i, seg, head, mid;
+    function strokePerp(a, b, t) {
+      t = t == null ? 1 : t;
+      head = lerpPt(a, b, t);
+      strokePoly([a, head], PERP_DASH, 1.7, [6, 5]);
+      if (t > 0.52) {
+        mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        drawRightAngleMark(mid);
+      }
+    }
+    for (i = 0; i < state.perpDone.length; i++) {
+      seg = state.perpDone[i];
+      strokePerp(seg.start, seg.end, 1);
+    }
+    if (state.perpAnim) {
+      strokePerp(state.perpAnim.start, state.perpAnim.end, state.perpAnim.t);
+    }
+  }
+
   function drawBadge() {
     if (!state.badge) return;
+    var maxInner = Math.min(430, canvas.width - PAD.l - PAD.r - 40);
+    var lines = wrapBadgeText(state.badge, maxInner);
+    var i, tw = 0;
     ctx.save();
     ctx.font = "800 13px Segoe UI, system-ui, sans-serif";
-    var maxInner = canvas.width - PAD.l - PAD.r - 40;
-    var minW = Math.min(340, canvas.width - PAD.l - PAD.r - 16);
-    var lines = wrapBadgeLines(state.badge, maxInner);
-    var i, tw = 0, lw;
     for (i = 0; i < lines.length; i++) {
-      lw = ctx.measureText(lines[i]).width;
-      if (lw > tw) tw = lw;
+      tw = Math.max(tw, ctx.measureText(lines[i]).width);
     }
-    var bw = Math.min(canvas.width - PAD.l - PAD.r - 16, Math.max(minW, tw + 24));
-    var lineH = 18;
-    var bh = Math.max(36, 16 + lines.length * lineH);
+    var bw = Math.min(canvas.width - PAD.l - PAD.r - 16, Math.max(180, tw + 24));
+    var lineH = 17;
+    var bh = 12 + lines.length * lineH + 6;
     var bx = PAD.l + 8, by = PAD.t + 8;
     ctx.fillStyle = "rgba(22,101,52,0.92)";
     ctx.strokeStyle = GREEN;
@@ -556,9 +616,8 @@
     ctx.fillStyle = "#86efac";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    var y0 = by + bh / 2 - ((lines.length - 1) * lineH) / 2;
     for (i = 0; i < lines.length; i++) {
-      ctx.fillText(lines[i], bx + 12, y0 + i * lineH);
+      ctx.fillText(lines[i], bx + 12, by + 9 + i * lineH + lineH / 2);
     }
     ctx.restore();
   }
@@ -572,8 +631,9 @@
     drawCurveProgress(CFG.fInv, invOk, CORAL, state.invT, "f⁻¹");
     if (state.fT > 0.5) drawHoles(CFG.fHoles);
     if (state.invT > 0.5) drawHoles(CFG.invHoles);
-    drawLPaths();
     drawMirror();
+    drawLTeach();
+    drawPerpTeach();
     drawMeet();
     drawBadge();
   }
@@ -585,7 +645,7 @@
       if (!state.playing) return;
       if (t0 == null) t0 = now;
       var u = Math.min(1, (now - t0) / dur);
-      var ease = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+      var ease = easeInOut(u);
       state[key] = from + (to - from) * ease;
       draw();
       if (u < 1) state.raf = requestAnimationFrame(frame);
@@ -599,33 +659,88 @@
     state.raf = requestAnimationFrame(frame);
   }
 
-  function animateLPath(item, durationMs, onDone) {
+  function resolveLPoint(p) {
+    var list = CFG.lPoints;
+    if (!list || !list.length) {
+      throw new Error("INVERSA: anim lPath/perpSeg requiere CFG.lPoints");
+    }
+    var idx = p.lIndex;
+    if (idx == null || idx < 0 || idx >= list.length) {
+      throw new Error("INVERSA: lIndex fuera de rango: " + idx);
+    }
+    return list[idx];
+  }
+
+  function animateLPath(pt, durationMs, onDone) {
+    var route = lRoute(pt);
+    var start = { x: pt.x, y: pt.y };
+    var corner = route.corner;
+    var end = route.end;
+    var legMs = durationMs || 900;
+
+    function runSeg(from, to, stage, ms, next) {
+      var t0 = null;
+      var dur = delay(ms);
+      state.lAnim = {
+        start: start,
+        corner: corner,
+        end: end,
+        from: from,
+        to: to,
+        t: 0,
+        stage: stage
+      };
+      function frame(now) {
+        if (!state.playing) return;
+        if (t0 == null) t0 = now;
+        var u = Math.min(1, (now - t0) / dur);
+        state.lAnim.t = easeInOut(u);
+        draw();
+        if (u < 1) state.raf = requestAnimationFrame(frame);
+        else {
+          state.raf = 0;
+          state.lAnim.t = 1;
+          draw();
+          next();
+        }
+      }
+      state.raf = requestAnimationFrame(frame);
+    }
+
+    runSeg(start, corner, "leg1", legMs, function () {
+      if (!state.playing) return;
+      bip("ok");
+      later(340, function () {
+        if (!state.playing) return;
+        runSeg(corner, end, "leg2", legMs, function () {
+          if (!state.playing) return;
+          state.lDone.push({ start: start, corner: corner, end: end, pt: pt });
+          state.lAnim = null;
+          draw();
+          if (onDone) onDone();
+        });
+      });
+    });
+  }
+
+  function animatePerpSeg(pt, durationMs, onDone) {
     var t0 = null;
-    var dur = delay(durationMs);
-    var holdFrac = 0.18;
+    var dur = delay(durationMs || 700);
+    var start = { x: pt.x, y: pt.y };
+    var end = { x: pt.y, y: pt.x };
+    state.perpAnim = { start: start, end: end, t: 0 };
     function frame(now) {
       if (!state.playing) return;
       if (t0 == null) t0 = now;
       var u = Math.min(1, (now - t0) / dur);
-      var u1 = 0.5 - holdFrac / 2;
-      var u2 = 0.5 + holdFrac / 2;
-      if (u <= u1) {
-        item.t1 = easeInOut(u / u1);
-        item.t2 = 0;
-      } else if (u <= u2) {
-        item.t1 = 1;
-        item.t2 = 0;
-      } else {
-        item.t1 = 1;
-        item.t2 = easeInOut((u - u2) / (1 - u2));
-      }
+      state.perpAnim.t = easeInOut(u);
       draw();
       if (u < 1) state.raf = requestAnimationFrame(frame);
       else {
         state.raf = 0;
-        item.t1 = 1;
-        item.t2 = 1;
-        item.done = true;
+        state.perpAnim.t = 1;
+        state.perpDone.push({ start: start, end: end });
+        state.perpAnim = null;
         draw();
         if (onDone) onDone();
       }
@@ -643,8 +758,12 @@
     state.showMeet = false;
     state.showFAsy = false;
     state.showInvAsy = false;
-    state.showLPaths = false;
-    state.lItems = [];
+    state.showLTeach = false;
+    state.lPick = false;
+    state.lAnim = null;
+    state.lDone = [];
+    state.perpAnim = null;
+    state.perpDone = [];
     state.badge = "";
     state.pulse = 0;
     setPhaseUI(0);
@@ -674,7 +793,8 @@
     if (p.showMeet != null) state.showMeet = p.showMeet;
     if (p.showFAsy != null) state.showFAsy = p.showFAsy;
     if (p.showInvAsy != null) state.showInvAsy = p.showInvAsy;
-    if (p.showLPaths != null) state.showLPaths = p.showLPaths;
+    if (p.showLTeach != null) state.showLTeach = p.showLTeach;
+    if (p.lPick != null) state.lPick = p.lPick;
     if (p.badge != null) state.badge = p.badge;
     if (p.resultHtml && exprResult) exprResult.innerHTML = p.resultHtml;
     draw();
@@ -738,12 +858,18 @@
         return;
       }
       if (anim === "lPath") {
-        state.showLPaths = true;
-        var item = { geom: lGeom(p.lPath), t1: 0, t2: 0, done: false };
-        state.lItems.push(item);
+        state.showLTeach = true;
         applyPhase(p);
-        animateLPath(item, p.dur || 1500, function () {
-          later(p.wait || 450, function () { chain(i + 1); });
+        animateLPath(resolveLPoint(p), p.dur || 900, function () {
+          later(p.wait || 400, function () { chain(i + 1); });
+        });
+        return;
+      }
+      if (anim === "perpSeg") {
+        state.showLTeach = true;
+        applyPhase(p);
+        animatePerpSeg(resolveLPoint(p), p.dur || 700, function () {
+          later(p.wait || 800, function () { chain(i + 1); });
         });
         return;
       }
