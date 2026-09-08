@@ -100,11 +100,13 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .band-swatch.amber { background: #d97706; }
 .band-swatch.green { background: #22c55e; }
 .band-swatch.gray { background: #64748b; }
+.band-swatch.violet { background: #7c3aed; }
 .band-row strong.t { color: #2dd4bf; }
 .band-row strong.c { color: #fb7185; }
 .band-row strong.a { color: #FFBF00; }
 .band-row strong.v { color: #22c55e; }
 .band-row strong.g { color: #94a3b8; }
+.band-row strong.l { color: #c4b5fd; }
 .expr-row {
   background: var(--row); border: 1px solid var(--row-border);
   border-radius: 8px; padding: 10px 12px; position: relative;
@@ -226,7 +228,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/6</span>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/7</span>
     </div>
   </header>
 
@@ -255,6 +257,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
           <div class="band-row"><span class="band-swatch coral" aria-hidden="true"></span><span><strong class="c">Coral</strong> — gráfica de f⁻¹</span></div>
           <div class="band-row"><span class="band-swatch amber" aria-hidden="true"></span><span><strong class="a">Ámbar</strong> — espejo y = x</span></div>
           <div class="band-row"><span class="band-swatch green" aria-hidden="true"></span><span><strong class="v">Verde</strong> — corte sobre y = x (si hay)</span></div>
+          <div class="band-row"><span class="band-swatch violet" aria-hidden="true"></span><span><strong class="l">Violeta</strong> — camino en L (x,y) → (y,x)</span></div>
           <div class="band-row"><span class="band-swatch gray" aria-hidden="true"></span><span><strong class="g">Gris</strong> — asíntotas / agujeros</span></div>
         </div>
 
@@ -265,8 +268,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             <li data-step="2"><span class="n">2</span> Graficar f · Dom / Im</li>
             <li data-step="3"><span class="n">3</span> Algebra: y=f(x) · x↔y · despejar</li>
             <li data-step="4"><span class="n">4</span> Trazar el espejo y = x</li>
-            <li data-step="5"><span class="n">5</span> Reflejar puntos (x,y)→(y,x)</li>
-            <li data-step="6"><span class="n">6</span> f y f⁻¹ juntas</li>
+            <li data-step="5"><span class="n">5</span> Elijo x y armo caminos en L</li>
+            <li data-step="6"><span class="n">6</span> Reflejar puntos (x,y)→(y,x)</li>
+            <li data-step="7"><span class="n">7</span> f y f⁻¹ juntas</li>
           </ol>
 
         </div>
@@ -302,7 +306,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · 9.1: consigna → f → algebra (swap) → y=x → f y f⁻¹.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · 9.1: consigna → f → algebra (swap) → y=x → caminos en L → espejo → f y f⁻¹.</p>
 
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
@@ -322,8 +326,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 window.__INVERSA_CFG__ = {
   exportName: "__L149",
   sheet: "9.1",
-  xmin: -6, xmax: 4, ymin: -8, ymax: 6,
-  totalPhases: 6,
+  xmin: -8, xmax: 6, ymin: -9, ymax: 7,
+  totalPhases: 7,
   softPrev: [
     { href: "leccion-familia-84-play.html", title: "Lección 148: Familias · 8.4 · play" },
     { href: "leccion-familias-84-play.html", title: "Lección 148: Familias · 8.4 · play" },
@@ -331,7 +335,7 @@ window.__INVERSA_CFG__ = {
   ],
   hintMini: "▶ Play · Ej. 9.1 · inversa lineal",
   resultIdleHtml: "f⁻¹(x) = <span class=\"hl-g\">…</span>",
-  captionIdle: "Presioná <strong>▶ Play</strong> · 9.1: consigna → f → algebra (swap) → y=x → f y f⁻¹.",
+  captionIdle: "Presioná <strong>▶ Play</strong> · 9.1: consigna → f → algebra (swap) → y=x → caminos en L → espejo → f y f⁻¹.",
   f: function (x) { return -3 * x - 4; },
   fInv: function (x) { return -x / 3 - 4 / 3; },
   fOk: function () { return true; },
@@ -399,30 +403,97 @@ window.__INVERSA_CFG__ = {
     },
     {
       step: 5,
+      anim: "hold",
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      badge: "Elijo valores de x para los que y está bien definida",
+      wait: 2000,
+      work: "Elijo <span class=\"f\">x</span> con <span class=\"f\">y = f(x)</span> bien definida",
+      caption: "<span class=\"paso\">Paso 5:</span> elijo valores de <span class=\"hl-f\">x</span> para los que <span class=\"hl-f\">y</span> está bien definida. Armo un camino en <strong>L</strong> hasta el espejo <span class=\"hl-axis\">y = x</span>."
+    },
+    {
+      step: 5,
+      anim: "lPath",
+      lPath: { x: -2, first: "v" },
+      dur: 1500,
+      wait: 500,
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      badge: "Elijo valores de x para los que y está bien definida",
+      work: "x = −2 → f = 2 · L vertical y gira 90°",
+      caption: "<span class=\"paso\">x = −2:</span> el punto <span class=\"hl-f\">(−2, 2)</span> baja en vertical hasta <span class=\"hl-axis\">(−2, −2)</span> sobre y = x, y gira 90° hacia <span class=\"hl-g\">(2, −2)</span>."
+    },
+    {
+      step: 5,
+      anim: "lPath",
+      lPath: { x: -3, first: "v" },
+      dur: 1500,
+      wait: 500,
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      badge: "Elijo valores de x para los que y está bien definida",
+      work: "x = −3 → f = 5 · L vertical y gira 90°",
+      caption: "<span class=\"paso\">x = −3:</span> <span class=\"hl-f\">(−3, 5)</span> baja hasta <span class=\"hl-axis\">(−3, −3)</span> sobre y = x y gira 90° hacia <span class=\"hl-g\">(5, −3)</span>."
+    },
+    {
+      step: 5,
+      anim: "lPath",
+      lPath: { x: 0, first: "h" },
+      dur: 1500,
+      wait: 500,
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      badge: "Elijo valores de x para los que y está bien definida",
+      work: "x = 0 → f = −4 · L horizontal y gira 90°",
+      caption: "<span class=\"paso\">x = 0:</span> <span class=\"hl-f\">(0, −4)</span> avanza en horizontal hasta <span class=\"hl-axis\">(−4, −4)</span> sobre y = x, y gira 90° hacia <span class=\"hl-g\">(−4, 0)</span>."
+    },
+    {
+      step: 5,
+      anim: "lPath",
+      lPath: { x: 1, first: "h" },
+      dur: 1600,
+      wait: 550,
+      fT: 1,
+      showYX: true,
+      yxT: 1,
+      badge: "Elijo valores de x para los que y está bien definida",
+      work: "x = 1 → f = −7 · L horizontal y gira 90°",
+      caption: "<span class=\"paso\">x = 1:</span> <span class=\"hl-f\">(1, −7)</span> va en horizontal hasta <span class=\"hl-axis\">(−7, −7)</span> y gira 90° hacia <span class=\"hl-g\">(−7, 1)</span>."
+    },
+    {
+      step: 6,
       anim: "mirror",
       dur: 1100,
       wait: 500,
       fT: 1,
       showYX: true,
       yxT: 1,
+      showLPaths: false,
+      badge: "",
       work: "(x,y) → (y,x) · puntos de f se reflejan",
-      caption: "<span class=\"paso\">Paso 5:</span> cada punto de <span class=\"hl-f\">f</span> se refleja sobre <span class=\"hl-axis\">y = x</span> y cae en <span class=\"hl-g\">f⁻¹</span>."
+      caption: "<span class=\"paso\">Paso 6:</span> cada punto de <span class=\"hl-f\">f</span> se refleja sobre <span class=\"hl-axis\">y = x</span> y cae en <span class=\"hl-g\">f⁻¹</span>."
     },
     {
-      step: 6,
+      step: 7,
       anim: "drawInv",
       dur: 900,
       wait: 450,
       fT: 1,
+      invT: 0,
       showYX: true,
       yxT: 1,
       showMirror: true,
       mirrorT: 1,
+      showLPaths: false,
       work: "<span class=\"inv\">f⁻¹(x) = −x/3 − 4/3</span>",
-      caption: "<span class=\"paso\">Paso 6:</span> aparece la recta <span class=\"hl-g\">f⁻¹</span> · pendiente −1/3, espejo de −3."
+      caption: "<span class=\"paso\">Paso 7:</span> aparece la recta <span class=\"hl-g\">f⁻¹</span> · pendiente −1/3, espejo de −3."
     },
     {
-      step: 6,
+      step: 7,
       anim: "hold",
       fT: 1,
       invT: 1,
@@ -431,6 +502,7 @@ window.__INVERSA_CFG__ = {
       showMirror: true,
       mirrorT: 1,
       showMeet: true,
+      showLPaths: false,
       badge: "Corte en y=x · (−1, −1)",
       wait: 2400,
       work: "<span class=\"ok\">f y f⁻¹ se cortan en (−1, −1)</span>",
@@ -440,6 +512,6 @@ window.__INVERSA_CFG__ = {
   ]
 };
 </script>
-<script src="leccion-inversa-play.js?v=20260908"></script>
+<script src="leccion-inversa-play.js?v=20260908b"></script>
 </body>
 </html>
