@@ -1,38 +1,81 @@
-/*! Campus Ingeniería · L181 · inversa sonrisa · método de la L, standalone. */
+/*! Campus Ingeniería · inversa parábola (sonrisa / cara triste) · método de la L. CFG: window.__INVERSA_PARABOLA_CFG__. */
 (function () {
   "use strict";
+
+  var CFG = window.__INVERSA_PARABOLA_CFG__;
+  if (!CFG) throw new Error("INVERSA PARÁBOLA: falta window.__INVERSA_PARABOLA_CFG__");
+  if (typeof CFG.f !== "function") throw new Error("INVERSA PARÁBOLA: CFG.f debe ser función");
+  if (!CFG.points || !CFG.points.length) throw new Error("INVERSA PARÁBOLA: CFG.points requerido");
 
   var GK = window.CampusGameKit || {};
   var BLACK = "#111111";
   var GRAPH_BG = "#f8fafc";
   var GRID = "#e2e8f0";
-  var SMILE = "#e11d48";
+  var SMILE = CFG.curveColor || "#e11d48";
   var PURPLE = "#a855f7";
   var PURPLE_GLOW = "rgba(168,85,247,0.35)";
   var GREEN = "#16a34a";
   var GREEN_GLOW = "rgba(22,163,74,0.32)";
-  var BLUE = "#2563eb";
+  var BLUE = CFG.invColor || "#2563eb";
   var AMBER = "#d97706";
   var AXIS_GLOW = "#FFBF00";
   var PAD = { l: 52, r: 48, t: 36, b: 48 };
-  var XMIN = -11;
-  var XMAX = 11;
-  var YMIN = -16;
-  var YMAX = 8;
+  var XMIN = CFG.xmin != null ? CFG.xmin : -11;
+  var XMAX = CFG.xmax != null ? CFG.xmax : 11;
+  var YMIN = CFG.ymin != null ? CFG.ymin : -16;
+  var YMAX = CFG.ymax != null ? CFG.ymax : 8;
   var TOTAL = 9;
   var BIG_R = 14;
-  var DOM_LO = -9;
-  var DOM_HI = -1;
-  var INV_DOM_LO = 3;
-  var INV_DOM_HI = 7;
+  var POINTS = CFG.points;
+  var fOf = CFG.f;
+  var invXOfY = CFG.invX || CFG.f;
+  var SHAPE = CFG.shape || "parábola";
+  var OPEN_DIR = CFG.openDir || "derecha";
+  var F_CORE = CFG.fCore || "f(x)";
+  var INV_CORE = CFG.invCore || "f(y)";
+  var EXPORT_NAME = CFG.exportName || "__INVERSA_PARABOLA";
 
-  var POINTS = [
-    { x: -9, y: 7 },
-    { x: -7, y: 4 },
-    { x: -5, y: 3 },
-    { x: -3, y: 4 },
-    { x: -1, y: 7 }
-  ];
+  var DOM_LO = CFG.domLo;
+  var DOM_HI = CFG.domHi;
+  var INV_DOM_LO = CFG.invDomLo;
+  var INV_DOM_HI = CFG.invDomHi;
+  var INV_IM_LO = CFG.invImLo;
+  var INV_IM_HI = CFG.invImHi;
+  if (DOM_LO == null || DOM_HI == null) {
+    DOM_LO = POINTS[0].x;
+    DOM_HI = POINTS[0].x;
+    POINTS.forEach(function (p) {
+      if (p.x < DOM_LO) DOM_LO = p.x;
+      if (p.x > DOM_HI) DOM_HI = p.x;
+    });
+  }
+  if (INV_DOM_LO == null || INV_DOM_HI == null) {
+    INV_DOM_LO = POINTS[0].y;
+    INV_DOM_HI = POINTS[0].y;
+    POINTS.forEach(function (p) {
+      if (p.y < INV_DOM_LO) INV_DOM_LO = p.y;
+      if (p.y > INV_DOM_HI) INV_DOM_HI = p.y;
+    });
+  }
+  if (INV_IM_LO == null || INV_IM_HI == null) {
+    INV_IM_LO = DOM_LO;
+    INV_IM_HI = DOM_HI;
+  }
+  var vtxSrc = CFG.vertex || POINTS[Math.floor(POINTS.length / 2)];
+  var INV_VTX = CFG.invVertex || { x: vtxSrc.y, y: vtxSrc.x };
+  var F_LABEL = CFG.fLabel || { x: DOM_HI + 0.4, y: POINTS[POINTS.length - 1].y + 0.4 };
+  var INV_LABEL = CFG.invLabel || { x: POINTS[POINTS.length - 1].y + 0.3, y: DOM_HI + 0.6 };
+  var YX_LABEL = CFG.yxLabel || { x: 6.2, y: 6.2 };
+
+  function zeros() {
+    return POINTS.map(function () { return 0; });
+  }
+  function falses() {
+    return POINTS.map(function () { return false; });
+  }
+  function fmtIntv(a, b) {
+    return "[" + fmtTick(a) + ", " + fmtTick(b) + "]";
+  }
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -54,9 +97,9 @@
   var dsmInvFormula = document.getElementById("dsmInvFormula");
   var dsmF = document.getElementById("dsmF");
 
-  var CAPTION_IDLE = "Presioná <strong>▶ Play</strong> · sonrisa roja → puntos lila → L sobre <span class=\"hl-axis\">y = x</span> → inversa azul.";
+  var CAPTION_IDLE = CFG.captionIdle || ("Presioná <strong>▶ Play</strong> · " + SHAPE + " roja → puntos lila → L sobre <span class=\"hl-axis\">y = x</span> → inversa azul.");
   var RESULT_IDLE = "f⁻¹ · relación = <span class=\"hl-b\">…</span>";
-  var HINT_IDLE = "▶ Play · sonrisa → L punto a punto → f⁻¹";
+  var HINT_IDLE = CFG.hintIdle || ("▶ Play · " + SHAPE + " → L punto a punto → f⁻¹");
 
   var state = {
     playing: false,
@@ -80,14 +123,6 @@
     badge: "",
     pulse: 0
   };
-
-  function fSmile(x) {
-    return 0.25 * (x + 5) * (x + 5) + 3;
-  }
-
-  function invXOfY(y) {
-    return 0.25 * (y + 5) * (y + 5) + 3;
-  }
 
   function pivotOf(pt) {
     return { x: pt.x, y: pt.x };
@@ -340,7 +375,7 @@
     var b = worldToScreen(mid, mid);
     drawDashed(a, b, AMBER, 2.15, [7, 6]);
     if (state.yxT > 0.72) {
-      var lab = worldToScreen(6.2, 6.2);
+      var lab = worldToScreen(YX_LABEL.x, YX_LABEL.y);
       ctx.save();
       ctx.fillStyle = AMBER;
       ctx.font = "800 13px ui-monospace, Menlo, monospace";
@@ -370,7 +405,7 @@
     ctx.beginPath();
     for (i = 0; i <= steps; i++) {
       x = x0 + (x1 - x0) * (i / steps);
-      y = fSmile(x);
+      y = fOf(x);
       s = worldToScreen(x, y);
       if (first) {
         ctx.moveTo(s.x, s.y);
@@ -379,7 +414,7 @@
     }
     ctx.stroke();
     if (t > 0.82) {
-      var lab = worldToScreen(-0.6, 7.4);
+      var lab = worldToScreen(F_LABEL.x, F_LABEL.y);
       ctx.fillStyle = SMILE;
       ctx.font = "800 14px ui-monospace, Menlo, monospace";
       ctx.textAlign = "left";
@@ -392,8 +427,9 @@
   function drawInverse(t) {
     t = Math.max(0, Math.min(1, t));
     if (t <= 0.001) return;
-    var yLo = -5 - 4 * t;
-    var yHi = -5 + 4 * t;
+    var half = (INV_IM_HI - INV_IM_LO) / 2;
+    var yLo = INV_VTX.y - half * t;
+    var yHi = INV_VTX.y + half * t;
     var steps = 220;
     var i;
     var y;
@@ -417,7 +453,7 @@
     }
     ctx.stroke();
     if (t > 0.82) {
-      var lab = worldToScreen(7.3, -0.4);
+      var lab = worldToScreen(INV_LABEL.x, INV_LABEL.y);
       ctx.fillStyle = BLUE;
       ctx.font = "800 14px ui-monospace, Menlo, monospace";
       ctx.textAlign = "left";
@@ -580,7 +616,7 @@
     ctx.beginPath();
     for (i = 0; i <= steps; i++) {
       x = DOM_LO + (xRight - DOM_LO) * (i / steps);
-      sTop = worldToScreen(x, fSmile(x));
+      sTop = worldToScreen(x, fOf(x));
       if (i === 0) ctx.moveTo(sTop.x, sTop.y);
       else ctx.lineTo(sTop.x, sTop.y);
     }
@@ -598,9 +634,9 @@
     ctx.stroke();
     ctx.setLineDash([]);
     if (t > 0.55) {
-      drawDashed(worldToScreen(DOM_LO, fSmile(DOM_LO)), worldToScreen(DOM_LO, DOM_LO), "rgba(217,119,6,0.7)", 2, [5, 4]);
+      drawDashed(worldToScreen(DOM_LO, fOf(DOM_LO)), worldToScreen(DOM_LO, DOM_LO), "rgba(217,119,6,0.7)", 2, [5, 4]);
       if (t > 0.92) {
-        drawDashed(worldToScreen(DOM_HI, fSmile(DOM_HI)), worldToScreen(DOM_HI, DOM_HI), "rgba(217,119,6,0.7)", 2, [5, 4]);
+        drawDashed(worldToScreen(DOM_HI, fOf(DOM_HI)), worldToScreen(DOM_HI, DOM_HI), "rgba(217,119,6,0.7)", 2, [5, 4]);
         drawPivot({ x: DOM_LO, y: DOM_LO });
         drawPivot({ x: DOM_HI, y: DOM_HI });
       }
@@ -611,12 +647,12 @@
   function drawRails() {
     var t = state.railsT;
     if (t <= 0.001) return;
-    var yLo = -9;
-    var yHi = -1;
-    var xLoHit = -9;
-    var xHiHit = -1;
-    var xEndLo = xLoHit + (INV_DOM_HI - xLoHit) * t;
-    var xEndHi = xHiHit + (INV_DOM_HI - xHiHit) * t;
+    var yLo = INV_IM_LO;
+    var yHi = INV_IM_HI;
+    var xLoHit = DOM_LO;
+    var xHiHit = DOM_HI;
+    var xEndLo = xLoHit + (fOf(DOM_LO) - xLoHit) * t;
+    var xEndHi = xHiHit + (fOf(DOM_HI) - xHiHit) * t;
     drawDashed(worldToScreen(xLoHit, yLo), worldToScreen(xEndLo, yLo), BLUE, 2.2, [6, 5]);
     drawDashed(worldToScreen(xHiHit, yHi), worldToScreen(xEndHi, yHi), BLUE, 2.2, [6, 5]);
     if (t > 0.55) {
@@ -638,11 +674,17 @@
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.globalAlpha = 1;
-      if (t > 0.85) ctx.fillText("Dom f⁻¹ = [3, 7]", worldToScreen(5, 0).x, p0.y + 10);
+      if (t > 0.85) {
+        ctx.fillText("Dom f⁻¹ = " + fmtIntv(INV_DOM_LO, INV_DOM_HI), worldToScreen((INV_DOM_LO + INV_DOM_HI) / 2, 0).x, p0.y + 10);
+      }
       ctx.restore();
-      drawDashed(worldToScreen(INV_DOM_LO, 0.4), worldToScreen(INV_DOM_LO, -5), "rgba(37,99,235,0.55)", 1.6, [4, 4]);
+      drawDashed(worldToScreen(INV_VTX.x, 0.4), worldToScreen(INV_VTX.x, INV_VTX.y), "rgba(37,99,235,0.55)", 1.6, [4, 4]);
       if (t > 0.9) {
-        drawDashed(worldToScreen(INV_DOM_HI, 0.4), worldToScreen(INV_DOM_HI, -9), "rgba(37,99,235,0.45)", 1.6, [4, 4]);
+        var endX;
+        if (OPEN_DIR === "izquierda") endX = INV_DOM_LO;
+        else if (OPEN_DIR === "derecha") endX = INV_DOM_HI;
+        else throw new Error("INVERSA PARÁBOLA: openDir desconocido: " + OPEN_DIR);
+        drawDashed(worldToScreen(endX, 0.4), worldToScreen(endX, INV_IM_LO), "rgba(37,99,235,0.45)", 1.6, [4, 4]);
       }
     }
   }
@@ -727,10 +769,10 @@
   function resetVisuals() {
     state.fT = 0;
     state.yxT = 1;
-    state.pops = [0, 0, 0, 0, 0];
-    state.verts = [0, 0, 0, 0, 0];
-    state.doneL = [false, false, false, false, false];
-    state.greens = [0, 0, 0, 0, 0];
+    state.pops = zeros();
+    state.verts = zeros();
+    state.doneL = falses();
+    state.greens = zeros();
     state.active = -1;
     state.fat = 0;
     state.rot = 0;
@@ -866,14 +908,14 @@
     dsmInv.classList.remove("hidden");
     dsmInv.classList.add("on");
     dsmF.classList.add("on", "xy-flash");
-    dsmInvFormula.innerHTML = "<span class=\"hl-f\">y = ¼(x+5)² + 3</span>";
-    setWork("<span class=\"paso\">6</span> · y = ¼(x+5)² + 3");
+    dsmInvFormula.innerHTML = "<span class=\"hl-f\">y = " + F_CORE + "</span>";
+    setWork("<span class=\"paso\">6</span> · y = " + F_CORE);
     setCaption("<span class=\"paso\">Paso 6a:</span> partimos de <span class=\"hl-f\">y = f(x)</span>. Ahora intercambiamos las letras.");
     bip();
     later(900, function () {
       if (!state.playing) return;
       dsmF.classList.add("xy-flash");
-      dsmInvFormula.innerHTML = "<span class=\"hl-axis\">x ↔ y</span> · <span class=\"hl-b\">x = ¼(y+5)² + 3</span>";
+      dsmInvFormula.innerHTML = "<span class=\"hl-axis\">x ↔ y</span> · <span class=\"hl-b\">x = " + INV_CORE + "</span>";
       setWork("<span class=\"hl\">x ↔ y</span> · aparece la inversa");
       setCaption("<span class=\"paso\">Paso 6b:</span> <span class=\"hl-axis\">x ↔ y</span> — la fórmula inversa aparece <strong>mágicamente</strong>.");
       bip();
@@ -881,10 +923,10 @@
         if (!state.playing) return;
         dsmF.classList.remove("xy-flash");
         dsmInv.classList.add("magic");
-        dsmInvFormula.innerHTML = "<span class=\"hl-b\">x = ¼(y+5)² + 3</span><br><span class=\"dom\">{3 ≤ x ≤ 7} · Im = [−9, −1]</span>";
-        exprResult.innerHTML = "x = <span class=\"hl-b\">¼(y+5)² + 3</span>";
-        setWork("<span class=\"inv\">x = ¼(y+5)² + 3</span>");
-        setCaption("<span class=\"paso\">Paso 6c:</span> quedó <span class=\"hl-b\">x = ¼(y+5)² + 3</span> · vértice <span class=\"hl-v\">(3, −5)</span>.");
+        dsmInvFormula.innerHTML = "<span class=\"hl-b\">x = " + INV_CORE + "</span><br><span class=\"dom\">{" + fmtTick(INV_DOM_LO) + " ≤ x ≤ " + fmtTick(INV_DOM_HI) + "} · Im = " + fmtIntv(INV_IM_LO, INV_IM_HI) + "</span>";
+        exprResult.innerHTML = "x = <span class=\"hl-b\">" + INV_CORE + "</span>";
+        setWork("<span class=\"inv\">x = " + INV_CORE + "</span>");
+        setCaption("<span class=\"paso\">Paso 6c:</span> quedó <span class=\"hl-b\">x = " + INV_CORE + "</span> · vértice <span class=\"hl-v\">" + fmtPt(INV_VTX) + "</span>.");
         bip();
         later(900, done);
       });
@@ -894,8 +936,8 @@
   function projectDomain(done) {
     if (!state.playing) return;
     setPhaseUI(7);
-    setWork("<span class=\"paso\">7</span> · Dom f = <span class=\"hl\">[−9, −1]</span> ↓ y = x");
-    setCaption("<span class=\"paso\">Paso 7:</span> todo el dominio <span class=\"hl-f\">[−9, −1]</span> se proyecta en <strong>vertical</strong> sobre <span class=\"hl-axis\">y = x</span> (cortina).");
+    setWork("<span class=\"paso\">7</span> · Dom f = <span class=\"hl\">" + fmtIntv(DOM_LO, DOM_HI) + "</span> ↓ y = x");
+    setCaption("<span class=\"paso\">Paso 7:</span> todo el dominio <span class=\"hl-f\">" + fmtIntv(DOM_LO, DOM_HI) + "</span> se proyecta en <strong>vertical</strong> sobre <span class=\"hl-axis\">y = x</span> (cortina).");
     animate(900, function (e) {
       state.curtainT = e;
     }, function () {
@@ -908,8 +950,8 @@
   function drawRailsAnim(done) {
     if (!state.playing) return;
     setPhaseUI(8);
-    setWork("<span class=\"paso\">8</span> · rieles · Dom f⁻¹ = <span class=\"inv\">[3, 7]</span>");
-    setCaption("<span class=\"paso\">Paso 8:</span> desde esos cortes, dos rieles horizontales enmarcan la inversa. <span class=\"hl-b\">Dom f⁻¹ = [3, 7]</span>.");
+    setWork("<span class=\"paso\">8</span> · rieles · Dom f⁻¹ = <span class=\"inv\">" + fmtIntv(INV_DOM_LO, INV_DOM_HI) + "</span>");
+    setCaption("<span class=\"paso\">Paso 8:</span> desde esos cortes, dos rieles horizontales enmarcan la inversa. <span class=\"hl-b\">Dom f⁻¹ = " + fmtIntv(INV_DOM_LO, INV_DOM_HI) + "</span>.");
     animate(900, function (e) {
       state.railsT = e;
     }, function () {
@@ -922,15 +964,15 @@
   function finishInverse(done) {
     if (!state.playing) return;
     setPhaseUI(9);
-    setWork("<span class=\"inv\">x = ¼(y+5)² + 3</span> · sonrisa de costado");
-    setCaption("<span class=\"paso\">Paso 9:</span> la curva <span class=\"hl-b\">azul</span> es la relación inversa: abre a la derecha, vértice <span class=\"hl-v\">(3, −5)</span>.");
+    setWork("<span class=\"inv\">x = " + INV_CORE + "</span> · " + SHAPE + " de costado");
+    setCaption("<span class=\"paso\">Paso 9:</span> la curva <span class=\"hl-b\">azul</span> es la relación inversa: abre a la " + OPEN_DIR + ", vértice <span class=\"hl-v\">" + fmtPt(INV_VTX) + "</span>.");
     animate(1000, function (e) {
       state.invT = e;
     }, function () {
       state.invT = 1;
-      state.badge = "Inversa · sonrisa · [3, 7] → [−9, −1]";
-      exprResult.innerHTML = "f⁻¹ · relación = <span class=\"hl-b\">x = ¼(y+5)² + 3</span>";
-      setCaption("<strong class=\"ok\">Listo:</strong> <span class=\"hl-f\">sonrisa</span> y <span class=\"hl-b\">inversa</span> son espejo sobre <span class=\"hl-axis\">y = x</span>.");
+      state.badge = "Inversa · " + SHAPE + " · " + fmtIntv(INV_DOM_LO, INV_DOM_HI) + " → " + fmtIntv(INV_IM_LO, INV_IM_HI);
+      exprResult.innerHTML = "f⁻¹ · relación = <span class=\"hl-b\">x = " + INV_CORE + "</span>";
+      setCaption("<strong class=\"ok\">Listo:</strong> <span class=\"hl-f\">" + SHAPE + "</span> y <span class=\"hl-b\">inversa</span> son espejo sobre <span class=\"hl-axis\">y = x</span>.");
       bip();
       sizeConfetti();
       if (GK.fireConfetti) {
@@ -955,8 +997,8 @@
     sizeCanvas();
     draw();
     setPhaseUI(1);
-    setWork("<span class=\"paso\">1</span> · <span class=\"f\">f(x) = ¼(x+5)² + 3</span> · {−9 ≤ x ≤ −1}");
-    setCaption("<span class=\"paso\">Paso 1:</span> dibujamos la <span class=\"hl-f\">sonrisa</span> en <span class=\"hl-t\">[−9, −1]</span>. Después, puntos con x,y claros: <span class=\"hl-p\">pop pop pop</span>.");
+    setWork("<span class=\"paso\">1</span> · <span class=\"f\">f(x) = " + F_CORE + "</span> · {" + fmtTick(DOM_LO) + " ≤ x ≤ " + fmtTick(DOM_HI) + "}");
+    setCaption("<span class=\"paso\">Paso 1:</span> dibujamos la <span class=\"hl-f\">" + SHAPE + "</span> en <span class=\"hl-t\">" + fmtIntv(DOM_LO, DOM_HI) + "</span>. Después, puntos con x,y claros: <span class=\"hl-p\">pop pop pop</span>.");
     animate(900, function (e) {
       state.fT = e;
     }, function () {
@@ -1025,9 +1067,10 @@
     sizeCanvas();
     draw();
   });
-  window.__L181 = {
+  window[EXPORT_NAME] = {
+    CFG: CFG,
     POINTS: POINTS,
-    fSmile: fSmile,
+    f: fOf,
     invXOfY: invXOfY,
     state: state,
     draw: draw,
