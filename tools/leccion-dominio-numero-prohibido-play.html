@@ -618,7 +618,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     /* green band (safe continuum) */
     if (state.showBand) {
       var zeros = e.forbidden.slice(0, state.revealedForbidden).slice().sort(function (a, b) { return a - b; });
-      var punchW = Math.max(0.28, (e.xmax - e.xmin) * 0.035);
+      var rPx = BAND_H / 2 + 1;
+    var worldPerPx = (e.xmax - e.xmin) / Math.max(1, (canvas.width - PAD.l - PAD.r));
+    /* hueco mínimo: el verde llega casi al borde del círculo gris */
+    var punchW = rPx * worldPerPx * 1.08;
 
       function strokeSeg(a, b) {
         if (b <= a + 1e-6) return;
