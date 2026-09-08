@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 131 · A trozos · hoja 3.6 · play</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #38bdf8; --border: #243044;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #2dd4bf;
+  --coral: #fb7185; --row: #121a27; --row-border: #2a3548;
+  --graph-bg: #f8fafc; --axes-black: #111111;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.18rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: #38bdf8; font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.84rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn, a.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.on { background: var(--amber); color: #0b1018; box-shadow: 0 0 10px rgba(255,191,0,.35); }
+button.btn:hover, a.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548; color: var(--mast);
+}
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
+.main-stage { display: grid; grid-template-columns: minmax(250px, 320px) 1fr; gap: 10px; align-items: stretch; }
+@media (max-width: 820px) { .main-stage { grid-template-columns: 1fr; } }
+.expr-panel {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0; overflow: auto;
+}
+.contrast-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(255,191,0,0.35);
+  background: linear-gradient(135deg, rgba(255,191,0,0.10), rgba(18,26,39,0.95));
+}
+.contrast-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #FFBF00; margin: 0 0 8px;
+}
+.contrast-bullets { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.contrast-bullets li {
+  font-size: 0.82rem; line-height: 1.4; color: var(--ink); font-weight: 650;
+  padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3548; background: #121a27;
+}
+.contrast-bullets .hl { color: #FFBF00; }
+.contrast-bullets .empty { color: #94a3b8; }
+.contrast-bullets .ok { color: #5ad4a8; }
+.band-legend {
+  margin: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #2a3a52; background: #121a28;
+}
+.band-legend-title {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  color: #93c5fd; margin: 0 0 8px;
+}
+.band-row {
+  display: flex; align-items: flex-start; gap: 10px; margin: 0 0 7px;
+  font-size: 0.8rem; line-height: 1.35; color: #9fb0c7;
+}
+.band-row:last-child { margin-bottom: 0; }
+.band-swatch {
+  width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+.band-swatch.gray { background: #64748b; }
+.band-swatch.green { background: #22c55e; }
+.band-swatch.amber { background: #f59e0b; }
+.band-swatch.teal { background: #2dd4bf; }
+.band-swatch.coral { background: #fb7185; }
+.band-row strong.g { color: #94a3b8; }
+.band-row strong.v { color: #22c55e; }
+.band-row strong.a { color: #f59e0b; }
+.band-row strong.t { color: #2dd4bf; }
+.band-row strong.c { color: #fb7185; }
+.expr-row {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 10px 12px; position: relative;
+}
+.expr-row::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 2px 2px 0; background: var(--accent);
+}
+.expr-row.phase-ask::before { background: var(--amber); }
+.expr-formula {
+  font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.84rem;
+  color: var(--ink); padding-left: 6px; line-height: 1.55;
+}
+.hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; font-weight: 700;
+  padding: 5px 8px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27; color: var(--ink);
+}
+.chip.teal { color: #2dd4bf; border-color: rgba(45,212,191,0.5); }
+.chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
+.chip.coral { color: #fb7185; border-color: rgba(251,113,133,0.5); }
+.chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
+.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
+.chip.bad { color: #ff7b7b; border-color: rgba(255,123,123,0.45); }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.4); color: var(--accent);
+  margin-left: 6px;
+}
+.rule-list {
+  margin: 6px 0 0; padding: 0 0 0 22px; font-size: 0.78rem; color: var(--muted); line-height: 1.55;
+}
+.rule-list li { margin: 2px 0; }
+.rule-list strong { color: var(--ink); }
+.rule-list .ok { color: #5ad4a8; }
+.rule-list .bad { color: #ff7b7b; }
+.rule-list .empty { color: #94a3b8; }
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--graph-bg); touch-action: none;
+  border: 1px solid #cbd5e1;
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
+  transition: opacity .15s; filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev { display: block; width: 0; height: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
+.work-panel {
+  display: none; margin-top: 8px; padding: 10px 14px; border-radius: 10px;
+  background: rgba(18, 26, 39, 0.95); border: 1px solid rgba(56,189,248,0.45);
+  font-family: ui-monospace, Menlo, monospace; font-size: 1.02rem; font-weight: 700;
+  color: var(--ink); min-height: 2.2em; line-height: 1.55;
+}
+.work-panel.on { display: block; }
+.work-panel .hl { color: var(--amber); }
+.work-panel .ok { color: #5ad4a8; }
+.work-panel .bad { color: #ff7b7b; }
+.work-panel .paso { color: #60a5fa; }
+.work-panel .empty { color: #94a3b8; }
+.caption {
+  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
+}
+.caption strong { color: var(--ink); }
+.caption .hl-t { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-v { color: #22c55e; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-amber { color: #FFBF00; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-teal { color: #2dd4bf; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-coral { color: #fb7185; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .ok { color: #5ad4a8; font-weight: 800; }
+.caption .bad { color: #ff7b7b; font-weight: 800; }
+.caption .paso { color: #60a5fa; font-weight: 800; }
+.caption .empty { color: #94a3b8; font-weight: 800; }
+.sound-meter {
+  margin: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; min-height: 28px;
+  padding: 6px 10px; color: var(--muted); font-size: 0.8rem; font-weight: 700; user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px; width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar { display: inline-block; width: 5px; height: 8px; border-radius: 2px; background: #3b4a63; transition: height .08s ease, background .08s ease; }
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
+.expr-formula .hl-amber { color: #FFBF00; }
+.expr-formula .hl-teal { color: #2dd4bf; }
+.expr-formula .hl-coral { color: #fb7185; }
+.expr-formula .hl-v { color: #22c55e; }
+.expr-formula .bad { color: #ff7b7b; }
+.expr-formula .empty { color: #94a3b8; }
+.steps-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
+.steps-box li { margin: 3px 0; }
+.steps-box li.on { color: #e9eef7; font-weight: 700; }
+.steps-box li.done { color: #5ad4a8; }
+.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 131</span> · A trozos · hoja 3.6 · play
+        <span class="sub">hueco en x=0 · Dom = ℝ∖{0}</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="playBtn">▶ Play</button>
+      <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
+      <button type="button" class="btn" id="restartBtn">Reiniciar</button>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/15</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="main-stage">
+      <aside class="expr-panel" aria-label="Fórmula y método">
+        <div class="contrast-card">
+          <p class="contrast-kicker">Método · cada rama sola</p>
+          <ul class="contrast-bullets">
+            <li><span class="hl">1 · Dibujo completo</span> — curva fantasma sin restricción.</li>
+            <li><span class="hl">2 · Corte</span> — solo el intervalo de la condición.</li>
+            <li><span class="hl">3 · Extremo</span> — <span class="empty">&lt;/&gt; → ○</span> · ≤/≥ → ●.</li>
+            <li><span class="ok">Luego limpiar</span> · y al final <strong>combinar</strong> + Dom.</li>
+          </ul>
+        </div>
+
+        <div class="band-legend" aria-label="Leyenda visual">
+          <div class="band-legend-title">Lenguaje visual</div>
+          <div class="band-row"><span class="band-swatch amber" aria-hidden="true"></span><span><strong class="a">Ámbar</strong> — rama A · x²−x · x&lt;0</span></div>
+          <div class="band-row"><span class="band-swatch teal" aria-hidden="true"></span><span><strong class="t">Teal</strong> — rama B · x−x² · (0,1)</span></div>
+          <div class="band-row"><span class="band-swatch coral" aria-hidden="true"></span><span><strong class="c">Coral</strong> — rama C · x²−x · x≥1</span></div>
+          <div class="band-row"><span class="band-swatch gray" aria-hidden="true"></span><span><strong class="g">○ gris</strong> — extremo abierto · no incluido</span></div>
+          <div class="band-row"><span class="band-swatch green" aria-hidden="true"></span><span><strong class="v">● / verde</strong> — incluido · banda Dom</span></div>
+        </div>
+
+        <div class="steps-box" aria-label="Pasos">
+          <ol id="stepsList">
+          <li data-step="1"><span class="n">1</span> Intro · fórmula a trozos</li>
+          <li data-step="2"><span class="n">2</span> Rama A · dibujo completo</li>
+          <li data-step="3"><span class="n">3</span> Rama A · corte</li>
+          <li data-step="4"><span class="n">4</span> Rama A · extremo</li>
+          <li data-step="5"><span class="n">5</span> Limpiar</li>
+          <li data-step="6"><span class="n">6</span> Rama B · dibujo completo</li>
+          <li data-step="7"><span class="n">7</span> Rama B · corte</li>
+          <li data-step="8"><span class="n">8</span> Rama B · extremo</li>
+          <li data-step="9"><span class="n">9</span> Limpiar</li>
+          <li data-step="10"><span class="n">10</span> Rama C · dibujo completo</li>
+          <li data-step="11"><span class="n">11</span> Rama C · corte</li>
+          <li data-step="12"><span class="n">12</span> Rama C · extremo</li>
+          <li data-step="13"><span class="n">13</span> Limpiar</li>
+          <li data-step="14"><span class="n">14</span> Combinar · todas</li>
+          <li data-step="15"><span class="n">15</span> Dominio</li>
+          </ol>
+        </div>
+
+        <div class="expr-row" id="formulaRow">
+          <div class="expr-formula" id="exprFormula">
+            <span class="hl-amber">x² − x</span> · <span class="empty">x &lt; 0</span><br><span class="hl-teal">x − x²</span> · <span class="empty">0 &lt; x &lt; 1</span><br><span class="hl-coral">x² − x</span> · x ≥ 1
+          </div>
+          <p class="hint-mini" id="hintMini">▶ Play · hueco en 0 · ● en x=1</p>
+        </div>
+
+        <div class="expr-row" id="domainRow">
+          <div class="expr-formula" id="exprDomain">
+            Dom = <span class="hl-v">…</span>
+          </div>
+          <div class="chips" id="chipBox">
+            <span class="chip amber">A: x<0</span>
+            <span class="chip teal">B: (0,1)</span>
+            <span class="chip coral">C: x≥1</span>
+            <span class="chip bad">0 ∉ Dom</span>
+          </div>
+        </div>
+
+        <div class="expr-row phase-ask">
+          <span class="mode-tag">Play</span>
+          <ul class="rule-list">
+            <li>Una rama a la vez · luego <strong>limpiar</strong></li>
+            <li>Al final: <strong class="ok">todas juntas</strong> + Dom</li>
+            <li>hueco x=0 · Dom = ℝ∖{0}</li>
+          </ul>
+        </div>
+      </aside>
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-trozos-35-play.html" title="Lección 130: A trozos · hoja 3.5 · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <span class="lesson-nav next" aria-disabled="true" title="Fin de la serie (por ahora)" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <canvas id="c" width="900" height="640" aria-label="Lección 131 · A trozos · hoja 3.6 · play"></canvas>
+      </div>
+    </div>
+    <div class="work-panel" id="workPanel" aria-live="polite"></div>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · tres ramas · hueco en x=0 · ● en x=1.</p>
+    <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
+      <span class="sound-meter-label" aria-hidden="true">♪</span>
+      <span class="sound-bar" data-i="0"></span>
+      <span class="sound-bar" data-i="1"></span>
+      <span class="sound-bar" data-i="2"></span>
+      <span class="sound-bar" data-i="3"></span>
+      <span class="sound-bar" data-i="4"></span>
+      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    </div>
+    <p class="hint">Hoja 3.6 · <strong style="color:#ff7b7b">0 ∉ Dom</strong> · <strong style="color:#5ad4a8">● en x=1</strong></p>
+  </div>
+</div>
+<script src="game-kit.js?v=20260907"></script>
+<script>
+
+window.__TROZOS_CFG__ = {
+  exportName: "__L131",
+  xmin: -2, xmax: 3, ymin: -1.5, ymax: 2.5,
+  domHtml: "ℝ∖{0}",
+  hintMini: "▶ Play · hueco en 0 · ● en x=1",
+  introWork: "x=0 no cubierto · x=1 sí (tercera)",
+  captionIdle: "Presioná <strong>▶ Play</strong> · tres ramas · hueco en x=0 · ● en x=1.",
+  captionIntro: "<span class=\"paso\">Intro:</span> <span class=\"hl-amber\">x²−x</span> si x&lt;0 · <span class=\"hl-teal\">x−x²</span> si 0&lt;x&lt;1 · <span class=\"hl-coral\">x²−x</span> si x≥1.",
+  captionCombine: "<span class=\"paso\">Combinar:</span> hueco en x=0 · en x=1 la tercera pieza pone <span class=\"ok\">●(1,0)</span>.",
+  captionDom: "<span class=\"paso\">Dominio:</span> Dom = <span class=\"hl-v\">ℝ∖{0}</span>.",
+  captionClose: "<strong>Cierre:</strong> x=0 sin pieza → Dom = <span class=\"hl-v\">ℝ∖{0}</span> · x=1 incluido por la tercera.",
+  asymptotes: [],
+  guides: [{ x: 0, label: "x=0 · hueco" }, { x: 1, label: "x=1" }],
+  domBands: [{ a: -2, b: -0.12, color: "green" }, { a: 0.12, b: 3, color: "green" }],
+  domHoles: [0],
+  domClosedEnds: [],
+  fns: {
+    xx: function (x) { return x * x - x; },
+    xmx2: function (x) { return x - x * x; }
+  },
+  pieces: [
+    {
+      id: "A",
+      label: "Rama A",
+      color: "amber",
+      fn: "xx",
+      formula: "y = x²−x",
+      formulaHtml: "y = x² − x",
+      cond: "x < 0",
+      condHtml: "x &lt; 0",
+      x0: -2, x1: 0,
+      left: null,
+      right: { open: true, x: 0, y: 0 },
+      endCaption: "x&lt;0 → <span class=\"empty\">○(0,0)</span>.",
+      skipNear: [],
+      showAsymptote: false
+    },
+    {
+      id: "B",
+      label: "Rama B",
+      color: "teal",
+      fn: "xmx2",
+      formula: "y = x−x²",
+      formulaHtml: "y = x − x²",
+      cond: "0 < x < 1",
+      condHtml: "0 &lt; x &lt; 1",
+      x0: 0, x1: 1,
+      left: { open: true, x: 0, y: 0 },
+      right: { open: true, x: 1, y: 0 },
+      endCaption: "ambos estrictos → <span class=\"empty\">○(0,0)</span> y <span class=\"empty\">○(1,0)</span>.",
+      skipNear: [],
+      showAsymptote: false
+    },
+    {
+      id: "C",
+      label: "Rama C",
+      color: "coral",
+      fn: "xx",
+      formula: "y = x²−x",
+      formulaHtml: "y = x² − x",
+      cond: "x ≥ 1",
+      condHtml: "x ≥ 1",
+      x0: 1, x1: 3,
+      left: { open: false, x: 1, y: 0 },
+      right: null,
+      endCaption: "x≥1 → <span class=\"ok\">●(1,0)</span> · este sí incluye x=1.",
+      skipNear: [],
+      showAsymptote: false
+    }
+  ]
+};
+
+
+(function () {
+  "use strict";
+  var GK = window.CampusGameKit || {};
+  var CFG = window.__TROZOS_CFG__;
+  var BLACK = "#111111";
+  var GRAPH_BG = "#f8fafc";
+  var GRID = "#e2e8f0";
+  var GREEN = "#22c55e";
+  var EMPTY = "#64748b";
+  var BAND_H = 14;
+  var PAD = { l: 48, r: 36, t: 28, b: 52 };
+  var COLORS = {
+    amber: { solid: "#d97706", soft: "#f59e0b", css: "amber" },
+    teal:  { solid: "#0d9488", soft: "#2dd4bf", css: "teal" },
+    coral: { solid: "#e11d48", soft: "#fb7185", css: "coral" }
+  };
+
+  var XMIN = CFG.xmin, XMAX = CFG.xmax, YMIN = CFG.ymin, YMAX = CFG.ymax;
+  var PIECES = CFG.pieces;
+  var N = PIECES.length;
+  var TOTAL_PHASES = 1 + N * 4 + 2;
+
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var playBtn = document.getElementById("playBtn");
+  var stopBtn = document.getElementById("stopBtn");
+  var slowBtn = document.getElementById("slowBtn");
+  var restartBtn = document.getElementById("restartBtn");
+  var loopEl = document.getElementById("loopEl");
+  var captionEl = document.getElementById("caption");
+  var workPanel = document.getElementById("workPanel");
+  var soundMeter = document.getElementById("soundMeter");
+  var exprDomain = document.getElementById("exprDomain");
+  var hintMini = document.getElementById("hintMini");
+  var stepsList = document.getElementById("stepsList");
+
+  var state = {
+    playing: false, loop: 0, speedFactor: 1, timers: [], raf: 0, phase: 0,
+    mode: "idle", soloIndex: -1, stage: "idle", ghostAlpha: 0.32,
+    showDom: false, bandReveal: 0, showGuides: false
+  };
+
+  function delay(ms) { return ms * (state.speedFactor || 1); }
+  function clearTimers() {
+    state.timers.forEach(function (id) { clearTimeout(id); });
+    state.timers = [];
+    if (state.raf) { cancelAnimationFrame(state.raf); state.raf = 0; }
+  }
+  function later(ms, fn) {
+    var id = setTimeout(fn, delay(ms));
+    state.timers.push(id);
+    return id;
+  }
+  function fmtNum(n) {
+    if (Object.is(n, -0) || Math.abs(n) < 1e-12) return "0";
+    if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n)).replace("-", "−");
+    return String(Math.round(n * 100) / 100).replace("-", "−");
+  }
+  function setCaption(html) { captionEl.innerHTML = html; }
+  function setWork(html) {
+    if (!html) { workPanel.classList.remove("on"); workPanel.innerHTML = ""; return; }
+    workPanel.classList.add("on");
+    workPanel.innerHTML = html;
+  }
+  function bip(kind) {
+    if (kind === "bad") {
+      if (GK.playErrorBuzz) GK.playErrorBuzz();
+      else if (GK.playBuzz) GK.playBuzz();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "bad");
+    } else {
+      if (GK.playOkChime) GK.playOkChime();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    }
+  }
+  function setPhaseUI(n) {
+    state.phase = n;
+    loopEl.innerHTML = "Fase <strong>" + (n || "—") + "</strong>/" + TOTAL_PHASES;
+    var lis = stepsList.querySelectorAll("li");
+    for (var i = 0; i < lis.length; i++) {
+      var s = parseInt(lis[i].getAttribute("data-step"), 10);
+      lis[i].classList.remove("on", "done");
+      if (n > 0 && s < n) lis[i].classList.add("done");
+      else if (s === n) lis[i].classList.add("on");
+    }
+  }
+
+  function sizeCanvas() {
+    var spanX = XMAX - XMIN, spanY = YMAX - YMIN;
+    var cell = 56;
+    var w = Math.round(PAD.l + spanX * cell + PAD.r);
+    var hh = Math.round(PAD.t + spanY * cell + PAD.b);
+    if (w > 1100 || hh > 820) {
+      cell = Math.max(32, Math.floor(Math.min((1100 - PAD.l - PAD.r) / spanX, (820 - PAD.t - PAD.b) / spanY)));
+      w = Math.round(PAD.l + spanX * cell + PAD.r);
+      hh = Math.round(PAD.t + spanY * cell + PAD.b);
+    }
+    canvas.width = w;
+    canvas.height = hh;
+  }
+
+  function worldToScreen(x, y) {
+    var w = canvas.width - PAD.l - PAD.r;
+    var hh = canvas.height - PAD.t - PAD.b;
+    return {
+      x: PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w,
+      y: PAD.t + ((YMAX - y) / (YMAX - YMIN)) * hh
+    };
+  }
+
+  function evalFn(fnKey, x) { return CFG.fns[fnKey](x); }
+
+  function drawAxes() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = GRAPH_BG;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = GRID; ctx.lineWidth = 1;
+    var xi, yi, p0, p1;
+    for (xi = Math.ceil(XMIN); xi <= Math.floor(XMAX); xi++) {
+      p0 = worldToScreen(xi, YMIN); p1 = worldToScreen(xi, YMAX);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    for (yi = Math.ceil(YMIN); yi <= Math.floor(YMAX); yi++) {
+      p0 = worldToScreen(XMIN, yi); p1 = worldToScreen(XMAX, yi);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+    }
+    var ox = worldToScreen(0, 0);
+    ctx.strokeStyle = BLACK; ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (0 >= YMIN && 0 <= YMAX) { ctx.moveTo(PAD.l, ox.y); ctx.lineTo(canvas.width - PAD.r, ox.y); }
+    ctx.stroke();
+    ctx.beginPath();
+    if (0 >= XMIN && 0 <= XMAX) { ctx.moveTo(ox.x, PAD.t); ctx.lineTo(ox.x, canvas.height - PAD.b); }
+    ctx.stroke();
+    ctx.fillStyle = BLACK;
+    ctx.font = "600 12px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (var xt = Math.ceil(XMIN); xt <= Math.floor(XMAX); xt++) {
+      if (xt === 0) continue;
+      var sx = worldToScreen(xt, 0);
+      ctx.strokeStyle = BLACK; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(sx.x, sx.y - 4); ctx.lineTo(sx.x, sx.y + 4); ctx.stroke();
+      ctx.fillStyle = BLACK;
+      ctx.fillText(String(xt).replace("-", "−"), sx.x, sx.y + 8);
+    }
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (var yt = Math.ceil(YMIN); yt <= Math.floor(YMAX); yt++) {
+      if (yt === 0) continue;
+      var sy = worldToScreen(0, yt);
+      ctx.strokeStyle = BLACK; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(sy.x - 4, sy.y); ctx.lineTo(sy.x + 4, sy.y); ctx.stroke();
+      ctx.fillStyle = BLACK;
+      ctx.fillText(fmtNum(yt), sy.x - 8, sy.y);
+    }
+    ctx.fillStyle = BLACK;
+    ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText("x", canvas.width - PAD.r - 16, Math.min(canvas.height - 18, ox.y + 18));
+    ctx.fillText("y", Math.max(10, ox.x + 10), PAD.t + 16);
+  }
+
+  function drawCurveRange(x0, x1, fnKey, color, lw, alpha, dashed, skipNear) {
+    var steps = 360, first = true, i, x, y, s, skip, k;
+    skipNear = skipNear || [];
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.strokeStyle = color; ctx.lineWidth = lw || 3.2;
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    if (dashed) ctx.setLineDash([7, 6]);
+    ctx.beginPath();
+    for (i = 0; i <= steps; i++) {
+      x = x0 + (x1 - x0) * (i / steps);
+      skip = false;
+      for (k = 0; k < skipNear.length; k++) {
+        if (Math.abs(x - skipNear[k]) < 0.045) { skip = true; break; }
+      }
+      if (skip) { first = true; continue; }
+      y = evalFn(fnKey, x);
+      if (x < XMIN - 0.05 || x > XMAX + 0.05) { first = true; continue; }
+      if (y == null || isNaN(y) || !isFinite(y) || y < YMIN - 0.35 || y > YMAX + 0.35) {
+        first = true; continue;
+      }
+      s = worldToScreen(x, y);
+      if (first) { ctx.moveTo(s.x, s.y); first = false; }
+      else ctx.lineTo(s.x, s.y);
+    }
+    ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+  }
+
+  function drawOpen(x, y, color) {
+    var p = worldToScreen(x, y);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(p.x, p.y, 7.5, 0, Math.PI * 2);
+    ctx.fillStyle = GRAPH_BG; ctx.fill();
+    ctx.strokeStyle = color || EMPTY; ctx.lineWidth = 2.6; ctx.stroke();
+    ctx.restore();
+  }
+  function drawFilled(x, y, color) {
+    var p = worldToScreen(x, y);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(p.x, p.y, 7.2, 0, Math.PI * 2);
+    ctx.fillStyle = color; ctx.fill();
+    ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 1.6; ctx.stroke();
+    ctx.restore();
+  }
+  function drawEndpoint(ep, color) {
+    if (!ep) return;
+    if (ep.open) drawOpen(ep.x, ep.y, EMPTY);
+    else drawFilled(ep.x, ep.y, color);
+  }
+
+  function drawAsymptotes() {
+    (CFG.asymptotes || []).forEach(function (ax) {
+      var a = worldToScreen(ax, YMIN), b = worldToScreen(ax, YMAX);
+      ctx.save();
+      ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1.8; ctx.setLineDash([6, 5]);
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#64748b";
+      ctx.font = "700 11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      ctx.fillText("x=" + fmtNum(ax) + " asín.", a.x, PAD.t + 16);
+      ctx.restore();
+    });
+  }
+
+  function drawGuides() {
+    if (!state.showGuides || !CFG.guides) return;
+    CFG.guides.forEach(function (g) {
+      var a = worldToScreen(g.x, YMIN), b = worldToScreen(g.x, YMAX);
+      ctx.save();
+      ctx.strokeStyle = EMPTY; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = EMPTY;
+      ctx.font = "700 11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      ctx.fillText(g.label || ("x=" + fmtNum(g.x)), a.x, PAD.t + 18);
+      ctx.restore();
+    });
+  }
+
+  function drawDomainBand() {
+    if (!state.showDom) return;
+    var ox = worldToScreen(0, 0), y = ox.y, reveal = state.bandReveal;
+    if (!(reveal > 0.001)) return;
+    var xRight = XMIN + (XMAX - XMIN) * reveal;
+    function xPx(xw) { return worldToScreen(xw, 0).x; }
+    function strokeSeg(a, b, color) {
+      var aa = Math.max(a, XMIN), bb = Math.min(b, xRight);
+      if (bb <= aa + 1e-9) return;
+      var pa = xPx(aa), pb = xPx(bb);
+      if (pb <= pa + 1) return;
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = BAND_H; ctx.lineCap = "butt";
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.moveTo(pa, y); ctx.lineTo(pb, y); ctx.stroke();
+      ctx.restore();
+    }
+    (CFG.domBands || []).forEach(function (s) {
+      strokeSeg(s.a, s.b, s.color === "gray" ? EMPTY : GREEN);
+    });
+    (CFG.domHoles || []).forEach(function (h) {
+      if (h > xRight + 1e-9) return;
+      var px = xPx(h), r = BAND_H / 2 + 1;
+      ctx.save();
+      ctx.beginPath(); ctx.arc(px, y, r + 3, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(15, 23, 42, 0.92)"; ctx.fill();
+      ctx.beginPath(); ctx.arc(px, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = EMPTY; ctx.fill();
+      ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2.2; ctx.stroke();
+      ctx.fillStyle = EMPTY;
+      ctx.font = "700 11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      ctx.fillText(fmtNum(h) + " ∉ Dom", px, y - r - 8);
+      ctx.restore();
+    });
+    (CFG.domClosedEnds || []).forEach(function (h) {
+      if (h > xRight + 1e-9) return;
+      var p = worldToScreen(h, 0);
+      ctx.save();
+      ctx.beginPath(); ctx.arc(p.x, p.y, BAND_H / 2, 0, Math.PI * 2);
+      ctx.fillStyle = GREEN; ctx.fill();
+      ctx.strokeStyle = "#166534"; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.restore();
+    });
+  }
+
+  function pieceColor(p) { return COLORS[p.color] || COLORS.amber; }
+
+  function drawPiece(p, opts) {
+    opts = opts || {};
+    var col = pieceColor(p);
+    var skip = p.skipNear || [];
+    if (opts.ghost) {
+      drawCurveRange(XMIN, XMAX, p.fn, col.soft, 2.4, state.ghostAlpha, true, skip);
+    }
+    if (opts.cut) {
+      var a = p.x0, b = p.x1, eps = 0.003;
+      if (p.left && p.left.open) a = Math.max(a, p.left.x) + eps;
+      if (p.right && p.right.open) b = Math.min(b, p.right.x) - eps;
+      if (b > a) drawCurveRange(a, b, p.fn, col.solid, 3.4, 1, false, skip);
+    }
+    if (opts.ends) {
+      if (p.left) drawEndpoint(p.left, col.solid);
+      if (p.right) drawEndpoint(p.right, col.solid);
+    }
+  }
+
+  function draw() {
+    drawAxes();
+    if (CFG.asymptotes && CFG.asymptotes.length) {
+      var showAsy = state.mode === "combine";
+      if (state.mode === "solo" && state.soloIndex >= 0) {
+        var pp = PIECES[state.soloIndex];
+        if (pp && pp.showAsymptote) showAsy = true;
+      }
+      if (showAsy) drawAsymptotes();
+    }
+    if (state.mode === "solo" && state.soloIndex >= 0) {
+      var p = PIECES[state.soloIndex];
+      if (state.stage === "ghost") drawPiece(p, { ghost: true });
+      else if (state.stage === "cut") drawPiece(p, { ghost: state.ghostAlpha > 0.05, cut: true });
+      else if (state.stage === "end") drawPiece(p, { cut: true, ends: true });
+    } else if (state.mode === "combine") {
+      drawGuides();
+      PIECES.forEach(function (pc) { drawPiece(pc, { cut: true, ends: true }); });
+      drawDomainBand();
+    }
+  }
+
+  function clearStage() {
+    state.mode = "idle"; state.soloIndex = -1; state.stage = "idle";
+    state.ghostAlpha = 0.32; state.showDom = false; state.bandReveal = 0;
+    state.showGuides = false; draw();
+  }
+
+  function resetVisuals() {
+    clearStage(); setPhaseUI(0);
+    exprDomain.innerHTML = 'Dom = <span class="hl-v">…</span>';
+    hintMini.textContent = CFG.hintMini || "Presioná ▶ Play";
+  }
+
+  function resetView() {
+    clearTimers(); state.playing = false; state.loop = 0; resetVisuals();
+    playBtn.disabled = false; stopBtn.disabled = true;
+    sizeCanvas(); draw(); setWork(""); setCaption(CFG.captionIdle);
+    loopEl.innerHTML = "Fase <strong>—</strong>/" + TOTAL_PHASES;
+  }
+
+  function animateBand(durationMs, onDone) {
+    var t0 = null, dur = delay(durationMs);
+    function frame(now) {
+      if (!state.playing) return;
+      if (t0 == null) t0 = now;
+      var u = Math.min(1, (now - t0) / dur);
+      var ease = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+      state.bandReveal = ease; draw();
+      if (u < 1) state.raf = requestAnimationFrame(frame);
+      else { state.raf = 0; state.bandReveal = 1; draw(); if (onDone) onDone(); }
+    }
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  function fadeGhost(toAlpha, durationMs, onDone) {
+    var from = state.ghostAlpha, t0 = null, dur = delay(durationMs);
+    function frame(now) {
+      if (!state.playing) return;
+      if (t0 == null) t0 = now;
+      var u = Math.min(1, (now - t0) / dur);
+      state.ghostAlpha = from + (toAlpha - from) * u; draw();
+      if (u < 1) state.raf = requestAnimationFrame(frame);
+      else { state.raf = 0; state.ghostAlpha = toAlpha; draw(); if (onDone) onDone(); }
+    }
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  function endMarkHtml(ep) {
+    if (!ep) return "";
+    var mark = ep.open ? '<span class="empty">○</span>' : '<span class="ok">●</span>';
+    return mark + " (" + fmtNum(ep.x) + ", " + fmtNum(ep.y) + ")";
+  }
+
+  function runPiece(i, phaseBase, onDone) {
+    var p = PIECES[i], col = pieceColor(p);
+    var label = p.label || ("Rama " + String.fromCharCode(65 + i));
+
+    setPhaseUI(phaseBase);
+    state.mode = "solo"; state.soloIndex = i; state.stage = "ghost";
+    state.ghostAlpha = 0.34; draw();
+    setWork('<span class="paso">' + label + '</span> · dibujo completo · <span class="hl">' + p.formula + "</span>");
+    setCaption('<span class="paso">' + label + ' · 1:</span> dibujo <strong>completo</strong> de <span class="hl-' + col.css + '">' + p.formulaHtml + "</span> (fantasma).");
+    bip("ok");
+
+    later(1900, function () {
+      if (!state.playing) return;
+      setPhaseUI(phaseBase + 1); state.stage = "cut";
+      fadeGhost(0.1, 650, function () {
+        if (!state.playing) return;
+        setWork('<span class="paso">' + label + '</span> · corte · <span class="hl">' + p.cond + "</span>");
+        setCaption('<span class="paso">' + label + ' · 2:</span> <strong>corte</strong> · solo <span class="hl-t">' + p.condHtml + "</span> · el resto se apaga.");
+        bip("ok");
+      });
+    });
+
+    later(4000, function () {
+      if (!state.playing) return;
+      setPhaseUI(phaseBase + 2); state.stage = "end"; state.ghostAlpha = 0; draw();
+      var ends = [];
+      if (p.left) ends.push(endMarkHtml(p.left));
+      if (p.right) ends.push(endMarkHtml(p.right));
+      setWork('<span class="paso">' + label + '</span> · extremo · ' + ends.join(" · "));
+      setCaption('<span class="paso">' + label + ' · 3:</span> ' + (p.endCaption || ("extremos: " + ends.join(" · "))));
+      bip("ok");
+    });
+
+    later(6400, function () {
+      if (!state.playing) return;
+      setPhaseUI(phaseBase + 3);
+      clearStage();
+      setWork('<span class="paso">Limpiar</span> · listo para la siguiente rama');
+      setCaption('<span class="paso">Limpiar:</span> borramos la rama para mirar la siguiente <strong>sola</strong>.');
+      bip("ok");
+      later(900, function () { if (onDone) onDone(); });
+    });
+  }
+
+  function finishPlay() {
+    state.playing = false; playBtn.disabled = false; stopBtn.disabled = true;
+    setPhaseUI(TOTAL_PHASES);
+    exprDomain.innerHTML = 'Dom = <span class="hl-v">' + CFG.domHtml + "</span>";
+    setWork('Dom = <span class="ok">' + CFG.domHtml + "</span>");
+    setCaption(CFG.captionClose); bip("ok");
+  }
+
+  function runPlay() {
+    if (state.playing) return;
+    if (GK.ensureAudio) GK.ensureAudio();
+    clearTimers(); state.playing = true; state.loop++;
+    playBtn.disabled = true; stopBtn.disabled = false;
+    resetVisuals(); sizeCanvas(); draw();
+
+    setPhaseUI(1);
+    setWork('<span class="paso">Intro</span> · ' + CFG.introWork);
+    setCaption(CFG.captionIntro); bip("ok");
+
+    function chain(i) {
+      if (!state.playing) return;
+      if (i >= N) {
+        later(400, function () {
+          if (!state.playing) return;
+          setPhaseUI(1 + N * 4 + 1);
+          state.mode = "combine"; state.showGuides = true; draw();
+          setWork('<span class="paso">Combinar</span> · todas las ramas');
+          setCaption(CFG.captionCombine); bip("ok");
+          later(1800, function () {
+            if (!state.playing) return;
+            setPhaseUI(TOTAL_PHASES); state.showDom = true;
+            exprDomain.innerHTML = 'Dom = <span class="hl-v">' + CFG.domHtml + "</span>";
+            setWork('Dom = <span class="ok">' + CFG.domHtml + "</span>");
+            setCaption(CFG.captionDom); bip("ok");
+            animateBand(1300, function () {
+              if (!state.playing) return;
+              later(1400, function () { if (!state.playing) return; finishPlay(); });
+            });
+          });
+        });
+        return;
+      }
+      runPiece(i, 2 + i * 4, function () { chain(i + 1); });
+    }
+    later(2100, function () { chain(0); });
+  }
+
+  playBtn.addEventListener("click", runPlay);
+  stopBtn.addEventListener("click", function () {
+    clearTimers(); state.playing = false;
+    playBtn.disabled = false; stopBtn.disabled = true;
+    setCaption('Detenido. Presioná <strong>▶ Play</strong> o <strong>Reiniciar</strong>.');
+  });
+  restartBtn.addEventListener("click", resetView);
+  slowBtn.addEventListener("click", function () {
+    var on = slowBtn.getAttribute("aria-pressed") !== "true";
+    slowBtn.setAttribute("aria-pressed", on ? "true" : "false");
+    slowBtn.classList.toggle("on", on);
+    state.speedFactor = on ? 1.85 : 1;
+  });
+
+  sizeCanvas(); draw();
+  window.addEventListener("resize", function () { sizeCanvas(); draw(); });
+  window[CFG.exportName] = { CFG: CFG, state: state, draw: draw, resetView: resetView };
+})();
+
+</script>
+</body>
+</html>
