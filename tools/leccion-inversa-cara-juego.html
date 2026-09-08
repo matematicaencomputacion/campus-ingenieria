@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 182 · Inversa · cara triste · play</title>
+<title>Lección 183 · Inversa · sonrisa / cara triste · juego</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -12,6 +12,7 @@
   --coral: #fb7185; --row: #121a27; --row-border: #2a3548;
   --graph-bg: #f8fafc; --axes-black: #111111;
   --smile: #e11d48; --purple: #a855f7; --inv: #2563eb; --green: #16a34a;
+  --hot: #f97316;
 }
 * { box-sizing: border-box; }
 body {
@@ -31,14 +32,19 @@ button.btn, a.btn {
   display: inline-flex; align-items: center; justify-content: center;
 }
 button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.amber, a.btn.amber { background: var(--amber); color: #0b1018; }
 button.btn.on { background: var(--amber); color: #0b1018; box-shadow: 0 0 10px rgba(255,191,0,.35); }
+button.btn.pause-on { background: #3b4a63; box-shadow: 0 0 0 2px rgba(139,155,180,0.35); }
 button.btn:hover, a.btn:hover { filter: brightness(1.08); }
 button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .score {
   display: inline-flex; align-items: center; gap: 6px;
   border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
-  background: #121a27; border: 1px solid #2a3548; color: var(--mast);
+  background: #121a27; border: 1px solid #2a3548;
 }
+.score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+.score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+.score.round { color: var(--mast); border-color: rgba(110,168,254,0.45); }
 .score strong { font-family: ui-monospace, Menlo, monospace; }
 .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
 .main-stage { display: grid; grid-template-columns: minmax(250px, 332px) 1fr; gap: 10px; align-items: stretch; }
@@ -81,6 +87,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .contrast-bullets .hl { color: #FFBF00; }
 .contrast-bullets .ok { color: #5ad4a8; }
+.contrast-bullets .hot { color: #fb923c; }
 .band-legend {
   margin: 0; padding: 8px 10px; border-radius: 8px;
   border: 1px solid #2a3a52; background: #121a28;
@@ -100,14 +107,9 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .band-swatch.red { background: #e11d48; }
 .band-swatch.purple { background: #a855f7; }
+.band-swatch.hot { background: #f97316; }
 .band-swatch.amber { background: repeating-linear-gradient(90deg, #d97706 0 6px, transparent 6px 10px); background-color: #1f2937; }
 .band-swatch.green { background: #22c55e; }
-.band-swatch.blue { background: #2563eb; }
-.band-row strong.r { color: #fb7185; }
-.band-row strong.p { color: #c084fc; }
-.band-row strong.a { color: #FFBF00; }
-.band-row strong.v { color: #22c55e; }
-.band-row strong.b { color: #60a5fa; }
 .expr-row {
   background: var(--row); border: 1px solid var(--row-border);
   border-radius: 8px; padding: 10px 12px; position: relative;
@@ -125,6 +127,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .expr-formula .hl-g { color: #22c55e; }
 .expr-formula .hl-b { color: #60a5fa; }
 .expr-formula .hl-p { color: #c084fc; }
+.expr-formula .hl-hot { color: #fb923c; }
 .expr-formula .hl-axis { color: #FFBF00; }
 .expr-formula .ok { color: #5ad4a8; }
 .expr-formula .dom { color: #8b9bb4; font-size: 0.8rem; font-weight: 650; }
@@ -140,42 +143,18 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
 .chip.blue { color: #60a5fa; border-color: rgba(96,165,250,0.5); }
 .chip.purple { color: #c084fc; border-color: rgba(192,132,252,0.5); }
+.chip.hot { color: #fb923c; border-color: rgba(249,115,22,0.55); }
 .mode-tag {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
-  background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.4); color: var(--accent);
+  background: rgba(249,115,22,0.14); border: 1px solid rgba(249,115,22,0.45); color: #fb923c;
   margin-left: 6px;
 }
-.rule-list {
-  margin: 6px 0 0; padding: 0 0 0 22px; font-size: 0.78rem; color: var(--muted); line-height: 1.55;
-}
-.rule-list li { margin: 2px 0; }
-.rule-list strong { color: var(--ink); }
-.rule-list .ok { color: #5ad4a8; }
-.steps-box {
-  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
-}
-.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
-.steps-box li { margin: 3px 0; }
-.steps-box li.on { color: #e9eef7; font-weight: 700; }
-.steps-box li.done { color: #5ad4a8; }
-.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 .dsm-list { display: flex; flex-direction: column; gap: 6px; }
 .dsm-item {
   background: var(--row); border: 1px solid var(--row-border);
   border-radius: 8px; padding: 8px 10px; display: grid;
   grid-template-columns: 16px 1fr; gap: 8px; align-items: start;
-  transition: border-color .25s ease, box-shadow .25s ease, opacity .35s ease;
-}
-.dsm-item.hidden { display: none; }
-.dsm-item.on {
-  border-color: rgba(96,165,250,0.55);
-  box-shadow: 0 0 0 1px rgba(96,165,250,0.25);
-}
-.dsm-item.magic { animation: magica 0.7s ease; }
-@keyframes magica {
-  0% { opacity: 0; transform: translateY(8px) scale(0.96); filter: blur(4px); }
-  100% { opacity: 1; transform: none; filter: none; }
 }
 .dsm-swatch {
   width: 12px; height: 12px; border-radius: 50%; margin-top: 4px;
@@ -183,11 +162,12 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .dsm-swatch.red { background: #e11d48; }
 .dsm-swatch.purple { background: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,0.28); }
+.dsm-swatch.hot { background: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.28); }
 .dsm-swatch.amber {
   background: transparent; border-radius: 2px; height: 0;
   border-top: 2px dashed #d97706; margin-top: 8px;
 }
-.dsm-swatch.blue { background: #2563eb; }
+.dsm-swatch.green { background: #16a34a; }
 .dsm-table {
   width: 100%; border-collapse: collapse;
   font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem;
@@ -197,20 +177,29 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .dsm-table th { color: #c084fc; font-weight: 700; background: #0f1623; }
 .dsm-table td { color: var(--ink); font-weight: 700; }
-.dsm-table tr.on td { background: rgba(168,85,247,0.16); color: #e9d5ff; }
+.dsm-table tr.on td { background: rgba(249,115,22,0.16); color: #ffedd5; }
 .dsm-table tr.done td { background: rgba(22,163,74,0.12); }
 .dsm-table tr.done td.mir { color: #86efac; }
-.xy-flash .xv, .xy-flash .yv { color: #FFBF00; text-shadow: 0 0 10px rgba(255,191,0,0.45); }
 .graph-wrap { position: relative; min-width: 0; }
 canvas#c {
   width: 100%; height: auto; display: block; border-radius: 10px;
   background: var(--graph-bg); touch-action: none;
   border: 1px solid #cbd5e1;
 }
+canvas#c.clickable { cursor: crosshair; }
 #confetti {
   position: absolute; inset: 0; width: 100%; height: 100%;
   pointer-events: none; z-index: 5; border-radius: 10px; background: transparent;
 }
+.paused-banner, .victory-banner {
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px; background: rgba(12,17,24,0.62); border-radius: 10px; z-index: 6;
+  font-size: 1.55rem; font-weight: 800; color: var(--amber); letter-spacing: 0.04em; text-align: center; padding: 16px;
+}
+.paused-banner.on, .victory-banner.on { display: flex; }
+.victory-banner { color: var(--ok); pointer-events: auto; }
+.victory-banner .sub-v { font-size: 0.95rem; font-weight: 650; color: var(--muted); letter-spacing: 0; }
+.victory-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .lesson-nav {
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
   transition: opacity .15s; filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
@@ -222,33 +211,20 @@ canvas#c {
 .lesson-nav .chev { display: block; width: 0; height: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
 .lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
 .lesson-nav.next .chev { border-left: 18px solid var(--mast); }
-.lesson-nav[aria-disabled="true"] { opacity: 0.2; pointer-events: none; cursor: not-allowed; }
-.work-panel {
-  display: none; margin-top: 8px; padding: 10px 14px; border-radius: 10px;
-  background: rgba(18, 26, 39, 0.95); border: 1px solid rgba(56,189,248,0.45);
-  font-family: ui-monospace, Menlo, monospace; font-size: 1.02rem; font-weight: 700;
-  color: var(--ink); min-height: 2.2em; line-height: 1.55;
+.prompt { margin: 0; font-size: 0.95rem; color: var(--muted); line-height: 1.45; min-height: 1.4em; }
+.prompt strong { color: var(--ink); }
+.prompt .hl-p { color: #c084fc; font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-g { color: #86efac; font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-hot { color: #fb923c; font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt .hl-axis { color: #FFBF00; font-family: ui-monospace, Menlo, monospace; font-weight: 800; }
+.prompt.ok { color: var(--ok); }
+.prompt.bad { color: #f5e6a8; }
+.prompt.attention {
+  background: rgba(210, 180, 100, 0.22); border: 1px solid rgba(255, 191, 0, 0.45);
+  border-radius: 10px; padding: 8px 12px; box-shadow: 0 0 14px rgba(255, 191, 0, 0.28);
 }
-.work-panel.on { display: block; }
-.work-panel .hl { color: var(--amber); }
-.work-panel .ok { color: #5ad4a8; }
-.work-panel .paso { color: #60a5fa; }
-.work-panel .f { color: #fb7185; }
-.work-panel .inv { color: #60a5fa; }
-.work-panel .p { color: #c084fc; }
-.caption {
-  margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
-}
-.caption strong { color: var(--ink); }
-.caption .hl-t { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-v { color: #22c55e; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-f { color: #fb7185; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-g { color: #fb7185; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-b { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-p { color: #c084fc; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-axis { color: #FFBF00; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .ok { color: #5ad4a8; font-weight: 800; }
-.caption .paso { color: #60a5fa; font-weight: 800; }
+.bottom-bar { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
 .sound-meter {
   margin: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; min-height: 28px;
   padding: 6px 10px; color: var(--muted); font-size: 0.8rem; font-weight: 700; user-select: none;
@@ -262,7 +238,22 @@ canvas#c {
 .sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
 .sound-meter.live .sound-meter-level { color: var(--ink); }
 a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
-.hint { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
+@keyframes flashOk { 0%,100% { box-shadow: none; } 30%,70% { box-shadow: inset 0 0 0 3px rgba(90,212,168,.7); } }
+@keyframes flashBad { 0%,100% { box-shadow: none; } 30%,70% { box-shadow: inset 0 0 0 3px rgba(255,123,123,.7); } }
+.graph-wrap.flash-ok { animation: flashOk .45s ease; }
+.graph-wrap.flash-bad { animation: flashBad .45s ease; }
+.measure-hud {
+  position: absolute; left: 14px; bottom: 14px; z-index: 4;
+  background: rgba(15, 23, 42, 0.92); color: #e9eef7;
+  border: 1px solid rgba(255,191,0,0.45); border-radius: 10px;
+  padding: 8px 12px; font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.78rem; font-weight: 700; line-height: 1.45;
+  pointer-events: none; min-width: 11.5em;
+}
+.measure-hud .k { color: #FFBF00; }
+.measure-hud .ok { color: #86efac; }
+.measure-hud .hot { color: #fb923c; }
+.measure-hud.snap { border-color: rgba(34,197,94,0.7); box-shadow: 0 0 14px rgba(34,197,94,0.25); }
 </style>
 </head>
 <body>
@@ -270,150 +261,112 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 182</span> · Inversa · cara triste · play
-        <span class="sub">f(x)=−¼(x+5)²+5 → x=−¼(y+5)²+5</span>
+      <h1><span class="lesson-num">Lección 183</span> · Inversa · sonrisa / cara triste · juego
+        <span class="sub">colocá los 5 verdes · L sobre y = x</span>
       </h1>
     </div>
     <div class="toolbar">
-      <button type="button" class="btn primary" id="playBtn">▶ Play</button>
-      <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
-      <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
-      <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/9</span>
+      <button type="button" class="btn" id="slowBtn" title="Pausa más larga entre puntos" aria-pressed="false">Lento</button>
+      <button type="button" class="btn" id="pauseBtn">Pausar</button>
+      <button type="button" class="btn primary" id="restartBtn">Reiniciar</button>
+      <span class="score ok" id="scoreOk">Éxitos <strong>0</strong></span>
+      <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
+      <span class="score round" id="scoreRound">Ronda <strong>1</strong></span>
     </div>
   </header>
 
+  <p class="prompt attention" id="prompt">Colocá el verde espejo del punto naranja, uno a uno.</p>
+
   <div class="card">
     <div class="main-stage">
-      <aside class="expr-panel" aria-label="Lista tipo Desmos y pasos">
+      <aside class="expr-panel" aria-label="Panel de juego">
         <div class="rule-card">
-          <p class="rule-card-kicker">Inversa · cara triste</p>
-          <p class="rule-card-body"><span class="f">f(x)=−¼(x+5)²+5</span> en <span class="hl">[−9, −1]</span> · relación inversa <span class="inv">x=−¼(y+5)²+5</span> · método de la L.</p>
+          <p class="rule-card-kicker" id="ruleKicker">Inversa · juego</p>
+          <p class="rule-card-body" id="ruleBody">Curva roja en <span class="hl">[−9, −1]</span> · bajá en vertical hasta <span class="hl">y = x</span> y formá la L hasta el verde <span class="ok">(y, x)</span>.</p>
         </div>
 
         <div class="contrast-card">
-          <p class="contrast-kicker">Método · L sobre y = x</p>
+          <p class="contrast-kicker">Cómo jugar</p>
           <ul class="contrast-bullets">
-            <li><span class="hl">1 · puntos</span> — x,y claros sobre la cara triste.</li>
-            <li><span class="hl">2 · vertical</span> — baja hasta el pivote en y = x.</li>
-            <li><span class="hl">3 · gira 90°</span> — la L lleva (a,b) → (b,a).</li>
-            <li><span class="ok">4 · fórmula</span> — intercambiamos x ↔ y y aparece f⁻¹.</li>
+            <li><span class="hot">1 · activo</span> — un lila a la vez, halo naranja.</li>
+            <li><span class="hl">2 · L</span> — vertical al pivote · luego hacia el cursor.</li>
+            <li><span class="ok">3 · bip×3</span> — cuando la L cierra en (y, x), tocá.</li>
           </ul>
         </div>
 
         <div class="band-legend" aria-label="Leyenda">
           <div class="band-legend-title">Lenguaje visual</div>
-          <div class="band-row"><span class="band-swatch red" aria-hidden="true"></span><span><strong class="r">Rojo</strong> — cara triste f</span></div>
-          <div class="band-row"><span class="band-swatch purple" aria-hidden="true"></span><span><strong class="p">Lila</strong> — puntos (x, f(x))</span></div>
-          <div class="band-row"><span class="band-swatch amber" aria-hidden="true"></span><span><strong class="a">Ámbar</strong> — espejo y = x</span></div>
-          <div class="band-row"><span class="band-swatch green" aria-hidden="true"></span><span><strong class="v">Verde</strong> — puntos (f(x), x)</span></div>
-          <div class="band-row"><span class="band-swatch blue" aria-hidden="true"></span><span><strong class="b">Azul</strong> — relación inversa</span></div>
+          <div class="band-row"><span class="band-swatch red" aria-hidden="true"></span><span><strong style="color:#fb7185">Rojo</strong> — f (sonrisa o cara triste)</span></div>
+          <div class="band-row"><span class="band-swatch purple" aria-hidden="true"></span><span><strong style="color:#c084fc">Lila</strong> — puntos (x, f(x))</span></div>
+          <div class="band-row"><span class="band-swatch hot" aria-hidden="true"></span><span><strong style="color:#fb923c">Naranja</strong> — punto activo</span></div>
+          <div class="band-row"><span class="band-swatch amber" aria-hidden="true"></span><span><strong style="color:#FFBF00">Ámbar</strong> — y = x y la L</span></div>
+          <div class="band-row"><span class="band-swatch green" aria-hidden="true"></span><span><strong style="color:#22c55e">Verde</strong> — espejo (f(x), x)</span></div>
         </div>
 
-        <div class="steps-box" aria-label="Pasos">
-          <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Cara triste + pop pop pop</li>
-            <li data-step="2"><span class="n">2</span> Verticales punteadas hasta y = x</li>
-            <li data-step="3"><span class="n">3</span> Vertical gruesa + pivote</li>
-            <li data-step="4"><span class="n">4</span> Gira 90° (L)</li>
-            <li data-step="5"><span class="n">5</span> Punto verde en el espejo</li>
-            <li data-step="6"><span class="n">6</span> Álgebra: x ↔ y · fórmula azul</li>
-            <li data-step="7"><span class="n">7</span> Dominio [−9, −1] sobre y = x</li>
-            <li data-step="8"><span class="n">8</span> Rieles · Dom f⁻¹ = [1, 5]</li>
-            <li data-step="9"><span class="n">9</span> Curva inversa + confetti</li>
-          </ol>
-        </div>
-
-        <div class="dsm-list" id="dsmList" aria-label="Expresiones">
-          <div class="dsm-item" id="dsmF">
+        <div class="dsm-list" aria-label="Expresiones">
+          <div class="dsm-item">
             <span class="dsm-swatch red" aria-hidden="true"></span>
-            <div class="expr-formula" id="dsmFFormula">
-              <span class="hl-f">f(x) = −¼(<span class="xv">x</span>+5)² + 5</span><br>
-              <span class="dom">{−9 ≤ x ≤ −1}</span>
-            </div>
+            <div class="expr-formula" id="dsmFFormula"></div>
           </div>
-          <div class="dsm-item" id="dsmTableWrap">
+          <div class="dsm-item">
             <span class="dsm-swatch purple" aria-hidden="true"></span>
-            <table class="dsm-table" id="dsmTable">
+            <table class="dsm-table">
               <thead>
                 <tr><th>x₁</th><th>f(x₁)</th><th>espejo</th></tr>
               </thead>
               <tbody id="dsmTableBody"></tbody>
             </table>
           </div>
-          <div class="dsm-item" id="dsmYX">
+          <div class="dsm-item">
             <span class="dsm-swatch amber" aria-hidden="true"></span>
-            <div class="expr-formula"><span class="hl-axis">y = x</span> <span class="dom">· punteada</span></div>
-          </div>
-          <div class="dsm-item hidden" id="dsmInv">
-            <span class="dsm-swatch blue" aria-hidden="true"></span>
-            <div class="expr-formula" id="dsmInvFormula"><span class="hl-b">…</span></div>
+            <div class="expr-formula"><span class="hl-axis">y = x</span> <span class="dom">· pivote de la L</span></div>
           </div>
         </div>
 
-        <div class="expr-row" id="domainRow">
-          <div class="expr-formula" id="exprResult">f⁻¹ · relación = <span class="hl-b">…</span></div>
-          <div class="chips" id="chipBox">
-            <span class="chip green">inversa</span>
-            <span class="chip purple">cara triste</span>
-            <span class="chip amber">y = x</span>
-            <span class="chip blue">[1, 5] → [−9, −1]</span>
-          </div>
+        <div class="expr-row">
+          <div class="expr-formula" id="exprResult">f⁻¹ · (y, x) punto a punto</div>
+          <div class="chips" id="chipBox"></div>
         </div>
 
         <div class="expr-row phase-ask">
-          <span class="mode-tag">Play</span>
-          <p class="hint-mini" id="hintMini">▶ Play · cara triste → L punto a punto → f⁻¹</p>
-          <ul class="rule-list">
-            <li>Detectá puntos con <strong class="ok">x, y claros</strong></li>
-            <li>Vertical hasta <strong>y = x</strong> · gira <strong>90°</strong></li>
-            <li>El álgebra <strong>x ↔ y</strong> hace aparecer la azul</li>
-          </ul>
+          <span class="mode-tag" id="modeTag">Juego</span>
+          <p class="hint-mini" id="sideHint">Mové el cursor: vertical + L. Bip×3 = el lugar exacto.</p>
         </div>
       </aside>
+
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-inversa-sonrisa-play.html" title="Lección 181: Inversa · sonrisa · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-inversa-cara-juego.html" title="Lección 183: Inversa · sonrisa / cara triste · juego" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Lección 182 · Inversa · cara triste · play"></canvas>
-        <canvas id="confetti" width="900" height="640" aria-hidden="true"></canvas>
+        <a class="lesson-nav prev" href="leccion-inversa-cara-triste-play.html" title="Lección 182: Inversa · cara triste · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-enfoque-play.html" title="Lección 160: Economía · mapa UDL · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <div class="paused-banner" id="pausedBanner">PAUSA</div>
+        <div class="victory-banner" id="victoryBanner">
+          <div>¡Ganador!</div>
+          <div class="sub-v">5 puntos · L sobre y = x</div>
+          <div class="victory-actions">
+            <button type="button" class="btn primary" id="victoryContinue">Seguir jugando</button>
+            <button type="button" class="btn amber" id="victoryRestart">Reiniciar</button>
+          </div>
+        </div>
+        <canvas id="c" width="900" height="720" class="clickable" aria-label="Plano · inversa · juego"></canvas>
+        <canvas id="confetti" width="900" height="720" aria-hidden="true"></canvas>
+        <div class="measure-hud" id="measureHud" hidden></div>
       </div>
     </div>
-    <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · cara triste roja → puntos lila → L sobre <span class="hl-axis">y = x</span> → inversa azul.</p>
 
-    <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
-      <span class="sound-meter-label" aria-hidden="true">♪</span>
-      <span class="sound-bar" data-i="0"></span>
-      <span class="sound-bar" data-i="1"></span>
-      <span class="sound-bar" data-i="2"></span>
-      <span class="sound-bar" data-i="3"></span>
-      <span class="sound-bar" data-i="4"></span>
-      <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+    <div class="bottom-bar">
+      <p class="hint">Dom f = [−9, −1] · (x, y) → (y, x) · 5 verdes · win al completar la ronda</p>
+      <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
+        <span class="sound-meter-label" aria-hidden="true">♪</span>
+        <span class="sound-bar" data-i="0"></span>
+        <span class="sound-bar" data-i="1"></span>
+        <span class="sound-bar" data-i="2"></span>
+        <span class="sound-bar" data-i="3"></span>
+        <span class="sound-bar" data-i="4"></span>
+        <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+      </div>
     </div>
-
-    <p class="hint">L182 · un Play · <strong style="color:#fb7185">f(x)=−¼(x+5)²+5</strong> en [−9, −1] · <strong style="color:#60a5fa">x=−¼(y+5)²+5</strong> · vértice inverso (5, −5)</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
-<script>
-window.__INVERSA_PARABOLA_CFG__ = {
-  exportName: "__L182",
-  shape: "cara triste",
-  openDir: "izquierda",
-  fCore: "−¼(x+5)² + 5",
-  invCore: "−¼(y+5)² + 5",
-  f: function (x) { return -0.25 * (x + 5) * (x + 5) + 5; },
-  points: [
-    { x: -9, y: 1 },
-    { x: -7, y: 4 },
-    { x: -5, y: 5 },
-    { x: -3, y: 4 },
-    { x: -1, y: 1 }
-  ],
-  fLabel: { x: -0.4, y: 5.8 },
-  invLabel: { x: 0.2, y: -0.4 }
-};
-</script>
-<script src="leccion-inversa-parabola-play.js?v=20260908c"></script>
+<script src="leccion-inversa-cara-juego.js?v=20260908"></script>
 </body>
 </html>
