@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 152 · Inversa · 9.4 · play</title>
+<title>Lección 181 · Inversa · sonrisa · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -11,6 +11,7 @@
   --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #2dd4bf;
   --coral: #fb7185; --row: #121a27; --row-border: #2a3548;
   --graph-bg: #f8fafc; --axes-black: #111111;
+  --smile: #e11d48; --purple: #a855f7; --inv: #2563eb; --green: #16a34a;
 }
 * { box-sizing: border-box; }
 body {
@@ -40,13 +41,30 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .score strong { font-family: ui-monospace, Menlo, monospace; }
 .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
-.main-stage { display: grid; grid-template-columns: minmax(250px, 320px) 1fr; gap: 10px; align-items: stretch; }
+.main-stage { display: grid; grid-template-columns: minmax(250px, 332px) 1fr; gap: 10px; align-items: stretch; }
 @media (max-width: 820px) { .main-stage { grid-template-columns: 1fr; } }
 .expr-panel {
   display: flex; flex-direction: column; gap: 8px;
   background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
   padding: 8px; min-height: 0; overflow: auto;
 }
+.rule-card {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(90,212,168,0.4);
+  background: linear-gradient(135deg, rgba(90,212,168,0.12), rgba(18,26,39,0.95));
+  box-shadow: 0 0 18px rgba(90,212,168,0.10);
+}
+.rule-card-kicker {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #5ad4a8; margin: 0 0 6px;
+}
+.rule-card-body {
+  margin: 0; font-size: 0.86rem; line-height: 1.45; color: var(--ink); font-weight: 650;
+}
+.rule-card-body .hl { color: #FFBF00; }
+.rule-card-body .ok { color: #5ad4a8; }
+.rule-card-body .f { color: #fb7185; }
+.rule-card-body .inv { color: #60a5fa; }
 .contrast-card {
   margin: 0; padding: 10px 12px; border-radius: 10px;
   border: 1px solid rgba(255,191,0,0.35);
@@ -63,21 +81,6 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 }
 .contrast-bullets .hl { color: #FFBF00; }
 .contrast-bullets .ok { color: #5ad4a8; }
-.rule-card {
-  margin: 0; padding: 10px 12px; border-radius: 10px;
-  border: 1px solid rgba(90,212,168,0.4);
-  background: linear-gradient(135deg, rgba(90,212,168,0.12), rgba(18,26,39,0.95));
-  box-shadow: 0 0 18px rgba(90,212,168,0.10);
-}
-.rule-card-kicker {
-  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-  color: #5ad4a8; margin: 0 0 6px;
-}
-.rule-card-body {
-  margin: 0; font-size: 0.86rem; line-height: 1.45; color: var(--ink); font-weight: 650;
-}
-.rule-card-body .hl { color: #FFBF00; }
-.rule-card-body .ok { color: #5ad4a8; }
 .band-legend {
   margin: 0; padding: 8px 10px; border-radius: 8px;
   border: 1px solid #2a3a52; background: #121a28;
@@ -95,16 +98,16 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   width: 40px; height: 14px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset;
 }
-.band-swatch.teal { background: #0d9488; }
-.band-swatch.coral { background: #e11d48; }
-.band-swatch.amber { background: #d97706; }
+.band-swatch.red { background: #e11d48; }
+.band-swatch.purple { background: #a855f7; }
+.band-swatch.amber { background: repeating-linear-gradient(90deg, #d97706 0 6px, transparent 6px 10px); background-color: #1f2937; }
 .band-swatch.green { background: #22c55e; }
-.band-swatch.gray { background: #64748b; }
-.band-row strong.t { color: #2dd4bf; }
-.band-row strong.c { color: #fb7185; }
+.band-swatch.blue { background: #2563eb; }
+.band-row strong.r { color: #fb7185; }
+.band-row strong.p { color: #c084fc; }
 .band-row strong.a { color: #FFBF00; }
 .band-row strong.v { color: #22c55e; }
-.band-row strong.g { color: #94a3b8; }
+.band-row strong.b { color: #60a5fa; }
 .expr-row {
   background: var(--row); border: 1px solid var(--row-border);
   border-radius: 8px; padding: 10px 12px; position: relative;
@@ -118,6 +121,13 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 0.88rem;
   color: var(--ink); padding-left: 6px; line-height: 1.55;
 }
+.expr-formula .hl-f { color: #fb7185; }
+.expr-formula .hl-g { color: #22c55e; }
+.expr-formula .hl-b { color: #60a5fa; }
+.expr-formula .hl-p { color: #c084fc; }
+.expr-formula .hl-axis { color: #FFBF00; }
+.expr-formula .ok { color: #5ad4a8; }
+.expr-formula .dom { color: #8b9bb4; font-size: 0.8rem; font-weight: 650; }
 .hint-mini { margin: 4px 0 0; padding-left: 6px; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 6px; margin-top: 6px; }
 .chip {
@@ -128,7 +138,8 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .chip.coral { color: #fb7185; border-color: rgba(251,113,133,0.5); }
 .chip.green { color: #22c55e; border-color: rgba(34,197,94,0.5); }
 .chip.amber { color: #FFBF00; border-color: rgba(255,191,0,0.5); }
-.chip.gray { color: #94a3b8; border-color: rgba(100,116,139,.5); }
+.chip.blue { color: #60a5fa; border-color: rgba(96,165,250,0.5); }
+.chip.purple { color: #c084fc; border-color: rgba(192,132,252,0.5); }
 .mode-tag {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 0.78rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
@@ -141,11 +152,64 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .rule-list li { margin: 2px 0; }
 .rule-list strong { color: var(--ink); }
 .rule-list .ok { color: #5ad4a8; }
+.steps-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
+.steps-box li { margin: 3px 0; }
+.steps-box li.on { color: #e9eef7; font-weight: 700; }
+.steps-box li.done { color: #5ad4a8; }
+.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.dsm-list { display: flex; flex-direction: column; gap: 6px; }
+.dsm-item {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 8px; padding: 8px 10px; display: grid;
+  grid-template-columns: 16px 1fr; gap: 8px; align-items: start;
+  transition: border-color .25s ease, box-shadow .25s ease, opacity .35s ease;
+}
+.dsm-item.hidden { display: none; }
+.dsm-item.on {
+  border-color: rgba(96,165,250,0.55);
+  box-shadow: 0 0 0 1px rgba(96,165,250,0.25);
+}
+.dsm-item.magic { animation: magica 0.7s ease; }
+@keyframes magica {
+  0% { opacity: 0; transform: translateY(8px) scale(0.96); filter: blur(4px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+.dsm-swatch {
+  width: 12px; height: 12px; border-radius: 50%; margin-top: 4px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset;
+}
+.dsm-swatch.red { background: #e11d48; }
+.dsm-swatch.purple { background: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,0.28); }
+.dsm-swatch.amber {
+  background: transparent; border-radius: 2px; height: 0;
+  border-top: 2px dashed #d97706; margin-top: 8px;
+}
+.dsm-swatch.blue { background: #2563eb; }
+.dsm-table {
+  width: 100%; border-collapse: collapse;
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem;
+}
+.dsm-table th, .dsm-table td {
+  border: 1px solid var(--row-border); padding: 4px 6px; text-align: center;
+}
+.dsm-table th { color: #c084fc; font-weight: 700; background: #0f1623; }
+.dsm-table td { color: var(--ink); font-weight: 700; }
+.dsm-table tr.on td { background: rgba(168,85,247,0.16); color: #e9d5ff; }
+.dsm-table tr.done td { background: rgba(22,163,74,0.12); }
+.dsm-table tr.done td.mir { color: #86efac; }
+.xy-flash .xv, .xy-flash .yv { color: #FFBF00; text-shadow: 0 0 10px rgba(255,191,0,0.45); }
 .graph-wrap { position: relative; min-width: 0; }
 canvas#c {
   width: 100%; height: auto; display: block; border-radius: 10px;
   background: var(--graph-bg); touch-action: none;
   border: 1px solid #cbd5e1;
+}
+#confetti {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 5; border-radius: 10px; background: transparent;
 }
 .lesson-nav {
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
@@ -166,20 +230,22 @@ canvas#c {
   color: var(--ink); min-height: 2.2em; line-height: 1.55;
 }
 .work-panel.on { display: block; }
-.work-panel.boom { border-color: rgba(255,123,123,0.65); background: rgba(40, 16, 20, 0.95); }
 .work-panel .hl { color: var(--amber); }
 .work-panel .ok { color: #5ad4a8; }
 .work-panel .paso { color: #60a5fa; }
-.work-panel .f { color: #2dd4bf; }
-.work-panel .inv { color: #fb7185; }
+.work-panel .f { color: #fb7185; }
+.work-panel .inv { color: #60a5fa; }
+.work-panel .p { color: #c084fc; }
 .caption {
   margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
 }
 .caption strong { color: var(--ink); }
 .caption .hl-t { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 .caption .hl-v { color: #22c55e; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
-.caption .hl-f { color: #2dd4bf; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-f { color: #fb7185; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 .caption .hl-g { color: #fb7185; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-b { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+.caption .hl-p { color: #c084fc; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 .caption .hl-axis { color: #FFBF00; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 .caption .ok { color: #5ad4a8; font-weight: 800; }
 .caption .paso { color: #60a5fa; font-weight: 800; }
@@ -197,19 +263,6 @@ canvas#c {
 .sound-meter.live .sound-meter-level { color: var(--ink); }
 a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .hint { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
-.expr-formula .hl-f { color: #2dd4bf; }
-.expr-formula .hl-g { color: #fb7185; }
-.expr-formula .hl-v { color: #22c55e; }
-.expr-formula .hl-axis { color: #FFBF00; }
-.expr-formula .ok { color: #5ad4a8; }
-.steps-box {
-  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
-}
-.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
-.steps-box li { margin: 3px 0; }
-.steps-box li.on { color: #e9eef7; font-weight: 700; }
-.steps-box li.done { color: #5ad4a8; }
-.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 </style>
 </head>
 <body>
@@ -217,8 +270,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 152</span> · Inversa · 9.4 · play
-        <span class="sub">f(x)=(x+1)/(x−2) → f⁻¹(x)=(2x+1)/(x−1)</span>
+      <h1><span class="lesson-num">Lección 181</span> · Inversa · sonrisa · play
+        <span class="sub">f(x)=¼(x+5)²+3 → x=¼(y+5)²+3</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -226,83 +279,107 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Fase <strong>—</strong>/6</span>
+      <span class="score" id="loopEl">Fase <strong>—</strong>/9</span>
     </div>
   </header>
 
   <div class="card">
     <div class="main-stage">
-      <aside class="expr-panel" aria-label="Regla y procedimiento">
+      <aside class="expr-panel" aria-label="Lista tipo Desmos y pasos">
         <div class="rule-card">
-          <p class="rule-card-kicker">Ej. 9.4 · homográfica</p>
-          <p class="rule-card-body"><span class="hl">f(x)=(x+1)/(x−2)</span> → <span class="ok">f⁻¹(x)=(2x+1)/(x−1)</span>. Dom f = ℝ\{2} · Dom f⁻¹ = ℝ\{1}.</p>
+          <p class="rule-card-kicker">Inversa · sonrisa</p>
+          <p class="rule-card-body"><span class="f">f(x)=¼(x+5)²+3</span> en <span class="hl">[−9, −1]</span> · relación inversa <span class="inv">x=¼(y+5)²+3</span> · método de la L.</p>
         </div>
 
         <div class="contrast-card">
-          <p class="contrast-kicker">Método · inversa</p>
+          <p class="contrast-kicker">Método · L sobre y = x</p>
           <ul class="contrast-bullets">
-            <li><span class="hl">1 · y = f(x)</span> — partimos de la fórmula.</li>
-            <li><span class="hl">2 · x ↔ y</span> — intercambiamos las variables.</li>
-            <li><span class="hl">3 · despejar y</span> — eso es f⁻¹(x).</li>
-            <li><span class="ok">4 · gráfico</span> — f⁻¹ es el espejo de f sobre <span class="hl">y = x</span>.</li>
+            <li><span class="hl">1 · puntos</span> — x,y claros sobre la sonrisa.</li>
+            <li><span class="hl">2 · vertical</span> — baja hasta el pivote en y = x.</li>
+            <li><span class="hl">3 · gira 90°</span> — la L lleva (a,b) → (b,a).</li>
+            <li><span class="ok">4 · fórmula</span> — intercambiamos x ↔ y y aparece f⁻¹.</li>
           </ul>
         </div>
 
-
         <div class="band-legend" aria-label="Leyenda">
           <div class="band-legend-title">Lenguaje visual</div>
-          <div class="band-row"><span class="band-swatch teal" aria-hidden="true"></span><span><strong class="t">Teal</strong> — gráfica de f</span></div>
-          <div class="band-row"><span class="band-swatch coral" aria-hidden="true"></span><span><strong class="c">Coral</strong> — gráfica de f⁻¹</span></div>
+          <div class="band-row"><span class="band-swatch red" aria-hidden="true"></span><span><strong class="r">Rojo</strong> — sonrisa f</span></div>
+          <div class="band-row"><span class="band-swatch purple" aria-hidden="true"></span><span><strong class="p">Lila</strong> — puntos (x, f(x))</span></div>
           <div class="band-row"><span class="band-swatch amber" aria-hidden="true"></span><span><strong class="a">Ámbar</strong> — espejo y = x</span></div>
-          <div class="band-row"><span class="band-swatch green" aria-hidden="true"></span><span><strong class="v">Verde</strong> — corte sobre y = x (si hay)</span></div>
-          <div class="band-row"><span class="band-swatch gray" aria-hidden="true"></span><span><strong class="g">Gris</strong> — asíntotas / agujeros</span></div>
+          <div class="band-row"><span class="band-swatch green" aria-hidden="true"></span><span><strong class="v">Verde</strong> — puntos (f(x), x)</span></div>
+          <div class="band-row"><span class="band-swatch blue" aria-hidden="true"></span><span><strong class="b">Azul</strong> — relación inversa</span></div>
         </div>
 
         <div class="steps-box" aria-label="Pasos">
-
           <ol id="stepsList">
-            <li data-step="1"><span class="n">1</span> Consigna: inversa + graficar</li>
-            <li data-step="2"><span class="n">2</span> Graficar f · Dom / Im</li>
-            <li data-step="3"><span class="n">3</span> Algebra: y=f(x) · x↔y · despejar</li>
-            <li data-step="4"><span class="n">4</span> Trazar el espejo y = x</li>
-            <li data-step="5"><span class="n">5</span> Reflejar puntos (x,y)→(y,x)</li>
-            <li data-step="6"><span class="n">6</span> f y f⁻¹ juntas</li>
+            <li data-step="1"><span class="n">1</span> Sonrisa + pop pop pop</li>
+            <li data-step="2"><span class="n">2</span> Verticales punteadas hasta y = x</li>
+            <li data-step="3"><span class="n">3</span> Vertical gruesa + pivote</li>
+            <li data-step="4"><span class="n">4</span> Gira 90° (L)</li>
+            <li data-step="5"><span class="n">5</span> Punto verde en el espejo</li>
+            <li data-step="6"><span class="n">6</span> Álgebra: x ↔ y · fórmula azul</li>
+            <li data-step="7"><span class="n">7</span> Dominio [−9, −1] sobre y = x</li>
+            <li data-step="8"><span class="n">8</span> Rieles · Dom f⁻¹ = [3, 7]</li>
+            <li data-step="9"><span class="n">9</span> Curva inversa + confetti</li>
           </ol>
-
         </div>
 
-        <div class="expr-row" id="formulaRow">
-          <div class="expr-formula" id="exprFormula">
-            <span class="hl-f">f(x) = (x+1)/(x−2)</span><br><span class="hl-g">f⁻¹(x) = (2x+1)/(x−1)</span><br><span style="color:#8b9bb4;font-size:0.82rem">Ej. 9.4</span>
+        <div class="dsm-list" id="dsmList" aria-label="Expresiones">
+          <div class="dsm-item" id="dsmF">
+            <span class="dsm-swatch red" aria-hidden="true"></span>
+            <div class="expr-formula" id="dsmFFormula">
+              <span class="hl-f">f(x) = ¼(<span class="xv">x</span>+5)² + 3</span><br>
+              <span class="dom">{−9 ≤ x ≤ −1}</span>
+            </div>
           </div>
-          <p class="hint-mini" id="hintMini">▶ Play · Ej. 9.4 · homográfica inversa</p>
+          <div class="dsm-item" id="dsmTableWrap">
+            <span class="dsm-swatch purple" aria-hidden="true"></span>
+            <table class="dsm-table" id="dsmTable">
+              <thead>
+                <tr><th>x₁</th><th>f(x₁)</th><th>espejo</th></tr>
+              </thead>
+              <tbody id="dsmTableBody"></tbody>
+            </table>
+          </div>
+          <div class="dsm-item" id="dsmYX">
+            <span class="dsm-swatch amber" aria-hidden="true"></span>
+            <div class="expr-formula"><span class="hl-axis">y = x</span> <span class="dom">· punteada</span></div>
+          </div>
+          <div class="dsm-item hidden" id="dsmInv">
+            <span class="dsm-swatch blue" aria-hidden="true"></span>
+            <div class="expr-formula" id="dsmInvFormula"><span class="hl-b">…</span></div>
+          </div>
         </div>
 
         <div class="expr-row" id="domainRow">
-          <div class="expr-formula" id="exprResult">f⁻¹(x) = <span class="hl-g">…</span></div>
+          <div class="expr-formula" id="exprResult">f⁻¹ · relación = <span class="hl-b">…</span></div>
           <div class="chips" id="chipBox">
-            <span class="chip teal">9.4</span><span class="chip amber">Dom f = ℝ\{2}</span><span class="chip coral">Dom f⁻¹ = ℝ\{1}</span><span class="chip gray">x=2 · x=1</span>
+            <span class="chip green">inversa</span>
+            <span class="chip purple">sonrisa</span>
+            <span class="chip amber">y = x</span>
+            <span class="chip blue">[3, 7] → [−9, −1]</span>
           </div>
         </div>
 
         <div class="expr-row phase-ask">
           <span class="mode-tag">Play</span>
+          <p class="hint-mini" id="hintMini">▶ Play · sonrisa → L punto a punto → f⁻¹</p>
           <ul class="rule-list">
-            <li>Escribí <strong>y = f(x)</strong></li>
-            <li>Intercambiá <strong>x ↔ y</strong> y despejá</li>
-            <li>Graficá <strong class="ok">f</strong>, <strong>y = x</strong> y <strong class="ok">f⁻¹</strong></li>
+            <li>Detectá puntos con <strong class="ok">x, y claros</strong></li>
+            <li>Vertical hasta <strong>y = x</strong> · gira <strong>90°</strong></li>
+            <li>El álgebra <strong>x ↔ y</strong> hace aparecer la azul</li>
           </ul>
         </div>
-
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-inversa-93-play.html" title="Lección 151: Inversa · 9.3 · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-inversa-sonrisa-play.html" title="Lección 181: Inversa · sonrisa · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Lección 152 · Inversa · 9.4 · play"></canvas>
+        <a class="lesson-nav prev" href="leccion-inversa-94-play.html" title="Lección 152: Inversa · 9.4 · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-inversa-cara-triste-play.html" title="Lección 182: Inversa · cara triste · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Lección 181 · Inversa · sonrisa · play"></canvas>
+        <canvas id="confetti" width="900" height="640" aria-hidden="true"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · 9.4: consigna → (x+1)/(x−2) → algebra → y=x → (2x+1)/(x−1).</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · sonrisa roja → puntos lila → L sobre <span class="hl-axis">y = x</span> → inversa azul.</p>
 
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
@@ -314,146 +391,29 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
 
-    <p class="hint">Hoja 9.4 · un ejercicio, un Play · <strong style="color:#2dd4bf">(x+1)/(x−2)</strong> · <strong style="color:#fb7185">(2x+1)/(x−1)</strong> · asíntotas x=2 y x=1</p>
+    <p class="hint">L181 · un Play · <strong style="color:#fb7185">f(x)=¼(x+5)²+3</strong> en [−9, −1] · <strong style="color:#60a5fa">x=¼(y+5)²+3</strong> · vértice inverso (3, −5)</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
 <script>
-window.__INVERSA_CFG__ = {
-  exportName: "__L152",
-  sheet: "9.4",
-  xmin: -5, xmax: 7, ymin: -5, ymax: 7,
-  totalPhases: 6,
-  hintMini: "▶ Play · Ej. 9.4 · homográfica inversa",
-  resultIdleHtml: "f⁻¹(x) = <span class=\"hl-g\">…</span>",
-  captionIdle: "Presioná <strong>▶ Play</strong> · 9.4: consigna → (x+1)/(x−2) → algebra → y=x → (2x+1)/(x−1).",
-  f: function (x) { return (x + 1) / (x - 2); },
-  fInv: function (x) { return (2 * x + 1) / (x - 1); },
-  fOk: function (x) { return Math.abs(x - 2) > 0.08; },
-  invOk: function (x) { return Math.abs(x - 1) > 0.08; },
+window.__INVERSA_PARABOLA_CFG__ = {
+  exportName: "__L181",
+  shape: "sonrisa",
+  openDir: "derecha",
+  fCore: "¼(x+5)² + 3",
+  invCore: "¼(y+5)² + 3",
+  f: function (x) { return 0.25 * (x + 5) * (x + 5) + 3; },
   points: [
-    { x: 0, y: -0.5 },
-    { x: 1, y: -2 },
-    { x: 3, y: 4 },
-    { x: 4, y: 2.5 }
+    { x: -9, y: 7 },
+    { x: -7, y: 4 },
+    { x: -5, y: 3 },
+    { x: -3, y: 4 },
+    { x: -1, y: 7 }
   ],
-  meet: [
-    { x: (3 - Math.sqrt(13)) / 2, y: (3 - Math.sqrt(13)) / 2, html: "(3−√13)/2" },
-    { x: (3 + Math.sqrt(13)) / 2, y: (3 + Math.sqrt(13)) / 2, html: "(3+√13)/2" }
-  ],
-  fAsy: [
-    { type: "v", at: 2, label: "x=2" },
-    { type: "h", at: 1, label: "y=1" }
-  ],
-  invAsy: [
-    { type: "v", at: 1, label: "x=1" },
-    { type: "h", at: 2, label: "y=2" }
-  ],
-  fHoles: [],
-  invHoles: [],
-  phases: [
-    {
-      step: 1,
-      anim: "hold",
-      wait: 1700,
-      work: "<span class=\"paso\">1</span> · encontrar <span class=\"inv\">f⁻¹</span> y graficar ambas",
-      caption: "<span class=\"paso\">Paso 1:</span> la consigna es hallar la <span class=\"hl-g\">relación inversa</span> y graficar <span class=\"hl-f\">f</span> junto con <span class=\"hl-g\">f⁻¹</span>."
-    },
-    {
-      step: 2,
-      anim: "drawF",
-      dur: 1100,
-      wait: 500,
-      showFAsy: true,
-      work: "<span class=\"f\">f(x)=(x+1)/(x−2)</span> · Dom = ℝ\\{2}",
-      caption: "<span class=\"paso\">Paso 2:</span> homográfica <span class=\"hl-f\">(x+1)/(x−2)</span> · asíntota vertical x=2 · horizontal y=1."
-    },
-    {
-      step: 3,
-      anim: "hold",
-      fT: 1,
-      showFAsy: true,
-      wait: 1600,
-      work: "<span class=\"paso\">y</span> = (x+1)/(x−2)",
-      caption: "<span class=\"paso\">Paso 3a:</span> y = f(x) → <span class=\"hl-t\">y = (x+1)/(x−2)</span>."
-    },
-    {
-      step: 3,
-      anim: "hold",
-      fT: 1,
-      showFAsy: true,
-      wait: 1600,
-      work: "x = (y+1)/(y−2)",
-      caption: "<span class=\"paso\">Paso 3b:</span> intercambiamos <span class=\"hl-axis\">x ↔ y</span> → x = (y+1)/(y−2)."
-    },
-    {
-      step: 3,
-      anim: "hold",
-      fT: 1,
-      showFAsy: true,
-      wait: 2200,
-      work: "x(y−2)=y+1  →  xy−y=2x+1  →  y=<span class=\"inv\">(2x+1)/(x−1)</span>",
-      resultHtml: "f⁻¹(x) = <span class=\"hl-g\">(2x+1)/(x−1)</span>",
-      caption: "<span class=\"paso\">Paso 3c:</span> despejamos y → <span class=\"hl-g\">f⁻¹(x)=(2x+1)/(x−1)</span> · Dom f⁻¹ = ℝ\\{1}."
-    },
-    {
-      step: 4,
-      anim: "drawYX",
-      dur: 700,
-      wait: 400,
-      fT: 1,
-      showFAsy: true,
-      work: "<span class=\"hl\">y = x</span> · eje espejo",
-      caption: "<span class=\"paso\">Paso 4:</span> el espejo manda x=2 a y=2 y y=1 a x=1 · las asíntotas se intercambian."
-    },
-    {
-      step: 5,
-      anim: "mirror",
-      dur: 1100,
-      wait: 500,
-      fT: 1,
-      showYX: true,
-      yxT: 1,
-      showFAsy: true,
-      work: "(0,−1/2)→(−1/2,0) · (3,4)→(4,3)",
-      caption: "<span class=\"paso\">Paso 5:</span> cada punto de f se refleja a un punto de f⁻¹ · el agujero x=2 se vuelve el agujero x=1."
-    },
-    {
-      step: 6,
-      anim: "drawInv",
-      dur: 1100,
-      wait: 450,
-      fT: 1,
-      showYX: true,
-      yxT: 1,
-      showMirror: true,
-      mirrorT: 1,
-      showFAsy: true,
-      showInvAsy: true,
-      work: "<span class=\"inv\">f⁻¹(x)=(2x+1)/(x−1)</span>",
-      caption: "<span class=\"paso\">Paso 6:</span> <span class=\"hl-g\">f⁻¹</span> · asíntota vertical x=1 · horizontal y=2."
-    },
-    {
-      step: 6,
-      anim: "hold",
-      fT: 1,
-      invT: 1,
-      showYX: true,
-      yxT: 1,
-      showMirror: true,
-      mirrorT: 1,
-      showFAsy: true,
-      showInvAsy: true,
-      showMeet: true,
-      badge: "Cortes en y=x · (3±√13)/2",
-      wait: 2400,
-      work: "<span class=\"ok\">f⁻¹(x)=(2x+1)/(x−1)</span>",
-      resultHtml: "f⁻¹(x) = <span class=\"hl-g\">(2x+1)/(x−1)</span>",
-      caption: "<strong>Cierre 9.4:</strong> <span class=\"hl-f\">(x+1)/(x−2)</span> · <span class=\"hl-g\">(2x+1)/(x−1)</span> · Dom f = ℝ\\{2} · Dom f⁻¹ = ℝ\\{1} · cortes sobre <span class=\"hl-axis\">y=x</span> en (3±√13)/2."
-    }
-  ]
+  fLabel: { x: -0.6, y: 7.4 },
+  invLabel: { x: 7.3, y: -0.4 }
 };
 </script>
-<script src="leccion-inversa-play.js?v=20260908-l91"></script>
+<script src="leccion-inversa-parabola-play.js?v=20260908c"></script>
 </body>
 </html>
