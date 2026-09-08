@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 120 · Dominio · regla 1 · denominador ≠ 0 · play</title>
+<title>Lección 122 · Dominio · con denominador · hoja 2 · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -20,9 +20,9 @@ body {
 }
 .wrap { max-width: min(1280px, 100%); margin: 0 auto; display: grid; gap: 10px; }
 header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
-h1 { margin: 0; font-size: 1.22rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 { margin: 0; font-size: 1.18rem; font-weight: 700; letter-spacing: -0.02em; }
 h1 .lesson-num { color: #38bdf8; font-weight: 800; }
-.sub { color: var(--muted); font-size: 0.86rem; margin-left: 0.45rem; font-weight: 400; }
+.sub { color: var(--muted); font-size: 0.84rem; margin-left: 0.45rem; font-weight: 400; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 button.btn, a.btn {
   border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
@@ -48,9 +48,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   padding: 8px; min-height: 0; overflow: auto;
 }
 .rule-card {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 10px;
+  margin: 0; padding: 10px 12px; border-radius: 10px;
   border: 1px solid rgba(251,113,133,0.45);
   background: linear-gradient(135deg, rgba(251,113,133,0.14), rgba(18,26,39,0.95));
   box-shadow: 0 0 18px rgba(251,113,133,0.12);
@@ -65,11 +63,8 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .rule-card-body .hl { color: #FFBF00; }
 .rule-card-body .bad { color: #ff7b7b; }
 .band-legend {
-  margin: 0;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #2a3a52;
-  background: #121a28;
+  margin: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #2a3a52; background: #121a28;
 }
 .band-legend-title {
   font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
@@ -127,9 +122,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .rule-list .ok { color: #5ad4a8; }
 .rule-list .bad { color: #ff7b7b; }
 .rule-list .empty { color: #94a3b8; }
-.ex-progress {
-  display: flex; gap: 5px; padding: 2px 4px; flex-wrap: wrap;
-}
+.ex-progress { display: flex; gap: 5px; padding: 2px 4px; flex-wrap: wrap; }
 .ex-dot {
   width: 10px; height: 10px; border-radius: 50%;
   background: #2a3548; border: 1px solid #3b4a63;
@@ -164,6 +157,7 @@ canvas#c {
 .work-panel .hl { color: var(--amber); }
 .work-panel .ok { color: #5ad4a8; }
 .work-panel .bad { color: #ff7b7b; }
+.work-panel .paso { color: #60a5fa; }
 .work-panel .empty { color: #94a3b8; }
 .caption {
   margin: 8px 0 0; min-height: 1.5em; font-size: 0.95rem; color: var(--muted); line-height: 1.45;
@@ -174,6 +168,7 @@ canvas#c {
 .caption .hl-curve { color: #0d9488; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 .caption .ok { color: #5ad4a8; font-weight: 800; }
 .caption .bad { color: #ff7b7b; font-weight: 800; }
+.caption .paso { color: #60a5fa; font-weight: 800; }
 .caption .empty { color: #94a3b8; font-weight: 800; }
 .sound-meter {
   margin: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; min-height: 28px;
@@ -193,6 +188,14 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 .expr-formula .hl-g { color: #f59e0b; }
 .expr-formula .hl-v { color: #22c55e; }
 .expr-formula .bad { color: #ff7b7b; }
+.steps-box {
+  margin: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid #2a3a52; background: #0e1522;
+}
+.steps-box ol { margin: 0; padding: 0 0 0 18px; font-size: 0.78rem; color: #9fb0c7; line-height: 1.5; }
+.steps-box li { margin: 3px 0; }
+.steps-box li.on { color: #e9eef7; font-weight: 700; }
+.steps-box li.done { color: #5ad4a8; }
+.steps-box .n { color: #60a5fa; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 </style>
 </head>
 <body>
@@ -200,8 +203,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 120</span> · Dominio · regla 1 · denominador ≠ 0 · play
-        <span class="sub">anuladores · asíntotas · banda de dominio</span>
+      <h1><span class="lesson-num">Lección 122</span> · Dominio · con denominador · hoja 2 · play
+        <span class="sub">anuladores · asíntotas · 2.2 / 2.4 / 2.8</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -209,7 +212,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn" id="stopBtn" disabled>Detener</button>
       <button type="button" class="btn" id="slowBtn" aria-pressed="false">Lento</button>
       <button type="button" class="btn" id="restartBtn">Reiniciar</button>
-      <span class="score" id="loopEl">Ej. <strong>1</strong>/5</span>
+      <span class="score" id="loopEl">Ej. <strong>2.2</strong>/3</span>
     </div>
   </header>
 
@@ -217,11 +220,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="main-stage">
       <aside class="expr-panel" aria-label="Regla y ejemplo">
         <div class="rule-card" id="ruleCard">
-          <p class="rule-card-kicker">Regla nº 1 · dominio</p>
+          <p class="rule-card-kicker">Regla · den ≠ 0</p>
           <p class="rule-card-body">
-            El <span class="hl">denominador no puede ser igual a cero</span>.
-            Los valores de <strong>x</strong> que <span class="bad">anulan</span> el denominador
-            se sacan del dominio <strong>(no hay imagen)</strong>.
+            El <span class="hl">denominador no puede ser cero</span>.
+            Los x que <span class="bad">anulan</span> el den se sacan del dominio.
           </p>
         </div>
 
@@ -229,54 +231,61 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
           <div class="band-legend-title">Banda de dominio (eje X)</div>
           <div class="band-row">
             <span class="band-swatch gray" aria-hidden="true"></span>
-            <span><strong class="g">Gris</strong> — fuera de dominio: ceros del denominador (anuladores).</span>
+            <span><strong class="g">Círculo gris</strong> — anulador (fuera de Dom).</span>
           </div>
           <div class="band-row">
             <span class="band-swatch green" aria-hidden="true"></span>
-            <span><strong class="v">Verde</strong> — en el dominio: el denominador ≠ 0.</span>
+            <span><strong class="v">Verde</strong> — en el dominio (den ≠ 0).</span>
           </div>
+        </div>
+
+        <div class="steps-box" aria-label="Pasos del procedimiento">
+          <ol id="stepsList">
+            <li data-step="1"><span class="n">1</span> Mirar fórmula · ¿hay den con x?</li>
+            <li data-step="2"><span class="n">2</span> Factorizar / hallar anuladores</li>
+            <li data-step="3"><span class="n">3</span> Marcar cada uno (gris + asíntota)</li>
+            <li data-step="4"><span class="n">4</span> Banda Dom · escribir notación</li>
+          </ol>
         </div>
 
         <div class="ex-progress" id="exProgress" aria-hidden="true"></div>
 
         <div class="expr-row" id="formulaRow">
           <div class="expr-formula" id="exprFormula">
-            <span class="hl-curve">f(x) = 1 / g(x)</span><br>
-            <span style="color:#8b9bb4;font-size:0.82rem">si g(x₀)=0 → x₀ ∉ Dom(f)</span>
+            <span class="hl-curve">f(x) = (x+1)/(x²−3x+2)</span><br>
+            <span style="color:#8b9bb4;font-size:0.82rem">Ej. 2.2</span>
           </div>
-          <p class="hint-mini" id="hintMini">Presioná ▶ Play para ver 5 ejemplos</p>
+          <p class="hint-mini" id="hintMini">Presioná ▶ Play · procedimiento paso a paso</p>
         </div>
 
         <div class="expr-row" id="domainRow">
           <div class="expr-formula" id="exprDomain">
-            Dom(f) = <span class="hl-v">ℝ − {ceros de g}</span>
+            Dom(f) = <span class="hl-v">ℝ ∖ {1, 2}</span>
           </div>
           <div class="chips" id="chipBox">
-            <span class="chip teal">f = 1/g</span>
-            <span class="chip coral">g(x)=0 → polo</span>
-            <span class="chip gray">gris = fuera</span>
-            <span class="chip green">verde = dominio</span>
+            <span class="chip teal">racional</span>
+            <span class="chip coral">den ≠ 0</span>
+            <span class="chip gray">anuladores</span>
           </div>
         </div>
 
         <div class="expr-row phase-ask" id="signRow">
           <span class="mode-tag">Anuladores</span>
-          <p class="hint-mini">ceros de g · asíntotas · círculo gris en cada anulador</p>
           <ul class="rule-list" id="ruleList">
-            <li>Buscá <strong class="bad">g(x) = 0</strong></li>
-            <li>Esos x se <strong class="empty">sacan</strong> del dominio</li>
-            <li>En el gráfico: <strong>asíntota vertical</strong></li>
+            <li>Igualá el den a <strong class="bad">0</strong></li>
+            <li>Esos x → <strong class="empty">círculo gris</strong></li>
+            <li>Dom = ℝ menos esos valores</li>
           </ul>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-dominio-numero-prohibido-play.html" title="Lección 119: Dominio · intro · número prohibido · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-dominio-sin-denominador-play.html" title="Lección 121: Dominio · sin denominador · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Dominio · denominador distinto de cero"></canvas>
+        <a class="lesson-nav prev" href="leccion-dominio-sin-denominador-play.html" title="Lección 121: Dominio · sin denominador · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <span class="lesson-nav next" aria-disabled="true" title="Fin de la serie (por ahora)" aria-label="Sin lección siguiente"><span class="chev" aria-hidden="true"></span></span>
+        <canvas id="c" width="900" height="640" aria-label="Dominio · con denominador · hoja 2"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · Regla nº 1: el denominador <span class="bad">no puede ser 0</span>.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · procedimiento <span class="paso">paso a paso</span> para Ej. 2.2, 2.4 y 2.8.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -286,7 +295,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Espíritu hoja 2.2 / 2.4 · <strong style="color:#64748b">círculo gris = anulador / fuera de dominio</strong> · <strong style="color:#22c55e">verde = Dom</strong> · asíntotas en los ceros de g · contraste: x²+4 sin ceros reales</p>
+    <p class="hint">Hoja ejercicio 2 · <strong style="color:#64748b">círculo gris = anulador</strong> · <strong style="color:#22c55e">verde = Dom</strong> · contraste <strong style="color:#5ad4a8">2.4</strong>: den = x²+4 nunca es 0 en ℝ</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -324,90 +333,56 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var ruleList = document.getElementById("ruleList");
   var formulaRow = document.getElementById("formulaRow");
   var exProgress = document.getElementById("exProgress");
+  var stepsList = document.getElementById("stepsList");
 
-  /* —— 5 ejemplos: 1/g · ceros · contraste sin ceros reales —— */
   var EXAMPLES = [
     {
-      id: 1,
-      title: "g lineal · x",
-      fHtml: '<span class="hl-curve">f(x) = 1 / x</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">x</span></span>',
-      gHtml: "g(x) = x",
-      domainSet: "ℝ − {0}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ − {0}</span>',
-      zeros: [0],
-      xmin: -5, xmax: 5, ymin: -4.2, ymax: 4.2,
-      g: function (x) { return x; },
-      f: function (x) { return 1 / x; },
-      signMarks: [
-        { x: -2.5, s: "−" }, { x: 0, s: "0" }, { x: 2.5, s: "+" }
-      ],
-      tip: "Un solo anulador: x = 0 → asíntota vertical."
-    },
-    {
-      id: 2,
-      title: "g lineal · x − 2",
-      fHtml: '<span class="hl-curve">f(x) = 1 / (x − 2)</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">x − 2</span></span>',
-      gHtml: "g(x) = x − 2",
-      domainSet: "ℝ − {2}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ − {2}</span>',
-      zeros: [2],
-      xmin: -3, xmax: 7, ymin: -4.2, ymax: 4.2,
-      g: function (x) { return x - 2; },
-      f: function (x) { return 1 / (x - 2); },
-      signMarks: [
-        { x: 0, s: "−" }, { x: 2, s: "0" }, { x: 4.5, s: "+" }
-      ],
-      tip: "El cero se desplaza: ahora anula en x = 2."
-    },
-    {
-      id: 3,
-      title: "g cuadrática · espíritu 2.2",
-      fHtml: '<span class="hl-curve">f(x) = 1 / (x² − 3x + 2)</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">(x−1)(x−2)</span></span>',
-      gHtml: "g(x) = (x−1)(x−2)",
-      domainSet: "ℝ − {1, 2}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ − {1, 2}</span>',
+      id: "2.2",
+      sheet: "2.2",
+      title: "dos polos",
+      fHtml: '<span class="hl-curve">f(x) = (x + 1) / (x² − 3x + 2)</span><br><span style="color:#8b9bb4;font-size:0.82rem">den = <span class="hl-g">(x−1)(x−2)</span></span>',
+      denHtml: "x² − 3x + 2 = (x−1)(x−2)",
+      denFact: "(x−1)(x−2)",
+      domainSet: "ℝ ∖ {1, 2}",
+      domainHtml: 'Dom(f) = <span class="hl-v">ℝ ∖ {1, 2}</span>',
       zeros: [1, 2],
-      xmin: -1.5, xmax: 4.5, ymin: -5, ymax: 5,
+      xmin: -1.5, xmax: 4.5, ymin: -6, ymax: 6,
+      f: function (x) { return (x + 1) / ((x - 1) * (x - 2)); },
       g: function (x) { return (x - 1) * (x - 2); },
-      f: function (x) { return 1 / ((x - 1) * (x - 2)); },
-      signMarks: [
-        { x: 0, s: "+" }, { x: 1, s: "0" }, { x: 1.5, s: "−" }, { x: 2, s: "0" }, { x: 3.2, s: "+" }
-      ],
-      tip: "Hoja 2.2 · dos polos: factorizá y sacá x=1 y x=2."
+      tip: "Factorizá el den · anuladores x=1 y x=2",
+      surprise: false
     },
     {
-      id: 4,
-      title: "g cúbica · tres ceros",
-      fHtml: '<span class="hl-curve">f(x) = 1 / [x(x−1)(x+2)]</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">x(x−1)(x+2)</span></span>',
-      gHtml: "g(x) = x(x−1)(x+2)",
-      domainSet: "ℝ − {−2, 0, 1}",
-      domainHtml: 'Dom(f) = <span class="hl-v">ℝ − {−2, 0, 1}</span>',
-      zeros: [-2, 0, 1],
-      xmin: -4, xmax: 3.5, ymin: -4.5, ymax: 4.5,
-      g: function (x) { return x * (x - 1) * (x + 2); },
-      f: function (x) { return 1 / (x * (x - 1) * (x + 2)); },
-      signMarks: [
-        { x: -3, s: "−" }, { x: -2, s: "0" }, { x: -1, s: "+" },
-        { x: 0, s: "0" }, { x: 0.5, s: "−" }, { x: 1, s: "0" }, { x: 2, s: "+" }
-      ],
-      tip: "Tres anuladores → tres asíntotas verticales."
-    },
-    {
-      id: 5,
-      title: "sin ceros reales · espíritu 2.4",
-      fHtml: '<span class="hl-curve">f(x) = 1 / (x² + 4)</span><br><span style="color:#8b9bb4;font-size:0.82rem">g(x) = <span class="hl-g">x² + 4</span> ≥ 4 &gt; 0</span>',
-      gHtml: "g(x) = x² + 4",
+      id: "2.4",
+      sheet: "2.4",
+      title: "sin ceros reales",
+      fHtml: '<span class="hl-curve">f(x) = (x + 1) / (x² + 4)</span><br><span style="color:#8b9bb4;font-size:0.82rem">den = <span class="hl-g">x² + 4</span> ≥ 4 &gt; 0</span>',
+      denHtml: "x² + 4 ≥ 4 > 0",
+      denFact: "x² + 4",
       domainSet: "ℝ",
       domainHtml: 'Dom(f) = <span class="hl-v">ℝ</span> <span style="color:#5ad4a8">· ¡sorpresa!</span>',
       zeros: [],
-      xmin: -5, xmax: 5, ymin: -0.4, ymax: 0.55,
+      xmin: -5, xmax: 5, ymin: -0.6, ymax: 0.7,
+      f: function (x) { return (x + 1) / (x * x + 4); },
       g: function (x) { return x * x + 4; },
-      f: function (x) { return 1 / (x * x + 4); },
-      signMarks: [
-        { x: -2.5, s: "+" }, { x: 0, s: "+" }, { x: 2.5, s: "+" }
-      ],
-      tip: "Hoja 2.4 · x²+4 nunca es 0 en ℝ → Dom = ℝ.",
+      tip: "x²+4 nunca es 0 en ℝ → Dom = ℝ",
       surprise: true
+    },
+    {
+      id: "2.8",
+      sheet: "2.8",
+      title: "un polo",
+      fHtml: '<span class="hl-curve">g(x) = 1/(x − 1) − 2</span><br><span style="color:#8b9bb4;font-size:0.82rem">den = <span class="hl-g">x − 1</span></span>',
+      denHtml: "x − 1 = 0 → x = 1",
+      denFact: "x − 1",
+      domainSet: "ℝ ∖ {1}",
+      domainHtml: 'Dom(g) = <span class="hl-v">ℝ ∖ {1}</span>',
+      zeros: [1],
+      xmin: -2, xmax: 5, ymin: -5, ymax: 5,
+      f: function (x) { return 1 / (x - 1) - 2; },
+      g: function (x) { return x - 1; },
+      tip: "Un solo anulador: x = 1",
+      surprise: false
     }
   ];
 
@@ -419,12 +394,12 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     raf: 0,
     exIndex: 0,
     phase: "idle",
+    step: 0,
     revealedZeros: 0,
     showCurve: false,
     showAsymptotes: false,
     showGhostG: false,
-    showSign: false,
-    bandReveal: 0, /* 0..1 */
+    bandReveal: 0,
     punchFlash: -1,
     curveAlpha: 1
   };
@@ -463,12 +438,23 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
   }
 
+  function setStepUI(n) {
+    state.step = n;
+    var items = stepsList.querySelectorAll("li");
+    items.forEach(function (li) {
+      var s = parseInt(li.getAttribute("data-step"), 10);
+      li.classList.remove("on", "done");
+      if (s < n) li.classList.add("done");
+      else if (s === n) li.classList.add("on");
+    });
+  }
+
   function buildProgress() {
     exProgress.innerHTML = "";
     EXAMPLES.forEach(function (e, i) {
       var d = document.createElement("span");
       d.className = "ex-dot" + (i < state.exIndex ? " done" : (i === state.exIndex ? " on" : ""));
-      d.title = "Ejemplo " + (i + 1) + ": " + e.title;
+      d.title = "Ej. " + e.sheet + ": " + e.title;
       exProgress.appendChild(d);
     });
   }
@@ -480,30 +466,29 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     hintMini.textContent = e.tip;
     formulaRow.classList.toggle("surprise", !!e.surprise);
     var chips = "";
-    chips += '<span class="chip teal">ej. ' + e.id + "/5</span>";
-    chips += '<span class="chip coral">' + e.gHtml + "</span>";
+    chips += '<span class="chip teal">Ej. ' + e.sheet + "</span>";
+    chips += '<span class="chip coral">den: ' + e.denFact + "</span>";
     if (e.zeros.length === 0) {
       chips += '<span class="chip green">sin ceros reales</span>';
       chips += '<span class="chip green">Dom = ℝ</span>';
     } else {
-      chips += '<span class="chip bad">ceros {' + e.zeros.map(fmtNum).join(", ") + "}</span>";
+      chips += '<span class="chip bad">{' + e.zeros.map(fmtNum).join(", ") + "}</span>";
       chips += '<span class="chip gray">fuera</span>';
     }
     chipBox.innerHTML = chips;
 
     var lis = "";
     if (e.zeros.length === 0) {
-      lis += '<li><span class="ok">g(x) = x² + 4 &gt; 0</span> para todo x ∈ ℝ</li>';
+      lis += '<li><span class="ok">' + e.denHtml + "</span></li>";
       lis += '<li>ningún anulador → <strong class="ok">Dom = ℝ</strong></li>';
       lis += "<li>curva suave · sin asíntota vertical</li>";
     } else {
       lis += "<li>Anuladores: <strong class=\"bad\">{" + e.zeros.map(fmtNum).join(", ") + "}</strong></li>";
-      lis += "<li>Se sacan del dominio → <strong class=\"empty\">gris</strong> en la banda</li>";
-      lis += "<li>Asíntotas verticales en esos x</li>";
+      lis += "<li>Se sacan → <strong class=\"empty\">círculo gris</strong></li>";
       lis += "<li>Dom = <strong class=\"ok\">" + e.domainSet + "</strong></li>";
     }
     ruleList.innerHTML = lis;
-    loopEl.innerHTML = "Ej. <strong>" + e.id + "</strong>/5";
+    loopEl.innerHTML = "Ej. <strong>" + e.sheet + "</strong>/" + EXAMPLES.length;
     buildProgress();
   }
 
@@ -627,7 +612,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       if (!isFinite(y) || y < e.ymin - 0.5 || y > e.ymax + 0.5) {
         first = true; prevY = null; continue;
       }
-      /* scale ghost into view if huge — for cubic/quadratic near poles it can spike; clamp visually */
       var yDraw = Math.max(e.ymin - 0.2, Math.min(e.ymax + 0.2, y));
       s = worldToScreen(x, yDraw);
       if (first || (prevY != null && Math.abs(y - prevY) > (e.ymax - e.ymin) * 0.85)) {
@@ -644,49 +628,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.font = "700 11px ui-monospace, Menlo, monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("g(x)", PAD.l + 8, PAD.t + 4);
-    ctx.restore();
-  }
-
-  function drawSignChart() {
-    if (!state.showSign) return;
-    var e = ex();
-    var marks = e.signMarks || [];
-    if (!marks.length) return;
-    var yBase = canvas.height - 18;
-    ctx.save();
-    ctx.font = "800 12px ui-monospace, Menlo, monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    /* baseline */
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(PAD.l, yBase);
-    ctx.lineTo(canvas.width - PAD.r, yBase);
-    ctx.stroke();
-    ctx.fillStyle = "#64748b";
-    ctx.font = "700 10px Segoe UI, system-ui, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("signo g", PAD.l, yBase - 14);
-    marks.forEach(function (m) {
-      var sx = worldToScreen(m.x, 0).x;
-      if (m.s === "0") {
-        ctx.fillStyle = CORAL;
-        ctx.beginPath();
-        ctx.arc(sx, yBase, 7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#fff";
-        ctx.font = "800 11px ui-monospace, Menlo, monospace";
-        ctx.textAlign = "center";
-        ctx.fillText("0", sx, yBase + 1);
-      } else {
-        ctx.fillStyle = m.s === "+" ? GREEN : "#64748b";
-        ctx.font = "800 13px ui-monospace, Menlo, monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(m.s, sx, yBase);
-      }
-    });
+    ctx.fillText("den", PAD.l + 8, PAD.t + 4);
     ctx.restore();
   }
 
@@ -756,9 +698,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     var e = ex();
     if (state.bandReveal <= 0.001) return;
     var ox = worldToScreen(0, 0);
-    /* if origin off-screen vertically, pin band to x-axis if visible else bottomish */
     var y = (0 >= e.ymin && 0 <= e.ymax) ? ox.y : (canvas.height - PAD.b - 8);
-    var gap = 5;
     var revealX = e.xmin + (e.xmax - e.xmin) * Math.min(1, state.bandReveal);
 
     function xPx(xw) { return worldToScreen(xw, 0).x; }
@@ -782,11 +722,9 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.restore();
     }
 
-    /* Verde continuo con huecos; en cada anulador: círculo gris relleno (no retazo) */
     var zeros = e.zeros.slice(0, state.revealedZeros).slice().sort(function (a, b) { return a - b; });
     var rPx = BAND_H / 2 + 1;
     var worldPerPx = (e.xmax - e.xmin) / Math.max(1, (canvas.width - PAD.l - PAD.r));
-    /* hueco mínimo: el verde llega casi al borde del círculo gris */
     var punchW = rPx * worldPerPx * 1.08;
 
     if (zeros.length === 0) {
@@ -803,7 +741,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     });
     if (cursor < e.xmax) strokeSeg(cursor, e.xmax, GREEN);
 
-    /* círculos grises rellenos = fuera de dominio / asíntota vertical */
     zeros.forEach(function (z) {
       if (z > revealX + 1e-9) return;
       var px = xPx(z);
@@ -833,7 +770,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     drawAsymptotes();
     drawRationalCurve();
     drawDomainBand();
-    drawSignChart();
   }
 
   function resetVisualsForExample() {
@@ -841,11 +777,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.showCurve = false;
     state.showAsymptotes = false;
     state.showGhostG = false;
-    state.showSign = false;
     state.bandReveal = 0;
     state.punchFlash = -1;
     state.curveAlpha = 1;
     state.phase = "idle";
+    setStepUI(0);
   }
 
   function loadExample(i) {
@@ -864,7 +800,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     stopBtn.disabled = true;
     loadExample(0);
     setWork("");
-    setCaption('Presioná <strong>▶ Play</strong> · Regla nº 1: el denominador <span class="bad">no puede ser 0</span>.');
+    setCaption('Presioná <strong>▶ Play</strong> · procedimiento <span class="paso">paso a paso</span> para Ej. 2.2, 2.4 y 2.8.');
   }
 
   function animateBand(durationMs, onDone) {
@@ -877,9 +813,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       var ease = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
       state.bandReveal = ease;
       draw();
-      if (u < 1) {
-        state.raf = requestAnimationFrame(frame);
-      } else {
+      if (u < 1) state.raf = requestAnimationFrame(frame);
+      else {
         state.raf = 0;
         state.bandReveal = 1;
         draw();
@@ -897,11 +832,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.showAsymptotes = true;
     state.punchFlash = k;
     var z = e.zeros[k];
-    setWork('anulador · g(<span class="hl">' + fmtNum(z) + '</span>) = 0 → <span class="bad">x = ' + fmtNum(z) + " ∉ Dom</span>");
-    setCaption('Cero de g: <span class="bad">x = ' + fmtNum(z) + '</span> · se <strong>saca</strong> del dominio · aparece la asíntota vertical.');
+    setWork('<span class="paso">Paso 3</span> · anulador · den(<span class="hl">' + fmtNum(z) + '</span>) = 0 → <span class="bad">x = ' + fmtNum(z) + " ∉ Dom</span>");
+    setCaption('<span class="paso">Paso 3:</span> Anulador <span class="bad">x = ' + fmtNum(z) + "</span> · círculo gris + asíntota vertical. Se <strong>saca</strong> del dominio.");
     bip("bad");
     draw();
-    later(720, function () {
+    later(780, function () {
       state.punchFlash = -1;
       draw();
       if (onDone) onDone();
@@ -913,11 +848,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     if (!e.zeros.length) {
       state.revealedZeros = 0;
       state.showAsymptotes = false;
-      setWork('<span class="ok">g(x) ≠ 0</span> para todo x ∈ ℝ · <span class="ok">ningún anulador</span>');
-      setCaption('<span class="ok">¡Contraste!</span> <span class="hl-curve">x² + 4</span> nunca se anula en los reales → no hay asíntota vertical.');
+      setWork('<span class="paso">Paso 3</span> · <span class="ok">den ≠ 0</span> para todo x ∈ ℝ · <span class="ok">ningún anulador</span>');
+      setCaption('<span class="paso">Paso 3:</span> <span class="ok">¡Contraste!</span> <span class="hl-curve">x² + 4</span> nunca se anula en ℝ → no hay asíntota vertical.');
       bip("ok");
       draw();
-      later(900, function () { if (onDone) onDone(); });
+      later(1000, function () { if (onDone) onDone(); });
       return;
     }
     var k = 0;
@@ -925,11 +860,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       if (!state.playing) return;
       revealZeroAt(k, function () {
         k++;
-        if (k < e.zeros.length) {
-          later(380, next);
-        } else if (onDone) {
-          onDone();
-        }
+        if (k < e.zeros.length) later(420, next);
+        else if (onDone) onDone();
       });
     }
     next();
@@ -942,27 +874,44 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     resetVisualsForExample();
     draw();
 
-    setWork('ejemplo ' + e.id + "/5 · <span class=\"hl\">" + e.gHtml + "</span>");
-    setCaption('Ejemplo <strong>' + e.id + "</strong>: " + e.title + " · buscamos los <span class=\"bad\">ceros de g</span>.");
+    /* Paso 1 */
+    setStepUI(1);
+    setWork('<span class="paso">Paso 1</span> · Ej. <span class="hl">' + e.sheet + "</span> · mirá la fórmula");
+    setCaption('<span class="paso">Paso 1:</span> Ej. <strong>' + e.sheet + "</strong>. ¿Hay un <strong>denominador que dependa de x</strong>?");
     bip("ok");
 
-    later(700, function () {
+    later(1100, function () {
       if (!state.playing) return;
+      setWork('<span class="paso">Paso 1</span> · <span class="bad">SÍ</span> · hay denominador con x · Regla: den ≠ 0');
+      setCaption('<span class="paso">Paso 1:</span> <span class="bad">Sí</span> hay denominador con x. Recordatorio: el den <strong>no puede ser 0</strong>.');
       state.showGhostG = true;
-      state.showSign = true;
       draw();
-      setCaption('Fantasma ámbar: <span class="hl-t">g(x)</span> · debajo, el signo (+ / 0 / −). Los <span class="bad">0</span> son anuladores.');
+      bip("ok");
     });
 
-    later(1600, function () {
+    later(2400, function () {
       if (!state.playing) return;
+      /* Paso 2 */
+      setStepUI(2);
+      setWork('<span class="paso">Paso 2</span> · den: <span class="hl">' + e.denHtml + "</span>");
+      if (e.zeros.length === 0) {
+        setCaption('<span class="paso">Paso 2:</span> Estudiamos el den: <span class="hl-t">' + e.denFact + "</span>. ¿Se anula en algún x real?");
+      } else {
+        setCaption('<span class="paso">Paso 2:</span> Factorizamos / resolvemos den = 0: <span class="hl-t">' + e.denHtml + "</span>.");
+      }
+      bip("ok");
+    });
+
+    later(3800, function () {
+      if (!state.playing) return;
+      /* Paso 3 — revelar anuladores uno a uno */
+      setStepUI(3);
       revealZerosSeq(function () {
         if (!state.playing) return;
-        later(400, function () {
+        later(450, function () {
           if (!state.playing) return;
           state.showCurve = true;
           state.curveAlpha = 0;
-          /* fade curve in */
           var t0 = null;
           var dur = delay(700);
           function fade(now) {
@@ -975,20 +924,23 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             else {
               state.raf = 0;
               state.curveAlpha = 1;
-              setCaption('Curva <span class="hl-curve">f = 1/g</span>' + (e.zeros.length ? " · ramas separadas por las asíntotas." : " · suave, sin polos."));
+              setCaption('<span class="paso">Paso 3:</span> Curva dibujada' + (e.zeros.length ? " · ramas separadas por las asíntotas." : " · suave, sin polos."));
               later(500, function () {
                 if (!state.playing) return;
+                /* Paso 4 */
+                setStepUI(4);
+                setWork('<span class="paso">Paso 4</span> · pintamos Dom · escribimos notación');
+                setCaption('<span class="paso">Paso 4:</span> Pintamos la banda: <span class="hl-v">verde = Dom</span>' + (e.zeros.length ? ' · <span class="empty">gris = anuladores</span>.' : ' · toda la recta.'));
                 animateBand(1400, function () {
                   if (!state.playing) return;
-                  setWork('dominio = <span class="ok">' + e.domainSet + "</span>");
+                  setWork('Dom = <span class="ok">' + e.domainSet + "</span> · Ej. " + e.sheet);
                   if (e.surprise) {
-                    setCaption('<strong>Resumen:</strong> g nunca es 0 → <span class="ok">Dom(f) = ℝ</span>. Misma regla: solo se sacan los anuladores… ¡y aquí no hay!');
-                    bip("ok");
+                    setCaption('<strong>Cierre Ej. ' + e.sheet + ':</strong> den nunca es 0 → <span class="ok">Dom = ℝ</span>. Misma regla: solo se sacan anuladores… ¡y aquí no hay!');
                   } else {
-                    setCaption('<strong>Resumen:</strong> Dom(f) = <span class="hl-v">' + e.domainSet + "</span> · gris = anuladores · verde = dominio.");
-                    bip("ok");
+                    setCaption('<strong>Cierre Ej. ' + e.sheet + ':</strong> Dom = <span class="hl-v">' + e.domainSet + "</span> · gris = anuladores · verde = dominio.");
                   }
-                  later(1600, function () {
+                  bip("ok");
+                  later(1700, function () {
                     if (!state.playing) return;
                     if (onDone) onDone();
                   });
@@ -1010,10 +962,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.showCurve = true;
     state.showAsymptotes = true;
     state.revealedZeros = ex().zeros.length;
+    setStepUI(4);
     draw();
     buildProgress();
-    setWork('Regla nº 1 · Dom(f) = <span class="ok">ℝ − {ceros de g}</span>');
-    setCaption('<strong>Cierre:</strong> el denominador <span class="bad">no puede ser 0</span>. Sacá esos x del dominio · en el gráfico: asíntotas + banda gris. Si g no se anula (x²+4), Dom = <span class="ok">ℝ</span>.');
+    setWork('Regla · Dom = <span class="ok">ℝ ∖ {ceros del den}</span>');
+    setCaption('<strong>Cierre:</strong> den <span class="bad">≠ 0</span>. Sacá esos x · círculo gris + asíntota. Si el den no se anula (2.4), Dom = <span class="ok">ℝ</span>.');
     bip("ok");
   }
 
@@ -1027,11 +980,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     stopBtn.disabled = false;
     loadExample(0);
 
-    setWork('<span class="hl">Regla nº 1</span> · denominador ≠ 0');
-    setCaption('<strong>Regla nº 1:</strong> El denominador <span class="bad">no puede ser igual a cero</span>. Los anuladores se sacan del dominio.');
+    setWork('<span class="paso">Procedimiento</span> · dominio con denominador');
+    setCaption('<strong>Arranque:</strong> Ej. 2.2, 2.4 y 2.8 · hallamos Dom <span class="paso">paso a paso</span> (den ≠ 0).');
     bip("ok");
 
-    later(1100, function () {
+    later(1000, function () {
       if (!state.playing) return;
       function nextEx() {
         if (!state.playing) return;
@@ -1057,7 +1010,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.playing = false;
     playBtn.disabled = false;
     stopBtn.disabled = true;
-    setCaption("Detenido · ▶ Play para repetir los 5 ejemplos · o Reiniciar.");
+    setCaption("Detenido · ▶ Play para repetir el procedimiento · o Reiniciar.");
   }
 
   playBtn.addEventListener("click", runPlay);
@@ -1077,7 +1030,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     }
   });
 
-  window.__L120 = { EXAMPLES: EXAMPLES, loadExample: loadExample, state: state };
+  window.__L122 = { EXAMPLES: EXAMPLES, loadExample: loadExample, state: state };
   resetView();
 })();
 </script>
