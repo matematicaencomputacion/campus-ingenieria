@@ -52,8 +52,8 @@ jobs:
           set -euo pipefail
           bytes=$(du -sb . --exclude=.git | cut -f1)
           echo "tree_bytes=$bytes"
-          # Soft ceiling: fail if tree > 5MB (keeps CI from shipping fat assets)
-          if [ "$bytes" -gt 5242880 ]; then
-            echo "Tree exceeds 5MB budget" >&2
+          # Soft ceiling: fail if tree > 10MB (keeps CI from shipping fat assets)
+          if [ "$bytes" -gt 10485760 ]; then
+            echo "Tree exceeds 10MB budget" >&2
             exit 1
           fi

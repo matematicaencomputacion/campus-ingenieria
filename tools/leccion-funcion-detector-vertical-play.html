@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 114 · Función · detector · elipse · play</title>
+<title>Lección 115 · Función · detector · vertical · play</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -191,8 +191,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 114</span> · Función · detector · elipse · play
-        <span class="sub">elipse V · centro (0.5, 0) · a=3.5 · b=3</span>
+      <h1><span class="lesson-num">Lección 115</span> · Función · detector · vertical · play
+        <span class="sub">gráfico VI · segmento x=−1 + y=−x+4</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -225,43 +225,42 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
         <div class="expr-row">
           <div class="expr-formula" id="exprFormula">
-            <span class="hl-rel">((x − 0.5)/3.5)² + (y/3)² = 1</span><br>
-            <span class="hl-up">y = +3√(1 − ((x−0.5)/3.5)²)</span><br>
-            <span class="hl-dn">y = −3√(1 − ((x−0.5)/3.5)²)</span>
+            <span class="hl-up">y = −x + 4</span> <span style="color:#8b9bb4;font-weight:600">(x &gt; −1)</span><br>
+            <span class="hl-dn">x = −1</span> <span style="color:#8b9bb4;font-weight:600">segmento y ∈ [−2, 5]</span>
           </div>
-          <p class="hint-mini">elipse V · centro (0.5, 0) · vértices x = −3 y x = 4</p>
+          <p class="hint-mini">gráfico VI · unión en (−1, 5) · nada a la izquierda de x=−1</p>
         </div>
         <div class="expr-row">
           <div class="expr-formula" id="exprBranches">
-            <span class="hl-up">arco superior</span> · <span class="hl-dn">arco inferior</span> · <span class="hl-v">vértices</span>
+            <span class="hl-dn">segmento vertical</span> · <span class="hl-up">raya inclinada</span>
           </div>
           <div class="chips" id="chipBox">
-            <span class="chip teal">y ≥ 0</span>
-            <span class="chip" style="color:#fb7185;border-color:rgba(251,113,133,.5)">y ≤ 0</span>
-            <span class="chip green">(−3, 0) · (4, 0)</span>
+            <span class="chip" style="color:#fb7185;border-color:rgba(251,113,133,.5)">x = −1</span>
+            <span class="chip teal">y = −x + 4</span>
+            <span class="chip green">(0, 4) · (4, 0)</span>
             <span class="chip" style="color:#64748b;border-color:rgba(100,116,139,.5)">eje: vacío</span>
-            <span class="chip green">eje: fn</span>
             <span class="chip red">eje: no fn</span>
+            <span class="chip green">eje: fn</span>
           </div>
         </div>
         <div class="expr-row phase-ask">
           <span class="mode-tag">Detector · x = t</span>
           <p class="hint-mini">prueba de la recta vertical · un x → ¿cuántos y?</p>
           <ul class="rule-list" id="ruleList">
-            <li><span class="empty">t &lt; −3</span> o <span class="empty">t &gt; 4</span> vacío → <strong class="bad">no función</strong></li>
-            <li><span class="ok">t = −3</span> o <span class="ok">t = 4</span> un vértice → <strong class="ok">sí función</strong></li>
-            <li><span class="bad">−3 &lt; t &lt; 4</span> dos y → <strong class="bad">no función</strong></li>
+            <li><span class="empty">t &lt; −1</span> vacío → <strong class="bad">no función</strong></li>
+            <li><span class="bad">t = −1</span> segmento vertical · ∞ y → <strong class="bad">no función</strong></li>
+            <li><span class="ok">t &gt; −1</span> un corte con la raya → <strong class="ok">sí función</strong></li>
           </ul>
         </div>
       </aside>
       <div class="graph-wrap" id="graphWrap">
-        <a class="lesson-nav prev" href="leccion-funcion-detector-raices-play.html" title="Lección 113: Función · detector · raíces · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
-        <a class="lesson-nav next" href="leccion-funcion-detector-vertical-play.html" title="Lección 115: Función · detector · vertical · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <canvas id="c" width="900" height="640" aria-label="Detector de función · elipse V"></canvas>
+        <a class="lesson-nav prev" href="leccion-funcion-detector-elipse-play.html" title="Lección 114: Función · detector · elipse · play" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-funcion-detector-salto-play.html" title="Lección 116: Función · detector · salto · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="900" height="640" aria-label="Detector de función · gráfico VI vertical"></canvas>
       </div>
     </div>
     <div class="work-panel" id="workPanel" aria-live="polite"></div>
-    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · la vertical <span class="hl-t">x = t</span> barre la elipse V.</p>
+    <p class="caption" id="caption" aria-live="polite">Presioná <strong>▶ Play</strong> · la vertical <span class="hl-t">x = t</span> barre el gráfico VI.</p>
     <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido">
       <span class="sound-meter-label" aria-hidden="true">♪</span>
       <span class="sound-bar" data-i="0"></span>
@@ -271,7 +270,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <span class="sound-bar" data-i="4"></span>
       <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
     </div>
-    <p class="hint">Eje X · veredicto: <strong style="color:#64748b">gris = vacío</strong> · <strong style="color:#22c55e">verde = función (1 punto)</strong> · <strong style="color:#ef4444">rojo = no función (2 y)</strong> · grosor ≈ punto verde</p>
+    <p class="hint">Eje X · veredicto: <strong style="color:#64748b">gris = vacío</strong> · <strong style="color:#ef4444">rojo = no función (segmento vertical)</strong> · <strong style="color:#22c55e">verde = función (1 corte)</strong> · grosor ≈ punto verde</p>
   </div>
 </div>
 <script src="game-kit.js?v=20260907"></script>
@@ -290,8 +289,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var PROBE = "#2563eb";
   var TEAL = "#14b8a6";
   var CORAL = "#fb7185";
-  var HIT_UP = "#0d9488";
-  var HIT_DN = "#e11d48";
+  var HIT_LINE = "#0d9488";
+  var HIT_VERT = "#e11d48";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -305,15 +304,17 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   var soundMeter = document.getElementById("soundMeter");
   var exprFormula = document.getElementById("exprFormula");
 
-  var XMIN = -5, XMAX = 5.5, YMIN = -4, YMAX = 4;
+  /* Window ~ XMIN−3 XMAX 5.5 YMIN−3 YMAX 6 */
+  var XMIN = -3, XMAX = 5.5, YMIN = -3, YMAX = 6;
   var PAD = { l: 48, r: 36, t: 28, b: 44 };
-  var CX = 0.5, CY = 0;
-  var A = 3.5, B = 3;
-  var XL = -3; /* CX - A */
-  var XR = 4;  /* CX + A */
-  var T_START = -4.5;
+  var XV = -1;           /* vertical segment x */
+  var YV_MIN = -2;       /* bottom of vertical segment */
+  var YV_MAX = 5;        /* top / junction (−1, 5) */
+  var LINE_X_END = 5.0;  /* extend a bit past x=4 */
+  var T_START = -2.6;
   var T_END = 5.0;
-  var EPS = 1e-9;
+  var EPS = 0.045;       /* vertical hit window around x=−1 */
+  var VERT_SAMPLES = 9;  /* sample points along vertical for hits */
 
   var state = {
     playing: false,
@@ -325,7 +326,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     phase: "idle",
     showProbe: false,
     showHits: false,
-    highlightVertex: true,
     lastRegion: "",
     bandReveal: Infinity
   };
@@ -389,29 +389,34 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     };
   }
 
-  /** Hits of vertical x = t with ellipse ((x-0.5)/3.5)² + (y/3)² = 1 */
+  function yLine(x) { return -x + 4; }
+
+  /** Hits of vertical probe x = t with relation VI */
   function hitsAt(t) {
-    var dx = Math.abs(t - CX);
-    if (dx > A + EPS) return [];
-    if (Math.abs(dx - A) <= EPS || Math.abs(t - XL) < EPS || Math.abs(t - XR) < EPS) {
-      return [{ x: t, y: 0, kind: "vertex" }];
+    if (t < XV - EPS) return [];
+    if (Math.abs(t - XV) <= EPS) {
+      var out = [];
+      var i, yy;
+      for (i = 0; i < VERT_SAMPLES; i++) {
+        yy = YV_MIN + (YV_MAX - YV_MIN) * (i / (VERT_SAMPLES - 1));
+        out.push({ x: XV, y: yy, kind: "vertical" });
+      }
+      /* also expose span for thick highlight */
+      out._vertical = { yMin: YV_MIN, yMax: YV_MAX };
+      return out;
     }
-    var u = (t - CX) / A;
-    var rad = 1 - u * u;
-    if (rad < 0) return [];
-    var yy = B * Math.sqrt(rad);
-    return [
-      { x: t, y: yy, kind: "up" },
-      { x: t, y: -yy, kind: "dn" }
-    ];
+    if (t > XV) {
+      var y = yLine(t);
+      if (t > LINE_X_END + 0.15) return [];
+      return [{ x: t, y: y, kind: "line" }];
+    }
+    return [];
   }
 
   function regionOf(t) {
-    if (t < XL - 0.02) return "emptyL";
-    if (Math.abs(t - XL) <= 0.02) return "vertexL";
-    if (t < XR - 0.02) return "two";
-    if (Math.abs(t - XR) <= 0.02) return "vertexR";
-    return "emptyR";
+    if (t < XV - EPS) return "emptyL";
+    if (Math.abs(t - XV) <= EPS) return "vertical";
+    return "one";
   }
 
   function drawAxes() {
@@ -452,8 +457,15 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(sx.x, sx.y - 4); ctx.lineTo(sx.x, sx.y + 4); ctx.stroke();
       ctx.fillStyle = BLACK;
+      /* emphasize −1 and 4 */
+      if (xt === -1 || xt === 4) {
+        ctx.font = "800 13px ui-monospace, Menlo, monospace";
+      } else {
+        ctx.font = "600 12px ui-monospace, Menlo, monospace";
+      }
       ctx.fillText(String(xt).replace("-", "−"), sx.x, sx.y + 8);
     }
+    ctx.font = "600 12px ui-monospace, Menlo, monospace";
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     for (var yt = Math.ceil(YMIN); yt <= Math.floor(YMAX); yt++) {
@@ -474,7 +486,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     ctx.fillText("y", Math.max(10, ox.x + 10), PAD.t + 16);
   }
 
-  /** Bandas: [XMIN,−3) vacío · {−3} verde · (−3,4) rojo · {4} verde · (4,XMAX] vacío */
+  /** Bandas: [XMIN,−1) vacío · {−1} rojo · (−1, XMAX] verde */
   function drawVerdictBands() {
     var ox = worldToScreen(0, 0);
     var y = ox.y;
@@ -505,7 +517,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.restore();
     }
 
-    function fillDot(xw, color) {
+    function fillDot(xw, color, strokeCol) {
       if (xw > reveal + 1e-9) return;
       var p = worldToScreen(xw, 0);
       ctx.save();
@@ -513,146 +525,114 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       ctx.arc(p.x, p.y, half, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
-      ctx.strokeStyle = "#166534";
+      ctx.strokeStyle = strokeCol || "#166534";
       ctx.lineWidth = 1.4;
       ctx.stroke();
       ctx.restore();
     }
 
+    /* 1) vacío izquierda [XMIN, −1) */
     if (reveal > XMIN) {
-      strokeSeg(XMIN, Math.min(XL, clipEnd(XL)), EMPTY, false, true);
+      strokeSeg(XMIN, Math.min(XV, clipEnd(XV)), EMPTY, false, true);
     }
-    if (reveal >= XL - 1e-9) fillDot(XL, GREEN);
-    if (reveal > XL) {
-      strokeSeg(XL, Math.min(XR, clipEnd(XR)), RED, true, true);
-    }
-    if (reveal >= XR - 1e-9) fillDot(XR, GREEN);
-    if (reveal > XR) {
-      strokeSeg(XR, Math.min(XMAX, clipEnd(XMAX)), EMPTY, true, false);
+    /* 2) punto ROJO no-función en −1 */
+    if (reveal >= XV - 1e-9) fillDot(XV, RED, "#7f1d1d");
+    /* 3) sí función (−1, XMAX] */
+    if (reveal > XV) {
+      strokeSeg(XV, Math.min(XMAX, clipEnd(XMAX)), GREEN, true, false);
     }
   }
 
   function drawGuides() {
-    var ends = [XL, XR];
-    var labels = ["x=−3", "x=4"];
-    var i, a, b;
+    var a = worldToScreen(XV, YMIN);
+    var b = worldToScreen(XV, YMAX);
     ctx.save();
     ctx.strokeStyle = GUIDE;
     ctx.lineWidth = 1.2;
     ctx.setLineDash([4, 5]);
-    ctx.globalAlpha = 0.55;
-    for (i = 0; i < ends.length; i++) {
-      a = worldToScreen(ends[i], YMIN);
-      b = worldToScreen(ends[i], YMAX);
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
-    }
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
     ctx.setLineDash([]);
-    ctx.globalAlpha = 0.75;
+    ctx.globalAlpha = 0.8;
     ctx.fillStyle = GUIDE;
     ctx.font = "600 11px ui-monospace, Menlo, monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    for (i = 0; i < ends.length; i++) {
-      ctx.fillText(labels[i], worldToScreen(ends[i], YMAX).x, PAD.t + 4);
-    }
+    ctx.fillText("x=−1", worldToScreen(XV, YMAX).x, PAD.t + 4);
     ctx.restore();
   }
 
-  function yUp(x) {
-    var u = (x - CX) / A;
-    var rad = 1 - u * u;
-    if (rad < 0) return NaN;
-    return B * Math.sqrt(rad);
-  }
-  function yDn(x) {
-    var u = (x - CX) / A;
-    var rad = 1 - u * u;
-    if (rad < 0) return NaN;
-    return -B * Math.sqrt(rad);
+  function drawVerticalSegment() {
+    var top = worldToScreen(XV, YV_MAX);
+    var bot = worldToScreen(XV, YV_MIN);
+    ctx.save();
+    ctx.strokeStyle = CORAL;
+    ctx.lineWidth = 4.2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(bot.x, bot.y);
+    ctx.lineTo(top.x, top.y);
+    ctx.stroke();
+    /* end caps */
+    ctx.fillStyle = CORAL;
+    ctx.beginPath();
+    ctx.arc(bot.x, bot.y, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(top.x, top.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
-  function drawBranch(xMin, xMax, yFn, color) {
-    var steps = 320;
-    var first = true;
-    var i, x, y, s;
+  function drawInclinedRay() {
+    /* open ray from just after −1 through LINE_X_END; junction (−1,5) is on vertical */
+    var x0 = XV + 0.002;
+    var x1 = LINE_X_END;
+    var steps = 220;
+    var i, x, y, s, first = true;
     ctx.save();
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = TEAL;
     ctx.lineWidth = 3.4;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.beginPath();
     for (i = 0; i <= steps; i++) {
-      x = xMin + (xMax - xMin) * (i / steps);
-      y = yFn(x);
-      if (!isFinite(y)) { first = true; continue; }
-      if (x < XMIN - 0.05 || x > XMAX + 0.05) { first = true; continue; }
-      if (y < YMIN - 0.05 || y > YMAX + 0.05) { first = true; continue; }
+      x = x0 + (x1 - x0) * (i / steps);
+      y = yLine(x);
+      if (y < YMIN - 0.1 || y > YMAX + 0.1) { first = true; continue; }
       s = worldToScreen(x, y);
       if (first) { ctx.moveTo(s.x, s.y); first = false; }
       else ctx.lineTo(s.x, s.y);
     }
     ctx.stroke();
     ctx.restore();
-  }
 
-  function drawVertices() {
-    var pts = [
-      { x: XL, y: 0, label: "(−3, 0)" },
-      { x: XR, y: 0, label: "(4, 0)" },
-      { x: CX, y: B, label: "(0.5, 3)" },
-      { x: CX, y: -B, label: "(0.5, −3)" }
+    /* landmark dots (0,4) and (4,0) */
+    var landmarks = [
+      { x: 0, y: 4, lab: "(0, 4)" },
+      { x: 4, y: 0, lab: "(4, 0)" },
+      { x: XV, y: YV_MAX, lab: "(−1, 5)" }
     ];
-    var i, p, lab;
-    for (i = 0; i < pts.length; i++) {
-      p = worldToScreen(pts[i].x, pts[i].y);
+    landmarks.forEach(function (pt, idx) {
+      var p = worldToScreen(pt.x, pt.y);
       ctx.save();
-      if (i < 2) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 11, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(34,197,94,0.28)";
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 6.5, 0, Math.PI * 2);
-        ctx.fillStyle = GREEN;
-        ctx.fill();
-        ctx.strokeStyle = "#166534";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = i === 2 ? TEAL : CORAL;
-        ctx.fill();
-        ctx.strokeStyle = "#0f172a";
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-      }
-      if (state.highlightVertex && i < 2) {
-        ctx.fillStyle = "#14532d";
-        ctx.font = "700 11px Segoe UI, system-ui, sans-serif";
-        ctx.textAlign = i === 0 ? "right" : "left";
-        ctx.textBaseline = "bottom";
-        lab = pts[i].label;
-        ctx.fillText(lab, p.x + (i === 0 ? -8 : 8), p.y - 10);
-      }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, idx === 2 ? 5.5 : 5, 0, Math.PI * 2);
+      ctx.fillStyle = idx === 2 ? CORAL : TEAL;
+      ctx.fill();
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+      ctx.fillStyle = idx === 2 ? "#9f1239" : "#0f766e";
+      ctx.font = "700 11px Segoe UI, system-ui, sans-serif";
+      ctx.textAlign = pt.x < 0 ? "right" : "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(pt.lab, p.x + (pt.x < 0 ? -8 : 8), p.y - 8);
       ctx.restore();
-    }
-    /* center mark */
-    var c = worldToScreen(CX, CY);
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = "#64748b";
-    ctx.fill();
-    ctx.fillStyle = "#475569";
-    ctx.font = "600 10px ui-monospace, Menlo, monospace";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    ctx.fillText("C(0.5, 0)", c.x + 6, c.y + 4);
-    ctx.restore();
+    });
   }
 
   function drawProbe(t) {
@@ -676,16 +656,32 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   }
 
   function drawHits(list) {
+    if (!list || !list.length) return;
+    /* thick vertical highlight when many vertical hits */
+    if (list[0] && list[0].kind === "vertical") {
+      var top = worldToScreen(XV, YV_MAX);
+      var bot = worldToScreen(XV, YV_MIN);
+      ctx.save();
+      ctx.strokeStyle = "rgba(225,29,72,0.35)";
+      ctx.lineWidth = 14;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(bot.x, bot.y);
+      ctx.lineTo(top.x, top.y);
+      ctx.stroke();
+      ctx.restore();
+    }
     list.forEach(function (h) {
       var p = worldToScreen(h.x, h.y);
-      var col = h.kind === "vertex" ? GREEN : (h.kind === "up" ? HIT_UP : HIT_DN);
+      var col = h.kind === "vertical" ? HIT_VERT : HIT_LINE;
+      var r = h.kind === "vertical" ? 6.5 : 9;
       ctx.save();
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       ctx.fillStyle = col;
       ctx.fill();
       ctx.strokeStyle = "#0f172a";
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = 1.6;
       ctx.stroke();
       ctx.restore();
     });
@@ -694,9 +690,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   function draw() {
     drawAxes();
     drawGuides();
-    drawBranch(XL, XR, yUp, TEAL);
-    drawBranch(XL, XR, yDn, CORAL);
-    drawVertices();
+    drawVerticalSegment();
+    drawInclinedRay();
     drawVerdictBands();
     if (state.showProbe) {
       drawProbe(state.t);
@@ -706,33 +701,24 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 
   function applyRegionCaption(t, force) {
     var reg = regionOf(t);
-    if (!force && reg === state.lastRegion && reg !== "vertexL" && reg !== "vertexR") return;
+    if (!force && reg === state.lastRegion && reg !== "vertical") return;
     var prev = state.lastRegion;
     state.lastRegion = reg;
     var tStr = fmtNum(t);
     var hs = hitsAt(t);
     if (reg === "emptyL") {
-      setWork('t = <span class="hl">' + tStr + '</span> &lt; −3 · cortes: <span class="bad">0</span>');
-      setCaption('t = <span class="hl-t">' + tStr + '</span> &lt; −3 · la vertical <strong>no corta</strong> la elipse → <span class="bad">vacío · no hay función ahí</span>.');
+      setWork('t = <span class="hl">' + tStr + '</span> &lt; −1 · cortes: <span class="bad">0</span>');
+      setCaption('t = <span class="hl-t">' + tStr + '</span> &lt; −1 · <span class="empty">nada dibujado</span> a la izquierda → <span class="bad">vacío</span>.');
       if (force || prev !== "emptyL") bip("bad");
-    } else if (reg === "vertexL") {
-      setWork('t = <span class="hl">−3</span> · vértice · <span class="ok">1 punto</span> (−3, 0)');
-      setCaption('t = <span class="hl-v">−3</span> · tangente en el vértice <span class="hl-v">(−3, 0)</span> → <span class="ok">un único y</span> → <strong>sí es función</strong> en ese x.');
-      bip("amber");
-    } else if (reg === "two") {
-      var yu = hs[0] ? fmtNum(hs[0].y) : "?";
-      var yd = hs[1] ? fmtNum(hs[1].y) : "?";
-      setWork('t = <span class="hl">' + tStr + '</span> · cortes: <span class="bad">2</span> · y ≈ ' + yu + ' / ' + yd);
-      setCaption('t = <span class="hl-t">' + tStr + '</span> ∈ (−3, 4) · corta <span class="hl-up">arriba</span> y <span class="hl-dn">abajo</span> (y ≈ ' + yu + ' y ' + yd + ') → <span class="bad">dos y para un x</span> → <strong>no es función</strong>.');
-      if (force || prev !== "two") bip("bad");
-    } else if (reg === "vertexR") {
-      setWork('t = <span class="hl">4</span> · vértice · <span class="ok">1 punto</span> (4, 0)');
-      setCaption('t = <span class="hl-v">4</span> · tangente en el vértice <span class="hl-v">(4, 0)</span> → <span class="ok">un único y</span> → <strong>sí es función</strong> en ese x.');
-      bip("amber");
+    } else if (reg === "vertical") {
+      setWork('t = <span class="hl">−1</span> · segmento vertical · cortes: <span class="bad">∞</span> · y ∈ [−2, 5]');
+      setCaption('t = <span class="hl-dn">−1</span> · la sonda cae sobre el <span class="hl-dn">segmento vertical</span> → <span class="bad">infinitos y</span> para un solo x → <strong>falla la prueba</strong> · <span class="bad">no es función</span>.');
+      bip("bad");
     } else {
-      setWork('t = <span class="hl">' + tStr + '</span> &gt; 4 · cortes: <span class="bad">0</span>');
-      setCaption('t = <span class="hl-t">' + tStr + '</span> &gt; 4 · la vertical <strong>ya no corta</strong> la elipse → <span class="bad">vacío · no hay función ahí</span>.');
-      if (force || prev !== "emptyR") bip("bad");
+      var yy = hs[0] ? fmtNum(hs[0].y) : fmtNum(yLine(t));
+      setWork('t = <span class="hl">' + tStr + '</span> · cortes: <span class="ok">1</span> · y = −t+4 ≈ ' + yy);
+      setCaption('t = <span class="hl-t">' + tStr + '</span> &gt; −1 · un solo corte con <span class="hl-up">y = −x + 4</span> (y ≈ ' + yy + ') → <span class="ok">sí es función</span> en ese x.');
+      if (force || prev !== "one") bip("ok");
     }
   }
 
@@ -743,17 +729,15 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.t = T_START;
     state.showProbe = false;
     state.showHits = false;
-    state.highlightVertex = true;
     state.lastRegion = "";
     state.bandReveal = Infinity;
     playBtn.disabled = false;
     stopBtn.disabled = true;
     exprFormula.innerHTML =
-      '<span class="hl-rel">((x − 0.5)/3.5)² + (y/3)² = 1</span><br>' +
-      '<span class="hl-up">y = +3√(1 − ((x−0.5)/3.5)²)</span><br>' +
-      '<span class="hl-dn">y = −3√(1 − ((x−0.5)/3.5)²)</span>';
+      '<span class="hl-up">y = −x + 4</span> <span style="color:#8b9bb4;font-weight:600">(x &gt; −1)</span><br>' +
+      '<span class="hl-dn">x = −1</span> <span style="color:#8b9bb4;font-weight:600">segmento y ∈ [−2, 5]</span>';
     setWork("");
-    setCaption('Presioná <strong>▶ Play</strong> · la vertical <span class="hl-t">x = t</span> barre la elipse V.');
+    setCaption('Presioná <strong>▶ Play</strong> · la vertical <span class="hl-t">x = t</span> barre el gráfico VI.');
     sizeCanvas();
     draw();
   }
@@ -764,8 +748,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     draw();
     playBtn.disabled = false;
     stopBtn.disabled = true;
-    setWork('elipse · <span class="ok">solo extremos (−3 y 4)</span> = función · <span class="bad">interior = 2 y</span>');
-    setCaption('<strong>Cierre:</strong> una elipse <strong>casi nunca</strong> es función — salvo los extremos <span class="ok">t=−3</span> y <span class="ok">t=4</span> (1 punto). En (−3, 4) hay <span class="bad">dos y</span>; fuera, <span class="empty">vacío</span>.');
+    setWork('cierre · <span class="bad">segmento en x=−1</span> basta · <span class="ok">raya = 1 corte</span>');
+    setCaption('<strong>Cierre:</strong> <span class="bad">un solo x</span> con <span class="hl-dn">segmento vertical</span> ya alcanza para que la relación <strong>no sea función</strong>. A la derecha, cada t corta la raya <span class="ok">una vez</span> — pero el fallo en t=−1 invalida el todo.');
     bip("ok");
   }
 
@@ -808,16 +792,16 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     state.t = T_START;
     state.showProbe = false;
     state.showHits = false;
-    state.highlightVertex = true;
     state.lastRegion = "";
     state.bandReveal = T_START;
     state.phase = "intro";
     sizeCanvas();
     draw();
-    setWork('relación · elipse V');
-    setCaption('Gráfico: <span class="hl-up">arco superior</span> teal · <span class="hl-dn">arco inferior</span> coral · vértices <span class="hl-v">(−3, 0)</span> y <span class="hl-v">(4, 0)</span>.');
+    setWork('relación · gráfico VI');
+    setCaption('Gráfico VI: <span class="hl-dn">segmento vertical</span> en x=−1 (coral) · <span class="hl-up">raya</span> y=−x+4 (teal) · unión (−1, 5).');
     bip("ok");
 
+    /* empty left */
     later(900, function () {
       if (!state.playing) return;
       state.phase = "emptyL";
@@ -829,44 +813,27 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       draw();
     });
 
+    /* sweep to vertical, pause hard */
     later(2200, function () {
       if (!state.playing) return;
-      state.phase = "toVertexL";
-      animateSweep(T_START, XL, 2400, function () {
+      state.phase = "toVertical";
+      animateSweep(T_START, XV, 2200, function () {
         if (!state.playing) return;
-        state.phase = "atVertexL";
-        state.t = XL;
+        state.phase = "atVertical";
+        state.t = XV;
+        state.bandReveal = XV;
         applyRegionCaption(state.t, true);
         draw();
-        later(1600, function () {
+        /* hard pause at x=−1 (bad bip already fired) */
+        later(2400, function () {
           if (!state.playing) return;
-          state.phase = "toTwo";
-          animateSweep(XL, CX, 3200, function () {
+          state.phase = "alongLine";
+          /* nudge just past −1 then sweep along line past 4 */
+          animateSweep(XV + 0.05, T_END, 5200, function () {
             if (!state.playing) return;
-            state.phase = "twoHold";
-            applyRegionCaption(state.t, true);
-            draw();
-            later(1600, function () {
+            later(900, function () {
               if (!state.playing) return;
-              state.phase = "toVertexR";
-              animateSweep(CX, XR, 3200, function () {
-                if (!state.playing) return;
-                state.phase = "atVertexR";
-                state.t = XR;
-                applyRegionCaption(state.t, true);
-                draw();
-                later(1600, function () {
-                  if (!state.playing) return;
-                  state.phase = "emptyR";
-                  animateSweep(XR, T_END, 2000, function () {
-                    if (!state.playing) return;
-                    later(900, function () {
-                      if (!state.playing) return;
-                      finishPlay();
-                    });
-                  });
-                });
-              });
+              finishPlay();
             });
           });
         });
