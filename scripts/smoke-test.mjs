@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -70,7 +71,13 @@ assert(bakFiles.length === 0, `No hay archivos temporales *.bak (encontrados: ${
 
 // 3. Sintaxis JavaScript
 console.log('\n⚙️ 3. Validando sintaxis JavaScript (node --check):');
-const jsFiles = ['app.js', 'data.js', 'tools/game-kit.js'];
+const jsFiles = [
+  'app.js',
+  'data.js',
+  'tools/game-kit.js',
+  'tools/pending-queue-mock.js',
+  'tools/bandeja-pendientes.js'
+];
 for (const rel of jsFiles) {
   const full = path.join(ROOT, rel);
   if (fs.existsSync(full)) {
@@ -146,6 +153,103 @@ for (const f of rootHtmlFiles) {
     const start = fs.readFileSync(p, 'utf-8').slice(0, 100).toLowerCase();
     assert(start.includes('<!doctype html>'), `${f} tiene declaración <!doctype html>`);
   }
+}
+
+// 7. Bandeja Top-K (mock + ranking + localStorage)
+console.log('\n📥 7. Prototipo bandeja Top-K pendientes:');
+{
+  const mockPath = path.join(ROOT, 'tools/pending-queue-mock.js');
+  const bandejaPath = path.join(ROOT, 'tools/bandeja-pendientes.js');
+  const indexHtml = fs.readFileSync(toolsIndexPath, 'utf-8');
+  assert(indexHtml.includes('id="bandeja-pendientes"'), 'tools/index.html monta #bandeja-pendientes');
+  assert(indexHtml.includes('pending-queue-mock.js'), 'tools/index.html carga pending-queue-mock.js');
+  assert(indexHtml.includes('bandeja-pendientes.js'), 'tools/index.html carga bandeja-pendientes.js');
+
+  const memory = {};
+  const storage = {
+    getItem: (key) => (Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : null),
+    setItem: (key, value) => { memory[key] = String(value); },
+    removeItem: (key) => { delete memory[key]; }
+  };
+  const sandbox = { localStorage: storage, console };
+  sandbox.window = sandbox;
+  sandbox.globalThis = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(fs.readFileSync(mockPath, 'utf-8'), sandbox);
+  vm.runInContext(fs.readFileSync(bandejaPath, 'utf-8'), sandbox);
+
+  const queue = sandbox.CAMPUS_PENDING_QUEUE;
+  const bandeja = sandbox.CampusBandeja;
+  assert(!!queue && Array.isArray(queue.items), 'Mock CAMPUS_PENDING_QUEUE.items existe');
+  assert(queue.items.length >= 15 && queue.items.length <= 24, `Mock tiene 15–24 ítems (ahora ${queue.items.length})`);
+  assert(queue.defaultK === 10, 'K por defecto es 10');
+  assert(!!bandeja, 'CampusBandeja está expuesto');
+
+  let mockHrefsOk = true;
+  const titles = [];
+  for (const item of queue.items) {
+    const required = ['id', 'title', 'href', 'rank', 'status'];
+    for (const key of required) {
+      if (item[key] == null) {
+        mockHrefsOk = false;
+        assert(false, `Ítem mock completo (${item.id || '?'}.${key})`);
+      }
+    }
+    if (item.status !== 'pending' && item.status !== 'done') {
+      mockHrefsOk = false;
+      assert(false, `status pending|done en ${item.id}`);
+    }
+    const target = path.join(ROOT, 'tools', item.href);
+    if (!fs.existsSync(target)) {
+      mockHrefsOk = false;
+      assert(false, `href real de lección: tools/${item.href}`);
+    }
+    titles.push(String(item.title).toLowerCase());
+  }
+  if (mockHrefsOk) {
+    assert(true, `Los ${queue.items.length} href del mock existen en tools/`);
+  }
+  const blob = titles.join(' | ');
+  assert(blob.includes('working memory') || blob.includes('l200'), 'Mock incluye L200 working memory');
+  assert(blob.includes('l183') || blob.includes('cara triste'), 'Mock incluye L183');
+  assert(blob.includes('lineal'), 'Mock incluye lineales');
+  assert(blob.includes('dominio'), 'Mock incluye dominio');
+
+  const merged = bandeja.mergeQueue(queue.items, bandeja.emptyState());
+  const top10 = bandeja.topPending(merged, 10);
+  assert(top10.length === 10, `Top-K=10 devuelve 10 pendientes (obtuvo ${top10.length})`);
+  assert(top10.every((it) => it.status === 'pending'), 'Top-K solo incluye status pending');
+  assert(top10.every((it) => it.enabled !== false), 'Top-K ignora ítems deshabilitados');
+  assert(
+    top10.every((it, i) => i === 0 || it.rank >= top10[i - 1].rank),
+    'Top-K ordena por rank ascendente'
+  );
+  assert(top10[0].id === 'l200-wm', 'El pendiente de mayor prioridad es L200');
+  assert(bandeja.topPending(merged, 5).length === 5, 'K=5 devuelve 5');
+  assert(bandeja.topPending(merged, 15).length === 15, 'K=15 devuelve 15');
+  assert(bandeja.normalizeK(7) === 10, 'K inválido cae a 10');
+  assert(
+    bandeja.pendingLabel(1, 10) === 'Tenés 1 tarea pendiente (top 10)',
+    'Copia singular de la bandeja'
+  );
+  assert(
+    bandeja.pendingLabel(16, 10) === 'Tenés 16 tareas pendientes (top 10)',
+    'Copia plural de la bandeja'
+  );
+
+  const firstId = top10[0].id;
+  const afterDone = bandeja.mergeQueue(queue.items, bandeja.markDone(bandeja.emptyState(), firstId));
+  const topAfter = bandeja.topPending(afterDone, 10);
+  assert(topAfter.every((it) => it.id !== firstId), 'Marcar hecha saca el ítem del Top-K');
+  assert(topAfter.length === 10, 'Al completar, entra el siguiente pendiente (sigue habiendo 10)');
+  const disabled = bandeja.mergeQueue(
+    queue.items,
+    bandeja.setEnabled(bandeja.emptyState(), firstId, false)
+  );
+  assert(
+    bandeja.topPending(disabled, 10).every((it) => it.id !== firstId),
+    'Deshabilitar en mock docente saca el ítem de la cola'
+  );
 }
 
 // Resumen final
