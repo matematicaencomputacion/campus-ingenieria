@@ -1,0 +1,18 @@
+schema: spec-driven
+context: |
+  Campus Ingeniería: sitio estático HTML/CSS/JavaScript; lecciones interactivas en tools/.
+  Sin backend ni build. Servidor local: python3 -m http.server 3000 --bind 127.0.0.1.
+  Reglas: docs/base-standards.md. Arquitectura: docs/architecture.md.
+  Producto y pruebas: README.md. Operación: DEPLOY.md.
+  Evidencia histórica: docs/tech-review-2026-09-08.md; verificar estado actual en GitHub.
+  Gates locales: npm test; cambios funcionales o visuales: npm run test:all.
+  CSS: baseline/compare local; no está integrado en CI.
+  No unificar navegación ni reabrir CSS Fase 2 sin decisión explícita.
+  PRs pequeños; main limpia; merge y deploy requieren autorización explícita.
+rules:
+  proposal:
+    - Incluir alcance, fuera de alcance y rollback.
+  specs:
+    - Usar requisitos SHALL y escenarios verificables WHEN/THEN.
+  tasks:
+    - Incluir pruebas y evidencia del SHA final; distinguir CI de deploy.

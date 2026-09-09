@@ -38,7 +38,7 @@ npm install
 npx playwright install chromium
 ```
 
-En CI ambos corren automáticamente (jobs `static-check` y `browser-check` en
+En CI las pruebas estáticas, de carga e interacción corren automáticamente (jobs `static-check` y `browser-check` en
 `.github/workflows/ci.yml`).
 
 ## Deploy
@@ -46,3 +46,20 @@ En CI ambos corren automáticamente (jobs `static-check` y `browser-check` en
 Ver [`DEPLOY.md`](DEPLOY.md). **Importante:** hoy el deploy a producción es manual;
 el workflow de GitHub Actions no despliega hasta que se cargue el secret
 `DEPLOY_SSH_KEY` (ver también [`docs/tech-review-2026-09-08.md`](docs/tech-review-2026-09-08.md)).
+
+## Lineamientos para copilotos y SDD
+
+La fuente común es [docs/base-standards.md](docs/base-standards.md).
+Consultar [arquitectura](docs/architecture.md) y el change en `openspec/changes/`
+antes de implementar. La configuración se adapta de Specboot al stack real de Campus.
+
+Para refactors CSS, capturar **antes** de editar y comparar después las mismas páginas:
+
+```bash
+npm run css:snapshot -- --save /tmp/campus-css-before.json tools/leccion-lineales.html
+npm run css:snapshot -- --compare /tmp/campus-css-before.json tools/leccion-lineales.html
+```
+
+Este verificador se ejecuta localmente; no forma parte de `test:all` ni del CI.
+La comparación cubre las propiedades y el estado capturados a 1440×900;
+no sustituye pruebas de interacción o revisión visual responsive.
