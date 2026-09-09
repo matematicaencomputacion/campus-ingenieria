@@ -26,7 +26,8 @@
   var SNAP_OUT = 0.95;
   var BIG_R = 14;
   var EASY_PAD = 1.5;
-  var EASY_ZOOM = 1.5;
+  var EASY_ZOOM = 4.5;
+  var EASY_MIN_MARGIN = 16;
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -432,38 +433,33 @@
     confettiCanvas.height = graphWrap.clientHeight || canvas.height;
   }
 
-  function easyFocusBounds() {
+  function easyFocusBounds(pad) {
     var p1 = easyP1();
     var p2 = easyP2();
     var xs = [0, p1.x, p2.x];
     var ys = [0, p1.y, p2.y];
+    var margin = pad == null ? EASY_PAD : pad;
     return {
-      xmin: Math.min.apply(null, xs) - EASY_PAD,
-      xmax: Math.max.apply(null, xs) + EASY_PAD,
-      ymin: Math.min.apply(null, ys) - EASY_PAD,
-      ymax: Math.max.apply(null, ys) + EASY_PAD
+      xmin: Math.min.apply(null, xs) - margin,
+      xmax: Math.max.apply(null, xs) + margin,
+      ymin: Math.min.apply(null, ys) - margin,
+      ymax: Math.max.apply(null, ys) + margin
     };
   }
 
-  function applyIsotropicView(bounds, plotW, plotH) {
+  function applyIsotropicView(bounds, plotW, plotH, unit) {
     var needW = Math.max(bounds.xmax - bounds.xmin, 1);
     var needH = Math.max(bounds.ymax - bounds.ymin, 1);
-    var span = Math.max(needW, needH);
-    var s = Math.min(plotW, plotH) / span;
+    var s = unit > 0 ? unit : Math.min(plotW, plotH) / Math.max(needW, needH);
     if (!(s > 0) || !isFinite(s)) s = 1;
-    var used = span * s;
-    var extraX = Math.max(0, plotW - used);
-    var extraY = Math.max(0, plotH - used);
-    viewPad.l = PAD.l + extraX / 2;
-    viewPad.r = PAD.r + extraX / 2;
-    viewPad.t = PAD.t + extraY / 2;
-    viewPad.b = PAD.b + extraY / 2;
+    var viewW = plotW / s;
+    var viewH = plotH / s;
     var cx = (bounds.xmin + bounds.xmax) / 2;
     var cy = (bounds.ymin + bounds.ymax) / 2;
-    XMIN = cx - span / 2;
-    XMAX = cx + span / 2;
-    YMIN = cy - span / 2;
-    YMAX = cy + span / 2;
+    XMIN = cx - viewW / 2;
+    XMAX = cx + viewW / 2;
+    YMIN = cy - viewH / 2;
+    YMAX = cy + viewH / 2;
   }
 
   function sizeCanvas() {
@@ -481,19 +477,47 @@
     // Use CSS pixels in easy mode so the mobile tokens retain their hit area.
     var canvasW = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
     if (easy) {
-      // Stable isotropic camera: origin, P1, P2 and the h/v travel, square units.
-      var bounds = easyFocusBounds();
-      var plotW = Math.max(1, canvasW - PAD.l - PAD.r);
+      // Stable isotropic camera: 3× the previous compact unit, square cells.
+      // Crop world/pixel margins before shrinking the unit or stretching axes.
+      var padded = easyFocusBounds(EASY_PAD);
+      var tight = easyFocusBounds(0);
+      var padL = PAD.l;
+      var padR = PAD.r;
+      var padT = PAD.t;
+      var padB = PAD.b;
+      var plotW = Math.max(1, canvasW - padL - padR);
       var normalPlotH = Math.max(1, normalH - PAD.t - PAD.b);
       var originalUnit = Math.min(plotW, normalPlotH) / (2 * VIEW);
-      var needW = Math.max(bounds.xmax - bounds.xmin, 1);
-      var needH = Math.max(bounds.ymax - bounds.ymin, 1);
-      var span = Math.max(needW, needH);
       var targetUnit = originalUnit * EASY_ZOOM;
       var floorH = Math.max(wrapW < 600 ? 240 : 140, normalH / 3);
-      cssH = Math.max(floorH, Math.round(span * targetUnit + PAD.t + PAD.b));
+      var tightW = Math.max(tight.xmax - tight.xmin, 1e-6);
+      var tightH = Math.max(tight.ymax - tight.ymin, 1e-6);
+      var padH = Math.max(padded.ymax - padded.ymin, 1);
+      cssH = Math.max(floorH, Math.round(padH * targetUnit + padT + padB));
       cssH = Math.min(cssH, normalH);
-      applyIsotropicView(bounds, plotW, Math.max(1, cssH - PAD.t - PAD.b));
+      var plotH = Math.max(1, cssH - padT - padB);
+      if (plotW < tightW * targetUnit || plotH < tightH * targetUnit) {
+        cssH = Math.min(normalH, Math.max(cssH, Math.round(tightH * targetUnit + padT + padB)));
+        plotH = Math.max(1, cssH - padT - padB);
+      }
+      if (plotW < tightW * targetUnit || plotH < tightH * targetUnit) {
+        var cut = Math.max(0, Math.min(padL, padR, padT, padB) - EASY_MIN_MARGIN);
+        padL -= cut;
+        padR -= cut;
+        padT -= cut;
+        padB -= cut;
+        plotW = Math.max(1, canvasW - padL - padR);
+        plotH = Math.max(1, cssH - padT - padB);
+      }
+      var unit = targetUnit;
+      if (plotW < tightW * unit || plotH < tightH * unit) {
+        unit = Math.min(plotW / tightW, plotH / tightH);
+      }
+      viewPad.l = padL;
+      viewPad.r = padR;
+      viewPad.t = padT;
+      viewPad.b = padB;
+      applyIsotropicView(padded, plotW, plotH, unit);
     }
     canvas.width = canvasW;
     canvas.height = Math.round(cssH);
