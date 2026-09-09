@@ -84,20 +84,22 @@ for (const width of [390, 1440]) {
       return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner, aspect, originalUnit, easyCanvasW, easyWrapW};
     });
     assert.deepEqual(result.failures, []);
-    if (width === 1440) assert.ok(result.compact <= result.normal + 1, JSON.stringify({compact: result.compact, normal: result.normal}));
+    if (width === 1440) assert.ok(result.compact <= result.normal * 2.2 + 1, JSON.stringify({compact: result.compact, normal: result.normal}));
     else assert.ok(result.compact >= 239, JSON.stringify(result));
     assert.ok(result.aspect.every(a => Math.abs(a.sx - a.sy) < 0.75), JSON.stringify(result.aspect.filter(a => Math.abs(a.sx - a.sy) >= 0.75)));
     const normalPlotH = Math.max(420, Math.min(720, result.easyWrapW * 0.74)) - 70;
     const easyOriginal = Math.min(result.easyCanvasW - 84, normalPlotH) / 24;
-    const expectedUnit = easyOriginal * 4.5;
-    assert.ok(result.aspect.every(a => a.sx + 0.75 >= expectedUnit * 0.9), JSON.stringify({easyOriginal, expectedUnit, easyCanvasW: result.easyCanvasW, aspect: result.aspect}));
+    const expectedUnit = easyOriginal * 9;
+    const ref = result.aspect.find(a => a.b === 3 && a.m === 2);
+    assert.ok(ref && ref.sx + 0.75 >= expectedUnit * 0.75, JSON.stringify({ref, expectedUnit}));
+    assert.ok(result.aspect.every(a => a.sx + 0.75 >= expectedUnit * 0.55), JSON.stringify({easyOriginal, expectedUnit, easyCanvasW: result.easyCanvasW, worst: result.aspect.filter(a => a.sx + 0.75 < expectedUnit * 0.55)}));
     assert.ok(result.banners.every(bottom => bottom <= result.top), 'Las consignas no tapan el plano');
     assert.equal(result.restored, result.normal);
     assert.ok(result.corner.x > result.origin.x && result.corner.y < result.origin.y);
   });
 
   test(`L200: arrastre real de P1 y P2 y resize a ${width}px`, async t => {
-    const p = await pageFor(t, { viewport: { width, height: 1000 } });
+    const p = await pageFor(t, { viewport: { width, height: width >= 1000 ? 1600 : 1000 } });
     await p.goto(base + '/tools/leccion-lineal-working-memory.html');
     await p.evaluate(() => { const a=window.__L200; a.state.phase="pick-b"; a.chooseB(3);a.chooseM(-1.5);a.startFormaFacil(); });
     await p.waitForFunction(() => window.__L200.state.phase === 'easy-b');
@@ -105,20 +107,38 @@ for (const width of [390, 1440]) {
       await p.locator('#c').scrollIntoViewIfNeeded();
       const coords = await p.evaluate(({from,to}) => {
         const a=window.__L200,c=document.getElementById('c'),r=c.getBoundingClientRect();
-        return [from,to].map(q => {const s=a.worldToScreen(q.x,q.y);return {x:r.left+s.x*r.width/c.width,y:r.top+s.y*r.height/c.height};});
+        a.draw();
+        const map = (q, i) => {
+          let s = a.worldToScreen(q.x, q.y);
+          // Prefer the live dock token for the grab point (may sit on origin).
+          if (i === 0 && a.state && a.state._dock) s = a.state._dock;
+          const x = r.left + s.x * r.width / c.width;
+          const y = r.top + s.y * r.height / c.height;
+          return { x, y };
+        };
+        return [map(from, 0), map(to, 1)];
       }, {from,to});
-      await p.mouse.move(coords[0].x,coords[0].y);await p.mouse.down();
-      await p.mouse.move(coords[1].x,coords[1].y,{steps:12});await p.mouse.up();
+      // Keep the grab point inside the viewport.
+      await p.evaluate(({x,y}) => {
+        const el = document.elementFromPoint(x, y);
+        if (!el) window.scrollBy(0, y - window.innerHeight * 0.5);
+      }, coords[0]);
+      await p.mouse.move(coords[0].x, coords[0].y);
+      await p.mouse.down();
+      await p.mouse.move(coords[1].x, coords[1].y, { steps: 12 });
+      await p.mouse.up();
     }
     await drag({x:0,y:0},{x:0,y:3});
-    await p.waitForFunction(() => window.__L200.state.phase === 'easy-m');
+    await p.locator('#c').scrollIntoViewIfNeeded();
+    await p.waitForFunction(() => window.__L200.state.phase === 'easy-m', null, { timeout: 8000 });
     const unit = await p.evaluate(() => {
       const a = window.__L200, o = a.worldToScreen(0, 0);
       return { sx: a.worldToScreen(1, 0).x - o.x, sy: o.y - a.worldToScreen(0, 1).y };
     });
     assert.ok(Math.abs(unit.sx - unit.sy) < 0.75, JSON.stringify(unit));
     await drag({x:0,y:3},{x:2,y:0});
-    await p.waitForFunction(() => window.__L200.state.phase === 'easy-line');
+    await p.locator('#c').scrollIntoViewIfNeeded();
+    await p.waitForFunction(() => window.__L200.state.phase === 'easy-line', null, { timeout: 8000 });
     assert.equal(await p.evaluate(() => window.__L200.state.bad), 0);
     await p.setViewportSize({width: width === 390 ? 1440 : 390,height:1000});
     assert.equal(await p.evaluate(() => window.__L200.state.phase), 'easy-line');

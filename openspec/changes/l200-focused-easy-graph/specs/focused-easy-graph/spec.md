@@ -2,7 +2,7 @@
 Concentrar el plano de la forma fácil en la ordenada y el desplazamiento hasta el segundo punto, conservando la interacción.
 ## ADDED Requirements
 ### Requirement: Encuadre compacto
-La forma fácil SHALL mostrar origen, P1, P2 y el recorrido horizontal/vertical con margen, en un lienzo de aproximadamente un tercio del alto original en escritorio. En móvil SHALL conservar al menos 240 px de alto. Las celdas SHALL ser cuadradas (`sx = sy`) y la unidad de grilla SHALL ser aproximadamente el triple de la vista compacta isótropa previa (4,5× la unidad del plano −12..12).
+La forma fácil SHALL mostrar origen, P1, P2 y el recorrido horizontal/vertical con margen, en un lienzo de aproximadamente un tercio del alto original en escritorio. En móvil SHALL conservar al menos 240 px de alto. Las celdas SHALL ser cuadradas (`sx = sy`) y la unidad de grilla SHALL ser aproximadamente 6× la unidad del plano −12..12 (`EASY_ZOOM = 9`, el doble del encuadre 3× previo), con celdas cuadradas.
 #### Scenario: Todas las pendientes y ordenadas
 - **WHEN** se inicia forma fácil con cualquier b y m disponibles
 - **THEN** ambos puntos, el origen y el codo del desplazamiento quedan dentro del lienzo sin superposición con consignas.

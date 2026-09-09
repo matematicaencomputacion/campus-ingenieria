@@ -26,7 +26,7 @@
   var SNAP_OUT = 0.95;
   var BIG_R = 14;
   var EASY_PAD = 1.5;
-  var EASY_ZOOM = 4.5;
+  var EASY_ZOOM = 9;
   var EASY_MIN_MARGIN = 16;
 
   var canvas = document.getElementById("c");
@@ -477,8 +477,8 @@
     // Use CSS pixels in easy mode so the mobile tokens retain their hit area.
     var canvasW = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
     if (easy) {
-      // Stable isotropic camera: 3× the previous compact unit, square cells.
-      // Crop world/pixel margins before shrinking the unit or stretching axes.
+      // Stable isotropic camera: square cells; prefer growing height over shrinking unit.
+      // EASY_ZOOM is vs the −12..12 plane unit. Crop margins before shrinking axes.
       var padded = easyFocusBounds(EASY_PAD);
       var tight = easyFocusBounds(0);
       var padL = PAD.l;
@@ -493,11 +493,13 @@
       var tightW = Math.max(tight.xmax - tight.xmin, 1e-6);
       var tightH = Math.max(tight.ymax - tight.ymin, 1e-6);
       var padH = Math.max(padded.ymax - padded.ymin, 1);
-      cssH = Math.max(floorH, Math.round(padH * targetUnit + padT + padB));
-      cssH = Math.min(cssH, normalH);
+      var needH = Math.round(padH * targetUnit + padT + padB);
+      // Allow taller than the normal plane so ×2 vs iso3x stays visible.
+      var maxEasyH = Math.max(normalH, Math.min(Math.round(wrapW * 1.35), Math.round(normalH * 2.2), needH));
+      cssH = Math.max(floorH, Math.min(needH, maxEasyH));
       var plotH = Math.max(1, cssH - padT - padB);
       if (plotW < tightW * targetUnit || plotH < tightH * targetUnit) {
-        cssH = Math.min(normalH, Math.max(cssH, Math.round(tightH * targetUnit + padT + padB)));
+        cssH = Math.min(maxEasyH, Math.max(cssH, Math.round(tightH * targetUnit + padT + padB)));
         plotH = Math.max(1, cssH - padT - padB);
       }
       if (plotW < tightW * targetUnit || plotH < tightH * targetUnit) {
