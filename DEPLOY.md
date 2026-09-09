@@ -21,9 +21,16 @@ Solo el árbol público del repo (raíz + `tools/*.html` + `resources/`).
 
 ---
 
-## 🚀 Despliegue Automatizado (Recomendado vía GitHub Actions)
+## 🚀 Despliegue Automatizado (vía GitHub Actions)
 
-El repositorio cuenta con un pipeline de CI/CD automatizado en `.github/workflows/deploy.yml`.
+El repositorio cuenta con un pipeline de deploy en `.github/workflows/deploy.yml`.
+
+> **⚠️ Estado actual (2026-09):** el deploy automático **NO está activo** porque el
+> repo aún no tiene cargado el secret `DEPLOY_SSH_KEY`. Cuando el workflow corre sin
+> ese secret, **salta los pasos de SSH y rsync** (producción queda sin cambios) y lo
+> deja anotado con un `::warning::` en el run summary — el `success` del job **no**
+> significa que se haya desplegado. Hasta cargar el secret, usar el
+> **procedimiento manual** de más abajo. Ver `docs/tech-review-2026-09-08.md`.
 
 ### Flujo estándar:
 1. Abrir PR contra `main`.
