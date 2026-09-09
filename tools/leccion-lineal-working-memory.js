@@ -1,4 +1,4 @@
-/*! Campus Ingeniería · L200 · lineal working memory (tabla automática → graficar → forma fácil). */
+/*! Campus Ingeniería · L200 · lineal working memory (b → m → tabla → graficar → forma fácil). */
 (function () {
   "use strict";
 
@@ -13,6 +13,7 @@
   var RUN = "#60a5fa";
   var RISE = "#34d399";
   var PAD = { l: 48, r: 36, t: 28, b: 42 };
+  var viewPad = { l: PAD.l, r: PAD.r, t: PAD.t, b: PAD.b };
   var VIEW = 12;
   var XMIN = -VIEW;
   var XMAX = VIEW;
@@ -24,6 +25,8 @@
   var SNAP_IN = 0.55;
   var SNAP_OUT = 0.95;
   var BIG_R = 14;
+  var EASY_PAD = 1.5;
+  var EASY_ZOOM = 1.5;
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -32,6 +35,7 @@
   var promptEl = document.getElementById("prompt");
   var fnBox = document.getElementById("fnBox");
   var soundMeter = document.getElementById("soundMeter");
+  var playBtn = document.getElementById("playBtn");
   var resetBtn = document.getElementById("resetBtn");
   var slowBtn = document.getElementById("slowBtn");
   var scoreOk = document.getElementById("scoreOk");
@@ -104,7 +108,7 @@
   };
 
   function later(ms, fn) {
-    var id = setTimeout(fn, ms * (state.phase === "fill" ? 1 : (state.speedFactor || 1)));
+    var id = setTimeout(fn, ms * (state.speedFactor || 1));
     timers.push(id);
     return id;
   }
@@ -114,9 +118,7 @@
     timers = [];
   }
 
-  var audioArmed = false;
   function armAudio() {
-    audioArmed = true;
     if (GK.ensureAudio) return GK.ensureAudio();
     return null;
   }
@@ -267,7 +269,7 @@
     switch (state.phase) {
       case "pick-b": return "b";
       case "pick-m": return "m";
-      case "ready": return "preparada";
+      case "ready": return "Play";
       case "fill": return "tabla";
       case "place": return "gráfica";
       case "win": return "listo";
@@ -287,7 +289,7 @@
   function syncScores() {
     if (scoreOk) scoreOk.innerHTML = "Aciertos <strong>" + state.ok + "</strong>";
     if (scoreBad) scoreBad.innerHTML = "Errores <strong>" + state.bad + "</strong>";
-    if (scoreRound) scoreRound.innerHTML = state.phase === "fill" ? "Completá <strong>f(x)</strong>" : "Fase <strong>" + phaseLabel() + "</strong>";
+    if (scoreRound) scoreRound.innerHTML = "Fase <strong>" + phaseLabel() + "</strong>";
   }
 
   function setPrompt(html, cls) {
@@ -355,24 +357,24 @@
     input.classList.remove("pip");
     void input.offsetWidth;
     input.classList.add("pip");
-    if (audioArmed && GK.playOkChime) GK.playOkChime();
-    if (audioArmed && GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    if (GK.playOkChime) GK.playOkChime();
+    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
     later(1200, function () { input.classList.remove("pip"); });
   }
 
   function worldToScreen(x, y) {
-    var w = canvas.width - PAD.l - PAD.r;
-    var h = canvas.height - PAD.t - PAD.b;
-    var sx = PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w;
-    var sy = PAD.t + ((YMAX - y) / (YMAX - YMIN)) * h;
+    var w = canvas.width - viewPad.l - viewPad.r;
+    var h = canvas.height - viewPad.t - viewPad.b;
+    var sx = viewPad.l + ((x - XMIN) / (XMAX - XMIN)) * w;
+    var sy = viewPad.t + ((YMAX - y) / (YMAX - YMIN)) * h;
     return { x: sx, y: sy };
   }
 
   function screenToWorld(px, py) {
-    var w = canvas.width - PAD.l - PAD.r;
-    var h = canvas.height - PAD.t - PAD.b;
-    var x = XMIN + ((px - PAD.l) / w) * (XMAX - XMIN);
-    var y = YMAX - ((py - PAD.t) / h) * (YMAX - YMIN);
+    var w = canvas.width - viewPad.l - viewPad.r;
+    var h = canvas.height - viewPad.t - viewPad.b;
+    var x = XMIN + ((px - viewPad.l) / w) * (XMAX - XMIN);
+    var y = YMAX - ((py - viewPad.t) / h) * (YMAX - YMIN);
     return { x: x, y: y };
   }
 
@@ -429,25 +431,70 @@
     confettiCanvas.height = graphWrap.clientHeight || canvas.height;
   }
 
+  function easyFocusBounds() {
+    var p1 = easyP1();
+    var p2 = easyP2();
+    var xs = [0, p1.x, p2.x];
+    var ys = [0, p1.y, p2.y];
+    return {
+      xmin: Math.min.apply(null, xs) - EASY_PAD,
+      xmax: Math.max.apply(null, xs) + EASY_PAD,
+      ymin: Math.min.apply(null, ys) - EASY_PAD,
+      ymax: Math.max.apply(null, ys) + EASY_PAD
+    };
+  }
+
+  function applyIsotropicView(bounds, plotW, plotH) {
+    var needW = Math.max(bounds.xmax - bounds.xmin, 1);
+    var needH = Math.max(bounds.ymax - bounds.ymin, 1);
+    var span = Math.max(needW, needH);
+    var s = Math.min(plotW, plotH) / span;
+    if (!(s > 0) || !isFinite(s)) s = 1;
+    var used = span * s;
+    var extraX = Math.max(0, plotW - used);
+    var extraY = Math.max(0, plotH - used);
+    viewPad.l = PAD.l + extraX / 2;
+    viewPad.r = PAD.r + extraX / 2;
+    viewPad.t = PAD.t + extraY / 2;
+    viewPad.b = PAD.b + extraY / 2;
+    var cx = (bounds.xmin + bounds.xmax) / 2;
+    var cy = (bounds.ymin + bounds.ymax) / 2;
+    XMIN = cx - span / 2;
+    XMAX = cx + span / 2;
+    YMIN = cy - span / 2;
+    YMAX = cy + span / 2;
+  }
+
   function sizeCanvas() {
     var wrapW = graphWrap.clientWidth || 900;
-    var cssH = Math.max(420, Math.min(720, wrapW * 0.74));
+    var normalH = Math.max(420, Math.min(720, wrapW * 0.74));
+    var cssH = normalH;
     var easy = isEasyPhase();
     graphWrap.classList.toggle("easy-focused", easy);
     XMIN = YMIN = -VIEW;
     XMAX = YMAX = VIEW;
-    if (easy) {
-      // Keep one stable camera for the origin, both points and the h/v corner.
-      var p1 = easyP1();
-      var p2 = easyP2();
-      XMIN = Math.min(0, p2.x) - 1.5;
-      XMAX = Math.max(0, p2.x) + 1.5;
-      YMIN = Math.min(0, p1.y, p2.y) - 2;
-      YMAX = Math.max(0, p1.y, p2.y) + 2;
-      cssH = Math.max(wrapW < 600 ? 240 : 140, cssH / 3);
-    }
+    viewPad.l = PAD.l;
+    viewPad.r = PAD.r;
+    viewPad.t = PAD.t;
+    viewPad.b = PAD.b;
     // Use CSS pixels in easy mode so the mobile tokens retain their hit area.
-    canvas.width = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
+    var canvasW = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
+    if (easy) {
+      // Stable isotropic camera: origin, P1, P2 and the h/v travel, square units.
+      var bounds = easyFocusBounds();
+      var plotW = Math.max(1, canvasW - PAD.l - PAD.r);
+      var normalPlotH = Math.max(1, normalH - PAD.t - PAD.b);
+      var originalUnit = Math.min(plotW, normalPlotH) / (2 * VIEW);
+      var needW = Math.max(bounds.xmax - bounds.xmin, 1);
+      var needH = Math.max(bounds.ymax - bounds.ymin, 1);
+      var span = Math.max(needW, needH);
+      var targetUnit = originalUnit * EASY_ZOOM;
+      var floorH = Math.max(wrapW < 600 ? 240 : 140, normalH / 3);
+      cssH = Math.max(floorH, Math.round(span * targetUnit + PAD.t + PAD.b));
+      cssH = Math.min(cssH, normalH);
+      applyIsotropicView(bounds, plotW, Math.max(1, cssH - PAD.t - PAD.b));
+    }
+    canvas.width = canvasW;
     canvas.height = Math.round(cssH);
     sizeConfetti();
   }
@@ -707,7 +754,7 @@
 
   function updateHud() {
     fnBox.innerHTML = latexFx();
-    slowBtn.hidden = state.phase === "fill" || state.phase === "ready" || state.phase === "pick-b" || state.phase === "pick-m";
+    playBtn.disabled = state.b == null || state.m == null || state.paused || state.phase === "win" || isEasyPhase();
     if (state.phase === "fill") {
       dockHint.textContent = "Escribí f(x) · Enter";
     } else if (state.phase === "place") {
@@ -721,7 +768,7 @@
     } else if (state.phase === "win") {
       dockHint.textContent = "Seguí · forma fácil";
     } else if (state.phase === "easy-win") {
-      dockHint.textContent = "Otra · Reiniciar o Seguir";
+      dockHint.textContent = "Otra · Reset o Seguir";
     } else {
       dockHint.textContent = "";
     }
@@ -757,10 +804,10 @@
     ctx.strokeStyle = "#64748b";
     ctx.lineWidth = 1.6;
     ctx.beginPath();
-    ctx.moveTo(PAD.l, ox.y);
-    ctx.lineTo(canvas.width - PAD.r, ox.y);
-    ctx.moveTo(ox.x, PAD.t);
-    ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.moveTo(viewPad.l, ox.y);
+    ctx.lineTo(canvas.width - viewPad.r, ox.y);
+    ctx.moveTo(ox.x, viewPad.t);
+    ctx.lineTo(ox.x, canvas.height - viewPad.b);
     ctx.stroke();
     ctx.fillStyle = MUTED;
     ctx.font = "600 12px ui-monospace, Menlo, monospace";
@@ -797,10 +844,10 @@
     ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
-    ctx.fillText("x", canvas.width - PAD.r - 12, ox.y - 8);
+    ctx.fillText("x", canvas.width - viewPad.r - 12, ox.y - 8);
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("y", ox.x + 10, PAD.t + 4);
+    ctx.fillText("y", ox.x + 10, viewPad.t + 4);
   }
 
   function drawLine() {
@@ -981,8 +1028,8 @@
     ctx.strokeStyle = "rgba(167,139,250,0.55)";
     ctx.lineWidth = 3.2;
     ctx.beginPath();
-    ctx.moveTo(ox.x, PAD.t);
-    ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.moveTo(ox.x, viewPad.t);
+    ctx.lineTo(ox.x, canvas.height - viewPad.b);
     ctx.stroke();
     ctx.restore();
   }
@@ -1178,6 +1225,7 @@
 
   function startFill() {
     if (state.m == null || state.b == null) return;
+    armAudio();
     state.rows = makeRows();
     state.active = 0;
     state.pipedFor = -1;
@@ -1217,11 +1265,11 @@
     updateHud();
     setPrompt("✓ <strong class=\"ok\">" + fmtNum(row.y) + "</strong>", "ok");
     if (allFilled()) {
-      later(420, startPlace);
+      later(state.speedFactor > 1 ? 900 : 420, startPlace);
       return;
     }
     state.locked = true;
-    later(320, function () {
+    later(state.speedFactor > 1 ? 700 : 320, function () {
       state.active = i + 1;
       state.locked = false;
       renderTable();
@@ -1829,11 +1877,12 @@
       "Lograste graficar la función."
     );
     setWinChrome(false);
-    state.b = B_OPTS[Math.floor(Math.random() * B_OPTS.length)];
-    state.m = M_OPTS[Math.floor(Math.random() * M_OPTS.length)];
-    state.phase = "ready";
+    renderChips();
+    renderTable();
+    updateHud();
+    setPrompt("Tocá <strong class=\"hl-b\">b</strong>", "attention");
     sizeCanvas();
-    startFill();
+    draw();
   }
 
   function keepPlaying() {
@@ -1867,6 +1916,10 @@
     state.raf = requestAnimationFrame(tick);
   }
 
+  playBtn.addEventListener("click", function () {
+    armAudio();
+    startFill();
+  });
   resetBtn.addEventListener("click", function () { resetAll(false); });
   slowBtn.addEventListener("click", toggleSlow);
   slowBtn.setAttribute("aria-pressed", "false");
