@@ -29,6 +29,7 @@ npm run test:browser      # smoke de navegador: abre las ~190 páginas en Chromi
                           # y falla ante errores de runtime (pageerror / console.error / 404)
 npm run test:interaction  # mueve los sliders de cada lección y falla si alguno lanza errores
 npm run test:navigation   # retorno contextual, visor, foco y geometría de barras
+npm run test:l200         # forma fácil compacta, arrastres y dictado de f(x)
 npm run test:all          # suite completa
 ```
 
@@ -73,3 +74,20 @@ En el visor, «Cerrar lección» devuelve el foco al nodo sin cargar otra págin
 del iframe. Las rutas de nodos se pueden recargar o compartir.
 
 Ver [ADR 0001](docs/adr/0001-contextual-navigation.md) para decisiones y cobertura.
+
+## Lección 200: forma fácil y dictado
+
+«Forma fácil» concentra el plano en el origen, la ordenada y el segundo punto.
+En escritorio reduce el alto del lienzo a un tercio; en móvil conserva 240 px para
+poder manipular las fichas. Reset recupera el plano completo.
+
+Debajo de la tabla, «Dictar» escucha una respuesta en español (por ejemplo,
+«menos uno coma cinco»). El número se escribe en la casilla activa: revisarlo y
+confirmar con OK o Enter. El mismo botón cancela la escucha. Requiere permiso de
+micrófono y un navegador con SpeechRecognition o webkitSpeechRecognition; si no
+está disponible, la entrada manual sigue funcionando. El servicio del navegador
+puede procesar la voz en línea; la aplicación no guarda audio ni transcripciones.
+
+Las pruebas de dictado simulan los eventos del navegador y cubren interpretación,
+confirmación, errores y cancelación. No certifican la precisión de un micrófono
+real ni la disponibilidad del servicio de reconocimiento.

@@ -254,6 +254,10 @@ canvas#c {
 .fx-input:disabled { opacity: 0.85; }
 .fx-input.ok { border-color: var(--ok); color: var(--ok); }
 .fx-input.bad { border-color: var(--bad); color: var(--bad); }
+.dictation { margin-top: 12px; }
+.dictation .btn { min-height: 44px; }
+.dictation .btn[aria-pressed="true"] { border-color: var(--bad); color: var(--bad); }
+.dictation p { margin: 8px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.4; }
 @keyframes pipFlash {
   0%, 100% { box-shadow: none; border-color: #3b4a63; background: #0b1220; }
   8%, 38%, 68% {
@@ -410,6 +414,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             <tbody id="tbody"></tbody>
           </table>
           <p class="dock-hint" id="dockHint">Escribí f(x)</p>
+          <div class="dictation">
+            <button type="button" class="btn" id="dictateBtn" aria-pressed="false" aria-describedby="dictationStatus dictationPrivacy" disabled>Dictar</button>
+            <p id="dictationStatus" role="status" aria-live="polite">Al completar la tabla, podés dictar el número de la casilla activa.</p>
+            <p id="dictationPrivacy">El navegador puede procesar tu voz en línea. También podés escribir.</p>
+          </div>
         </div>
       </aside>
     </div>
@@ -434,7 +443,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 </div>
 <div id="l200DragGhost" class="l200-drag-ghost" hidden aria-hidden="true"></div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="leccion-lineal-working-memory.js?v=20260909-focused"></script>
+<script src="number-dictation.js?v=20260909-voice"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909-voice"></script>
 <script src="lesson-bar.js?v=20260909-nav2" defer></script>
 </body>
 </html>

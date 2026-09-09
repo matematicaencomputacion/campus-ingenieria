@@ -1892,6 +1892,11 @@
 
   sizeCanvas();
   resetAll(false);
+  window.CampusNumberDictation.attach(
+    tbody,
+    document.getElementById("dictateBtn"),
+    document.getElementById("dictationStatus")
+  );
   tick();
 
   window.__L200 = {
