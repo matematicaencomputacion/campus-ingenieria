@@ -91,3 +91,6 @@ jobs:
 
       - name: Run contextual navigation tests
         run: npm run test:navigation
+
+      - name: Run L200 focused graph tests
+        run: npm run test:l200

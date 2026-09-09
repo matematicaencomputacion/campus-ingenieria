@@ -148,6 +148,13 @@ canvas#c {
   box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   text-align: center; line-height: 1.2;
 }
+.graph-wrap.easy-focused { align-self: start; }
+.easy-focused .easy-banner, .easy-focused .step-cartel {
+  position: relative; left: auto; top: auto; transform: none;
+  width: fit-content; margin: 0 auto 8px;
+}
+.easy-focused .easy-banner { max-width: calc(100% - 120px); }
+.easy-focused .lesson-nav { top: 0; }
 .easy-banner .k { font-size: 0.82rem; letter-spacing: 0.02em; }
 .easy-banner .s { font-size: 0.92rem; color: var(--amber); font-weight: 800; }
 .easy-copy { margin: 0; font-size: 0.84rem; color: var(--muted); line-height: 1.45; }
@@ -427,7 +434,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 </div>
 <div id="l200DragGhost" class="l200-drag-ghost" hidden aria-hidden="true"></div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="leccion-lineal-working-memory.js?v=20260909i"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909-focused"></script>
 <script src="lesson-bar.js?v=20260909-nav2" defer></script>
 </body>
 </html>
