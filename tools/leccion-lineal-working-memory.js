@@ -1466,6 +1466,18 @@
       draw();
       return;
     }
+    // easy-m: lock P2 on pointerup/click near the target even without an active drag
+    // (hover already drives pulse / 3× flash; P1 still requires drag from the dock).
+    if (state.phase === "easy-m" && !state.easyP2) {
+      if (ev && ev.preventDefault) ev.preventDefault();
+      applyPointer(ev);
+      var p2Drop = state.drag || state.hover;
+      var p2HadDrag = !!state.drag;
+      endDragVisual();
+      if (p2Drop && (inSnapZone(p2Drop, easyP2()) || dist(p2Drop, easyP2()) <= SNAP_IN)) lockEasyP2();
+      else if (p2HadDrag) placeWrongEasy("v/h");
+      return;
+    }
     if (!state.drag) {
       endDragVisual();
       return;
@@ -1485,11 +1497,6 @@
     if (state.phase === "easy-b" && !state.easyP1) {
       if (inSnapZone(drop, easyP1()) || dist(drop, easyP1()) <= SNAP_IN) lockEasyP1();
       else placeWrongEasy("en el eje Y");
-      return;
-    }
-    if (state.phase === "easy-m" && !state.easyP2) {
-      if (inSnapZone(drop, easyP2()) || dist(drop, easyP2()) <= SNAP_IN) lockEasyP2();
-      else placeWrongEasy("v/h");
     }
   }
 
