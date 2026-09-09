@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "bash serve.sh 3000",
     "test": "node scripts/smoke-test.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs",
+    "test:all": "node scripts/smoke-test.mjs && node scripts/browser-smoke.mjs",
     "check": "node scripts/smoke-test.mjs",
     "reconcile": "bash scripts/reconcile-live.sh --dry-run"
   },
@@ -18,5 +20,8 @@
     "stem"
   ],
   "author": "Cátedra Matemática",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
 }
