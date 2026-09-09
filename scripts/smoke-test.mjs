@@ -76,7 +76,10 @@ const jsFiles = [
   'data.js',
   'tools/game-kit.js',
   'tools/pending-queue-mock.js',
-  'tools/bandeja-pendientes.js'
+  'tools/bandeja-pendientes.js',
+  'tools/enfoque-tabs.js',
+  'tools/enfoque-elige.js',
+  'tools/lesson-bar.js'
 ];
 for (const rel of jsFiles) {
   const full = path.join(ROOT, rel);
@@ -250,6 +253,33 @@ console.log('\n📥 7. Prototipo bandeja Top-K pendientes:');
     bandeja.topPending(disabled, 10).every((it) => it.id !== firstId),
     'Deshabilitar en mock docente saca el ítem de la cola'
   );
+}
+
+// 8. L201 Enfoque · dual nav + lámina H/V/oblicua
+console.log('\n📐 8. L201 Enfoque (dual nav y primera lámina):');
+{
+  const l201Path = path.join(ROOT, 'tools/leccion-enfoque-formas-recta.html');
+  const tabsJsPath = path.join(ROOT, 'tools/enfoque-tabs.js');
+  const tabsCssPath = path.join(ROOT, 'tools/enfoque-tabs.css');
+  const l201 = fs.readFileSync(l201Path, 'utf-8');
+  const tabsJs = fs.readFileSync(tabsJsPath, 'utf-8');
+  const tabsCss = fs.readFileSync(tabsCssPath, 'utf-8');
+  assert(fs.existsSync(l201Path), 'Existe tools/leccion-enfoque-formas-recta.html');
+  assert(l201.includes('enfoque-tabs.css?v=20260909d'), 'L201 cache-bust CSS ?v=20260909d');
+  assert(l201.includes('enfoque-tabs.js?v=20260909d'), 'L201 cache-bust JS ?v=20260909d');
+  assert(/Horizontal, vertical u oblicua/.test(l201), 'Teoría arranca con H/V/oblicua');
+  assert(l201.includes('Función lineal vs ecuación de la recta'), 'Sigue el marco función vs ecuación');
+  assert(!/<a class="lesson-nav/.test(l201), 'L201 ya no usa lesson-nav de lección a lección en el marco');
+  assert(tabsJs.includes('makePager("eleccion"'), 'enfoque-tabs.js crea pagers de elección');
+  assert(tabsJs.includes('makePager("lamina"'), 'enfoque-tabs.js crea pagers de lámina');
+  assert(tabsCss.includes('.enfoque-pager--eleccion'), 'CSS ubica elección arriba');
+  assert(tabsCss.includes('.enfoque-pager--lamina'), 'CSS ubica láminas abajo');
+  const slideBlocks = [...l201.matchAll(/slides:\s*\[/g)];
+  assert(slideBlocks.length >= 11, `Cada etiqueta declara slides[] (${slideBlocks.length})`);
+  const chromeNav = fs.readFileSync(path.join(ROOT, 'tools/lesson-chrome-3b0ebb5a.css'), 'utf-8');
+  assert(/\.lesson-nav\s*\{[^}]*top:\s*44px/.test(chromeNav), 'Chrome compartido: triángulos a 44px');
+  const shellCss = fs.readFileSync(path.join(ROOT, 'tools/lesson-shell.css'), 'utf-8');
+  assert(shellCss.includes('top: 44px'), 'lesson-shell.css sube los triángulos');
 }
 
 // Resumen final

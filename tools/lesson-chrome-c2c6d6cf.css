@@ -72,7 +72,7 @@ canvas { width: 100%; height: auto; display: block; border-radius: 10px; backgro
   pointer-events: none;
 }
 .lesson-nav {
-  position: absolute; top: 50%; transform: translateY(-50%);
+  position: absolute; top: 44px; transform: none;
   z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
   filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
 }

@@ -84,3 +84,9 @@
     display: none;
   }
 }
+
+/* Triángulos de lección arriba (coherencia L201 · elección) */
+.lesson-nav {
+  top: 44px;
+  transform: none;
+}

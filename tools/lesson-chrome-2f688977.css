@@ -122,7 +122,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 .graph-wrap { position: relative; min-width: 0; }
 canvas#c { width: 100%; height: auto; display: block; border-radius: 10px; background: var(--graph-bg); touch-action: none; border: 1px solid #cbd5e1; }
 .lesson-nav {
-  position: absolute; top: 50%; transform: translateY(-50%); z-index: 7; text-decoration: none; opacity: 0.55;
+  position: absolute; top: 44px; transform: none; z-index: 7; text-decoration: none; opacity: 0.55;
   transition: opacity .15s; filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
   border: 0; background: transparent; cursor: pointer; padding: 10px;
 }
