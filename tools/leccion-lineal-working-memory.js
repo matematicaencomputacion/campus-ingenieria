@@ -1,4 +1,4 @@
-/*! Campus Ingeniería · L184 · lineal working memory (b → m → tabla → graficar). */
+/*! Campus Ingeniería · L200 · lineal working memory (b → m → tabla → graficar). */
 (function () {
   "use strict";
 
@@ -1050,7 +1050,7 @@
   resetAll(false);
   tick();
 
-  window.__L184 = {
+  window.__L200 = {
     state: state,
     XS: XS,
     B_OPTS: B_OPTS,
