@@ -114,11 +114,12 @@ canvas#c {
   text-align: center; padding: 16px;
 }
 .paused-banner.on, .victory-banner.on { display: flex; }
-.paused-banner[hidden], .victory-banner[hidden], .badge-cartel[hidden] { display: none !important; }
+.paused-banner[hidden], .victory-banner[hidden], .badge-cartel[hidden],
+.easy-banner[hidden], .step-cartel[hidden] { display: none !important; }
 .victory-banner { color: var(--ok); pointer-events: auto; }
 .victory-banner .sub-v { font-size: 0.95rem; font-weight: 650; color: var(--muted); letter-spacing: 0; }
 .victory-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.badge-cartel {
+.badge-cartel, .step-cartel {
   position: absolute; left: 50%; top: 14%; transform: translateX(-50%);
   z-index: 8; pointer-events: none;
   background: rgba(18, 26, 39, 0.94); border: 1px solid rgba(90,212,168,0.55);
@@ -127,8 +128,32 @@ canvas#c {
   box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   opacity: 0; transition: opacity .25s;
   white-space: nowrap;
+  text-align: center;
 }
-.badge-cartel.on { opacity: 1; }
+.badge-cartel.on, .step-cartel.on { opacity: 1; }
+.step-cartel {
+  top: 22%;
+  border-color: rgba(255,191,0,0.5);
+  color: var(--amber);
+  border-radius: 14px;
+  white-space: normal;
+  max-width: 86%;
+}
+.easy-banner {
+  position: absolute; left: 50%; top: 8px; transform: translateX(-50%);
+  z-index: 8; pointer-events: none;
+  background: rgba(18, 26, 39, 0.92); border: 1px solid rgba(192,132,252,0.55);
+  color: var(--accent); font-weight: 800;
+  padding: 7px 16px 8px; border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.32);
+  text-align: center; line-height: 1.2;
+}
+.easy-banner .k { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.easy-banner .s { font-size: 0.92rem; color: var(--amber); font-weight: 800; }
+.easy-copy { margin: 0; font-size: 0.84rem; color: var(--muted); line-height: 1.45; }
+.easy-copy strong { color: var(--ink); }
+.easy-copy .hl-v { color: #34d399; }
+.easy-copy .hl-h { color: #60a5fa; }
 .side {
   display: flex; flex-direction: column; gap: 8px;
   background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
@@ -320,14 +345,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <a class="lesson-nav next" href="leccion-enfoque-formas-recta.html" title="Lección 201: Enfoque · formas de la recta" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
         <div class="paused-banner" id="pausedBanner" hidden>PAUSA</div>
         <div class="victory-banner" id="victoryBanner" hidden>
-          <div>¡Ganador!</div>
-          <div class="sub-v">Lograste graficar la función</div>
+          <div id="victoryTitle">¡Ganador!</div>
+          <div class="sub-v" id="victorySub">Lograste graficar la función</div>
           <div class="victory-actions">
-            <button type="button" class="btn primary" id="victoryContinue">Seguir jugando</button>
+            <button type="button" class="btn primary" id="victoryContinue">Seguí participando</button>
             <button type="button" class="btn amber" id="victoryRestart">Reiniciar</button>
           </div>
         </div>
+        <div class="easy-banner" id="easyBanner" hidden>
+          <div class="k">Seguí participando</div>
+          <div class="s">forma fácil</div>
+        </div>
         <div class="badge-cartel" id="badgeCartel" hidden>Lograste graficar la función</div>
+        <div class="step-cartel" id="stepCartel" hidden>Desplazamiento sobre el eje Y</div>
         <canvas id="c" width="900" height="680" aria-label="Plano · lineal · working memory"></canvas>
         <canvas id="confetti" width="900" height="680" aria-hidden="true"></canvas>
       </div>
@@ -340,6 +370,10 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <div class="pick-box off" id="pickMBox">
           <p class="kicker" id="pickMKicker">m</p>
           <div class="chips" id="mChips" role="group" aria-label="Elegir m"></div>
+        </div>
+        <div class="pick-box off" id="easyBox">
+          <p class="kicker" id="easyKicker">forma fácil</p>
+          <p class="easy-copy" id="easyCopy"></p>
         </div>
         <div class="table-wrap off" id="tableWrap">
           <h2>Tabla</h2>
@@ -360,7 +394,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     </div>
 
     <div class="win-banner" id="winBanner">
-      <span>Lograste graficar la función.</span>
+      <span id="winBannerText">Lograste graficar la función.</span>
       <button type="button" class="btn amber" id="winRestartBtn">Reiniciar</button>
     </div>
     <div class="bottom-bar">
@@ -379,7 +413,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 </div>
 <div id="l200DragGhost" class="l200-drag-ghost" hidden aria-hidden="true"></div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="leccion-lineal-working-memory.js?v=20260909g"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909h"></script>
 <script src="lesson-bar.js?v=20260909" defer></script>
 </body>
 </html>
