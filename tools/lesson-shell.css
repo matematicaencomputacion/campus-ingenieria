@@ -81,3 +81,9 @@
   outline: 2px solid #93c5fd;
   outline-offset: 2px;
 }
+
+/* Triángulos de lección arriba (coherencia L201 · elección) */
+.lesson-nav {
+  top: 44px;
+  transform: none;
+}

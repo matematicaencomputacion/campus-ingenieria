@@ -17,6 +17,7 @@
       --blue-accent: #3b82f6;
       --green: #34d399;
       --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.14);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -206,6 +207,268 @@
       color: var(--muted);
       font-size: 1rem;
     }
+    .bandeja {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px 12px;
+      margin-bottom: 22px;
+      box-shadow: inset 0 1px 0 rgba(245, 158, 11, 0.08);
+    }
+    .bandeja-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .bandeja-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .bandeja-hourglass {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: var(--amber-soft);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .bandeja-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .bandeja-sub {
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-top: 2px;
+    }
+    .bandeja-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .bandeja-proto {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--amber);
+      background: var(--amber-soft);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .bandeja-mail,
+    .bandeja-done,
+    .bandeja-reset,
+    .bandeja-mini,
+    .bandeja-k-btn,
+    .bandeja-icon {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #0f1724;
+      color: var(--ink);
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .bandeja-mail {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 7px 12px;
+    }
+    .bandeja-mail:hover {
+      color: var(--ink);
+      border-color: #3b4d6d;
+    }
+    .bandeja-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bandeja-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0f1724;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .bandeja-rank {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: var(--amber-soft);
+      color: var(--amber);
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .bandeja-link {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 0.9rem;
+      flex: 1;
+      min-width: 0;
+    }
+    .bandeja-link:hover {
+      color: var(--blue);
+    }
+    .bandeja-done {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      color: var(--green);
+      border-color: rgba(52, 211, 153, 0.35);
+      background: rgba(52, 211, 153, 0.08);
+    }
+    .bandeja-done:hover {
+      background: rgba(52, 211, 153, 0.16);
+    }
+    .bandeja-empty {
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 8px 2px 12px;
+    }
+    .bandeja-teacher {
+      margin-top: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+    }
+    .bandeja-teacher summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      list-style: none;
+    }
+    .bandeja-teacher summary::-webkit-details-marker { display: none; }
+    .bandeja-teacher summary::before {
+      content: "▸ ";
+      color: var(--amber);
+    }
+    .bandeja-teacher[open] summary::before { content: "▾ "; }
+    .bandeja-teacher-body { margin-top: 10px; }
+    .bandeja-k-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .bandeja-k-group { display: flex; gap: 6px; }
+    .bandeja-k-btn {
+      min-width: 42px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border-radius: 8px;
+    }
+    .bandeja-k-btn.is-active {
+      background: #1e3a8a;
+      color: #93c5fd;
+      border-color: #60a5fa;
+    }
+    .bandeja-teacher-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .bandeja-teacher-item {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      background: #0f1724;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+    }
+    .bandeja-teacher-item.is-off { opacity: 0.55; }
+    .bandeja-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .bandeja-teacher-rank {
+      color: var(--amber);
+      font-weight: 800;
+      min-width: 2.2em;
+    }
+    .bandeja-teacher-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .bandeja-teacher-actions { display: flex; gap: 4px; }
+    .bandeja-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      padding: 0;
+    }
+    .bandeja-mini {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 8px;
+      color: var(--muted);
+    }
+    .bandeja-reset {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 6px 12px;
+    }
+    .bandeja-toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: #1b263b;
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      color: var(--ink);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      z-index: 20;
+    }
+    @media (max-width: 720px) {
+      .bandeja-item { flex-wrap: wrap; }
+      .bandeja-link { flex-basis: calc(100% - 40px); }
+      .bandeja-done { margin-left: 36px; }
+      .bandeja-teacher-item {
+        grid-template-columns: 1fr auto;
+      }
+      .bandeja-teacher-title { grid-column: 1 / -1; }
+    }
   </style>
 <script src="lesson-navigation.js" defer></script>
 </head>
@@ -221,6 +484,10 @@
       </div>
       <a href="../index.html" class="back-campus" data-campus-return>← Volver al Campus</a>
     </header>
+
+    <section id="bandeja-pendientes" class="bandeja" aria-labelledby="bandeja-title">
+      <p class="bandeja-sub">Cargando bandeja de pendientes…</p>
+    </section>
 
     <div class="controls">
       <div class="search-row">
@@ -244,7 +511,7 @@
 
     <div class="meta-bar">
       <span id="counter">Cargando lecciones...</span>
-      <span>Actualizado: 2026-09-08</span>
+      <span>Actualizado: 2026-09-09</span>
     </div>
 
     <ul class="tools-grid" id="tools-list">
@@ -434,10 +701,14 @@
 <li class="tool-item" data-cats="todas sim-inv"><a href="leccion-inversa-sonrisa-play.html"><span style="color:#a78bfa;font-weight:700">Lección 181</span> Inversa · sonrisa · play</a></li>
 <li class="tool-item" data-cats="todas sim-inv"><a href="leccion-inversa-cara-triste-play.html"><span style="color:#a78bfa;font-weight:700">Lección 182</span> Inversa · cara triste · play</a></li>
 <li class="tool-item" data-cats="todas sim-inv"><a href="leccion-inversa-cara-juego.html"><span style="color:#a78bfa;font-weight:700">Lección 183</span> Inversa · sonrisa / cara triste · juego</a></li>
+<li class="tool-item" data-cats="todas lineales"><a href="leccion-lineal-working-memory.html"><span style="color:#c084fc;font-weight:700">Lección 200</span> Lineal · working memory · juego</a></li>
+<li class="tool-item" data-cats="todas lineales"><a href="leccion-enfoque-formas-recta.html"><span style="color:#c084fc;font-weight:700">Lección 201</span> Enfoque · formas de la recta</a></li>
     </ul>
     <div id="empty-msg" class="empty-msg" style="display:none;">No se encontraron interactivos coincidentes con la búsqueda.</div>
   </div>
 
+  <script src="pending-queue-mock.js?v=20260909a"></script>
+  <script src="bandeja-pendientes.js?v=20260909a"></script>
   <script>
     (function () {
       const search = document.getElementById('search-input');
