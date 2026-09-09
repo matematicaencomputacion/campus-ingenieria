@@ -1,0 +1,80 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      use_delete:
+        description: 'Usar rsync --delete (solo si el repo tiene todos los archivos de live reconciliados)'
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.repository == 'matematicaencomputacion/campus-ingenieria'
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pre-check (Smoke Tests)
+        run: |
+          node scripts/smoke-test.mjs
+
+      - name: Configurar SSH
+        if: env.DEPLOY_SSH_KEY != ''
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST || 'ingenieria.wechat.com.ar' }} >> ~/.ssh/known_hosts
+
+      - name: Deploy rsync a VM producción
+        if: env.DEPLOY_SSH_KEY != ''
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'campus' }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || 'ingenieria.wechat.com.ar' }}
+          USE_DELETE: ${{ inputs.use_delete }}
+        run: |
+          set -euo pipefail
+          DELETE_FLAG=""
+          if [ "$USE_DELETE" = "true" ]; then
+            DELETE_FLAG="--delete"
+            echo "Aviso: Ejecutando deploy con --delete activo"
+          fi
+
+          rsync -avz $DELETE_FLAG \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'shots/' \
+            --exclude 'tools/_gen/' \
+            --exclude '*.bak' \
+            --exclude 'DEPLOY.md' \
+            --exclude 'README.md' \
+            --exclude 'serve.sh' \
+            --exclude 'scripts/' \
+            --exclude 'tests/' \
+            ./ ${DEPLOY_USER}@${DEPLOY_HOST}:/var/www/campus/
+
+      - name: Post-check producción (HTTP y headers)
+        run: |
+          set -euo pipefail
+          echo "Verificando disponibilidad en https://ingenieria.wechat.com.ar/ ..."
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" https://ingenieria.wechat.com.ar/ || true)
+          echo "Status code: $status_code"
+          if [ "$status_code" != "200" ] && [ "$status_code" != "000" ]; then
+            echo "Aviso: Status code inesperado: $status_code"
+          fi

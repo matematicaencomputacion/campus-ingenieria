@@ -15,6 +15,15 @@
     return fallback;
   }
 
+  function escapeHTML(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   const DESMOS_TOOLS = [
     { id: "graphing", name: "Calculadora Gráfica", short: "Gráfica", color: "#2a9d5c", url: "https://www.desmos.com/calculator?lang=es", icon: "∿", dock: "center", panelW: "min(520px, 48vw)" },
     { id: "scientific", name: "Calculadora Científica", short: "Científica", color: "#1a9b8e", url: "https://www.desmos.com/scientific?lang=es", icon: "∛", dock: "right", panelW: "min(400px, 40vw)" },
@@ -1115,7 +1124,7 @@
               <div class="custom-list" id="custom-uni-list">
                 ${(d.customUniversities || []).map((name, i) => `
                   <span class="custom-chip">
-                    ${name.replace(/</g, "&lt;")}
+                    ${escapeHTML(name)}
                     <button type="button" data-remove-custom-uni="${i}" aria-label="Quitar">×</button>
                   </span>`).join("") || `<span class="custom-empty">Ninguna solicitud aún.</span>`}
               </div>
@@ -1129,7 +1138,7 @@
               </div>
               <label class="settings-search">
                 <span class="sr-only">Buscar carreras</span>
-                <input type="search" id="career-search" placeholder="Buscar carrera…" value="${(d.careerQuery || "").replace(/"/g, "&quot;")}" autocomplete="off" />
+                <input type="search" id="career-search" placeholder="Buscar carrera…" value="${escapeHTML(d.careerQuery || "")}" autocomplete="off" />
               </label>
             </div>
             <div class="chip-grid">${carChips}</div>
@@ -1141,13 +1150,13 @@
               <label for="custom-career-input">¿No está tu carrera?</label>
               <p class="custom-hint">Cargá el nombre manualmente. Luego se puede revisar con un bot (demo: solicitud pendiente).</p>
               <div class="custom-add-row">
-                <input type="text" id="custom-career-input" placeholder="Nombre de la carrera…" value="${(d.customCareerInput || "").replace(/"/g, "&quot;")}" autocomplete="off" />
+                <input type="text" id="custom-career-input" placeholder="Nombre de la carrera…" value="${escapeHTML(d.customCareerInput || "")}" autocomplete="off" />
                 <button type="button" class="btn-primary" id="btn-add-custom-career" style="width:auto;padding:10px 14px">Agregar</button>
               </div>
               <div class="custom-list" id="custom-career-list">
                 ${(d.customCareers || []).map((name, i) => `
                   <span class="custom-chip">
-                    ${name.replace(/</g, "&lt;")}
+                    ${escapeHTML(name)}
                     <button type="button" data-remove-custom-career="${i}" aria-label="Quitar">×</button>
                   </span>`).join("") || `<span class="custom-empty">Ninguna solicitud aún.</span>`}
               </div>
@@ -1217,56 +1226,87 @@
     const countrySearch = $("#country-search");
     const uniSearch = $("#uni-search");
     const careerSearch = $("#career-search");
-    function wireSearch(el, key) {
+    function wireSearch(el, key, chipSelector) {
       if (!el) return;
       el.addEventListener("input", () => {
+        const q = (el.value || "").trim().toLowerCase();
         state.draft[key] = el.value;
-        const selStart = el.selectionStart;
-        render();
-        const again = document.getElementById(el.id);
-        if (again) {
-          again.focus();
-          try { again.setSelectionRange(selStart, selStart); } catch (_) {}
-        }
+        const chips = $$(chipSelector);
+        chips.forEach((btn) => {
+          const text = btn.textContent.toLowerCase();
+          const match = !q || text.includes(q);
+          btn.style.display = match ? "" : "none";
+        });
       });
     }
-    wireSearch(countrySearch, "countryQuery");
-    wireSearch(uniSearch, "uniQuery");
-    wireSearch(careerSearch, "careerQuery");
+    wireSearch(countrySearch, "countryQuery", "[data-country]");
+    wireSearch(uniSearch, "uniQuery", "[data-uni]");
+    wireSearch(careerSearch, "careerQuery", "[data-career]");
     $$("[data-country]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-country");
         const set = new Set(state.draft.countryIds || []);
-        if (set.has(id)) set.delete(id);
-        else set.add(id);
+        if (set.has(id)) {
+          set.delete(id);
+          btn.classList.remove("on");
+          const chk = btn.querySelector(".check");
+          if (chk) chk.textContent = "";
+        } else {
+          set.add(id);
+          btn.classList.add("on");
+          const chk = btn.querySelector(".check");
+          if (chk) chk.textContent = "✓";
+        }
         state.draft.countryIds = [...set];
         state.settingsSavedFlash = false;
-        render();
       });
     });
     $$("[data-uni]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-uni");
         const set = new Set(state.draft.universityIds);
-        if (set.has(id)) set.delete(id);
-        else set.add(id);
+        if (set.has(id)) {
+          set.delete(id);
+          btn.classList.remove("on");
+          const chk = btn.querySelector(".check");
+          if (chk) chk.textContent = "";
+        } else {
+          set.add(id);
+          btn.classList.add("on");
+          const chk = btn.querySelector(".check");
+          if (chk) chk.textContent = "✓";
+        }
         state.draft.universityIds = [...set];
         state.settingsSavedFlash = false;
-        render();
       });
     });
     $$("[data-career]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-career");
         const set = new Set(state.draft.careerIds);
-        if (set.has(id)) set.delete(id);
-        else set.add(id);
+        if (set.has(id)) {
+          set.delete(id);
+          btn.classList.remove("on");
+          const chk = btn.querySelector(".check");
+          if (chk) chk.textContent = "";
+        } else {
+          set.add(id);
+          btn.classList.add("on");
+          const chk = btn.querySelector(".check");
+          if (chk) chk.textContent = "✓";
+        }
         state.draft.careerIds = [...set];
         if (!state.draft.careerIds.includes(state.draft.activeCareerId)) {
           state.draft.activeCareerId = state.draft.careerIds[0] || null;
         }
         state.settingsSavedFlash = false;
-        render();
+        const activeSel = $("#active-career");
+        if (activeSel) {
+          activeSel.innerHTML = state.draft.careerIds.map((cid) => {
+            const c = careerById(cid);
+            return `<option value="${cid}" ${state.draft.activeCareerId === cid ? "selected" : ""}>${escapeHTML(c?.name || cid)}</option>`;
+          }).join("") || "<option value=''>—</option>";
+        }
       });
     });
     const active = $("#active-career");
@@ -1368,6 +1408,7 @@
     const tabs = [
       ["bienvenida", "Bienvenida"],
       ["temario", "Temario"],
+      ["lab", "Laboratorio Interactivo"],
       ["recursos", "Recursos audiovisuales"],
       ["clases", "Clases"],
       ["foros", "Foros"],
@@ -1394,6 +1435,7 @@
       {
         bienvenida: "Bienvenida",
         temario: "Temario",
+        lab: "Laboratorio Interactivo",
         recursos: "Recursos audiovisuales",
         clases: "Clases",
         foros: "Foros",
@@ -1423,13 +1465,16 @@
               (n) =>
                 `<button class="nodo ${
                   state.selectedNodo === n.id ? "active" : ""
-                }" data-nodo="${n.id}" data-tema="${t.id}">${n.title}</button>`
+                }" data-nodo="${n.id}" data-tema="${t.id}">
+                  <span>${escapeHTML(n.title)}</span>
+                  ${n.toolBadge ? `<span class="nodo-tool-badge">${escapeHTML(n.toolBadge)}</span>` : ""}
+                </button>`
             )
             .join("");
           return `
           <div class="tema">
             <button class="tema-head" data-tema-toggle="${t.id}">
-              <span>${t.title}</span>
+              <span>${escapeHTML(t.title)}</span>
               <span>${isOpen ? "▴" : "▾"}</span>
             </button>
             <div class="tema-body ${isOpen ? "" : "hidden"}">${nodos}</div>
@@ -1449,13 +1494,36 @@
               }
             }
             if (!found) return "";
+            if (found.toolUrl) {
+              return `
+              <div class="nodo-detail nodo-interactive-card">
+                <div class="interactive-card-header">
+                  <div class="interactive-card-info">
+                    <span class="badge badge-interactive">${escapeHTML(found.toolBadge || "Interactivo")}</span>
+                    <h3>${escapeHTML(found.title)}</h3>
+                    <p class="sub">${escapeHTML(found.desc || `Laboratorio interactivo de ${temaTitle}`)}</p>
+                  </div>
+                  <div class="interactive-card-actions">
+                    <a href="${found.toolUrl}" target="_blank" class="btn-ghost-action" title="Abrir en ventana independiente">
+                      ↗ Pestaña
+                    </a>
+                    <button type="button" class="btn-ghost-action" id="btn-reload-embed" title="Reiniciar ejercicio">
+                      ↻ Reiniciar
+                    </button>
+                  </div>
+                </div>
+                <div class="interactive-frame-wrap">
+                  <iframe id="interactive-embed-frame" src="${found.toolUrl}" title="${escapeHTML(found.title)}" allow="clipboard-write; fullscreen" loading="lazy"></iframe>
+                </div>
+              </div>`;
+            }
             return `
             <div class="nodo-detail">
-              <h3>${found.title}</h3>
-              <p>Contenido demo del nodo dentro de <strong>${temaTitle}</strong>.</p>
+              <h3>${escapeHTML(found.title)}</h3>
+              <p>${escapeHTML(found.desc || `Contenido conceptual y ejercicios dentro de ${temaTitle}.`)}</p>
             </div>`;
           })()
-        : `<p class="sub">Elegí un nodo del temario para ver su contenido.</p>`;
+        : `<p class="sub">Elegí un nodo del temario para ver su contenido o simulador.</p>`;
       return `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <h2 class="section-title" style="margin:0">Temario</h2>
@@ -1463,6 +1531,45 @@
         </div>
         ${temas}
         ${detail}`;
+    }
+    if (state.tab === "lab") {
+      const allTools = [];
+      m.temas.forEach((t) => {
+        (t.nodos || []).forEach((n) => {
+          if (n.toolUrl) {
+            allTools.push({ ...n, temaTitle: t.title });
+          }
+        });
+      });
+      const cards = allTools.map((tool) => `
+        <div class="lab-card">
+          <div class="lab-card-top">
+            <span class="badge badge-interactive">${escapeHTML(tool.toolBadge || "Interactivo")}</span>
+            <span class="lab-card-tema">${escapeHTML(tool.temaTitle)}</span>
+          </div>
+          <h4>${escapeHTML(tool.title)}</h4>
+          <p>${escapeHTML(tool.desc || "Práctica interactiva en tiempo real.")}</p>
+          <div class="lab-card-actions">
+            <button type="button" class="btn-primary btn-sm" data-launch-nodo="${tool.id}">Abrir en Campus</button>
+            <a href="${tool.toolUrl}" target="_blank" class="btn-ghost-action">Pestaña ↗</a>
+          </div>
+        </div>
+      `).join("");
+
+      return `
+        <div class="lab-header">
+          <div>
+            <h2 class="section-title" style="margin:0">Laboratorio Interactivo · ${escapeHTML(m.name)}</h2>
+            <p class="sub" style="margin-top:4px">Interactivos, simulaciones y juegos matemáticos para experimentar directamente.</p>
+          </div>
+          <a href="tools/index.html" class="btn-catalog-link" target="_blank">
+            Explorar catálogo completo (186 lecciones) ↗
+          </a>
+        </div>
+        <div class="lab-grid">
+          ${cards || `<div class="empty-state">No hay interactivos configurados para esta materia aún. <a href="tools/index.html" target="_blank">Ver catálogo general</a>.</div>`}
+        </div>
+      `;
     }
     if (state.tab === "recursos") {
       const videos = [];
@@ -1553,6 +1660,25 @@
       btn.addEventListener("click", () => {
         state.videoIdx = Number(btn.getAttribute("data-video"));
         render();
+      });
+    });
+    const reloadEmbed = $("#btn-reload-embed");
+    if (reloadEmbed) {
+      reloadEmbed.addEventListener("click", () => {
+        const frame = $("#interactive-embed-frame");
+        if (frame) {
+          const s = frame.src;
+          frame.src = "about:blank";
+          setTimeout(() => { frame.src = s; }, 50);
+        }
+      });
+    }
+    $$("[data-launch-nodo]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const nid = btn.getAttribute("data-launch-nodo");
+        state.tab = "temario";
+        state.selectedNodo = nid;
+        go(`#/materia/${state.careerId}/${state.materiaId}/temario`);
       });
     });
   }

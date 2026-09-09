@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 13 · Seno con amplitud</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --btn: #3b82f6; --border: #243044; --accent: #34d399;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+  --parent: #475569; --curve: #34d399; --pt: #c084fc;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1920px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; display: inline; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { display: inline; margin: 0 0 0 0.55rem; color: var(--muted); font-size: 0.88rem; font-weight: 400; }
+.sub::before { content: "·"; margin-right: 0.55rem; opacity: 0.7; }
+.stage { display: grid; grid-template-columns: 1.91fr 0.64fr; gap: 12px; align-items: stretch; }
+@media (max-width: 860px) { .stage { grid-template-columns: 1fr; } }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px; min-height: 0;
+}
+.stage > .card:first-child { display: flex; flex-direction: column; }
+.graph-wrap { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.graph-wrap canvas {
+  /* Llena el card; la rejilla isométrica (30° ≡ 0.5) se centra dentro */
+  flex: 1; width: 100%; height: 100%;
+  min-height: min(78vh, 820px);
+  display: block; border-radius: 10px; background: var(--canvas-bg);
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 10px; }
+.lesson-nav.next { right: 10px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.right-col { display: grid; gap: 12px; align-content: start; }
+.eq-box {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; font-family: ui-monospace, Menlo, monospace; font-size: 0.95rem;
+  line-height: 1.45;
+}
+.param {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 10px; margin-bottom: 8px;
+}
+.param label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+.param .row { display: flex; align-items: center; gap: 10px; }
+.param input[type=range] { flex: 1; accent-color: var(--accent); }
+.param .val {
+  font-family: ui-monospace, Menlo, monospace; min-width: 3.6rem; text-align: right; color: #93c5fd;
+}
+h2.panel-h {
+  margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+button.ghost {
+  background: transparent; color: var(--ink); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; font: inherit; cursor: pointer;
+}
+button.ghost:hover { border-color: var(--accent); }
+.info { font-size: 0.8rem; color: var(--muted); line-height: 1.45; margin: 8px 0 0; }
+.info strong { color: var(--ink); }
+table {
+  width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.82rem;
+}
+th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid #22304a; }
+th { color: var(--muted); font-weight: 600; }
+td.y { color: #34d399; font-weight: 650; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+.legend span i {
+  display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 13</span> Seno · amplitud</h1>
+      <span class="sub">g(θ) = A·sen(θ − h) + k</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="card">
+      <div class="graph-wrap">
+        <a class="lesson-nav prev" href="leccion-coseno-desplazado.html" title="Lección 12: Coseno · corrimientos" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-coseno-amplitud.html" title="Lección 14: Coseno · amplitud" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="1680" height="640" aria-label="Gráfica de seno con amplitud"></canvas>
+      </div>
+      <div class="legend">
+        <span><i style="background:rgba(71,85,105,0.45);border-top:2px dotted rgba(71,85,105,0.45);height:0;border-bottom:0"></i> sen θ (original, ½ intensidad)</span>
+        <span><i style="background:#e2e8f0;border-top:2px dotted #e2e8f0;height:0;border-bottom:0"></i> A·sen(θ−h) (base sin k)</span>
+        <span><i style="background:#34d399"></i> derecha (θ ≥ h)</span>
+        <span><i style="background:#f472b6"></i> izquierda (θ &lt; h)</span>
+        <span>● puntos notables</span>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="card">
+        <h2 class="panel-h">Ecuación</h2>
+        <div class="eq-box" id="eqBox">g(θ) = A·sen(θ − h) + k</div>
+        <p class="info">Ángulos de trabajo: <strong>0°, 30°, 90°, 150°, 180°, 210°, 270°, 330°, 360°</strong> (sen ∈ {−1, −½, 0, ½, 1}).</p>
+      </div>
+
+      <div class="card">
+        <h2 class="panel-h">Amplitud y corrimientos</h2>
+        <div class="param">
+          <label for="aSlider">Amplitud (A) · estiramiento / reflexión</label>
+          <div class="row">
+            <input id="aSlider" type="range" min="0" max="8" step="1" value="5" />
+            <span class="val" id="aVal">1</span>
+          </div>
+        </div>
+        <div class="param">
+          <label for="hSlider">Horizontal (h) · múltiplos de 30°</label>
+          <div class="row">
+            <input id="hSlider" type="range" min="-360" max="360" step="30" value="0" />
+            <span class="val" id="hVal">0°</span>
+          </div>
+        </div>
+        <div class="param">
+          <label for="kSlider">Vertical (k) · múltiplos de 0,5</label>
+          <div class="row">
+            <input id="kSlider" type="range" min="-3" max="3" step="0.5" value="0" />
+            <span class="val" id="kVal">0</span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button type="button" class="ghost" id="resetBtn">Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="panel-h">Tabla de puntos</h2>
+        <table>
+          <thead><tr><th>θ</th><th>sen(θ−h)</th><th>A·sen+k</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Ángulos con sen ∈ {-1,-1/2,0,1/2,1} (valores "enteros"/medios cómodos)
+  const ANGLES = [0, 30, 90, 150, 180, 210, 270, 330, 360];
+  const SEN_LAB = {
+    0: "0", 30: "1/2", 90: "1", 150: "1/2", 180: "0",
+    210: "−1/2", 270: "−1", 330: "−1/2", 360: "0"
+  };
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const hEl = document.getElementById("hSlider");
+  const kEl = document.getElementById("kSlider");
+  const hVal = document.getElementById("hVal");
+  const kVal = document.getElementById("kVal");
+  const eqBox = document.getElementById("eqBox");
+  const tbody = document.getElementById("tbody");
+  const A_VALUES = [-3, -2, -1, -0.5, 0.5, 1, 2, 3, 4];
+  const aEl = document.getElementById("aSlider");
+  const aVal = document.getElementById("aVal");
+  // slider index 0..8 maps to A_VALUES
+  function aFromSlider() { return A_VALUES[+aEl.value | 0]; }
+  function setASlider(a) {
+    const i = A_VALUES.findIndex((v) => v === a);
+    aEl.value = String(i >= 0 ? i : 3);
+  }
+
+  function degToRad(d) { return d * Math.PI / 180; }
+  function fmtK(k) {
+    if (k === 0) return "0";
+    if (Number.isInteger(k)) return String(k);
+    // halves
+    const n = Math.round(k * 2);
+    if (n === 1) return "1/2";
+    if (n === -1) return "−1/2";
+    if (n % 2 === 0) return String(n / 2);
+    return (n < 0 ? "−" : "") + Math.abs(n) + "/2";
+  }
+  function fmtH(h) { return h + "°"; }
+
+  function senExact(deg) {
+    // normalize to [0,360)
+    let d = ((deg % 360) + 360) % 360;
+    if (d === 360) d = 0;
+    const map = {
+      0: 0, 30: 0.5, 90: 1, 150: 0.5, 180: 0,
+      210: -0.5, 270: -1, 330: -0.5
+    };
+    if (map[d] != null) return map[d];
+    return Math.sin(degToRad(d));
+  }
+  function senLab(deg) {
+    let d = ((deg % 360) + 360) % 360;
+    if (d === 360) d = 0;
+    return SEN_LAB[d] != null ? SEN_LAB[d] : "?";
+  }
+  function g(theta, h, k, A) {
+    if (A == null) A = aFromSlider();
+    return A * senExact(theta - h) + k;
+  }
+
+  function syncLabels() {
+    const h = +hEl.value;
+    const k = +kEl.value;
+    const A = aFromSlider();
+    hVal.textContent = fmtH(h);
+    kVal.textContent = fmtK(k);
+    aVal.textContent = fmtK(A);
+    let inner;
+    if (h === 0) inner = "sen θ";
+    else if (h > 0) inner = "sen(θ − " + h + "°)";
+    else inner = "sen(θ + " + (-h) + "°)";
+    let eq = "g(θ) = ";
+    if (A === 1) eq += inner;
+    else if (A === -1) eq += "−" + inner;
+    else eq += fmtK(A) + "·" + inner;
+    if (k > 0) eq += " + " + fmtK(k);
+    else if (k < 0) eq += " − " + fmtK(-k);
+    eqBox.textContent = eq;
+
+    tbody.innerHTML = "";
+    for (const th of ANGLES) {
+      const lab = senLab(th - h);
+      const y = g(th, h, k, A);
+      const tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + th + "°</td><td>" + lab + "</td><td class='y'>" + fmtK(y) + "</td>";
+      tbody.appendChild(tr);
+    }
+  }
+
+  function layout() {
+    const w = canvas.width, h = canvas.height;
+    const padL = 52, padR = 16, padT = 24, padB = 40;
+    const availW = w - padL - padR;
+    const availH = h - padT - padB;
+    // Escala isométrica: 30° ≡ 0.5 · y ∈ [−6, 8] (menos alto → más celda → más ancho útil)
+    const xmin = -360, xmax = 720;  // 36 celdas de 30°
+    const ymin = -6, ymax = 8;      // 28 celdas de 0.5
+    const cellsX = (xmax - xmin) / 30;
+    const cellsY = (ymax - ymin) / 0.5;
+    const cell = Math.min(availW / cellsX, availH / cellsY);
+    const pw = cell * cellsX;
+    const ph = cell * cellsY;
+    const x0 = padL + (availW - pw) / 2;
+    const y0 = padT + (availH - ph) / 2;
+    return { w, h, padL, padR, padT, padB, x0, y0, pw, ph, xmin, xmax, ymin, ymax, cell };
+  }
+  function toX(th, L) {
+    return L.x0 + ((th - L.xmin) / (L.xmax - L.xmin)) * L.pw;
+  }
+  function toY(y, L) {
+    return L.y0 + ((L.ymax - y) / (L.ymax - L.ymin)) * L.ph;
+  }
+
+  function drawGrid(L) {
+    ctx.clearRect(0, 0, L.w, L.h);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, L.w, L.h);
+
+    // vertical grid every 30°
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    for (let th = L.xmin; th <= L.xmax + 1e-9; th += 30) {
+      const x = toX(th, L);
+      ctx.beginPath(); ctx.moveTo(x, L.y0); ctx.lineTo(x, L.y0 + L.ph); ctx.stroke();
+    }
+    // horizontal every 0.5
+    for (let y = -6; y <= 8; y += 0.5) {
+      const yy = toY(y, L);
+      ctx.beginPath(); ctx.moveTo(L.x0, yy); ctx.lineTo(L.x0 + L.pw, yy); ctx.stroke();
+    }
+
+    // axes
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 1.5;
+    const yAxis = toY(0, L);
+    const xAxis = toX(0, L);
+    ctx.beginPath();
+    ctx.moveTo(L.x0, yAxis); ctx.lineTo(L.x0 + L.pw, yAxis);
+    ctx.moveTo(xAxis, L.y0); ctx.lineTo(xAxis, L.y0 + L.ph);
+    ctx.stroke();
+
+    // labels θ
+    ctx.fillStyle = "#8b9bb4";
+    ctx.font = "11px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (const th of [-360, -270, -180, -90, 0, 90, 180, 270, 360, 450, 540, 630, 720]) {
+      if (th < L.xmin - 1e-9 || th > L.xmax + 1e-9) continue;
+      ctx.fillText(th + "°", toX(th, L), L.y0 + L.ph + 8);
+    }
+    // labels y
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (let y = -6; y <= 8; y += 2) {
+      ctx.fillText(String(y), L.x0 - 8, toY(y, L));
+    }
+  }
+
+  const COL_RIGHT = "#34d399"; // θ ≥ h  (derecha de la vertical móvil)
+  const COL_LEFT  = "#f472b6"; // θ < h   (izquierda)
+
+  function drawParentCurve(L) {
+    // Original unitaria (sin A, sin h, sin k) a mitad de intensidad
+    ctx.strokeStyle = "rgba(71,85,105,0.45)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    let started = false;
+    for (let th = L.xmin; th <= L.xmax; th += 1) {
+      const y = Math.sin(degToRad(th));
+      const x = toX(th, L), yy = toY(y, L);
+      if (!started) { ctx.moveTo(x, yy); started = true; }
+      else ctx.lineTo(x, yy);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  function drawBaseNoK(L, h, A) {
+    // Base de estiramiento: A·sen(θ−h) sin desplazamiento vertical (blanca punteada)
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.globalAlpha = 0.85;
+    ctx.lineWidth = 1.6;
+    ctx.setLineDash([3, 5]);
+    ctx.beginPath();
+    let started = false;
+    for (let th = L.xmin; th <= L.xmax; th += 1) {
+      const y = A * Math.sin(degToRad(th - h));
+      const x = toX(th, L), yy = toY(y, L);
+      if (!started) { ctx.moveTo(x, yy); started = true; }
+      else ctx.lineTo(x, yy);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+  }
+
+  // Dibuja g en un tramo [th0, th1] con un color (incluye extremos)
+  function drawCurveSpan(L, hShift, k, A, th0, th1, color, width) {
+    if (th1 < th0) return;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    let started = false;
+    const step = 0.5;
+    for (let th = th0; th <= th1 + 1e-9; th += step) {
+      const y = A * Math.sin(degToRad(th - hShift)) + k;
+      const x = toX(th, L), yy = toY(y, L);
+      if (!started) { ctx.moveTo(x, yy); started = true; }
+      else ctx.lineTo(x, yy);
+    }
+    // endpoint exact
+    const y1 = A * Math.sin(degToRad(th1 - hShift)) + k;
+    ctx.lineTo(toX(th1, L), toY(y1, L));
+    ctx.stroke();
+  }
+
+  function drawSplitCurve(L, h, k, A) {
+    // Color por posición respecto de la vertical θ = h:
+    // cuando h=0 coincide con el eje Y; al mover h, el límite de color viaja con la onda.
+    const split = h;
+    const w = 3;
+    drawCurveSpan(L, h, k, A, L.xmin, Math.min(split, L.xmax), COL_LEFT, w);
+    drawCurveSpan(L, h, k, A, Math.max(split, L.xmin), L.xmax, COL_RIGHT, w);
+  }
+
+  function drawPoints(L, h, k, A) {
+    for (const th of ANGLES) {
+      const y = g(th, h, k, A);
+      const x = toX(th, L), yy = toY(y, L);
+      const onRight = th >= h;
+      const col = onRight ? COL_RIGHT : COL_LEFT;
+      ctx.strokeStyle = onRight ? "rgba(52,211,153,0.35)" : "rgba(244,114,182,0.35)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, toY(0, L));
+      ctx.lineTo(x, yy);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, yy, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = col;
+      ctx.fill();
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = "#e9eef7";
+      ctx.font = "600 11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = y >= 0 ? "bottom" : "top";
+      ctx.fillText(fmtK(y), x, y >= 0 ? yy - 8 : yy + 8);
+    }
+  }
+
+  function drawShiftMarker(L, h) {
+    // Vertical móvil θ = h (límite de colores)
+    const x = toX(h, L);
+    ctx.strokeStyle = "rgba(251,191,36,0.85)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(x, L.y0);
+    ctx.lineTo(x, L.y0 + L.ph);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "600 11px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("θ = h = " + h + "°", x, L.y0 + 14);
+  }
+
+  function draw() {
+    const h = +hEl.value;
+    const k = +kEl.value;
+    const A = aFromSlider();
+    const L = layout();
+    drawGrid(L);
+    drawParentCurve(L);
+    drawBaseNoK(L, h, A);
+    drawSplitCurve(L, h, k, A);
+    drawShiftMarker(L, h);
+    drawPoints(L, h, k, A);
+    if (k !== 0) {
+      ctx.strokeStyle = "rgba(96,165,250,0.45)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      const yy = toY(k, L);
+      ctx.moveTo(L.x0, yy); ctx.lineTo(L.x0 + L.pw, yy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#93c5fd";
+      ctx.font = "11px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillText("y = " + fmtK(k), L.x0 + 6, yy - 4);
+    }
+    drawKShiftOverlay(L);
+  }
+
+
+  // --- Animación al soltar k: máx/mín padre → desplazados (parpadeo ×3) ---
+  let kShiftAnim = null;
+  function stopKShiftAnim() {
+    if (kShiftAnim && kShiftAnim.raf) cancelAnimationFrame(kShiftAnim.raf);
+    kShiftAnim = null;
+  }
+  function collectParentExtrema(L, h, A) {
+    // Flechas nacen en la base blanca A·f(θ−h) (sin k) → g = base + k
+    const out = [];
+    const isSin = true;
+    const k = +document.getElementById("kSlider").value;
+    const specs = isSin
+      ? [{ base: 90, y: 1, kind: "max" }, { base: 270, y: -1, kind: "min" }]
+      : [{ base: 0, y: 1, kind: "max" }, { base: 180, y: -1, kind: "min" }];
+    for (const sp of specs) {
+      let n0 = Math.floor((L.xmin - (sp.base + h)) / 360) - 1;
+      let n1 = Math.ceil((L.xmax - (sp.base + h)) / 360) + 1;
+      for (let n = n0; n <= n1; n++) {
+        const th = sp.base + h + 360 * n; // ángulo del extremo en la curva transformada
+        if (th < L.xmin - 1e-6 || th > L.xmax + 1e-6) continue;
+        const yBase = A * sp.y;       // sobre la línea blanca punteada
+        const yFinal = yBase + k;     // sobre la curva de color
+        out.push({ th0: th, y0: yBase, th1: th, y1: yFinal, kind: sp.kind });
+      }
+    }
+    return out;
+  }
+  function drawArrow(x0, y0, x1, y1, color, progress) {
+    const p = Math.max(0, Math.min(1, progress));
+    const x = x0 + (x1 - x0) * p;
+    const y = y0 + (y1 - y0) * p;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    if (p > 0.08) {
+      const ang = Math.atan2(y - y0, x - x0);
+      const ah = 9;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - ah * Math.cos(ang - 0.4), y - ah * Math.sin(ang - 0.4));
+      ctx.lineTo(x - ah * Math.cos(ang + 0.4), y - ah * Math.sin(ang + 0.4));
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  function drawKShiftOverlay(L) {
+    if (!kShiftAnim) return;
+    const now = performance.now();
+    const dt = now - kShiftAnim.t0;
+    const ARROW_MS = 420;
+    const BLINK_MS = 180;
+    const BLINKS = 3;
+    const total = ARROW_MS + BLINKS * 2 * BLINK_MS;
+    const prog = Math.min(1, dt / ARROW_MS);
+    for (const e of kShiftAnim.extrema) {
+      const x0 = toX(e.th0, L), y0 = toY(e.y0, L);
+      const x1 = toX(e.th1, L), y1 = toY(e.y1, L);
+      // punto base (padre)
+      ctx.beginPath();
+      ctx.arc(x0, y0, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#fbbf24";
+      ctx.fill();
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // flecha
+      drawArrow(x0, y0, x1, y1, e.kind === "max" ? "#fbbf24" : "#60a5fa", prog);
+      // punto destino + parpadeo ×3
+      if (dt >= ARROW_MS * 0.85) {
+        const blinkT = dt - ARROW_MS;
+        let show = true;
+        if (blinkT >= 0) {
+          const cycle = Math.floor(blinkT / BLINK_MS);
+          // on, off, on, off, on, off = 6 half-cycles for 3 blinks
+          if (cycle < BLINKS * 2) show = (cycle % 2 === 0);
+          else show = true;
+        }
+        if (show) {
+          ctx.beginPath();
+          ctx.arc(x1, y1, 6.5, 0, Math.PI * 2);
+          ctx.fillStyle = e.kind === "max" ? "#fbbf24" : "#60a5fa";
+          ctx.fill();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+    }
+    if (dt < total) {
+      kShiftAnim.raf = requestAnimationFrame(() => draw());
+    } else {
+      // dejar puntos finales un instante y limpiar
+      if (!kShiftAnim.doneAt) kShiftAnim.doneAt = now;
+      if (now - kShiftAnim.doneAt < 500) {
+        kShiftAnim.raf = requestAnimationFrame(() => draw());
+      } else {
+        stopKShiftAnim();
+        draw();
+      }
+    }
+  }
+  function startKShiftAnim() {
+    stopKShiftAnim();
+    const L = layout();
+    const h = +hEl.value;
+    const A = (typeof aFromSlider === "function") ? aFromSlider() : 1;
+    const extrema = collectParentExtrema(L, h, A);
+    if (!extrema.length) return;
+    kShiftAnim = { t0: performance.now(), extrema, raf: null, doneAt: null };
+    kShiftAnim.raf = requestAnimationFrame(() => draw());
+  }
+
+  function refresh() {
+    syncLabels();
+    draw();
+  }
+
+  aEl.addEventListener("input", refresh);
+  hEl.addEventListener("input", refresh);
+  kEl.addEventListener("input", refresh);
+  kEl.addEventListener("change", startKShiftAnim);
+  kEl.addEventListener("pointerup", startKShiftAnim);
+  kEl.addEventListener("touchend", startKShiftAnim);
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    setASlider(1);
+    hEl.value = "0";
+    kEl.value = "0";
+    refresh();
+  });
+
+  function sizeCanvas() {
+    const wrap = canvas.parentElement;
+    const cssW = Math.max(320, Math.floor((wrap && wrap.clientWidth) || 1680));
+    const cssH = Math.max(360, Math.floor((wrap && wrap.clientHeight) || 640));
+    if (canvas.width !== cssW || canvas.height !== cssH) {
+      canvas.width = cssW;
+      canvas.height = cssH;
+    }
+  }
+  window.addEventListener("resize", () => { sizeCanvas(); draw(); });
+  sizeCanvas();
+  refresh();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Construcción de la función seno</title>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #1a2332; --ink: #e8eef7; --muted: #8b9bb4;
+      --accent: #6ea8fe; --point: #c084fc; --sin: #60a5fa; --amber: #FFBF00;
+      --ok: #5ad4a8; --bad: #ff7b7b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: system-ui, ui-sans-serif, sans-serif;
+      background: var(--bg); color: var(--ink); padding: 10px 14px 14px;
+    }
+    .wrap { max-width: 1280px; width: 100%; margin: 0 auto; display: grid; gap: 8px; }
+    h1 { font-size: 1.2rem; margin: 0; font-weight: 700; }
+    .sub { color: var(--muted); font-size: 0.86rem; margin: 4px 0 0; line-height: 1.4; }
+    a.back { color: var(--accent); font-size: 0.82rem; text-decoration: none; }
+    .card {
+      background: var(--panel); border: 1px solid #2a3548; border-radius: 12px; padding: 12px;
+    }
+    .card.slim { padding: 8px 10px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button.btn {
+      border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+      cursor: pointer; background: #2a3c58; color: var(--ink);
+    }
+    button.btn.primary { background: var(--accent); color: #0b1018; }
+    button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .chip {
+      border: 1px solid #334155; border-radius: 999px; padding: 7px 12px; font: inherit; font-weight: 650;
+      cursor: pointer; background: #243044; color: var(--ink);
+    }
+    .chip.picked { outline: 2px solid var(--accent); }
+    .chip.ok { outline: 2px solid var(--ok); }
+    .chip.bad { outline: 2px solid var(--bad); }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .narration { font-size: 0.9rem; color: var(--muted); line-height: 1.45; margin: 0; min-height: 1.4em; }
+    .narration strong { color: var(--ink); }
+    .narration.ok { color: var(--ok); }
+    .narration.bad { color: var(--bad); }
+    .graph-wrap { position: relative; }
+    canvas {
+      width: 100%; height: auto; display: block; border-radius: 10px;
+      background: #0b1018; touch-action: none;
+    }
+    #confetti {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 5; border-radius: 10px;
+      background: transparent;
+    }
+    .hint { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+    .hidden { display: none !important; }
+    .lesson-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      border: 0; background: transparent; cursor: pointer; padding: 10px; opacity: 0.85; z-index: 4;
+    }
+    .lesson-nav:hover { opacity: 1; }
+    .lesson-nav.prev { left: 6px; }
+    .lesson-nav.next { right: 6px; }
+    .lesson-nav .chev {
+      display: block; width: 0; height: 0;
+      border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+    }
+    .lesson-nav.prev .chev { border-right: 18px solid #60a5fa; }
+    .lesson-nav.next .chev { border-left: 18px solid #60a5fa; }
+    .lesson-nav:disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
+    .screen-tag { font-size: 0.78rem; color: var(--muted); }
+    .score {
+      display: inline-flex; align-items: center; gap: 6px;
+      border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+      background: #121a27; border: 1px solid #2a3548;
+    }
+    .score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+    .score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+    .score.stage { color: var(--amber); border-color: rgba(255,191,0,0.4); }
+    .hdr-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; }
+    .hdr-row .sub.compact { margin: 0; }
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 40;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal {
+      background: var(--panel); border: 1px solid #3a4a66; border-radius: 14px;
+      padding: 22px 24px; max-width: 420px; width: 100%; text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    }
+    .modal h2 { margin: 0 0 8px; font-size: 1.35rem; color: var(--ok); }
+    .modal p { margin: 0 0 16px; color: var(--muted); line-height: 1.45; }
+    .modal .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    @keyframes shakeX {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    .shake { animation: shakeX 0.42s ease; }
+    .round-banner {
+      position: absolute; left: 50%; top: 18%; transform: translateX(-50%);
+      z-index: 8; pointer-events: none;
+      background: rgba(26,35,50,0.92); border: 1px solid rgba(90,212,168,0.55);
+      color: var(--ok); font-weight: 800; font-size: 1.05rem;
+      padding: 10px 18px; border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      opacity: 0; transition: opacity .2s;
+    }
+    .round-banner.show { opacity: 1; }
+
+    .locus-strip {
+      margin-top: 10px;
+      display: flex; flex-wrap: wrap; gap: 6px;
+      justify-content: flex-end; align-items: center;
+    }
+    .locus-strip .locus {
+      border: 1px solid #2a3548; background: #121a27; color: #4a5a72;
+      font: inherit; font-weight: 700; font-size: 0.82rem;
+      padding: 7px 11px; border-radius: 999px;
+      cursor: default; transition: color .15s, background .15s, border-color .15s, box-shadow .15s;
+      min-width: 2.2em; text-align: center;
+    }
+    .locus-strip .locus.on {
+      color: #0b1018; background: #FFBF00; border-color: #FFBF00;
+      box-shadow: 0 0 12px rgba(255,191,0,.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <a class="back" href="index.html">← Tools Campus</a>
+      <div class="hdr-row">
+        <h1 id="pageTitle">Construcción de la función seno</h1>
+        <p class="sub compact" id="pageSub">Círculo + sinusoide · luego exploración y predicción de ángulos.</p>
+      </div>
+    </div>
+
+    <div class="card" id="panelConstruct">
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button class="btn primary" id="playBtn">▶ Play</button>
+        <button class="btn" id="nextBtn">Siguiente</button>
+        <button class="btn" id="stopBtn" disabled>Detener</button>
+        <button class="btn" id="resetBtn">Reset</button>
+        <span class="screen-tag">Pantalla 1 · construcción</span>
+      </div>
+      <p class="narration" id="narration">Tocá un grado bajo el eje o usá <strong>▶ Play</strong> / <strong>Siguiente</strong>. La flecha azul del lienzo pasa a la <strong>construcción del coseno</strong>.</p>
+      <p class="hint">El segmento vertical (sen θ) se traslada del círculo al gráfico.</p>
+    </div>
+
+    <div class="card slim hidden" id="panelExplore">
+      <div class="toolbar" id="gameBar">
+        <button class="btn primary" id="gamePlayBtn">Jugar</button>
+        <button class="btn" id="exploreClearBtn">Limpiar</button>
+        <span class="score ok" id="scoreOk">Aciertos <strong>0</strong></span>
+        <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
+        <span class="score stage" id="scoreStage">Etapa <strong>1</strong></span>
+        <span class="score" id="scoreRound" style="color:var(--accent);border-color:rgba(110,168,254,0.45);">Ronda —</span>
+      </div>
+    </div>
+
+    <div class="card hidden" id="panelPredict" style="display:none" aria-hidden="true">
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button class="btn primary" id="verifyPredBtn" disabled>Verificar</button>
+        <button class="btn" id="resetPredBtn">Reset respuesta</button>
+        <span class="screen-tag" id="predTag">Predecir</span>
+      </div>
+      <p class="narration" id="narrationPred">Encontrá el ángulo cuyo seno vale…</p>
+      <p class="hint" style="margin-bottom:8px;">Podés marcar uno o más ángulos (hay senos con dos soluciones en [0°, 360°)).</p>
+      <div class="chips" id="predChips"></div>
+    </div>
+
+    <div class="card" style="padding:6px;" id="graphCard">
+      <div class="graph-wrap" id="graphWrap">
+        <canvas id="c" width="1320" height="620" aria-label="Construcción y predicción de sen θ"></canvas>
+        <canvas id="confetti" width="1320" height="620" aria-hidden="true"></canvas>
+        <div class="round-banner" id="roundBanner" aria-live="polite"></div>
+        <button type="button" id="screenPrev" class="lesson-nav prev" title="Anterior" aria-label="Anterior"><span class="chev" aria-hidden="true"></span></button>
+        <button type="button" id="screenNext" class="lesson-nav next" title="Siguiente" aria-label="Siguiente"><span class="chev" aria-hidden="true"></span></button>
+      </div>
+
+        <div class="locus-strip" id="locusStrip" aria-label="Cuadrante o eje activo">
+          <span class="locus" data-locus="q1">I</span>
+          <span class="locus" data-locus="q2">II</span>
+          <span class="locus" data-locus="q3">III</span>
+          <span class="locus" data-locus="q4">IV</span>
+          <span class="locus" data-locus="x">eje X</span>
+          <span class="locus" data-locus="y">eje Y</span>
+        </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="stageModal" role="dialog" aria-modal="true" aria-labelledby="stageModalTitle">
+    <div class="modal">
+      <h2 id="stageModalTitle">¡Etapa Superada!</h2>
+      <p id="stageModalText">Llegaste a 50 aciertos. ¿Seguís a la siguiente etapa o reiniciás?</p>
+      <div class="actions">
+        <button class="btn primary" id="stageNextBtn">Siguiente etapa</button>
+        <button class="btn" id="stageRestartBtn">Reiniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const DEGS30 = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360];
+  const DEGS_ALL = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+  const DEGS_GAME = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330];
+  const SEN_LAB = {
+    0: "0", 30: "1/2", 45: "√2/2", 60: "√3/2", 90: "1", 120: "√3/2", 135: "√2/2", 150: "1/2", 180: "0",
+    210: "−1/2", 225: "−√2/2", 240: "−√3/2", 270: "−1", 300: "−√3/2", 315: "−√2/2", 330: "−1/2", 360: "0"
+  };
+  const Y_MARKS_FIXED = [
+    { v: 1, lab: "1" }, { v: Math.sqrt(3)/2, lab: "√3/2" }, { v: Math.SQRT1_2, lab: "√2/2" }, { v: 0.5, lab: "1/2" },
+    { v: 0, lab: "0" },
+    { v: -0.5, lab: "−1/2" }, { v: -Math.SQRT1_2, lab: "−√2/2" }, { v: -Math.sqrt(3)/2, lab: "−√3/2" }, { v: -1, lab: "−1" }
+  ];
+  // Solutions in [0°, 360°): 0 closed, 360 open (360 excluded)
+  const SIN_SOLUTIONS = {
+    "1": [90],
+    "√3/2": [60, 120],
+    "√2/2": [45, 135],
+    "1/2": [30, 150],
+    "0": [0, 180],
+    "−1/2": [210, 330],
+    "−√2/2": [225, 315],
+    "−√3/2": [240, 300],
+    "−1": [270]
+  };
+  const COS_LAB = {
+    0: "1", 30: "√3/2", 45: "√2/2", 60: "1/2", 90: "0", 120: "−1/2", 135: "−√2/2", 150: "−√3/2", 180: "−1",
+    210: "−√3/2", 225: "−√2/2", 240: "−1/2", 270: "0", 300: "1/2", 315: "√2/2", 330: "√3/2", 360: "1"
+  };
+  const COS_SOLUTIONS = {
+    "1": [0],
+    "√3/2": [30, 330],
+    "√2/2": [45, 315],
+    "1/2": [60, 300],
+    "0": [90, 270],
+    "−1/2": [120, 240],
+    "−√2/2": [135, 225],
+    "−√3/2": [150, 210],
+    "−1": [180]
+  };
+  const MAX_GAME_STAGE = 4;
+  const PREDICT = [
+    { lab: "1", angles: [90] },
+    { lab: "√3/2", angles: [60, 120] },
+    { lab: "√2/2", angles: [45, 135] },
+    { lab: "1/2", angles: [30, 150] },
+    { lab: "0", angles: [0, 180] },
+    { lab: "−1/2", angles: [210, 330] },
+    { lab: "−√2/2", angles: [225, 315] },
+    { lab: "−√3/2", angles: [240, 300] },
+    { lab: "−1", angles: [270] }
+  ];
+  const MAX_SCREEN = 1; // construcción + exploración (legacy Predecir 1/9… retirado)
+  const STAGE_GOAL = 50;
+  const ROUND_N = 5;
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const graphWrap = document.getElementById("graphWrap");
+  const narration = document.getElementById("narration");
+  const narrationPred = document.getElementById("narrationPred");
+  const playBtn = document.getElementById("playBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const panelConstruct = document.getElementById("panelConstruct");
+  const panelExplore = document.getElementById("panelExplore");
+  const panelPredict = document.getElementById("panelPredict");
+  const predChips = document.getElementById("predChips");
+  const verifyPredBtn = document.getElementById("verifyPredBtn");
+  const resetPredBtn = document.getElementById("resetPredBtn");
+  const screenPrev = document.getElementById("screenPrev");
+  const screenNext = document.getElementById("screenNext");
+  const pageTitle = document.getElementById("pageTitle");
+  const pageSub = document.getElementById("pageSub");
+  const predTag = document.getElementById("predTag");
+  const gamePlayBtn = document.getElementById("gamePlayBtn");
+  const exploreClearBtn = document.getElementById("exploreClearBtn");
+  const scoreOkEl = document.getElementById("scoreOk");
+  const scoreBadEl = document.getElementById("scoreBad");
+  const scoreStageEl = document.getElementById("scoreStage");
+  const scoreRoundEl = document.getElementById("scoreRound");
+  const roundBanner = document.getElementById("roundBanner");
+  const stageModal = document.getElementById("stageModal");
+  const stageModalText = document.getElementById("stageModalText");
+
+  let screen = 0;
+  let revealed = [];
+  let playing = false;
+  let playAbort = false;
+  let slide = null;
+  let trails = [];
+  let tickHits = [];
+  let yHits = [];
+  let yAxisMarks = [];
+  let predPick = [];
+  let predLocked = false;
+  let predCorrect = false;
+
+  // --- game (screen 1) ---
+  let gameActive = false;
+  let gameBusy = false;
+  let gameTargets = []; // stage 1: target degrees
+  let gameTargetsY = []; // stage 2+: indices into Y_MARKS_FIXED
+  let gameNeed = {}; // stage 2+: lab -> remaining angles still to find
+  let gameDone = []; // degrees correctly fixed this round
+  let gameSelDeg = null;
+  let gameSelY = null; // index into Y_MARKS_FIXED
+  let gameShakeUntil = 0;
+  let gameShakeDeg = null;
+  let gameShakeY = null;
+  let gameOk = 0;
+  let gameBad = 0;
+  let gameStage = 1;
+  let curveReveal = 0; // 0..360 while celebrating
+  let gameTimer = null;
+  let pendingStageModal = false;
+
+  function setNarration(html, cls) {
+    narration.className = "narration" + (cls ? " " + cls : "");
+    narration.innerHTML = html;
+  }
+  function waitMs(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+  const confettiCanvas = document.getElementById("confetti");
+  const confettiCtx = confettiCanvas ? confettiCanvas.getContext("2d") : null;
+  let confettiRaf = null;
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+  function fireConfetti() {
+    if (!confettiCanvas || !confettiCtx) return;
+    const parent = confettiCanvas.parentElement;
+    const w = confettiCanvas.width = parent ? parent.clientWidth || 720 : 720;
+    const h = confettiCanvas.height = parent ? parent.clientHeight || 620 : 620;
+    const colors = ["#FFBF00", "#ff5c5c", "#34d399", "#c084fc", "#60a5fa", "#f472b6", "#fbbf24"];
+    const parts = [];
+    for (let i = 0; i < 90; i++) {
+      parts.push({
+        x: w * 0.5 + (Math.random() - 0.5) * w * 0.35,
+        y: h * 0.25 + Math.random() * h * 0.15,
+        vx: (Math.random() - 0.5) * 9,
+        vy: Math.random() * -7 - 2,
+        g: 0.22 + Math.random() * 0.12,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35,
+        w: 5 + Math.random() * 5,
+        h: 3 + Math.random() * 4,
+        color: colors[(Math.random() * colors.length) | 0],
+        life: 55 + ((Math.random() * 25) | 0),
+      });
+    }
+    if (confettiRaf) cancelAnimationFrame(confettiRaf);
+    function frame() {
+      confettiCtx.clearRect(0, 0, w, h);
+      let alive = 0;
+      for (const p of parts) {
+        if (p.life <= 0) continue;
+        alive++;
+        p.life--;
+        p.vy += p.g;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate(p.rot);
+        confettiCtx.globalAlpha = Math.max(0, p.life / 40);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        confettiCtx.restore();
+      }
+      if (alive > 0) confettiRaf = requestAnimationFrame(frame);
+      else {
+        confettiCtx.clearRect(0, 0, w, h);
+        confettiRaf = null;
+      }
+    }
+    confettiRaf = requestAnimationFrame(frame);
+  }
+  function playErrorSound() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    // short noisy buzz (error)
+    const bufLen = Math.floor(ctx.sampleRate * 0.16);
+    const buffer = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.pow(1 - i / bufLen, 1.4);
+      data[i] = (Math.random() * 2 - 1) * env * 0.35;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 280;
+    filter.Q.value = 1.2;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.55, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+    noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    noise.start(t0); noise.stop(t0 + 0.17);
+    // low thump under the noise
+    const osc = ctx.createOscillator();
+    const og = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(110, t0);
+    osc.frequency.exponentialRampToValueAtTime(55, t0 + 0.12);
+    og.gain.setValueAtTime(0.0001, t0);
+    og.gain.exponentialRampToValueAtTime(0.18, t0 + 0.01);
+    og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.14);
+    osc.connect(og); og.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + 0.15);
+  }
+  function playOkChime() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    [523.25, 659.25, 783.99].forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = f;
+      const t = t0 + i * 0.05;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(t); osc.stop(t + 0.24);
+    });
+  }
+
+  function degToRad(d) { return d * Math.PI / 180; }
+  function senLabel(deg) { return SEN_LAB[deg] != null ? SEN_LAB[deg] : "?"; }
+  function predRound() { return screen >= 2 ? PREDICT[screen - 2] : null; }
+  function near(a, b, eps) { return Math.abs(a - b) <= (eps == null ? 1e-9 : eps); }
+  function sinExact(deg) { return Math.sin(degToRad(deg)); }
+
+  function clearGameTimer() {
+    if (gameTimer) { clearTimeout(gameTimer); gameTimer = null; }
+  }
+
+  // Stages: 1 θ→sen · 2 sen→θ · 3 θ→cos · 4 cos→θ
+  function isCosGame() { return gameStage >= 3; }
+  function isValueToAngle() { return gameStage === 2 || gameStage >= 4; }
+  function isAngleToValue() { return !isValueToAngle(); }
+  function fnName() { return isCosGame() ? "cos" : "sen"; }
+  function fnExact(deg) { return isCosGame() ? Math.cos(degToRad(deg)) : Math.sin(degToRad(deg)); }
+  function fnLabel(deg) {
+    const map = isCosGame() ? COS_LAB : SEN_LAB;
+    return map[deg] != null ? map[deg] : "?";
+  }
+  function fnSolutions() { return isCosGame() ? COS_SOLUTIONS : SIN_SOLUTIONS; }
+  function modeTag() {
+    if (gameStage === 1) return " · θ→sen";
+    if (gameStage === 2) return " · sen→θ";
+    if (gameStage === 3) return " · θ→cos";
+    return " · cos→θ";
+  }
+  function gameTitle() {
+    return isCosGame() ? "Sinusoide Exploración Coseno" : "Sinusoide Exploración Seno";
+  }
+
+  function syncGameScores() {
+    scoreOkEl.innerHTML = "Aciertos <strong>" + gameOk + "</strong>";
+    scoreBadEl.innerHTML = "Errores <strong>" + gameBad + "</strong>";
+    scoreStageEl.innerHTML = "Etapa <strong>" + gameStage + "</strong>" + modeTag();
+    gamePlayBtn.textContent = gameActive ? "Reiniciar" : "Jugar";
+    if (!scoreRoundEl) return;
+    if (!gameActive) {
+      scoreRoundEl.textContent = "Ronda —";
+      return;
+    }
+    if (isValueToAngle()) {
+      const total = gameTargetsY.length;
+      const doneN = yTargetsDone().length;
+      const left = yTargetsPending().map((i) => Y_MARKS_FIXED[i].lab);
+      scoreRoundEl.innerHTML = "Ronda <strong>" + doneN + "/" + total + "</strong>" +
+        (left.length ? (" · faltan " + left.join(", ")) : " · completa");
+    } else {
+      const total = gameTargets.length;
+      const doneN = gameDone.length;
+      scoreRoundEl.innerHTML = "Ronda <strong>" + doneN + "/" + total + "</strong>";
+    }
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function pickTargetsTheta() {
+    return shuffle(DEGS_GAME).slice(0, ROUND_N).sort((a,b)=>a-b);
+  }
+
+  function pickTargetsSin() {
+    // 5 random distinct sine values (Y mark indices)
+    const idxs = shuffle(Y_MARKS_FIXED.map((_, i) => i)).slice(0, ROUND_N).sort((a,b)=>a-b);
+    const need = {};
+    for (const i of idxs) {
+      const lab = Y_MARKS_FIXED[i].lab;
+      need[lab] = fnSolutions()[lab].slice();
+    }
+    return { idxs, need };
+  }
+
+  function remainingAnglesForRound() {
+    if (!isValueToAngle()) return gameTargets.filter((d) => !gameDone.includes(d));
+    const out = [];
+    for (const lab of Object.keys(gameNeed)) {
+      for (const d of gameNeed[lab]) out.push(d);
+    }
+    return out;
+  }
+
+  function yTargetsPending() {
+    return gameTargetsY.filter((i) => {
+      const lab = Y_MARKS_FIXED[i].lab;
+      return (gameNeed[lab] || []).length > 0;
+    });
+  }
+
+  function yTargetsDone() {
+    return gameTargetsY.filter((i) => {
+      const lab = Y_MARKS_FIXED[i].lab;
+      return !(gameNeed[lab] || []).length;
+    });
+  }
+
+  function roundComplete() {
+    if (!gameActive) return false;
+    if (!isValueToAngle()) {
+      return gameTargets.length > 0 && gameDone.length >= gameTargets.length;
+    }
+    // Stage 2: all target sine values fully solved (0 remaining angles)
+    return gameTargetsY.length > 0 && yTargetsPending().length === 0 && remainingAnglesForRound().length === 0;
+  }
+
+  function resetRoundKeepScores() {
+    clearGameTimer();
+    gameBusy = false;
+    gameSelDeg = null;
+    gameSelY = null;
+    gameShakeUntil = 0;
+    gameShakeDeg = null;
+    gameShakeY = null;
+    curveReveal = 0;
+    gameDone = [];
+    if (isValueToAngle()) {
+      const pack = pickTargetsSin();
+      gameTargets = [];
+      gameTargetsY = pack.idxs;
+      gameNeed = pack.need;
+    } else {
+      gameTargets = pickTargetsTheta();
+      gameTargetsY = [];
+      gameNeed = {};
+    }
+    gameActive = true;
+    syncGameScores();
+  }
+
+  function fullGameReset() {
+    clearGameTimer();
+    gameActive = false;
+    gameBusy = false;
+    gameTargets = [];
+    gameTargetsY = [];
+    gameNeed = {};
+    gameDone = [];
+    gameSelDeg = null;
+    gameSelY = null;
+    gameShakeUntil = 0;
+    gameShakeDeg = null;
+    gameShakeY = null;
+    curveReveal = 0;
+    gameOk = 0;
+    gameBad = 0;
+    pendingStageModal = false;
+    stageModal.classList.add("hidden");
+    syncGameScores();
+  }
+
+  function startOrRestartGame() {
+    // keep current stage on Reiniciar? User expects full restart of scores; stage stays unless restart from modal
+    const keepStage = gameStage;
+    fullGameReset();
+    gameStage = keepStage;
+    resetRoundKeepScores();
+    draw();
+  }
+
+  function layout(mode) {
+    const w = canvas.width, h = canvas.height;
+    const cy = h * 0.46;
+    if (mode === "construct") {
+      const mid = w * 0.38;
+      const R = Math.min(h * 0.34, mid * 0.42);
+      const cx = mid * 0.48;
+      const sepX = mid - 22;
+      const sx0 = mid + 56;
+      const sx1 = w - 36;
+      return { mode, w, h, mid, sepX, cx, cy, R, sx0, sx1 };
+    }
+    const R = h * 0.38;
+    const sx0 = 100;
+    const sx1 = w - 36;
+    return { mode, w, h, mid: 40, sepX: 40, cx: 0, cy, R, sx0, sx1 };
+  }
+
+  function circleToCanvas(x, y, L) { return [L.cx + x * L.R, L.cy - y * L.R]; }
+  function sineX(deg, L) { return L.sx0 + (deg / 360) * (L.sx1 - L.sx0); }
+  function sineY(val, L) { return L.cy - val * L.R; }
+
+  function drawAxesCircle(L) {
+    const { cx, cy, R } = L;
+    ctx.save();
+    ctx.strokeStyle = "#4b5d7a"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(cx - R - 18, cy); ctx.lineTo(cx + R + 18, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + R + 18); ctx.lineTo(cx, cy - R - 18); ctx.stroke();
+    ctx.fillStyle = "#4b5d7a";
+    ctx.beginPath(); ctx.moveTo(cx + R + 18, cy); ctx.lineTo(cx + R + 8, cy - 5); ctx.lineTo(cx + R + 8, cy + 5); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, cy - R - 18); ctx.lineTo(cx - 5, cy - R - 8); ctx.lineTo(cx + 5, cy - R - 8); ctx.fill();
+    ctx.strokeStyle = "#e8eef7"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "#8b9bb4";
+    ctx.font = "600 12px system-ui,sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("x", cx + R + 10, cy + 14);
+    ctx.fillText("y", cx + 8, cy - R - 10);
+    ctx.fillText("radio = 1", cx + R * 0.35, cy - R * 0.55);
+    ctx.restore();
+  }
+
+  function drawFixedYMarks(L, opts) {
+    opts = opts || {};
+    yHits = [];
+    const selY = opts.selY;
+    const shakeY = opts.shakeY;
+    const doneVals = opts.doneVals || [];
+    const targetY = opts.targetY || [];
+    const doneY = opts.doneY || [];
+    ctx.save();
+    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    Y_MARKS_FIXED.forEach((m, i) => {
+      const y = sineY(m.v, L);
+      const doneByVal = doneVals.some((v) => near(v, m.v, 1e-6));
+      const done = doneY.includes(i) || (!targetY.length && doneByVal);
+      const isTarget = targetY.includes(i);
+      const selected = selY === i;
+      const shaking = shakeY === i;
+      let fill = "#64748b";
+      let stroke = "rgba(100,116,139,0.55)";
+      // pending targets = vivid blue (must stand out from axis)
+      if (isTarget) { fill = "#6ea8fe"; stroke = "#6ea8fe"; }
+      if (done) { fill = "#5ad4a8"; stroke = "#5ad4a8"; }
+      if (selected) { fill = "#FFBF00"; stroke = "#FFBF00"; }
+      if (shaking) { fill = "#ff7b7b"; stroke = "#ff7b7b"; }
+      const padX = 8, padY = 10;
+      const tw = ctx.measureText(m.lab).width;
+      const hx0 = L.sx0 - 12 - tw - padX;
+      const hx1 = L.sx0 - 4;
+      const hy0 = y - padY;
+      const hy1 = y + padY;
+      if (isTarget && !done) {
+        ctx.fillStyle = "rgba(110,168,254,0.22)";
+        ctx.fillRect(hx0 - 2, hy0 - 1, (hx1 - hx0) + 4, (hy1 - hy0) + 2);
+      }
+      if (selected || shaking) {
+        ctx.fillStyle = shaking ? "rgba(255,123,123,0.18)" : "rgba(255,191,0,0.18)";
+        ctx.fillRect(hx0, hy0, hx1 - hx0, hy1 - hy0);
+      }
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = selected || shaking ? 2.2 : 1.5;
+      ctx.beginPath(); ctx.moveTo(L.sx0 - 6, y); ctx.lineTo(L.sx0 + 6, y); ctx.stroke();
+      ctx.fillStyle = fill;
+      ctx.fillText(m.lab, L.sx0 - 12, y);
+      yHits.push({ i, v: m.v, lab: m.lab, x0: hx0, y0: hy0, x1: hx1, y1: hy1 });
+    });
+    ctx.restore();
+  }
+
+  function drawAxesSine(L, opts) {
+    opts = opts || {};
+    const { sx0, sx1, cy, R } = L;
+    ctx.save();
+    if (L.mode === "construct") {
+      ctx.strokeStyle = "#34d399"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(L.sepX, cy - R - 20); ctx.lineTo(L.sepX, cy + R + 20); ctx.stroke();
+    }
+    ctx.strokeStyle = "#4b5d7a"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(sx0 - 8, cy); ctx.lineTo(sx1 + 8, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx0, cy + R + 12); ctx.lineTo(sx0, cy - R - 12); ctx.stroke();
+    ctx.fillStyle = "#4b5d7a";
+    ctx.beginPath(); ctx.moveTo(sx1 + 8, cy); ctx.lineTo(sx1 - 2, cy - 5); ctx.lineTo(sx1 - 2, cy + 5); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx0, cy - R - 12); ctx.lineTo(sx0 - 5, cy - R - 2); ctx.lineTo(sx0 + 5, cy - R - 2); ctx.fill();
+    ctx.fillStyle = "#8b9bb4";
+    ctx.font = "600 12px system-ui,sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText("θ (°)", (sx0 + sx1) / 2, cy + R + 34);
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    ctx.fillText((typeof isCosGame === "function" && isCosGame() && screen === 1) ? "cos θ" : "sen θ", sx0 - 10, cy - R - 8);
+    if (opts.fixedY) drawFixedYMarks(L, opts);
+    else {
+      yHits = [];
+      ctx.fillStyle = "#8b9bb4";
+      ctx.fillText("1", sx0 - 8, sineY(1, L));
+      ctx.fillText("0", sx0 - 8, cy);
+      ctx.fillText("−1", sx0 - 8, sineY(-1, L));
+    }
+    const degs = opts.degs || DEGS30;
+    const activeSet = opts.activeSet || revealed;
+    const targetSet = opts.targetSet || [];
+    const doneSet = opts.doneSet || [];
+    const selDeg = opts.selDeg;
+    const shakeDeg = opts.shakeDeg;
+    tickHits = [];
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "700 10px ui-monospace, Menlo, sans-serif";
+    for (const d of degs) {
+      const x = sineX(d, L);
+      const label = String(d) + "°";
+      const tw = ctx.measureText(label).width;
+      const bw = Math.max(tw + 10, 28);
+      const bh = 20;
+      const bx = x - bw / 2;
+      const by = cy + 14;
+      const active = activeSet.includes(d);
+      const picked = opts.picked && opts.picked.includes(d);
+      const isTarget = targetSet.includes(d);
+      const isDone = doneSet.includes(d);
+      const isSel = selDeg === d;
+      const isShake = shakeDeg === d;
+      let fill = "#121a27", stroke = "#2a3548", ink = "#8b9bb4";
+      if (picked) { fill = "rgba(110,168,254,0.35)"; stroke = "#6ea8fe"; ink = "#e8eef7"; }
+      else if (isDone) { fill = "rgba(90,212,168,0.28)"; stroke = "#5ad4a8"; ink = "#e8eef7"; }
+      else if (isShake) { fill = "rgba(255,123,123,0.35)"; stroke = "#ff7b7b"; ink = "#e8eef7"; }
+      else if (isSel) { fill = "rgba(255,191,0,0.35)"; stroke = "#FFBF00"; ink = "#e8eef7"; }
+      else if (isTarget) { fill = "rgba(110,168,254,0.28)"; stroke = "#6ea8fe"; ink = "#e8eef7"; }
+      else if (active) { fill = "rgba(96,165,250,0.28)"; stroke = "#60a5fa"; ink = "#e8eef7"; }
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = isSel || isTarget || isDone || isShake ? 1.6 : 1;
+      const r = 8;
+      ctx.beginPath();
+      ctx.moveTo(bx + r, by);
+      ctx.arcTo(bx + bw, by, bx + bw, by + bh, r);
+      ctx.arcTo(bx + bw, by + bh, bx, by + bh, r);
+      ctx.arcTo(bx, by + bh, bx, by, r);
+      ctx.arcTo(bx, by, bx + bw, by, r);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = ink;
+      ctx.fillText(label, x, by + bh / 2);
+      tickHits.push({ deg: d, x0: bx, y0: by, x1: bx + bw, y1: by + bh });
+    }
+    ctx.restore();
+  }
+
+  function drawSineCurve(L, upToDeg, useCos) {
+    if (upToDeg == null || upToDeg < 0) return;
+    ctx.save();
+    ctx.strokeStyle = "#60a5fa"; ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    const steps = Math.max(2, Math.round(upToDeg));
+    for (let i = 0; i <= steps; i++) {
+      const d = (upToDeg * i) / steps;
+      const val = useCos ? Math.cos(degToRad(d)) : Math.sin(degToRad(d));
+      const x = sineX(d, L), y = sineY(val, L);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+  function drawFullSine(L) { drawSineCurve(L, 360, false); }
+  function drawFnCurve(L, upToDeg) {
+    drawSineCurve(L, upToDeg, isCosGame() && screen === 1);
+  }
+
+  function drawCirclePoint(deg, L, emph) {
+    const a = degToRad(deg);
+    const [px, py] = circleToCanvas(Math.cos(a), Math.sin(a), L);
+    ctx.save();
+    ctx.fillStyle = emph ? "#e9d5ff" : "#c084fc";
+    ctx.beginPath(); ctx.arc(px, py, emph ? 8 : 6.5, 0, Math.PI * 2); ctx.fill();
+    if (emph) {
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.strokeStyle = "rgba(192,132,252,0.85)"; ctx.lineWidth = 1.7;
+      ctx.beginPath(); ctx.moveTo(L.cx, L.cy); ctx.lineTo(px, py); ctx.stroke();
+    }
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "700 11px system-ui,sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    const [lx, ly] = circleToCanvas(Math.cos(a) * 1.14, Math.sin(a) * 1.14, L);
+    ctx.fillText(deg + "°", lx, ly);
+    ctx.restore();
+  }
+  function drawSinePoint(deg, L, emph, color) {
+    // Explore game: sen stages → sin; cos stages → cos. Construction/predict stay on sine.
+    let val;
+    if (screen === 1) val = isCosGame() ? Math.cos(degToRad(deg)) : Math.sin(degToRad(deg));
+    else val = Math.sin(degToRad(deg));
+    const x = sineX(deg, L), y = sineY(val, L);
+    ctx.save();
+    ctx.fillStyle = color || (emph ? "#e9d5ff" : "#c084fc");
+    ctx.beginPath(); ctx.arc(x, y, emph ? 8 : 6.5, 0, Math.PI * 2); ctx.fill();
+    if (emph) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.4; ctx.stroke(); }
+    ctx.restore();
+  }
+  function drawVerticalOnCircle(deg, L, color, width) {
+    const a = degToRad(deg);
+    const cos = Math.cos(a), sin = Math.sin(a);
+    const [x0, y0] = circleToCanvas(cos, 0, L);
+    const [x1, y1] = circleToCanvas(cos, sin, L);
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = width || 4; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.restore();
+  }
+  function drawDottedH(x0, x1, y, color, width) {
+    if (!Number.isFinite(x0) || !Number.isFinite(x1) || Math.abs(x1 - x0) < 1) return;
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = width || 1.8;
+    ctx.setLineDash([5, 5]); ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+  function drawTrails(L) {
+    for (const t of trails) drawDottedH(t.x0, t.x1, t.y, "rgba(52,211,153,0.55)", 1.6);
+  }
+  function ensureYAxisMark(deg) {
+    if (yAxisMarks.some((m) => m.deg === deg)) return;
+    yAxisMarks.push({ deg, lab: senLabel(deg) });
+  }
+  function drawYAxisMarks(L) {
+    ctx.save();
+    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (const m of yAxisMarks) {
+      const y = sineY(Math.sin(degToRad(m.deg)), L);
+      ctx.strokeStyle = "#34d399"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(L.sx0 - 6, y); ctx.lineTo(L.sx0 + 6, y); ctx.stroke();
+      ctx.fillStyle = "#34d399";
+      ctx.fillText(m.lab, L.sx0 - 14, y);
+    }
+    ctx.restore();
+  }
+  function drawSlidingBar(L) {
+    if (!slide) return false;
+    const u = Math.min(1, (performance.now() - slide.t0) / slide.dur);
+    const ease = 1 - Math.pow(1 - u, 3);
+    const x = slide.fromX + (slide.toX - slide.fromX) * ease;
+    drawDottedH(slide.tipX0, x, slide.tipY, "rgba(255,191,0,0.9)", 2);
+    if (x >= L.sx0 - 0.5) {
+      ensureYAxisMark(slide.deg);
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,191,0,0.95)"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(L.sx0 - 7, slide.tipY); ctx.lineTo(L.sx0 + 7, slide.tipY); ctx.stroke();
+      ctx.fillStyle = "#FFBF00";
+      ctx.font = "700 13px ui-monospace, Menlo, Consolas, monospace";
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillText("= " + senLabel(slide.deg), L.sx0 - 16, slide.tipY);
+      ctx.restore();
+    }
+    ctx.save();
+    ctx.fillStyle = "#FFBF00";
+    ctx.beginPath(); ctx.arc(x, slide.tipY, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = u < 1 ? "#FFBF00" : "#60a5fa";
+    ctx.lineWidth = 4.2; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x, slide.yBot); ctx.lineTo(x, slide.yTop); ctx.stroke();
+    ctx.restore();
+    return u >= 1;
+  }
+
+  function drawConstruct() {
+    const L = layout("construct");
+    ctx.clearRect(0, 0, L.w, L.h);
+    drawAxesCircle(L);
+    drawAxesSine(L, { degs: DEGS30, activeSet: revealed, fixedY: false });
+    drawTrails(L);
+    drawYAxisMarks(L);
+    const last = revealed.length ? Math.max(...revealed) : -1;
+    if (last >= 0) drawSineCurve(L, last);
+    const focus = revealed.length ? revealed[revealed.length - 1] : -1;
+    for (const d of DEGS30) {
+      if (revealed.includes(d)) continue;
+      const a = degToRad(d);
+      const [px, py] = circleToCanvas(Math.cos(a), Math.sin(a), L);
+      ctx.save();
+      ctx.fillStyle = "rgba(192,132,252,0.18)";
+      ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    for (const d of revealed) {
+      const emph = d === focus && !slide;
+      drawCirclePoint(d, L, emph);
+      drawSinePoint(d, L, emph);
+      if (!(slide && slide.deg === d)) drawVerticalOnCircle(d, L, "rgba(52,211,153,0.35)", 2.2);
+    }
+    if (slide) {
+      drawVerticalOnCircle(slide.deg, L, "rgba(255,191,0,0.35)", 3);
+      drawSlidingBar(L);
+    }
+  }
+
+  function drawExplore() {
+    const L = layout("sine");
+    ctx.clearRect(0, 0, L.w, L.h);
+    const shaking = performance.now() < gameShakeUntil;
+    const degs = isValueToAngle() ? DEGS_GAME.concat() : DEGS_ALL;
+    // for display ticks: stage2 without 360
+    let targetSet = [], doneSet = [], doneVals = [];
+    let targetY = [], doneY = [];
+    if (gameActive) {
+      if (isValueToAngle()) {
+        targetY = yTargetsPending();
+        doneY = yTargetsDone();
+        doneSet = gameDone.slice();
+        doneVals = gameDone.map((d) => fnExact(d));
+      } else {
+        targetSet = gameTargets.filter((d) => !gameDone.includes(d));
+        doneSet = gameDone.slice();
+        doneVals = gameDone.map((d) => fnExact(d));
+      }
+    }
+    drawAxesSine(L, {
+      degs,
+      activeSet: [],
+      fixedY: true,
+      targetSet,
+      doneSet,
+      selDeg: gameSelDeg,
+      shakeDeg: shaking ? gameShakeDeg : null,
+      selY: gameSelY,
+      shakeY: shaking ? gameShakeY : null,
+      doneVals,
+      targetY,
+      doneY
+    });
+    if (curveReveal > 0) drawFnCurve(L, curveReveal);
+    for (const d of gameDone) {
+      const yVal = isCosGame() ? Math.cos(degToRad(d)) : Math.sin(degToRad(d));
+      const y = sineY(yVal, L);
+      drawDottedH(L.sx0, sineX(d, L), y, "rgba(90,212,168,0.75)", 1.8);
+      ctx.save();
+      ctx.strokeStyle = "rgba(90,212,168,0.85)"; ctx.lineWidth = 2.6; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(sineX(d, L), sineY(0, L)); ctx.lineTo(sineX(d, L), y); ctx.stroke();
+      ctx.restore();
+      drawSinePoint(d, L, true, "#5ad4a8");
+    }
+    if (gameSelDeg != null && !gameDone.includes(gameSelDeg)) {
+      const x = sineX(gameSelDeg, L);
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,191,0,0.55)";
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(x, L.cy - L.R - 8); ctx.lineTo(x, L.cy + L.R + 8); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+    if (isValueToAngle() && gameSelY != null) {
+      const y = sineY(Y_MARKS_FIXED[gameSelY].v, L);
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,191,0,0.55)";
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(L.sx0, y); ctx.lineTo(L.sx1, y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+
+  function drawPredict() {
+    const L = layout("sine");
+    const round = predRound();
+    ctx.clearRect(0, 0, L.w, L.h);
+    drawAxesSine(L, { degs: DEGS_ALL, activeSet: [], picked: predPick, fixedY: true });
+    drawFullSine(L);
+    if (round) {
+      const y = sineY(Math.sin(degToRad(round.angles[0])), L);
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,191,0,0.85)";
+      ctx.setLineDash([6, 5]);
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(L.sx0, y); ctx.lineTo(L.sx1, y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#FFBF00";
+      ctx.font = "700 13px ui-monospace, Menlo, Consolas, monospace";
+      ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+      ctx.fillText("sen θ = " + round.lab, L.sx0 + 8, y - 4);
+      ctx.restore();
+    }
+    if (predLocked) {
+      for (const d of predPick) {
+        const ok = round && (round.angles.includes(d === 360 ? 0 : d) || round.angles.includes(d));
+        drawSinePoint(d, L, true);
+        const y = sineY(Math.sin(degToRad(d)), L);
+        drawDottedH(L.sx0, sineX(d, L), y, ok ? "rgba(90,212,168,0.8)" : "rgba(255,123,123,0.75)", 1.8);
+      }
+      if (round) {
+        for (const d of round.angles) {
+          if (!predPick.includes(d)) {
+            const x = sineX(d, L), y = sineY(Math.sin(degToRad(d)), L);
+            ctx.save();
+            ctx.strokeStyle = "rgba(90,212,168,0.7)";
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+          }
+        }
+      }
+    } else {
+      for (const d of predPick) drawSinePoint(d, L, true);
+    }
+  }
+
+  function draw() {
+    if (screen === 0) drawConstruct();
+    else if (screen === 1) drawExplore();
+    else drawPredict();
+  }
+
+  function stopSlide() {
+    if (slide && slide.raf) cancelAnimationFrame(slide.raf);
+    if (slide && slide._resolve) { const r = slide._resolve; slide = null; r(false); return; }
+    slide = null;
+  }
+  function animateSlide(deg) {
+    stopSlide();
+    const L = layout("construct");
+    const a = degToRad(deg);
+    const cos = Math.cos(a), sin = Math.sin(a);
+    const [fromX, cy0] = circleToCanvas(cos, 0, L);
+    const [, cy1] = circleToCanvas(cos, sin, L);
+    const toX = sineX(deg, L);
+    const [tipX0, tipY] = circleToCanvas(cos, sin, L);
+    return new Promise((resolve) => {
+      slide = {
+        deg, t0: performance.now(), dur: 1100, fromX, toX, tipX0, tipY,
+        yBot: sin >= 0 ? cy0 : cy1, yTop: sin >= 0 ? cy1 : cy0,
+        raf: null, _resolve: resolve
+      };
+      syncConstructButtons();
+      const tick = (now) => {
+        if (!slide || slide.deg !== deg) { resolve(false); return; }
+        const u = Math.min(1, (now - slide.t0) / slide.dur);
+        draw();
+        if (u >= 1) {
+          if (!trails.some((t) => t.deg === deg)) trails.push({ deg, x0: tipX0, y: tipY, x1: toX });
+          const done = slide._resolve; slide = null; syncConstructButtons(); draw(); if (done) done(true); return;
+        }
+        slide.raf = requestAnimationFrame(tick);
+      };
+      slide.raf = requestAnimationFrame(tick);
+    });
+  }
+
+
+  function quadrantOfDeg(deg) {
+    const d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 90 || d === 180 || d === 270 || d === 360) return 0;
+    if (d > 0 && d < 90) return 1;
+    if (d > 90 && d < 180) return 2;
+    if (d > 180 && d < 270) return 3;
+    return 4;
+  }
+  function locusKeyForDeg(deg) {
+    if (deg == null || !Number.isFinite(deg)) return null;
+    const d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 180 || d === 360) return "x";
+    if (d === 90 || d === 270) return "y";
+    const q = quadrantOfDeg(d);
+    return q ? ("q" + q) : null;
+  }
+  let locusActive = null;
+  let locusPulse = null;
+  function syncLocusStrip(key, on) {
+    const root = document.getElementById("locusStrip");
+    if (!root) return;
+    root.querySelectorAll(".locus").forEach((el) => {
+      const match = on && key != null && el.dataset.locus === key;
+      el.classList.toggle("on", !!match);
+    });
+  }
+  function stopLocusPulse() {
+    if (locusPulse && locusPulse.timer) clearInterval(locusPulse.timer);
+    locusPulse = null;
+  }
+  function highlightLocusForDeg(deg) {
+    const key = locusKeyForDeg(deg);
+    locusActive = key;
+    stopLocusPulse();
+    if (!key) { syncLocusStrip(null, false); return; }
+    let n = 0;
+    syncLocusStrip(key, true);
+    locusPulse = { key, timer: setInterval(() => {
+      n++;
+      syncLocusStrip(key, n % 2 === 1);
+      if (n >= 6) { // 3 blinks
+        stopLocusPulse();
+        syncLocusStrip(key, true);
+      }
+    }, 220) };
+  }
+
+  function syncConstructButtons() {
+    const done = revealed.length >= DEGS30.length;
+    playBtn.disabled = playing || done;
+    nextBtn.disabled = playing || done || !!slide;
+    stopBtn.disabled = !(playing || !!slide);
+    playBtn.textContent = done ? "✓ Completo" : (playing ? "Desplegando…" : "▶ Play");
+  }
+
+  async function revealOne() {
+    if (revealed.length >= DEGS30.length) return false;
+    const deg = DEGS30[revealed.length];
+    highlightLocusForDeg(deg);
+    revealed.push(deg);
+    if (deg === 0 || Math.abs(Math.sin(degToRad(deg))) < 1e-9) {
+      const L = layout("construct");
+      const a = degToRad(deg);
+      const [tipX0, tipY] = circleToCanvas(Math.cos(a), Math.sin(a), L);
+      if (!trails.some((t) => t.deg === deg)) trails.push({ deg, x0: tipX0, y: tipY, x1: sineX(deg, L) });
+      ensureYAxisMark(deg);
+      setNarration("θ = <strong>" + deg + "°</strong> · sen = <strong>" + senLabel(deg) + "</strong>.");
+      draw(); await waitMs(400); return true;
+    }
+    setNarration("θ = <strong>" + deg + "°</strong> · traslado del segmento…");
+    draw(); await waitMs(200);
+    const ok = await animateSlide(deg);
+    if (!ok && playAbort) return false;
+    setNarration("θ = <strong>" + deg + "°</strong> · sen = <strong>" + senLabel(deg) + "</strong>.");
+    draw(); return true;
+  }
+
+  async function playAll() {
+    if (playing || screen !== 0) return;
+    playing = true; playAbort = false; syncConstructButtons();
+    while (!playAbort && revealed.length < DEGS30.length) {
+      const ok = await revealOne();
+      if (!ok || playAbort) break;
+      await waitMs(350);
+    }
+    playing = false; syncConstructButtons();
+    setNarration(playAbort ? "Detenido." : "Construcción completa. ▶ del lienzo → sinusoide sola.");
+    draw();
+  }
+
+  async function probeConstruct(deg) {
+    if (playing || slide || screen !== 0) return;
+    highlightLocusForDeg(deg);
+    if (!revealed.includes(deg)) revealed.push(deg);
+    revealed.sort((a,b)=>a-b);
+    if (Math.abs(Math.sin(degToRad(deg))) < 1e-9) {
+      const L = layout("construct");
+      const a = degToRad(deg);
+      const [tipX0, tipY] = circleToCanvas(Math.cos(a), Math.sin(a), L);
+      if (!trails.some((t) => t.deg === deg)) trails.push({ deg, x0: tipX0, y: tipY, x1: sineX(deg, L) });
+      ensureYAxisMark(deg); setNarration("θ = <strong>" + deg + "°</strong> · sen = <strong>" + senLabel(deg) + "</strong>.");
+      syncConstructButtons(); draw(); return;
+    }
+    setNarration("θ = <strong>" + deg + "°</strong>…"); draw();
+    await animateSlide(deg);
+    setNarration("θ = <strong>" + deg + "°</strong> · sen = <strong>" + senLabel(deg) + "</strong>.");
+    syncConstructButtons(); draw();
+  }
+
+  function maybeShowStageModal() {
+    if (gameOk >= STAGE_GOAL && !pendingStageModal) {
+      pendingStageModal = true;
+      if (gameStage === 1) {
+        stageModalText.textContent = "Llegaste a " + STAGE_GOAL + " aciertos. Etapa 2: te doy sen θ y elegís el/los ángulos en [0°, 360°).";
+      } else if (gameStage === 2) {
+        stageModalText.textContent = "¡Etapa 2 superada! Etapa 3: Sinusoide Exploración Coseno — te doy ángulos y buscás cos θ.";
+      } else if (gameStage === 3) {
+        stageModalText.textContent = "¡Etapa 3 superada! Etapa 4: te doy cos θ y elegís el/los ángulos en [0°, 360°).";
+      } else {
+        stageModalText.textContent = "¡Completaste las 4 etapas (seno + coseno)! ¿Reiniciás desde la etapa 1?";
+      }
+      fireConfetti();
+      fireConfetti();
+      const nextBtn = document.getElementById("stageNextBtn");
+      if (nextBtn) nextBtn.textContent = (gameStage >= MAX_GAME_STAGE) ? "Empezar de nuevo" : "Siguiente etapa";
+      stageModal.classList.remove("hidden");
+    }
+  }
+
+  function showRoundBanner(text) {
+    if (!roundBanner) return;
+    roundBanner.textContent = text;
+    roundBanner.classList.add("show");
+  }
+  function hideRoundBanner() {
+    if (!roundBanner) return;
+    roundBanner.classList.remove("show");
+    roundBanner.textContent = "";
+  }
+
+  async function celebrateAndNextRound() {
+    if (gameBusy) return; // avoid double-entry
+    gameBusy = true;
+    gameSelDeg = null;
+    gameSelY = null;
+    try {
+      showRoundBanner("¡Ronda completa! · " + fnName() + (isValueToAngle() ? " → θ" : " θ → valor"));
+      fireConfetti();
+      const steps = [90, 180, 270, 360];
+      for (const up of steps) {
+        curveReveal = up;
+        draw();
+        await waitMs(220);
+        if (!gameActive) return;
+      }
+      await waitMs(1200);
+      if (!gameActive) return;
+      maybeShowStageModal();
+      if (pendingStageModal && stageModal && !stageModal.classList.contains("hidden")) {
+        // keep curve until user picks next stage / restart
+        return;
+      }
+      hideRoundBanner();
+      resetRoundKeepScores();
+      showRoundBanner(isValueToAngle()
+        ? ("Nueva ronda · elegí " + fnName() + " θ → ángulo(s)")
+        : ("Nueva ronda · elegí θ → " + fnName() + " θ"));
+      draw();
+      await waitMs(900);
+      hideRoundBanner();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (!(pendingStageModal && stageModal && !stageModal.classList.contains("hidden"))) {
+        gameBusy = false;
+      } else {
+        gameBusy = false; // allow modal buttons; round waits on modal handlers
+      }
+      syncGameScores();
+      draw();
+    }
+  }
+
+  function tryPair(deg, yIndex) {
+    if (!gameActive || gameBusy || deg == null || yIndex == null) return;
+    if (deg === 360) deg = 0; // open at 360° → treat as 0 if ever offered
+    if (isValueToAngle()) {
+      // Stage 2+: given sen value, choose angle(s)
+      if (!gameTargetsY.includes(yIndex)) return;
+      const lab = Y_MARKS_FIXED[yIndex].lab;
+      const need = gameNeed[lab] || [];
+      if (!need.length) return;
+      if (gameDone.includes(deg)) return;
+      const ok = need.includes(deg);
+      if (ok) {
+        gameNeed[lab] = need.filter((d) => d !== deg);
+        gameDone.push(deg);
+        gameDone.sort((a,b)=>a-b);
+        gameOk += 1;
+        gameSelDeg = null;
+        // keep Y selected if more angles remain for this value
+        if (!(gameNeed[lab] || []).length) gameSelY = null;
+        highlightLocusForDeg(deg);
+        fireConfetti();
+        playOkChime();
+        syncGameScores();
+        draw();
+        if (roundComplete()) celebrateAndNextRound();
+        else maybeShowStageModal();
+      } else {
+        gameBad += 1;
+        gameShakeDeg = deg;
+        gameShakeY = yIndex;
+        gameShakeUntil = performance.now() + 420;
+        playErrorSound();
+        syncGameScores();
+        graphWrap.classList.remove("shake");
+        void graphWrap.offsetWidth;
+        graphWrap.classList.add("shake");
+        draw();
+        setTimeout(() => {
+          gameSelDeg = null;
+          if (performance.now() >= gameShakeUntil) {
+            gameShakeDeg = null;
+            gameShakeY = null;
+          }
+          draw();
+        }, 430);
+      }
+      return;
+    }
+    // Stage 1: given angle, choose sen value
+    if (!gameTargets.includes(deg) || gameDone.includes(deg)) return;
+    const mark = Y_MARKS_FIXED[yIndex];
+    const ok = near(fnExact(deg), mark.v, 1e-6);
+    if (ok) {
+      gameDone.push(deg);
+      gameDone.sort((a,b)=>a-b);
+      gameOk += 1;
+      gameSelDeg = null;
+      gameSelY = null;
+      highlightLocusForDeg(deg);
+      fireConfetti();
+      playOkChime();
+      syncGameScores();
+      draw();
+      if (roundComplete()) {
+        celebrateAndNextRound();
+      } else {
+        maybeShowStageModal();
+      }
+    } else {
+      gameBad += 1;
+      gameShakeDeg = deg;
+      gameShakeY = yIndex;
+      gameShakeUntil = performance.now() + 420;
+      playErrorSound();
+      syncGameScores();
+      graphWrap.classList.remove("shake");
+      void graphWrap.offsetWidth;
+      graphWrap.classList.add("shake");
+      draw();
+      setTimeout(() => {
+        gameSelY = null;
+        if (performance.now() >= gameShakeUntil) {
+          gameShakeDeg = null;
+          gameShakeY = null;
+        }
+        draw();
+      }, 430);
+    }
+  }
+
+  function probeGameDeg(deg) {
+    if (screen !== 1 || !gameActive || gameBusy) return;
+    highlightLocusForDeg(deg);
+    if (curveReveal > 0 && roundComplete()) return;
+    if (deg === 360) return; // open interval at 360°
+    if (isValueToAngle()) {
+      if (gameDone.includes(deg)) return;
+      // must pick a pending Y first (or toggle angle then wait for Y)
+      if (gameSelY == null) {
+        gameSelDeg = (gameSelDeg === deg) ? null : deg;
+        draw();
+        return;
+      }
+      tryPair(deg, gameSelY);
+      return;
+    }
+    if (!gameTargets.includes(deg) || gameDone.includes(deg)) return;
+    gameSelDeg = (gameSelDeg === deg) ? null : deg;
+    gameSelY = null;
+    draw();
+  }
+
+  function probeGameY(yIndex) {
+    if (screen !== 1 || !gameActive || gameBusy) return;
+    if (curveReveal > 0 && roundComplete()) return;
+    if (isValueToAngle()) {
+      if (!gameTargetsY.includes(yIndex)) return;
+      const lab = Y_MARKS_FIXED[yIndex].lab;
+      if (!(gameNeed[lab] || []).length) return;
+      if (gameSelDeg != null) {
+        tryPair(gameSelDeg, yIndex);
+        return;
+      }
+      gameSelY = (gameSelY === yIndex) ? null : yIndex;
+      draw();
+      return;
+    }
+    if (gameSelDeg == null) {
+      gameSelY = (gameSelY === yIndex) ? null : yIndex;
+      draw();
+      return;
+    }
+    tryPair(gameSelDeg, yIndex);
+  }
+
+  function hitIntersection(mx, my, L) {
+    if (!gameActive || gameBusy) return false;
+    if (isValueToAngle()) {
+      const pendingY = yTargetsPending();
+      const candDegs = remainingAnglesForRound();
+      // also allow any DEGS_GAME click near intersection with pending Y lines
+      for (const yi of pendingY) {
+        const y = sineY(Y_MARKS_FIXED[yi].v, L);
+        for (const d of DEGS_GAME) {
+          if (gameDone.includes(d)) continue;
+          const x = sineX(d, L);
+          if (Math.hypot(mx - x, my - y) <= 14) {
+            tryPair(d, yi);
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    const candidates = gameTargets.filter((d) => !gameDone.includes(d));
+    for (const d of candidates) {
+      const x = sineX(d, L);
+      for (let i = 0; i < Y_MARKS_FIXED.length; i++) {
+        const y = sineY(Y_MARKS_FIXED[i].v, L);
+        if (Math.hypot(mx - x, my - y) <= 14) {
+          gameSelDeg = d;
+          tryPair(d, i);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function renderPredChips() {
+    const round = predRound();
+    predChips.innerHTML = "";
+    if (!round) return;
+    for (const d of DEGS_ALL) {
+      if (d === 360) continue;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (predPick.includes(d) ? " picked" : "");
+      if (predLocked) {
+        const truth = round.angles.includes(d);
+        const picked = predPick.includes(d);
+        if (picked && truth) b.classList.add("ok");
+        if (picked && !truth) b.classList.add("bad");
+      }
+      b.textContent = d + "°";
+      b.disabled = predLocked;
+      b.addEventListener("click", () => {
+        if (predLocked) return;
+        if (predPick.includes(d)) predPick = predPick.filter((x) => x !== d);
+        else predPick.push(d);
+        predPick.sort((a,b)=>a-b);
+        highlightLocusForDeg(d);
+        verifyPredBtn.disabled = predPick.length === 0;
+        renderPredChips();
+        draw();
+      });
+      predChips.appendChild(b);
+    }
+  }
+
+  function syncScreenChrome() {
+    panelConstruct.classList.toggle("hidden", screen !== 0);
+    panelExplore.classList.toggle("hidden", screen !== 1);
+    if (panelPredict) panelPredict.classList.add("hidden"); // legacy Predecir 1/9… retirado
+    pageSub.classList.toggle("hidden", screen === 1);
+    // Flujo: construcción seno ↔ exploración ↔ coseno
+    screenPrev.disabled = false;
+    screenNext.disabled = false;
+    if (screen === 0) {
+      screenPrev.title = "Círculo unitario · ángulos exactos";
+      screenNext.title = "Exploración seno / coseno";
+      pageTitle.textContent = "Construcción de la función seno";
+      pageSub.textContent = "Círculo unitario + sinusoide · 0°–360°.";
+    } else {
+      screenPrev.title = "Construcción de la función seno";
+      screenNext.title = "Construcción de la función coseno";
+      pageTitle.textContent = gameTitle();
+      syncGameScores();
+    }
+  }
+
+  function setScreen(n) {
+    n = Math.max(0, Math.min(MAX_SCREEN, n|0));
+    if (n === screen) return;
+    playAbort = true; playing = false; stopSlide();
+    clearGameTimer();
+    screen = n;
+    if (screen !== 1) {
+      stageModal.classList.add("hidden");
+    }
+    syncScreenChrome();
+    syncConstructButtons();
+    draw();
+  }
+
+  function verifyPredict() {
+    const round = predRound();
+    if (!round || predLocked || !predPick.length) return;
+    const truth = round.angles.slice().sort((a,b)=>a-b);
+    const pick = predPick.slice().sort((a,b)=>a-b);
+    const norm = (arr) => arr.map((d) => (d === 360 ? 0 : d)).filter((d,i,a)=>a.indexOf(d)===i).sort((a,b)=>a-b);
+    const ok = JSON.stringify(norm(pick)) === JSON.stringify(norm(truth));
+    predLocked = true;
+    predCorrect = ok;
+    narrationPred.className = "narration " + (ok ? "ok" : "bad");
+    narrationPred.innerHTML = ok
+      ? "✓ Correcto: sen θ = <strong>" + round.lab + "</strong> en " + truth.map((d)=>d+"°").join(", ") + "."
+      : "✗ No del todo. Ángulos correctos: <strong>" + truth.map((d)=>d+"°").join(", ") + "</strong>.";
+    verifyPredBtn.disabled = true;
+    renderPredChips();
+    draw();
+  }
+
+  playBtn.addEventListener("click", () => playAll());
+  nextBtn.addEventListener("click", async () => {
+    if (playing || slide || screen !== 0) return;
+    playAbort = false; await revealOne(); syncConstructButtons();
+  });
+  stopBtn.addEventListener("click", () => {
+    playAbort = true; stopSlide(); playing = false; syncConstructButtons();
+    setNarration("Detenido."); draw();
+  });
+  resetBtn.addEventListener("click", () => {
+    playAbort = true; playing = false; stopSlide();
+    revealed = []; trails = []; yAxisMarks = [];
+    setNarration("Reset. Tocá grados o ▶ Play.");
+    syncConstructButtons(); draw();
+  });
+  gamePlayBtn.addEventListener("click", () => { ensureAudio(); startOrRestartGame(); });
+  exploreClearBtn.addEventListener("click", () => {
+    fullGameReset();
+    draw();
+  });
+  document.getElementById("stageNextBtn").addEventListener("click", () => {
+    stageModal.classList.add("hidden");
+    pendingStageModal = false;
+    hideRoundBanner();
+    if (gameStage >= MAX_GAME_STAGE) {
+      gameStage = 1;
+    } else {
+      gameStage += 1;
+    }
+    gameOk = 0;
+    gameBad = 0;
+    syncGameScores();
+    resetRoundKeepScores();
+    pageTitle.textContent = gameTitle();
+    showRoundBanner("Etapa " + gameStage + modeTag());
+    draw();
+    setTimeout(hideRoundBanner, 1100);
+  });
+  document.getElementById("stageRestartBtn").addEventListener("click", () => {
+    stageModal.classList.add("hidden");
+    pendingStageModal = false;
+    hideRoundBanner();
+    gameStage = 1;
+    startOrRestartGame();
+    pageTitle.textContent = gameTitle();
+  });
+  verifyPredBtn.addEventListener("click", () => verifyPredict());
+  resetPredBtn.addEventListener("click", () => {
+    predPick = []; predLocked = false; predCorrect = false;
+    const r = predRound();
+    narrationPred.className = "narration";
+    narrationPred.innerHTML = "Encontrá el ángulo cuyo seno vale <strong>" + (r ? r.lab : "") + "</strong>.";
+    verifyPredBtn.disabled = true;
+    renderPredChips(); draw();
+  });
+  screenPrev.addEventListener("click", () => {
+    if (screen === 0) {
+      window.location.href = "circulo-unitario.html";
+      return;
+    }
+    setScreen(0); // exploración → construcción
+  });
+  screenNext.addEventListener("click", () => {
+    if (screen === 0) {
+      setScreen(1); // construcción → exploración
+      return;
+    }
+    window.location.href = "construccion-coseno.html"; // exploración → coseno
+  });
+
+  // Deep-link to exercises: ?vista=ejercicios or #ejercicios
+  (function bootVista() {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const vista = (q.get("vista") || "").toLowerCase();
+      const hash = (window.location.hash || "").replace(/^#/, "").toLowerCase();
+      if (vista === "ejercicios" || vista === "explore" || hash === "ejercicios") {
+        screen = 1;
+        syncScreenChrome();
+        syncConstructButtons();
+        syncGameScores();
+        draw();
+      }
+    } catch (e) {}
+  })();
+
+  canvas.addEventListener("pointermove", (ev) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (ev.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (ev.clientY - rect.top) * (canvas.height / rect.height);
+    const hitT = tickHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    const hitY = yHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    canvas.style.cursor = (hitT || hitY) ? "pointer" : "default";
+  });
+  canvas.addEventListener("pointerdown", (ev) => {
+    if (playing || slide) return;
+    if (screen >= 2 && predLocked) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = (ev.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (ev.clientY - rect.top) * (canvas.height / rect.height);
+    if (screen === 1) {
+      const L = layout("sine");
+      if (hitIntersection(mx, my, L)) return;
+      const hitY = yHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+      if (hitY) { probeGameY(hitY.i); return; }
+      const hit = tickHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+      if (hit) { probeGameDeg(hit.deg); return; }
+      return;
+    }
+    const hit = tickHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    if (!hit) return;
+    if (screen === 0) probeConstruct(hit.deg);
+    else {
+      const d = hit.deg === 360 ? 0 : hit.deg;
+      if (predPick.includes(d)) predPick = predPick.filter((x) => x !== d);
+      else predPick.push(d);
+      predPick.sort((a,b)=>a-b);
+      highlightLocusForDeg(d);
+      verifyPredBtn.disabled = predPick.length === 0;
+      renderPredChips(); draw();
+    }
+  });
+
+  syncConstructButtons();
+  syncGameScores();
+  syncScreenChrome();
+  draw();
+  </script>
+</body>
+</html>

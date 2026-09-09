@@ -76,19 +76,80 @@ window.CAMPUS = {
     { id: "uai", name: "Universidad Abierta de Ingeniería", short: "UAI", countryId: "mx" },
     { id: "poli", name: "Politécnico Nacional de Práctica", short: "PNP", countryId: "us" }
   ],
-  careers: [
-    {
-      id: "civil",
-      name: "Ingeniería Civil",
-      short: "Civil",
-      materias: [
-        { id: "estatica", name: "Estática y Resistencia de Materiales", profesor: "Ing. Laura Méndez", temas: [
-          { id: "t1", title: "TEMA 1. Equilibrio de cuerpos rígidos", nodos: [
-            { id: "n1", title: "1.1. Introducción y objetivos" },
-            { id: "n2", title: "1.2. Sistemas de fuerzas" },
-            { id: "n3", title: "1.3. Momentos y cuplas" },
-            { id: "n4", title: "1.4. Diagramas de cuerpo libre" }
-          ]},
+  careers: (() => {
+    const MATE1_MATERIA = {
+      id: "mate1",
+      name: "Matemática 1 Anual",
+      profesor: "Cátedra Matemática · UTDT",
+      temas: [
+        {
+          id: "t-modelos",
+          title: "UNIDAD 1. Funciones y Modelos Elementales",
+          nodos: [
+            { id: "n-lin", title: "1.1. Funciones lineales · pendiente y ordenada", toolUrl: "tools/leccion-lineales.html", toolBadge: "Interactivo", desc: "Estudio dinámico de rectas, pendiente m, ordenada al origen b y deslizadores." },
+            { id: "n-cuad", title: "1.2. Funciones cuadráticas · parábola y vértice", toolUrl: "tools/leccion-cuadraticas.html", toolBadge: "Interactivo", desc: "Forma canónica, raíces reales y complejas, y desplazamiento del vértice." },
+            { id: "n-raiz", title: "1.3. Raíz de una función lineal", toolUrl: "tools/leccion-raiz-lineal.html", toolBadge: "Interactivo", desc: "Ceros de la función lineal, corte con el eje X y despeje algebraico." },
+            { id: "n-homo", title: "1.4. Función homográfica y asíntotas", toolUrl: "tools/leccion-homografica.html", toolBadge: "Interactivo", desc: "Hipérbolas equiláteras, asíntotas horizontal y vertical, y dominios." },
+            { id: "n-cub", title: "1.5. Función cúbica y desplazamientos", toolUrl: "tools/leccion-cubica.html", toolBadge: "Interactivo", desc: "Comportamiento de y = x³, punto de inflexión y corrimientos espaciales." },
+            { id: "n-mod", title: "1.6. Función módulo y valor absoluto", toolUrl: "tools/leccion-modulo.html", toolBadge: "Interactivo", desc: "Definición por tramos de |x|, simetría en V y traslaciones." }
+          ]
+        },
+        {
+          id: "t-exp-log",
+          title: "UNIDAD 2. Exponenciales y Logaritmos",
+          nodos: [
+            { id: "n-exp", title: "2.1. Función exponencial y bases", toolUrl: "tools/leccion-exponencial-play.html", toolBadge: "Play", desc: "Crecimiento y decrecimiento según la base b > 1 o 0 < b < 1." },
+            { id: "n-log", title: "2.2. Función logaritmo y asíntota vertical", toolUrl: "tools/leccion-logaritmo-play.html", toolBadge: "Play", desc: "Inversa de la exponencial, punto característico (1,0) y dominio x > 0." }
+          ]
+        },
+        {
+          id: "t-simetria",
+          title: "UNIDAD 3. Simetría, Composición e Inversas",
+          nodos: [
+            { id: "n-sim", title: "3.1. Simetría y eje de reflexión", toolUrl: "tools/leccion-simetria-play.html", toolBadge: "Play", desc: "Funciones pares, impares y simetría respecto a rectas verticales." },
+            { id: "n-esp-x", title: "3.2. Reflexión sobre el eje X", toolUrl: "tools/leccion-espejo-eje-x-play.html", toolBadge: "Play", desc: "Transformación de f(x) a -f(x)." },
+            { id: "n-inv-diag", title: "3.3. Reflexión sobre la diagonal y = x", toolUrl: "tools/leccion-espejo-y-igual-x-play.html", toolBadge: "Play", desc: "Fundamento geométrico de la función inversa." },
+            { id: "n-inv-l", title: "3.4. Función inversa · Método de la L", toolUrl: "tools/leccion-inversa-91-play.html", toolBadge: "Play", desc: "Cálculo paso a paso de la inversa f⁻¹(x)." }
+          ]
+        },
+        {
+          id: "t-limites",
+          title: "UNIDAD 4. Límites y Continuidad (Práctica 3)",
+          nodos: [
+            { id: "n1", title: "4.1. Límites desde el gráfico de f", toolUrl: "tools/leccion-funcion-detector-salto-play.html", toolBadge: "Play", desc: "Lectura visual de límites laterales y detección de discontinuidades de salto." },
+            { id: "n2", title: "4.2. Composición f ∘ g y máquinas de funciones", toolUrl: "tools/leccion-composicion-maquinas-play.html", toolBadge: "Play", desc: "Modelo interactivo de procesamiento secuencial de funciones." },
+            { id: "n3", title: "4.3. Dominio y números prohibidos", toolUrl: "tools/leccion-dominio-numero-prohibido-play.html", toolBadge: "Play", desc: "Restricciones algebraicas de dominio en denominadores y raíces." },
+            { id: "n4", title: "4.4. Funciones definidas por partes / trozos", toolUrl: "tools/leccion-trozos-31-play.html", toolBadge: "Play", desc: "Evaluación gráfica y analítica de funciones a trozos." },
+            { id: "n5", title: "4.5. Práctica 3 · Material oficial (PDF)", desc: "Guía completa de problemas de límites y continuidad." }
+          ]
+        },
+        {
+          id: "t-econ",
+          title: "UNIDAD 5. Aplicaciones en Economía y Optimización",
+          nodos: [
+            { id: "n-oferta", title: "5.1. Curva de oferta de mercado", toolUrl: "tools/leccion-economia-01-oferta-play.html", toolBadge: "Play", desc: "Comportamiento del productor y ley de oferta lineal." },
+            { id: "n-demanda", title: "5.2. Curva de demanda de mercado", toolUrl: "tools/leccion-economia-02-demanda-play.html", toolBadge: "Play", desc: "Disposición a pagar del consumidor y pendiente negativa." },
+            { id: "n-eq", title: "5.3. Punto de equilibrio de mercado", toolUrl: "tools/leccion-economia-17-equilibrio-play.html", toolBadge: "Play", desc: "Intersección oferta-demanda, precio y cantidad de equilibrio." },
+            { id: "n-ben", title: "5.4. Función de beneficio y costos", toolUrl: "tools/leccion-economia-18-beneficio-play.html", toolBadge: "Play", desc: "Maximización de beneficios: B(q) = I(q) - C(q)." }
+          ]
+        }
+      ]
+    };
+
+    return [
+      {
+        id: "civil",
+        name: "Ingeniería Civil",
+        short: "Civil",
+        materias: [
+          { id: "estatica", name: "Estática y Resistencia de Materiales", profesor: "Ing. Laura Méndez", temas: [
+            { id: "t1", title: "TEMA 1. Equilibrio de cuerpos rígidos", nodos: [
+              { id: "n1", title: "1.1. Introducción y objetivos" },
+              { id: "n2", title: "1.2. Sistemas de fuerzas" },
+              { id: "n3", title: "1.3. Momentos y cuplas" },
+              { id: "n4", title: "1.4. Diagramas de cuerpo libre" },
+              { id: "n-circ", title: "1.5. Círculo unitario y descomposición angular", toolUrl: "tools/circulo-unitario.html", toolBadge: "Demo", desc: "Ángulos exactos y proyecciones trigonométricas de fuerzas." }
+            ]},
           { id: "t2", title: "TEMA 2. Esfuerzo y deformación", nodos: [
             { id: "n5", title: "2.1. Esfuerzo axial" },
             { id: "n6", title: "2.2. Ley de Hooke" },
@@ -125,7 +186,8 @@ window.CAMPUS = {
         { id: "procesos", name: "Diseño de Procesos Productivos", profesor: "Ing. Sofía Castro", temas: [
           { id: "t1", title: "TEMA 1. Mapeo de procesos", nodos: [
             { id: "n1", title: "1.1. SIPOC y flujogramas" },
-            { id: "n2", title: "1.2. Cuellos de botella" }
+            { id: "n2", title: "1.2. Cuellos de botella" },
+            { id: "n-costos", title: "1.3. Costos lineales en procesos", toolUrl: "tools/leccion-economia-05-costo-lineal-play.html", toolBadge: "Play", desc: "Modelado de costo fijo, costo variable y punto de equilibrio operativo." }
           ]},
           { id: "t2", title: "TEMA 2. Lean manufacturing", nodos: [
             { id: "n3", title: "2.1. Los 7 desperdicios" },
@@ -151,21 +213,7 @@ window.CAMPUS = {
       name: "Ingeniería Informática",
       short: "Informática",
       materias: [
-        { id: "mate1", name: "Matemática 1 Anual", profesor: "Cátedra Matemática · UTDT", temas: [
-          { id: "t-limites", title: "UNIDAD. Límites (Práctica 3)", nodos: [
-            { id: "n1", title: "1.1. Límites desde el gráfico de f" },
-            { id: "n2", title: "1.2. Composición f ∘ g y enunciados V/F" },
-            { id: "n3", title: "1.3. Más límites desde gráficos" },
-            { id: "n4", title: "1.4. Función con dominio restringido" },
-            { id: "n5", title: "1.5. Cálculo algebraico de límites" },
-            { id: "n6", title: "1.6. Constante a y límites con raíces" },
-            { id: "n7", title: "1.7. Límites laterales con valor absoluto" },
-            { id: "n8", title: "1.8. Función definida por partes" },
-            { id: "n9", title: "1.9. Laterales en x → 0 y existencia" },
-            { id: "n10", title: "1.10. Propiedades básicas de límites" },
-            { id: "n11", title: "1.11. Práctica 3 · material (PDF)" }
-          ]}
-        ]},
+        MATE1_MATERIA,
         { id: "algoritmos", name: "Algoritmos y Estructuras de Datos", profesor: "Dr. Diego Fernández", temas: [
           { id: "t1", title: "TEMA 1. Complejidad algorítmica", nodos: [
             { id: "n1", title: "1.1. Notación Big-O" },
@@ -344,21 +392,7 @@ window.CAMPUS = {
       name: "Ingeniería en Sistemas",
       short: "Sistemas",
       materias: [
-        { id: "mate1", name: "Matemática 1 Anual", profesor: "Cátedra Matemática · UTDT", temas: [
-          { id: "t-limites", title: "UNIDAD. Límites (Práctica 3)", nodos: [
-            { id: "n1", title: "1.1. Límites desde el gráfico de f" },
-            { id: "n2", title: "1.2. Composición f ∘ g y enunciados V/F" },
-            { id: "n3", title: "1.3. Más límites desde gráficos" },
-            { id: "n4", title: "1.4. Función con dominio restringido" },
-            { id: "n5", title: "1.5. Cálculo algebraico de límites" },
-            { id: "n6", title: "1.6. Constante a y límites con raíces" },
-            { id: "n7", title: "1.7. Límites laterales con valor absoluto" },
-            { id: "n8", title: "1.8. Función definida por partes" },
-            { id: "n9", title: "1.9. Laterales en x → 0 y existencia" },
-            { id: "n10", title: "1.10. Propiedades básicas de límites" },
-            { id: "n11", title: "1.11. Práctica 3 · material (PDF)" }
-          ]}
-        ]},
+        MATE1_MATERIA,
         { id: "requisitos", name: "Ingeniería de Requisitos", profesor: "Ing. Patricia Vega", temas: [
           { id: "t1", title: "TEMA 1. Elicitación", nodos: [
             { id: "n1", title: "1.1. Entrevistas y workshops" },
@@ -379,7 +413,8 @@ window.CAMPUS = {
         ]}
       ]
     }
-  ],
+  ];
+})(),
   events: [
     { date: "2026-09-23", time: "18:00", title: "Clase en vivo · Algoritmos" },
     { date: "2026-09-25", time: "19:30", title: "Entrega · Bases de Datos" },
