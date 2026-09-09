@@ -106,6 +106,8 @@ async function worldClient(page, q) {
 
 for (const spec of [
   { label: 'pendiente +', b: 2, m: 1, via: 'click' },
+  { label: 'pendiente +', b: 2, m: 1, via: 'release' },
+  { label: 'pendiente −', b: 3, m: -1.5, via: 'click' },
   { label: 'pendiente −', b: 3, m: -1.5, via: 'release' }
 ]) {
   test(`L200: ${spec.via} cerca de P2 fija el punto (${spec.label})`, async t => {
@@ -125,15 +127,18 @@ for (const spec of [
     await p.mouse.move(p1.x, p1.y, { steps: 12 });
     await p.mouse.up();
     await p.waitForFunction(() => window.__L200.state.phase === 'easy-m');
-    await p.mouse.click(origin.x, origin.y);
+    const p2 = await p.evaluate(() => window.__L200.easyP2());
+    const away = await worldClient(p, { x: p2.x >= 0 ? -1 : 1, y: -1 });
+    await p.mouse.click(away.x, away.y);
     assert.equal(await p.evaluate(() => window.__L200.state.phase), 'easy-m');
     assert.equal(await p.evaluate(() => window.__L200.state.easyP2), false);
-    const target = await worldClient(p, await p.evaluate(() => window.__L200.easyP2()));
+    assert.equal(await p.evaluate(() => window.__L200.state.bad), 0);
+    const target = await worldClient(p, p2);
     if (spec.via === 'click') {
       await p.mouse.move(target.x, target.y);
       await p.mouse.click(target.x, target.y);
     } else {
-      await p.mouse.move(origin.x, origin.y);
+      await p.mouse.move(away.x, away.y);
       await p.mouse.down();
       await p.mouse.move(target.x, target.y, { steps: 8 });
       await p.mouse.up();
