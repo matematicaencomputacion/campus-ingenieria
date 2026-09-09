@@ -1,8 +1,13 @@
-/*! Campus Ingeniería · Enfoque · CFG-driven vertical tabs (right rail). */
+/*! Campus Ingeniería · Enfoque · CFG-driven vertical tabs (Figma-like right rail). */
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "enfoque-tabs.css?v=20260909b";
+  var CSS_HREF = "enfoque-tabs.css?v=20260909c";
+  var UI_KEY = "campus_enfoque_ui";
+  var RAIL_SLIM = 48;
+  var RAIL_LABELED = 88;
+  var RAIL_MIN = 44;
+  var RAIL_MAX = 120;
   var PALETTE = [
     "#ef4444", "#eab308", "#22c55e", "#a855f7", "#3b82f6",
     "#ec4899", "#14b8a6", "#f97316", "#8b5cf6", "#06b6d4",
@@ -22,16 +27,6 @@
     return tab.color || PALETTE[index % PALETTE.length];
   }
 
-  function inkFor(hex) {
-    var c = String(hex || "").replace("#", "");
-    if (c.length !== 6) return "#0b1018";
-    var r = parseInt(c.slice(0, 2), 16) / 255;
-    var g = parseInt(c.slice(2, 4), 16) / 255;
-    var b = parseInt(c.slice(4, 6), 16) / 255;
-    var L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return L > 0.55 ? "#0b1018" : "#f8fafc";
-  }
-
   function tabId(tab, index) {
     return tab.id || ("tab-" + index);
   }
@@ -46,6 +41,25 @@
 
   function unknownKind(kind) {
     throw new Error("Enfoque: kind desconocido: " + kind);
+  }
+
+  function readUi(key) {
+    try {
+      var raw = global.sessionStorage.getItem(key);
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      return obj && typeof obj === "object" ? obj : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function writeUi(key, state) {
+    try {
+      global.sessionStorage.setItem(key, JSON.stringify(state));
+    } catch (err) {
+      /* ignore quota / private mode */
+    }
   }
 
   function fillPanel(panel, tab, cfg) {
@@ -107,6 +121,15 @@
       : (cfg.mount || document.getElementById("enfoqueRoot"));
     if (!root) throw new Error("Enfoque: no se encontró el mount");
 
+    var uiKey = cfg.uiKey || UI_KEY;
+    var saved = readUi(uiKey) || {};
+    var labelsOn = saved.labels;
+    if (labelsOn !== true && labelsOn !== false) {
+      labelsOn = !(global.matchMedia && global.matchMedia("(max-width: 900px)").matches);
+    }
+    var minimized = !!saved.min;
+    var railPx = typeof saved.rail === "number" ? saved.rail : (labelsOn ? RAIL_LABELED : RAIL_SLIM);
+
     var start = 0;
     if (cfg.hash !== false && global.location.hash) {
       start = findTabIndex(tabs, global.location.hash.replace(/^#/, ""));
@@ -119,15 +142,119 @@
     var main = document.createElement("div");
     main.className = "enfoque-main";
 
+    var chrome = document.createElement("div");
+    chrome.className = "enfoque-chrome";
+
+    var chromeTitle = document.createElement("p");
+    chromeTitle.className = "enfoque-chrome-title";
+
+    var chromeActions = document.createElement("div");
+    chromeActions.className = "enfoque-chrome-actions";
+
+    var labelsBtn = document.createElement("button");
+    labelsBtn.type = "button";
+    labelsBtn.className = "enfoque-tool enfoque-tool-labels";
+    labelsBtn.textContent = "Etiquetas";
+
+    var minBtn = document.createElement("button");
+    minBtn.type = "button";
+    minBtn.className = "enfoque-tool enfoque-tool-min";
+
+    chromeActions.appendChild(labelsBtn);
+    chromeActions.appendChild(minBtn);
+    chrome.appendChild(chromeTitle);
+    chrome.appendChild(chromeActions);
+
+    var body = document.createElement("div");
+    body.className = "enfoque-body";
+
     var rail = document.createElement("div");
     rail.className = "enfoque-rail";
-    rail.setAttribute("role", "tablist");
-    rail.setAttribute("aria-orientation", "vertical");
-    rail.setAttribute("aria-label", cfg.tablistLabel || "Formas");
+
+    var split = document.createElement("button");
+    split.type = "button";
+    split.className = "enfoque-split";
+    split.setAttribute("role", "separator");
+    split.setAttribute("aria-orientation", "vertical");
+    split.setAttribute("aria-label", "Ancho del riel");
+    split.tabIndex = 0;
+
+    var tabStrip = document.createElement("div");
+    tabStrip.className = "enfoque-tabs";
+    tabStrip.setAttribute("role", "tablist");
+    tabStrip.setAttribute("aria-orientation", "vertical");
+    tabStrip.setAttribute("aria-label", cfg.tablistLabel || "Formas");
+
+    var railTools = document.createElement("div");
+    railTools.className = "enfoque-rail-tools";
+    var labelsBtnRail = labelsBtn.cloneNode(true);
+    labelsBtnRail.className = "enfoque-tool enfoque-tool-labels";
+    labelsBtnRail.type = "button";
+    labelsBtnRail.textContent = "Aa";
+    labelsBtnRail.setAttribute("aria-label", "Etiquetas");
+    var minBtnRail = minBtn.cloneNode(true);
+    minBtnRail.className = "enfoque-tool enfoque-tool-min";
+    minBtnRail.type = "button";
+    minBtnRail.textContent = "‹";
+    minBtnRail.setAttribute("aria-label", "Minimizar");
+    railTools.appendChild(labelsBtnRail);
+    railTools.appendChild(minBtnRail);
 
     var tabBtns = [];
     var panels = [];
     var active = start;
+    var varHost = root.closest(".enfoque-nav-host") || root;
+
+    function persist() {
+      writeUi(uiKey, { labels: labelsOn, min: minimized, rail: railPx });
+    }
+
+    function applyRailWidth() {
+      var px = minimized ? RAIL_MIN : railPx;
+      shell.style.setProperty("--enfoque-rail", px + "px");
+      varHost.style.setProperty("--enfoque-rail", px + "px");
+      split.setAttribute("aria-valuenow", String(px));
+      split.setAttribute("aria-valuemin", String(RAIL_MIN));
+      split.setAttribute("aria-valuemax", String(RAIL_MAX));
+    }
+
+    function applyUi() {
+      shell.setAttribute("data-min", minimized ? "true" : "false");
+      var showLabels = !minimized && labelsOn;
+      shell.setAttribute("data-labels", showLabels ? "on" : "off");
+      applyRailWidth();
+      var minLabel = minimized ? "Mostrar" : "Minimizar";
+      var minTitle = minimized
+        ? "Mostrar riel (Ctrl+Shift+\\)"
+        : "Minimizar riel (Ctrl+Shift+\\)";
+      [minBtn, minBtnRail].forEach(function (btn) {
+        var isRail = btn === minBtnRail;
+        btn.textContent = isRail ? (minimized ? "›" : "‹") : minLabel;
+        btn.title = minTitle;
+        btn.setAttribute("aria-label", minLabel);
+        btn.setAttribute("aria-pressed", minimized ? "true" : "false");
+        btn.setAttribute("aria-keyshortcuts", "Control+Shift+\\");
+      });
+      [labelsBtn, labelsBtnRail].forEach(function (btn) {
+        btn.setAttribute("aria-pressed", labelsOn ? "true" : "false");
+        btn.title = labelsOn ? "Ocultar etiquetas" : "Mostrar etiquetas";
+        if (btn === labelsBtnRail) btn.setAttribute("aria-label", "Etiquetas");
+      });
+    }
+
+    function setMinimized(next) {
+      minimized = !!next;
+      applyUi();
+      persist();
+    }
+
+    function setLabels(next) {
+      labelsOn = !!next;
+      if (labelsOn && minimized) minimized = false;
+      railPx = labelsOn ? RAIL_LABELED : RAIL_SLIM;
+      applyUi();
+      persist();
+    }
 
     function activate(index, fromUser) {
       if (index < 0) index = 0;
@@ -135,13 +262,17 @@
       active = index;
       var color = tabColor(tabs[index], index);
       main.style.setProperty("--enfoque-active", color);
-      main.scrollTop = 0;
+      shell.style.setProperty("--enfoque-active", color);
+      body.scrollTop = 0;
+      var label = tabs[index].title || tabs[index].tab || "";
+      chromeTitle.textContent = label;
       tabBtns.forEach(function (btn, i) {
         var on = i === index;
         btn.setAttribute("aria-selected", on ? "true" : "false");
         btn.tabIndex = on ? 0 : -1;
         panels[i].hidden = !on;
       });
+      if (fromUser && minimized) setMinimized(false);
       if (fromUser && cfg.hash !== false) {
         var id = tabId(tabs[index], index);
         try {
@@ -165,9 +296,17 @@
       btn.setAttribute("aria-selected", "false");
       btn.tabIndex = -1;
       btn.style.setProperty("--tab-color", color);
-      btn.style.color = inkFor(color);
       btn.title = tab.title || tab.tab || "";
-      btn.textContent = tab.tab || tab.title || String(index + 1);
+
+      var sq = document.createElement("span");
+      sq.className = "enfoque-tab-sq";
+      sq.setAttribute("aria-hidden", "true");
+      var lab = document.createElement("span");
+      lab.className = "enfoque-tab-label";
+      lab.textContent = tab.tab || tab.title || String(index + 1);
+      btn.appendChild(sq);
+      btn.appendChild(lab);
+
       btn.addEventListener("click", function () { activate(index, true); });
       btn.addEventListener("keydown", function (ev) {
         var next = index;
@@ -192,7 +331,7 @@
         ev.preventDefault();
         activate(next, true);
       });
-      rail.appendChild(btn);
+      tabStrip.appendChild(btn);
       tabBtns.push(btn);
 
       var panel = document.createElement("section");
@@ -202,19 +341,102 @@
       panel.setAttribute("aria-labelledby", btn.id);
       panel.hidden = true;
       fillPanel(panel, tab, cfg);
-      main.appendChild(panel);
+      body.appendChild(panel);
       panels.push(panel);
     });
 
+    function onLabelsClick() { setLabels(!labelsOn); }
+    function onMinClick() { setMinimized(!minimized); }
+    labelsBtn.addEventListener("click", onLabelsClick);
+    labelsBtnRail.addEventListener("click", onLabelsClick);
+    minBtn.addEventListener("click", onMinClick);
+    minBtnRail.addEventListener("click", onMinClick);
+
+    function onShortcut(ev) {
+      if (ev.key !== "\\" || !ev.shiftKey || !(ev.ctrlKey || ev.metaKey)) return;
+      var tag = (ev.target && ev.target.tagName) || "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || (ev.target && ev.target.isContentEditable)) return;
+      ev.preventDefault();
+      setMinimized(!minimized);
+    }
+    document.addEventListener("keydown", onShortcut);
+
+    var drag = null;
+    function railFromClientX(x) {
+      var box = shell.getBoundingClientRect();
+      return Math.round(box.right - x);
+    }
+    function clampRail(px) {
+      if (px < RAIL_MIN) return RAIL_MIN;
+      if (px > RAIL_MAX) return RAIL_MAX;
+      return px;
+    }
+    function onPointerMove(ev) {
+      if (!drag) return;
+      railPx = clampRail(railFromClientX(ev.clientX));
+      labelsOn = railPx >= 72;
+      minimized = false;
+      applyUi();
+    }
+    function onPointerUp() {
+      if (!drag) return;
+      drag = null;
+      shell.setAttribute("data-dragging", "false");
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", onPointerUp);
+      persist();
+    }
+    split.addEventListener("pointerdown", function (ev) {
+      if (minimized) return;
+      ev.preventDefault();
+      drag = true;
+      shell.setAttribute("data-dragging", "true");
+      if (split.setPointerCapture) split.setPointerCapture(ev.pointerId);
+      document.addEventListener("pointermove", onPointerMove);
+      document.addEventListener("pointerup", onPointerUp);
+    });
+    split.addEventListener("keydown", function (ev) {
+      var delta = 0;
+      switch (ev.key) {
+        case "ArrowLeft":
+          delta = 8;
+          break;
+        case "ArrowRight":
+          delta = -8;
+          break;
+        default:
+          return;
+      }
+      ev.preventDefault();
+      railPx = clampRail(railPx + delta);
+      labelsOn = railPx >= 72;
+      minimized = false;
+      applyUi();
+      persist();
+    });
+
+    main.appendChild(chrome);
+    main.appendChild(body);
+    rail.appendChild(split);
+    rail.appendChild(tabStrip);
+    rail.appendChild(railTools);
     shell.appendChild(main);
     shell.appendChild(rail);
     root.appendChild(shell);
+    applyUi();
     activate(start, false);
 
     var api = {
       CFG: cfg,
       activate: function (index) { activate(index, true); },
-      index: function () { return active; }
+      index: function () { return active; },
+      setMinimized: setMinimized,
+      setLabels: setLabels,
+      destroy: function () {
+        document.removeEventListener("keydown", onShortcut);
+        document.removeEventListener("pointermove", onPointerMove);
+        document.removeEventListener("pointerup", onPointerUp);
+      }
     };
     if (cfg.exportName) global[cfg.exportName] = api;
     global.__ENFOQUE__ = api;
