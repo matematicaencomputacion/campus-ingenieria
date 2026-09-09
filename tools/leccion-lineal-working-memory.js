@@ -32,7 +32,6 @@
   var promptEl = document.getElementById("prompt");
   var fnBox = document.getElementById("fnBox");
   var soundMeter = document.getElementById("soundMeter");
-  var playBtn = document.getElementById("playBtn");
   var resetBtn = document.getElementById("resetBtn");
   var slowBtn = document.getElementById("slowBtn");
   var scoreOk = document.getElementById("scoreOk");
@@ -105,7 +104,7 @@
   };
 
   function later(ms, fn) {
-    var id = setTimeout(fn, ms * (state.speedFactor || 1));
+    var id = setTimeout(fn, ms * (state.phase === "fill" ? 1 : (state.speedFactor || 1)));
     timers.push(id);
     return id;
   }
@@ -115,7 +114,9 @@
     timers = [];
   }
 
+  var audioArmed = false;
   function armAudio() {
+    audioArmed = true;
     if (GK.ensureAudio) return GK.ensureAudio();
     return null;
   }
@@ -266,7 +267,7 @@
     switch (state.phase) {
       case "pick-b": return "b";
       case "pick-m": return "m";
-      case "ready": return "Play";
+      case "ready": return "preparada";
       case "fill": return "tabla";
       case "place": return "gráfica";
       case "win": return "listo";
@@ -286,7 +287,7 @@
   function syncScores() {
     if (scoreOk) scoreOk.innerHTML = "Aciertos <strong>" + state.ok + "</strong>";
     if (scoreBad) scoreBad.innerHTML = "Errores <strong>" + state.bad + "</strong>";
-    if (scoreRound) scoreRound.innerHTML = "Fase <strong>" + phaseLabel() + "</strong>";
+    if (scoreRound) scoreRound.innerHTML = state.phase === "fill" ? "Completá <strong>f(x)</strong>" : "Fase <strong>" + phaseLabel() + "</strong>";
   }
 
   function setPrompt(html, cls) {
@@ -354,8 +355,8 @@
     input.classList.remove("pip");
     void input.offsetWidth;
     input.classList.add("pip");
-    if (GK.playOkChime) GK.playOkChime();
-    if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    if (audioArmed && GK.playOkChime) GK.playOkChime();
+    if (audioArmed && GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
     later(1200, function () { input.classList.remove("pip"); });
   }
 
@@ -706,7 +707,7 @@
 
   function updateHud() {
     fnBox.innerHTML = latexFx();
-    playBtn.disabled = state.b == null || state.m == null || state.paused || state.phase === "win" || isEasyPhase();
+    slowBtn.hidden = state.phase === "fill" || state.phase === "ready" || state.phase === "pick-b" || state.phase === "pick-m";
     if (state.phase === "fill") {
       dockHint.textContent = "Escribí f(x) · Enter";
     } else if (state.phase === "place") {
@@ -1177,7 +1178,6 @@
 
   function startFill() {
     if (state.m == null || state.b == null) return;
-    armAudio();
     state.rows = makeRows();
     state.active = 0;
     state.pipedFor = -1;
@@ -1217,11 +1217,11 @@
     updateHud();
     setPrompt("✓ <strong class=\"ok\">" + fmtNum(row.y) + "</strong>", "ok");
     if (allFilled()) {
-      later(state.speedFactor > 1 ? 900 : 420, startPlace);
+      later(420, startPlace);
       return;
     }
     state.locked = true;
-    later(state.speedFactor > 1 ? 700 : 320, function () {
+    later(320, function () {
       state.active = i + 1;
       state.locked = false;
       renderTable();
@@ -1822,12 +1822,11 @@
       "Lograste graficar la función."
     );
     setWinChrome(false);
-    renderChips();
-    renderTable();
-    updateHud();
-    setPrompt("Tocá <strong class=\"hl-b\">b</strong>", "attention");
+    state.b = B_OPTS[Math.floor(Math.random() * B_OPTS.length)];
+    state.m = M_OPTS[Math.floor(Math.random() * M_OPTS.length)];
+    state.phase = "ready";
     sizeCanvas();
-    draw();
+    startFill();
   }
 
   function keepPlaying() {
@@ -1861,10 +1860,6 @@
     state.raf = requestAnimationFrame(tick);
   }
 
-  playBtn.addEventListener("click", function () {
-    armAudio();
-    startFill();
-  });
   resetBtn.addEventListener("click", function () { resetAll(false); });
   slowBtn.addEventListener("click", toggleSlow);
   slowBtn.setAttribute("aria-pressed", "false");
