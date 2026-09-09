@@ -44,6 +44,7 @@ button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
   border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
   background: #121a27; border: 1px solid #2a3548;
 }
+#slowBtn[hidden] { display: none !important; }
 .score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
 .score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
 .score.round { color: var(--mast); border-color: rgba(110,168,254,0.45); }
@@ -348,12 +349,11 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </h1>
     </div>
     <div class="toolbar">
-      <button type="button" class="btn primary" id="playBtn" disabled>▶ Play</button>
-      <button type="button" class="btn" id="resetBtn">Reset</button>
-      <button type="button" class="btn" id="slowBtn" aria-pressed="false" title="Pausas más largas y pip más lento">Lento</button>
+      <button type="button" class="btn" id="resetBtn">Reiniciar</button>
+      <button type="button" class="btn" id="slowBtn" hidden aria-pressed="false" title="Pausas más largas y pip más lento">Lento</button>
       <span class="score ok" id="scoreOk">Aciertos <strong>0</strong></span>
       <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
-      <span class="score round" id="scoreRound">Fase <strong>—</strong></span>
+      <span class="score round" id="scoreRound">Completá <strong>f(x)</strong></span>
     </div>
   </header>
 
@@ -361,7 +361,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="expr">
       <span class="dot" aria-hidden="true"></span>
       <div class="box" id="fnBox"><span style="color:var(--muted)">f(x) = ?</span></div>
-      <p class="prompt attention" id="prompt">Tocá <strong class="hl-b">b</strong></p>
+      <p class="prompt attention" id="prompt">Escribí <strong>f(x)</strong></p>
     </div>
 
     <div class="main-stage">
@@ -388,7 +388,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </div>
 
       <aside class="side" aria-label="Memoria de trabajo">
-        <div class="pick-box go" id="pickBBox">
+        <div class="pick-box off" id="pickBBox">
           <p class="kicker" id="pickBKicker">b</p>
           <div class="chips" id="bChips" role="group" aria-label="Elegir b"></div>
         </div>
@@ -400,7 +400,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
           <p class="kicker" id="easyKicker">forma fácil</p>
           <p class="easy-copy" id="easyCopy"></p>
         </div>
-        <div class="table-wrap off" id="tableWrap">
+        <div class="table-wrap" id="tableWrap">
           <h2>Tabla</h2>
           <table class="wm-table">
             <thead>
@@ -416,7 +416,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
           <p class="dock-hint" id="dockHint">Escribí f(x)</p>
           <div class="dictation">
             <button type="button" class="btn" id="dictateBtn" aria-pressed="false" aria-describedby="dictationStatus dictationPrivacy" disabled>Dictar</button>
-            <p id="dictationStatus" role="status" aria-live="polite">Al completar la tabla, podés dictar el número de la casilla activa.</p>
+            <p id="dictationStatus" role="status" aria-live="polite">Podés dictar el número de la casilla activa.</p>
             <p id="dictationPrivacy">El navegador puede procesar tu voz en línea. También podés escribir.</p>
           </div>
         </div>
@@ -444,7 +444,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 <div id="l200DragGhost" class="l200-drag-ghost" hidden aria-hidden="true"></div>
 <script src="game-kit.js?v=20260909"></script>
 <script src="number-dictation.js?v=20260909-voice"></script>
-<script src="leccion-lineal-working-memory.js?v=20260909-p2lock"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909-auto-table2"></script>
 <script src="lesson-bar.js?v=20260909-nav2" defer></script>
 </body>
 </html>
