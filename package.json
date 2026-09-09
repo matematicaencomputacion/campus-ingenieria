@@ -8,7 +8,8 @@
     "dev": "bash serve.sh 3000",
     "test": "node scripts/smoke-test.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
-    "test:all": "node scripts/smoke-test.mjs && node scripts/browser-smoke.mjs",
+    "test:interaction": "node scripts/interaction-smoke.mjs",
+    "test:all": "node scripts/smoke-test.mjs && node scripts/browser-smoke.mjs && node scripts/interaction-smoke.mjs",
     "css:snapshot": "node scripts/computed-style-check.mjs",
     "check": "node scripts/smoke-test.mjs",
     "reconcile": "bash scripts/reconcile-live.sh --dry-run"

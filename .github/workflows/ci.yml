@@ -85,3 +85,6 @@ jobs:
 
       - name: Run browser smoke test (todas las páginas)
         run: node scripts/browser-smoke.mjs
+
+      - name: Run interaction smoke test (sliders)
+        run: node scripts/interaction-smoke.mjs
