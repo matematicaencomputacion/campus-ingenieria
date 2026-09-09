@@ -26,7 +26,7 @@
   var SNAP_OUT = 0.95;
   var BIG_R = 14;
   var EASY_PAD = 1.5;
-  var EASY_ZOOM = 4.5;
+  var EASY_ZOOM = 9.0;
   var EASY_MIN_MARGIN = 16;
 
   var canvas = document.getElementById("c");
@@ -477,7 +477,7 @@
     // Use CSS pixels in easy mode so the mobile tokens retain their hit area.
     var canvasW = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
     if (easy) {
-      // Stable isotropic camera: 3× the previous compact unit, square cells.
+      // Stable isotropic camera: 6× the compact unit (2× iso3x), square cells.
       // Crop world/pixel margins before shrinking the unit or stretching axes.
       var padded = easyFocusBounds(EASY_PAD);
       var tight = easyFocusBounds(0);

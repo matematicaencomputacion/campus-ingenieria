@@ -89,7 +89,7 @@ for (const width of [390, 1440]) {
     assert.ok(result.aspect.every(a => Math.abs(a.sx - a.sy) < 0.75), JSON.stringify(result.aspect.filter(a => Math.abs(a.sx - a.sy) >= 0.75)));
     const normalPlotH = Math.max(420, Math.min(720, result.easyWrapW * 0.74)) - 70;
     const easyOriginal = Math.min(result.easyCanvasW - 84, normalPlotH) / 24;
-    const expectedUnit = easyOriginal * 4.5;
+    const expectedUnit = easyOriginal * 9.0;
     assert.ok(result.aspect.every(a => a.sx + 0.75 >= expectedUnit * 0.9), JSON.stringify({easyOriginal, expectedUnit, easyCanvasW: result.easyCanvasW, aspect: result.aspect}));
     assert.ok(result.banners.every(bottom => bottom <= result.top), 'Las consignas no tapan el plano');
     assert.equal(result.restored, result.normal);
