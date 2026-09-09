@@ -84,8 +84,7 @@ for (const width of [390, 1440]) {
       return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner, aspect, originalUnit, easyCanvasW, easyWrapW};
     });
     assert.deepEqual(result.failures, []);
-    if (width === 1440) assert.ok(result.compact <= result.normal + 1, JSON.stringify({compact: result.compact, normal: result.normal}));
-    else assert.ok(result.compact >= 239, JSON.stringify(result));
+    assert.ok(result.compact >= (width === 390 ? 239 : 139), JSON.stringify({compact: result.compact, normal: result.normal}));
     assert.ok(result.aspect.every(a => Math.abs(a.sx - a.sy) < 0.75), JSON.stringify(result.aspect.filter(a => Math.abs(a.sx - a.sy) >= 0.75)));
     const normalPlotH = Math.max(420, Math.min(720, result.easyWrapW * 0.74)) - 70;
     const easyOriginal = Math.min(result.easyCanvasW - 84, normalPlotH) / 24;

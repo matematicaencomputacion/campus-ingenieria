@@ -493,11 +493,15 @@
       var tightW = Math.max(tight.xmax - tight.xmin, 1e-6);
       var tightH = Math.max(tight.ymax - tight.ymin, 1e-6);
       var padH = Math.max(padded.ymax - padded.ymin, 1);
-      cssH = Math.max(floorH, Math.round(padH * targetUnit + padT + padB));
-      cssH = Math.min(cssH, normalH);
+      var paddedNeedH = Math.round(padH * targetUnit + padT + padB);
+      var tightNeedH = Math.round(tightH * targetUnit + padT + padB);
+      // Prefer the 2× iso3x unit: keep a shorter canvas when the padded
+      // view fits; otherwise grow to the tight fit instead of shrinking
+      // the unit or stretching axes.
+      cssH = Math.max(floorH, Math.min(paddedNeedH, Math.max(normalH, tightNeedH)));
       var plotH = Math.max(1, cssH - padT - padB);
       if (plotW < tightW * targetUnit || plotH < tightH * targetUnit) {
-        cssH = Math.min(normalH, Math.max(cssH, Math.round(tightH * targetUnit + padT + padB)));
+        cssH = Math.max(cssH, tightNeedH);
         plotH = Math.max(1, cssH - padT - padB);
       }
       if (plotW < tightW * targetUnit || plotH < tightH * targetUnit) {
