@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lección 200 · Lineal · working memory · tabla y gráfica</title>
+<title>Lección 200 · Working memory · recta · juego</title>
 <style>
 :root {
   --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
@@ -21,7 +21,7 @@ body {
 }
 .wrap { max-width: min(1320px, 100%); margin: 0 auto; display: grid; gap: 10px; }
 header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
-h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 { margin: 0; font-size: 1.12rem; font-weight: 700; letter-spacing: -0.02em; }
 h1 .lesson-num { color: var(--accent); font-weight: 800; }
 .sub { color: var(--muted); font-size: 0.86rem; margin-left: 0.45rem; font-weight: 400; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -136,17 +136,31 @@ canvas#c {
 }
 .pick-box {
   background: var(--row); border: 1px solid var(--row-border);
-  border-radius: 8px; padding: 10px 10px 8px;
+  border-radius: 10px; padding: 12px 10px 10px;
 }
+.pick-box.off { display: none; }
+.pick-box.compact .chip:not(.on) { display: none; }
 .pick-box .kicker {
-  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--amber); margin: 0 0 8px;
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--amber); margin: 0 0 10px;
 }
 .pick-box.done .kicker { color: var(--ok); }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+@keyframes goPulse {
+  0%, 100% { border-color: var(--row-border); box-shadow: none; }
+  10%, 40%, 70% {
+    border-color: #FFBF00;
+    box-shadow: 0 0 18px rgba(255, 191, 0, 0.5);
+  }
+}
+.pick-box.go {
+  animation: goPulse 1.15s ease-in-out 2;
+  border-color: rgba(255, 191, 0, 0.55);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  font-family: ui-monospace, Menlo, monospace; font-size: 0.82rem; font-weight: 700;
-  padding: 6px 10px; border-radius: 999px; border: 1px solid #2a3548; background: #121a27;
+  font-family: ui-monospace, Menlo, monospace; font-size: 1.02rem; font-weight: 800;
+  padding: 10px 14px; min-width: 2.8em; border-radius: 999px;
+  border: 1px solid #2a3548; background: #121a27;
   color: var(--ink); cursor: pointer;
 }
 .chip:hover { border-color: var(--mast); color: var(--mast); }
@@ -154,6 +168,8 @@ canvas#c {
 .chip.b-on { background: rgba(167,139,250,0.18); border-color: var(--dot); color: var(--dot); }
 .chip.m-on { background: rgba(244,114,182,0.16); border-color: #f472b6; color: #f9a8d4; }
 .chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.pick-box.compact .chip.on:disabled { opacity: 1; cursor: default; }
+.hint:empty { display: none; }
 .wm-table {
   width: 100%; border-collapse: collapse;
   font-family: ui-monospace, Menlo, monospace; font-size: 0.82rem;
@@ -176,9 +192,10 @@ canvas#c {
 .wm-table .work { font-size: 0.78rem; font-weight: 700; color: #cbd5e1; white-space: nowrap; }
 .wm-table .work .x-red { color: var(--xred); font-weight: 800; }
 .wm-table .work .muted { color: #94a3b8; }
+.table-wrap.off { display: none; }
 .fx-input {
-  width: 4.4em; padding: 5px 6px; border-radius: 8px; text-align: center;
-  font: inherit; font-weight: 800; color: var(--ink);
+  width: 5em; padding: 8px 8px; border-radius: 10px; text-align: center;
+  font: inherit; font-weight: 800; font-size: 1.05rem; color: var(--ink);
   background: #0b1220; border: 1px solid #3b4a63;
 }
 .fx-input:focus { outline: none; border-color: var(--mast); box-shadow: 0 0 0 3px rgba(96,165,250,0.25); }
@@ -206,7 +223,7 @@ canvas#c {
 .mark.bad { color: #3f0d0d; background: var(--bad); }
 .mark.empty { color: #4b5d7a; background: transparent; }
 .dock-hint {
-  margin: 8px 0 0; font-size: 0.78rem; color: var(--muted); line-height: 1.4;
+  margin: 10px 0 0; font-size: 0.86rem; color: var(--muted); line-height: 1.35; font-weight: 650;
 }
 .dock-hint .dot {
   display: inline-block; width: 10px; height: 10px; border-radius: 50%;
@@ -255,8 +272,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   <div><a class="back" href="index.html">← Tools Campus</a></div>
   <header>
     <div>
-      <h1><span class="lesson-num">Lección 200</span> · Lineal · working memory
-        <span class="sub">b → m → tabla → graficar</span>
+      <h1><span class="lesson-num">Lección 200</span> · Working memory
+        <span class="sub">recta · juego</span>
       </h1>
     </div>
     <div class="toolbar">
@@ -273,7 +290,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     <div class="expr">
       <span class="dot" aria-hidden="true"></span>
       <div class="box" id="fnBox"><span style="color:var(--muted)">f(x) = ?</span></div>
-      <p class="prompt attention" id="prompt">Elegí primero la <strong class="hl-b">ordenada al origen b</strong>.</p>
+      <p class="prompt attention" id="prompt">Tocá <strong class="hl-b">b</strong></p>
     </div>
 
     <div class="main-stage">
@@ -295,28 +312,28 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       </div>
 
       <aside class="side" aria-label="Memoria de trabajo">
-        <div class="pick-box" id="pickBBox">
-          <p class="kicker" id="pickBKicker">1 · Ordenada al origen b</p>
+        <div class="pick-box go" id="pickBBox">
+          <p class="kicker" id="pickBKicker">b</p>
           <div class="chips" id="bChips" role="group" aria-label="Elegir b"></div>
         </div>
-        <div class="pick-box" id="pickMBox">
-          <p class="kicker" id="pickMKicker">2 · Pendiente m</p>
+        <div class="pick-box off" id="pickMBox">
+          <p class="kicker" id="pickMKicker">m</p>
           <div class="chips" id="mChips" role="group" aria-label="Elegir m"></div>
         </div>
-        <div>
-          <h2>Tabla de valores</h2>
+        <div class="table-wrap off" id="tableWrap">
+          <h2>Tabla</h2>
           <table class="wm-table">
             <thead>
               <tr>
                 <th>x</th>
-                <th>formato de trabajo</th>
+                <th>formato</th>
                 <th>f(x)</th>
                 <th>✓</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
-          <p class="dock-hint" id="dockHint">Primero b, después m. Play enciende la tabla.</p>
+          <p class="dock-hint" id="dockHint">Escribí f(x)</p>
         </div>
       </aside>
     </div>
@@ -326,7 +343,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <button type="button" class="btn amber" id="winRestartBtn">Reiniciar</button>
     </div>
     <div class="bottom-bar">
-      <p class="hint">b → m → f(x)=mx+b · completá f(x) · arrastrá el punto · anillos naranja en el lugar exacto</p>
+      <p class="hint" id="liveHint"></p>
       <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
         <span class="sound-meter-label" aria-hidden="true">♪</span>
         <span class="sound-bar" data-i="0"></span>
@@ -340,7 +357,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   </div>
 </div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="leccion-lineal-working-memory.js?v=20260909c"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909d"></script>
 <script src="lesson-bar.js" defer></script>
 </body>
 </html>

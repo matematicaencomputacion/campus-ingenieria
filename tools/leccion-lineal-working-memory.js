@@ -21,7 +21,7 @@
   var M_OPTS = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2];
   var SNAP_IN = 0.55;
   var SNAP_OUT = 0.95;
-  var BIG_R = 11;
+  var BIG_R = 14;
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -44,6 +44,7 @@
   var pickBKicker = document.getElementById("pickBKicker");
   var pickMKicker = document.getElementById("pickMKicker");
   var dockHint = document.getElementById("dockHint");
+  var tableWrap = document.getElementById("tableWrap");
   var winBanner = document.getElementById("winBanner");
   var victoryBanner = document.getElementById("victoryBanner");
   var badgeCartel = document.getElementById("badgeCartel");
@@ -325,14 +326,26 @@
     return state.rows.length > 0 && state.rows.every(function (r) { return r.placed; });
   }
 
+  function bumpGo(el, on) {
+    if (!el) return;
+    el.classList.remove("go");
+    if (!on) return;
+    void el.offsetWidth;
+    el.classList.add("go");
+  }
+
   function renderChips() {
+    var pickingB = state.phase === "pick-b";
+    var pickingM = state.phase === "pick-m";
+    var boardOn = state.phase === "fill" || state.phase === "place" || state.phase === "win";
     bChips.innerHTML = "";
     B_OPTS.forEach(function (v) {
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "chip" + (state.b === v ? " b-on on" : "");
-      btn.textContent = "b = " + fmtNum(v);
-      btn.disabled = state.phase !== "pick-b";
+      btn.textContent = fmtNum(v);
+      btn.setAttribute("aria-label", "b = " + fmtNum(v));
+      btn.disabled = !pickingB;
       btn.addEventListener("click", function () { chooseB(v); });
       bChips.appendChild(btn);
     });
@@ -341,15 +354,22 @@
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "chip" + (state.m === v ? " m-on on" : "");
-      btn.textContent = "m = " + fmtNum(v);
-      btn.disabled = state.phase !== "pick-m";
+      btn.textContent = fmtNum(v);
+      btn.setAttribute("aria-label", "m = " + fmtNum(v));
+      btn.disabled = !pickingM;
       btn.addEventListener("click", function () { chooseM(v); });
       mChips.appendChild(btn);
     });
+    pickBBox.classList.toggle("off", !pickingB && !pickingM);
+    pickBBox.classList.toggle("compact", pickingM);
     pickBBox.classList.toggle("done", state.b != null);
+    pickMBox.classList.toggle("off", !pickingM);
     pickMBox.classList.toggle("done", state.m != null);
-    pickBKicker.textContent = state.b == null ? "1 · Ordenada al origen b" : "1 · b = " + fmtNum(state.b);
-    pickMKicker.textContent = state.m == null ? "2 · Pendiente m" : "2 · m = " + fmtNum(state.m);
+    bumpGo(pickBBox, pickingB);
+    bumpGo(pickMBox, pickingM);
+    if (tableWrap) tableWrap.classList.toggle("off", !boardOn);
+    pickBKicker.textContent = pickingM && state.b != null ? "b = " + fmtNum(state.b) : "b";
+    pickMKicker.textContent = "m";
   }
 
   function renderTable() {
@@ -461,24 +481,15 @@
 
   function updateHud() {
     fnBox.innerHTML = latexFx();
-    playBtn.disabled = !(state.phase === "ready") || state.paused;
+    playBtn.disabled = state.b == null || state.m == null || state.paused;
     if (state.phase === "fill") {
-      dockHint.textContent = "Completá f(x) · Enter confirma · ✓ / ✗";
+      dockHint.textContent = "Escribí f(x) · Enter";
     } else if (state.phase === "place") {
-      var row = currentRow();
-      if (row && state.active === 0) {
-        dockHint.innerHTML = '<span class="dot"></span>Arrastrá el círculo sobre la vertical punteada hasta <strong>(x, f(x))</strong>.';
-      } else {
-        dockHint.innerHTML = '<span class="dot"></span>Arrastrá el círculo al punto de la fila activa. Anillos naranja = lugar exacto.';
-      }
+      dockHint.innerHTML = '<span class="dot"></span>Arrastrá';
     } else if (state.phase === "win") {
-      dockHint.textContent = "Recta completa. Reset o Seguir jugando para otra f.";
-    } else if (state.phase === "ready") {
-      dockHint.textContent = "Play enciende la tabla de memoria de trabajo.";
-    } else if (state.phase === "pick-m") {
-      dockHint.textContent = "Ahora la pendiente m.";
+      dockHint.textContent = "Otra · Reset o Seguir";
     } else {
-      dockHint.textContent = "Primero b, después m. Play enciende la tabla.";
+      dockHint.textContent = "";
     }
     syncScores();
   }
@@ -712,7 +723,7 @@
     state.phase = "pick-m";
     renderChips();
     updateHud();
-    setPrompt("Ahora elegí la <strong class=\"hl\">pendiente m</strong>.", "attention");
+    setPrompt("Tocá <strong class=\"hl\">m</strong>", "attention");
     pulseOk();
     draw();
   }
@@ -724,9 +735,7 @@
     state.phase = "ready";
     renderChips();
     updateHud();
-    setPrompt("Armamos <strong>" + latexFx() + "</strong>. Tocá <strong>▶ Play</strong> para la tabla.", "attention");
-    pulseOk();
-    draw();
+    startFill();
   }
 
   function setWinChrome(on) {
@@ -740,7 +749,7 @@
   }
 
   function startFill() {
-    if (state.phase !== "ready") return;
+    if (state.m == null || state.b == null) return;
     armAudio();
     state.rows = makeRows();
     state.active = 0;
@@ -752,10 +761,7 @@
     renderTable();
     updateHud();
     var row = currentRow();
-    setPrompt(
-      "x = <strong class=\"hl-x\">" + fmtNum(row.x) + "</strong> se enciende. Completá <strong>f(x)</strong> con el formato de trabajo.",
-      "attention"
-    );
+    setPrompt("Escribí <strong>f(<span class=\"hl-x\">" + fmtNum(row.x) + "</span>)</strong>", "attention");
     draw();
   }
 
@@ -772,7 +778,7 @@
       pulseBad();
       renderTable();
       updateHud();
-      setPrompt("No. Revisá <span class=\"hl-x\">m · (x)</span> + b.", "bad");
+      setPrompt("Otra", "bad");
       return;
     }
     row.fillOk = true;
@@ -782,7 +788,7 @@
     pulseOk();
     renderTable();
     updateHud();
-    setPrompt("Bien · f(" + fmtNum(row.x) + ") = <strong class=\"ok\">" + fmtNum(row.y) + "</strong>.", "ok");
+    setPrompt("✓ <strong class=\"ok\">" + fmtNum(row.y) + "</strong>", "ok");
     if (allFilled()) {
       later(state.speedFactor > 1 ? 900 : 420, startPlace);
       return;
@@ -795,10 +801,7 @@
       updateHud();
       var nxt = currentRow();
       if (nxt) {
-        setPrompt(
-          "x = <strong class=\"hl-x\">" + fmtNum(nxt.x) + "</strong> se enciende. Completá <strong>f(x)</strong>.",
-          "attention"
-        );
+        setPrompt("Escribí <strong>f(<span class=\"hl-x\">" + fmtNum(nxt.x) + "</span>)</strong>", "attention");
       }
       draw();
     });
@@ -812,10 +815,7 @@
     rearmChime();
     renderTable();
     updateHud();
-    setPrompt(
-      "Tabla lista. Arrastrá el círculo. Vertical punteada solo en el <strong class=\"hl-x\">primer x</strong>.",
-      "attention"
-    );
+    setPrompt("Arrastrá", "attention");
     draw();
   }
 
@@ -909,7 +909,7 @@
     smallConfetti();
     renderTable();
     updateHud();
-    setPrompt("Punto <strong class=\"ok\">(" + fmtNum(row.x) + ", " + fmtNum(row.y) + ")</strong> colocado.", "ok");
+    setPrompt("✓ <strong class=\"ok\">(" + fmtNum(row.x) + ", " + fmtNum(row.y) + ")</strong>", "ok");
     draw();
     if (allPlaced()) {
       later(480, showVictory);
@@ -929,10 +929,7 @@
       updateHud();
       var nxt = currentRow();
       if (nxt) {
-        setPrompt(
-          "Ahora x = <strong class=\"hl-x\">" + fmtNum(nxt.x) + "</strong>. Arrastrá el círculo al punto de la tabla.",
-          "attention"
-        );
+        setPrompt("Arrastrá <strong class=\"hl-x\">x = " + fmtNum(nxt.x) + "</strong>", "attention");
       }
       draw();
     });
@@ -943,15 +940,10 @@
     syncScores();
     pulseBad();
     rearmChime();
-    setPrompt("Ahí no. Buscá <strong>(x, f(x))</strong> de la fila activa. Anillos naranja al pasar por el lugar.", "bad");
+    setPrompt("Ahí no", "bad");
     later(280, function () {
       var row = currentRow();
-      if (row) {
-        setPrompt(
-          "Arrastrá el círculo hasta <strong>(" + fmtNum(row.x) + ", f(" + fmtNum(row.x) + "))</strong>.",
-          "attention"
-        );
-      }
+      if (row) setPrompt("Arrastrá", "attention");
     });
     draw();
   }
@@ -966,7 +958,7 @@
     burstConfetti();
     if (GK.playExplosion) GK.playExplosion();
     else if (GK.playOkChime) GK.playOkChime();
-    setPrompt("<strong class=\"ok\">Lograste graficar la función</strong> · " + latexFx() + ".", "ok");
+    setPrompt("<strong class=\"ok\">Lograste graficar la función</strong>", "ok");
     renderTable();
     updateHud();
     draw();
@@ -996,7 +988,7 @@
     renderChips();
     renderTable();
     updateHud();
-    setPrompt("Elegí primero la <strong class=\"hl-b\">ordenada al origen b</strong>.", "attention");
+    setPrompt("Tocá <strong class=\"hl-b\">b</strong>", "attention");
     draw();
   }
 
