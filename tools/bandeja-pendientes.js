@@ -13,32 +13,32 @@
     return { k: DEFAULT_K, statusById: {}, enabledById: {}, rankById: {} };
   }
 
+  var storageFailed = false;
+  var memoryStorage = {
+    getItem: function (key) { return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null; },
+    setItem: function (key, value) { memoryStore[key] = String(value); },
+    removeItem: function (key) { delete memoryStore[key]; }
+  };
+
   function getStorage() {
-    if (api._storage) return api._storage;
+    if (storageFailed) return memoryStorage;
     try {
+      if (api._storage) return api._storage;
       if (global.localStorage) return global.localStorage;
-    } catch (err) {
-      /* private mode / blocked */
-    }
-    return {
-      getItem: function (key) {
-        return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
-      },
-      setItem: function (key, value) {
-        memoryStore[key] = String(value);
-      },
-      removeItem: function (key) {
-        delete memoryStore[key];
-      }
-    };
+    } catch (err) { /* Switch to the session copy below. */ }
+    storageFailed = true;
+    return memoryStorage;
   }
 
   function loadState() {
     var raw;
     try {
       raw = getStorage().getItem(STORAGE_KEY);
+      if (raw == null) delete memoryStore[STORAGE_KEY];
+      else memoryStore[STORAGE_KEY] = raw;
     } catch (err) {
-      return emptyState();
+      storageFailed = true;
+      raw = memoryStorage.getItem(STORAGE_KEY);
     }
     if (!raw) return emptyState();
     try {
@@ -61,20 +61,22 @@
   }
 
   function saveState(state) {
+    var serialized = JSON.stringify(state);
+    memoryStorage.setItem(STORAGE_KEY, serialized);
     try {
-      getStorage().setItem(STORAGE_KEY, JSON.stringify(state));
+      getStorage().setItem(STORAGE_KEY, serialized);
     } catch (err) {
-      /* quota / blocked: keep going in-memory for this session */
+      storageFailed = true;
     }
   }
 
   function resetState() {
+    memoryStore = {};
     try {
       getStorage().removeItem(STORAGE_KEY);
     } catch (err) {
-      /* ignore */
+      storageFailed = true;
     }
-    memoryStore = {};
     return emptyState();
   }
 
@@ -343,6 +345,7 @@
       "</details>" +
       '<div class="bandeja-toast" data-bandeja-toast role="status" aria-live="polite" hidden></div>';
 
+    if (global.CampusLessonNavigation) global.CampusLessonNavigation.refreshLessonLinks(root);
     if (opts.toast) showToast(root, opts.toast);
     return { items: items, shown: shown, pendingCount: n, k: k, state: state };
   }

@@ -9,7 +9,7 @@
     var link = document.createElement('link');
     link.id = 'campus-lesson-shell-css';
     link.rel = 'stylesheet';
-    link.href = 'lesson-shell.css?v=20260909d';
+    link.href = 'lesson-shell.css?v=20260909-nav2';
     document.head.appendChild(link);
   }
 
@@ -30,7 +30,8 @@
     opts = opts || {};
     injectStyles();
 
-    var wrap = document.createElement('div');
+    var wrap = document.createElement('nav');
+    wrap.setAttribute('aria-label', 'Navegación de la lección');
     wrap.className = 'campus-lesson-bar-wrap';
     wrap.id = 'campus-lesson-bar-wrap';
 
@@ -40,15 +41,9 @@
     // Back to Campus button
     var backBtn = document.createElement('a');
     backBtn.className = 'campus-lb-btn primary';
-    backBtn.href = '../index.html';
-    backBtn.title = 'Volver al Campus Estudiante';
-    backBtn.innerHTML = '<span class="campus-lb-icon">⮌</span><span class="campus-lb-label">Campus</span>';
-    backBtn.addEventListener('click', function (e) {
-      if (window.history.length > 1 && document.referrer.indexOf('campus') !== -1) {
-        e.preventDefault();
-        window.history.back();
-      }
-    });
+    backBtn.href = 'index.html';
+    backBtn.innerHTML = '<span class="campus-lb-icon" aria-hidden="true">←</span><span class="campus-lb-label">Catálogo</span>';
+    global.CampusLessonNavigation.configureLink(backBtn);
 
     // Separator
     var sep1 = document.createElement('span');
@@ -78,7 +73,7 @@
     bar.appendChild(reloadBtn);
 
     wrap.appendChild(bar);
-    document.body.appendChild(wrap);
+    document.body.prepend(wrap);
     mounted = true;
   }
 

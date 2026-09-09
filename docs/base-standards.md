@@ -16,7 +16,8 @@ el cambio acordado. Si difieren, registrar y resolver la diferencia explícitame
 - No introducir React, Qwik, backend, base de datos o build sin propuesta y ADR.
 - Preservar español en contenido educativo y documentación; nombres existentes coherentes.
 - Mantener rutas, catálogo, enlaces de vuelta y comportamiento de lecciones.
-- No extender lesson-bar a lecciones con back propio hasta una decisión de producto.
+- Navegación: preservar los enlaces propios y las 18 barras; aplicar retorno contextual
+  según docs/adr/0001-contextual-navigation.md. No añadir barras duplicadas.
 - No reabrir de-duplicación CSS Fase 2 sin nueva evidencia de beneficio y equivalencia.
 
 ## Flujo SDD

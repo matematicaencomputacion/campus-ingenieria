@@ -54,7 +54,7 @@ jobs:
 
       - name: Run automated smoke test suite
         run: |
-          node scripts/smoke-test.mjs
+          npm test
 
       - name: Size budget (warn > 2MB tree)
         run: |
@@ -88,3 +88,6 @@ jobs:
 
       - name: Run interaction smoke test (sliders)
         run: node scripts/interaction-smoke.mjs
+
+      - name: Run contextual navigation tests
+        run: npm run test:navigation
