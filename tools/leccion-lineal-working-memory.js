@@ -52,6 +52,8 @@
   var victoryContinue = document.getElementById("victoryContinue");
   var victoryRestart = document.getElementById("victoryRestart");
   var winRestartBtn = document.getElementById("winRestartBtn");
+  var ghostEl = document.getElementById("l200DragGhost");
+  var dragListen = false;
 
   var timers = [];
   var state = {
@@ -62,6 +64,8 @@
     active: 0,
     hover: null,
     drag: null,
+    dragPx: null,
+    dragClient: null,
     near: false,
     chimed: false,
     chimeGen: 0,
@@ -178,6 +182,7 @@
   function setPrompt(html, cls) {
     promptEl.className = "prompt" + (cls ? (" " + cls) : "");
     promptEl.innerHTML = html;
+    syncDragCursor();
   }
 
   function flashOk() {
@@ -259,20 +264,40 @@
     return { x: x, y: y };
   }
 
+  function pointerClient(ev) {
+    var src = ev;
+    if (ev.touches && ev.touches[0]) src = ev.touches[0];
+    else if (ev.changedTouches && ev.changedTouches[0]) src = ev.changedTouches[0];
+    return { x: src.clientX, y: src.clientY };
+  }
+
   function eventToCanvas(ev) {
     var rect = canvas.getBoundingClientRect();
-    var scaleX = canvas.width / rect.width;
-    var scaleY = canvas.height / rect.height;
-    var cx = ev.clientX;
-    var cy = ev.clientY;
-    if (ev.touches && ev.touches[0]) {
-      cx = ev.touches[0].clientX;
-      cy = ev.touches[0].clientY;
-    }
+    var dw = rect.width || 1;
+    var dh = rect.height || 1;
+    var scaleX = canvas.width / dw;
+    var scaleY = canvas.height / dh;
+    var p = pointerClient(ev);
     return {
-      x: (cx - rect.left) * scaleX,
-      y: (cy - rect.top) * scaleY
+      x: (p.x - rect.left) * scaleX,
+      y: (p.y - rect.top) * scaleY
     };
+  }
+
+  function syncGhostOverlay() {
+    if (!ghostEl) return;
+    if (!state.drag || !state.dragClient) {
+      ghostEl.hidden = true;
+      return;
+    }
+    var rect = canvas.getBoundingClientRect();
+    var scale = (rect.width && canvas.width) ? (rect.width / canvas.width) : 1;
+    var cssR = BIG_R * scale;
+    ghostEl.hidden = false;
+    ghostEl.style.width = (cssR * 2) + "px";
+    ghostEl.style.height = (cssR * 2) + "px";
+    ghostEl.style.left = state.dragClient.x + "px";
+    ghostEl.style.top = state.dragClient.y + "px";
   }
 
   function dist(a, b) {
@@ -479,6 +504,12 @@
     });
   }
 
+  function syncDragCursor() {
+    var canDrag = state.phase === "place" && !state.won && !state.paused && !state.locked;
+    if (promptEl) promptEl.classList.toggle("can-drag", canDrag);
+    if (dockHint) dockHint.classList.toggle("can-drag", canDrag);
+  }
+
   function updateHud() {
     fnBox.innerHTML = latexFx();
     playBtn.disabled = state.b == null || state.m == null || state.paused;
@@ -491,6 +522,7 @@
     } else {
       dockHint.textContent = "";
     }
+    syncDragCursor();
     syncScores();
   }
 
@@ -615,7 +647,8 @@
     ctx.restore();
   }
 
-  function drawPulseRings(x, y, label) {
+  function drawPulseRings(x, y, label, opts) {
+    opts = opts || {};
     var p = worldToScreen(x, y);
     var breath = 1 + 0.12 * Math.sin(state.pulse);
     var rings = [16, 24, 33];
@@ -629,13 +662,15 @@
       ctx.lineWidth = 2.1;
       ctx.stroke();
     });
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, BIG_R + 1, 0, Math.PI * 2);
-    ctx.fillStyle = PURPLE;
-    ctx.fill();
-    ctx.strokeStyle = "#fff7ed";
-    ctx.lineWidth = 2.2;
-    ctx.stroke();
+    if (opts.fillDot) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, BIG_R + 1, 0, Math.PI * 2);
+      ctx.fillStyle = PURPLE;
+      ctx.fill();
+      ctx.strokeStyle = "#fff7ed";
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+    }
     ctx.fillStyle = HOT;
     ctx.font = "800 13px ui-monospace, Menlo, monospace";
     ctx.textAlign = "left";
@@ -650,9 +685,8 @@
     ctx.restore();
   }
 
-  function drawGhost(w) {
-    if (!w) return;
-    var p = worldToScreen(w.x, w.y);
+  function drawGhostAtPx(p) {
+    if (!p) return;
     ctx.save();
     ctx.beginPath();
     ctx.arc(p.x, p.y, BIG_R, 0, Math.PI * 2);
@@ -701,16 +735,22 @@
     state.rows.forEach(function (row) {
       if (row.placed) drawDot(row.x, row.y, PURPLE, PURPLE_GLOW, BIG_R);
     });
+    syncGhostOverlay();
     if (state.phase === "place" && !state.won && !state.paused) {
       var row = currentRow();
       if (row && !row.placed) {
         var target = { x: row.x, y: row.y };
         var probe = state.drag || state.hover;
-        if (probe && inSnapZone(probe, target)) {
-          drawPulseRings(row.x, row.y, "(" + fmtNum(row.x) + ", " + fmtNum(row.y) + ")");
+        var near = !!(probe && inSnapZone(probe, target));
+        if (state.drag) {
+          if (!ghostEl || ghostEl.hidden) {
+            drawGhostAtPx(state.dragPx);
+          }
         } else {
           drawTokenWell();
-          if (state.drag) drawGhost(state.drag);
+        }
+        if (near) {
+          drawPulseRings(row.x, row.y, "(" + fmtNum(row.x) + ", " + fmtNum(row.y) + ")", { fillDot: false });
         }
       }
     }
@@ -810,7 +850,7 @@
   function startPlace() {
     state.phase = "place";
     state.active = 0;
-    state.drag = null;
+    endDragVisual();
     state.hover = null;
     rearmChime();
     renderTable();
@@ -825,33 +865,83 @@
     return Math.hypot(pt.x - dock.x, pt.y - dock.y) <= BIG_R + 16;
   }
 
-  function onPointerDown(ev) {
-    if (state.phase !== "place" || state.paused || state.locked || state.won) return;
-    armAudio();
+  function canPlaceDrag() {
+    if (state.phase !== "place" || state.paused || state.locked || state.won) return false;
+    var row = currentRow();
+    return !!(row && !row.placed);
+  }
+
+  function bindDragListen() {
+    if (dragListen) return;
+    dragListen = true;
+    window.addEventListener("pointermove", onPointerMove, true);
+    window.addEventListener("pointerup", onPointerUp, true);
+    window.addEventListener("pointercancel", onPointerUp, true);
+  }
+
+  function unbindDragListen() {
+    if (!dragListen) return;
+    dragListen = false;
+    window.removeEventListener("pointermove", onPointerMove, true);
+    window.removeEventListener("pointerup", onPointerUp, true);
+    window.removeEventListener("pointercancel", onPointerUp, true);
+  }
+
+  function endDragVisual() {
+    state.drag = null;
+    state.dragPx = null;
+    state.dragClient = null;
+    unbindDragListen();
+    syncGhostOverlay();
+  }
+
+  function applyPointer(ev) {
     var cpt = eventToCanvas(ev);
-    if (state._dock && !tokenHit(cpt) && !state.drag) return;
+    var w = screenToWorld(cpt.x, cpt.y);
+    state.hover = w;
+    if (state.drag) {
+      state.dragClient = pointerClient(ev);
+      state.dragPx = cpt;
+      state.drag = w;
+    }
+    return w;
+  }
+
+  function beginDrag(ev, fromOutside) {
+    if (!canPlaceDrag()) return;
+    armAudio();
+    if (!fromOutside) {
+      var hit = eventToCanvas(ev);
+      if (state._dock && !tokenHit(hit) && !state.drag) return;
+    }
     if (ev.preventDefault) ev.preventDefault();
     if (canvas.setPointerCapture && ev.pointerId != null) {
       try { canvas.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
     }
-    state.drag = screenToWorld(cpt.x, cpt.y);
+    state.drag = { x: 0, y: 0 };
+    applyPointer(ev);
+    bindDragListen();
     onPointerMove(ev);
+  }
+
+  function onPointerDown(ev) {
+    beginDrag(ev, false);
   }
 
   function onPointerMove(ev) {
     if (state.paused || state.locked || state.won) return;
-    var cpt = eventToCanvas(ev);
-    var w = screenToWorld(cpt.x, cpt.y);
-    state.hover = w;
-    if (state.drag) state.drag = w;
+    var w = applyPointer(ev);
     if (state.phase !== "place") {
       draw();
       return;
     }
     var row = currentRow();
-    if (!row || row.placed) return;
+    if (!row || row.placed) {
+      draw();
+      return;
+    }
     var Q = { x: row.x, y: row.y };
-    var probe = state.drag || state.hover;
+    var probe = state.drag || w;
     var near = inSnapZone(probe, Q);
     if (near) {
       state.near = true;
@@ -867,13 +957,14 @@
 
   function onPointerUp(ev) {
     if (state.phase !== "place" || !state.drag || state.paused || state.locked || state.won) {
-      state.drag = null;
+      endDragVisual();
       return;
     }
     if (ev && ev.preventDefault) ev.preventDefault();
+    applyPointer(ev);
     var row = currentRow();
     var drop = state.drag;
-    state.drag = null;
+    endDragVisual();
     if (!row || row.placed) return;
     var Q = { x: row.x, y: row.y };
     if (inSnapZone(drop, Q) || dist(drop, Q) <= SNAP_IN) {
@@ -898,7 +989,7 @@
     row.placed = true;
     state.ok++;
     state.hover = null;
-    state.drag = null;
+    endDragVisual();
     rearmChime();
     if (heardHover) {
       flashOk();
@@ -953,7 +1044,7 @@
     state.phase = "win";
     state.locked = true;
     state.hover = null;
-    state.drag = null;
+    endDragVisual();
     setWinChrome(true);
     burstConfetti();
     if (GK.playExplosion) GK.playExplosion();
@@ -973,7 +1064,7 @@
     state.active = 0;
     state.pipedFor = -1;
     state.hover = null;
-    state.drag = null;
+    endDragVisual();
     state.won = false;
     state.locked = false;
     state.paused = false;
@@ -1031,6 +1122,12 @@
   canvas.addEventListener("pointerup", onPointerUp);
   canvas.addEventListener("pointercancel", onPointerUp);
   canvas.addEventListener("pointerleave", onPointerLeave);
+  if (dockHint) {
+    dockHint.addEventListener("pointerdown", function (ev) { beginDrag(ev, true); });
+  }
+  if (promptEl) {
+    promptEl.addEventListener("pointerdown", function (ev) { beginDrag(ev, true); });
+  }
   canvas.addEventListener("pointerdown", function () { armAudio(); });
   document.addEventListener("pointerdown", function () { armAudio(); });
   window.addEventListener("resize", function () {
@@ -1056,6 +1153,9 @@
     startPlace: startPlace,
     placeCorrect: placeCorrect,
     resetAll: resetAll,
-    draw: draw
+    draw: draw,
+    eventToCanvas: eventToCanvas,
+    screenToWorld: screenToWorld,
+    worldToScreen: worldToScreen
   };
 })();
