@@ -175,9 +175,12 @@ canvas#c {
   font-family: ui-monospace, Menlo, monospace; font-size: 0.82rem;
 }
 .wm-table th, .wm-table td {
-  border-bottom: 1px solid var(--row-border); padding: 7px 6px; text-align: center;
+  border-bottom: 1px solid var(--row-border);
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 7px 6px; text-align: center;
   vertical-align: middle;
 }
+.wm-table th:last-child, .wm-table td:last-child { border-right: none; }
 .wm-table th {
   color: var(--muted); font-weight: 700; font-size: 0.7rem;
   text-transform: uppercase; letter-spacing: 0.04em; background: #0b1220;
@@ -357,7 +360,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   </div>
 </div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="leccion-lineal-working-memory.js?v=20260909d"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909e"></script>
 <script src="lesson-bar.js?v=20260909" defer></script>
 </body>
 </html>
