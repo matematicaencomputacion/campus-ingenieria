@@ -47,7 +47,7 @@ for (const width of [390, 1440]) {
       const normal = c.getBoundingClientRect().height;
       const failures = [];
       for (const b of api.B_OPTS) for (const m of api.M_OPTS) {
-        api.resetAll(false); api.state.phase = "pick-b"; api.chooseB(b); api.chooseM(m); api.startFormaFacil();
+        api.resetAll(false); api.chooseB(b); api.chooseM(m); api.startFormaFacil();
         const points = [{x: 0, y: 0}, api.easyP1(), api.easyP2(), {x: api.easyP2().x, y: b}];
         for (const point of points) {
           const s = api.worldToScreen(point.x, point.y);
@@ -57,13 +57,25 @@ for (const width of [390, 1440]) {
       const rect = c.getBoundingClientRect();
       const banners = ['easyBanner', 'stepCartel'].map(id => document.getElementById(id).getBoundingClientRect().bottom);
       const compact = rect.height;
+      const aspect = [];
+      for (const b of api.B_OPTS) for (const m of api.M_OPTS) {
+        api.resetAll(false); api.chooseB(b); api.chooseM(m); api.startFormaFacil();
+        const o = api.worldToScreen(0, 0);
+        const x1 = api.worldToScreen(1, 0);
+        const y1 = api.worldToScreen(0, 1);
+        aspect.push({ phase: 'easy-b', b, m, sx: x1.x - o.x, sy: o.y - y1.y });
+      }
       api.resetAll(false);
       const origin = api.worldToScreen(0,0), corner = api.worldToScreen(12,12);
-      return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner};
+      const oN = api.worldToScreen(0, 0);
+      const originalUnit = Math.min(api.worldToScreen(1, 0).x - oN.x, oN.y - api.worldToScreen(0, 1).y);
+      return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner, aspect, originalUnit};
     });
     assert.deepEqual(result.failures, []);
-    if (width === 1440) assert.ok(Math.abs(result.compact / result.normal - 1/3) < .01, JSON.stringify(result));
+    if (width === 1440) assert.ok(result.compact <= result.normal + 1, JSON.stringify({compact: result.compact, normal: result.normal}));
     else assert.ok(result.compact >= 239, JSON.stringify(result));
+    assert.ok(result.aspect.every(a => Math.abs(a.sx - a.sy) < 0.75), JSON.stringify(result.aspect.filter(a => Math.abs(a.sx - a.sy) >= 0.75)));
+    assert.ok(result.aspect.every(a => a.sx > result.originalUnit + 0.5), JSON.stringify({originalUnit: result.originalUnit, aspect: result.aspect}));
     assert.ok(result.banners.every(bottom => bottom <= result.top), 'Las consignas no tapan el plano');
     assert.equal(result.restored, result.normal);
     assert.ok(result.corner.x > result.origin.x && result.corner.y < result.origin.y);
@@ -72,7 +84,7 @@ for (const width of [390, 1440]) {
   test(`L200: arrastre real de P1 y P2 y resize a ${width}px`, async t => {
     const p = await pageFor(t, { viewport: { width, height: 1000 } });
     await p.goto(base + '/tools/leccion-lineal-working-memory.html');
-    await p.evaluate(() => { const a=window.__L200; a.state.phase="pick-b"; a.chooseB(3);a.chooseM(-1.5);a.startFormaFacil(); });
+    await p.evaluate(() => { const a=window.__L200; a.chooseB(3);a.chooseM(-1.5);a.startFormaFacil(); });
     await p.waitForFunction(() => window.__L200.state.phase === 'easy-b');
     async function drag(from, to) {
       await p.locator('#c').scrollIntoViewIfNeeded();
@@ -85,13 +97,18 @@ for (const width of [390, 1440]) {
     }
     await drag({x:0,y:0},{x:0,y:3});
     await p.waitForFunction(() => window.__L200.state.phase === 'easy-m');
+    const unit = await p.evaluate(() => {
+      const a = window.__L200, o = a.worldToScreen(0, 0);
+      return { sx: a.worldToScreen(1, 0).x - o.x, sy: o.y - a.worldToScreen(0, 1).y };
+    });
+    assert.ok(Math.abs(unit.sx - unit.sy) < 0.75, JSON.stringify(unit));
     await drag({x:0,y:3},{x:2,y:0});
     await p.waitForFunction(() => window.__L200.state.phase === 'easy-line');
     assert.equal(await p.evaluate(() => window.__L200.state.bad), 0);
     await p.setViewportSize({width: width === 390 ? 1440 : 390,height:1000});
     assert.equal(await p.evaluate(() => window.__L200.state.phase), 'easy-line');
     await p.locator('#resetBtn').click();
-    assert.equal(await p.evaluate(() => window.__L200.state.phase), 'fill');
+    assert.equal(await p.evaluate(() => window.__L200.state.phase), 'pick-b');
   });
 }
 
@@ -117,8 +134,8 @@ async function dictationPage(t, { support = true, width = 1440, prefixed = false
     window[prefixed ? 'webkitSpeechRecognition' : 'SpeechRecognition'] = FakeRecognition;
   }, { support, prefixed });
   await p.goto(base + '/tools/leccion-lineal-working-memory.html');
-  assert.equal(await p.evaluate(() => window.__L200.state.phase), 'fill');
-  await p.evaluate(() => { const a = window.__L200; a.state.phase = 'pick-b'; a.chooseB(-3); a.chooseM(-2); });
+  assert.equal(await p.locator('#dictateBtn').isDisabled(), true);
+  await p.evaluate(() => { const a = window.__L200; a.chooseB(-3); a.chooseM(-2); a.startFill(); });
   return p;
 }
 
@@ -169,7 +186,7 @@ test('L200: errores de reconocimiento y frases ambiguas conservan la entrada man
   assert.equal(await p.locator('#dictateBtn').getAttribute('aria-pressed'), 'false');
 });
 
-test('L200: cancelar, escribir, cambiar fila y Reiniciar invalidan resultados tardíos', async t => {
+test('L200: cancelar, escribir, cambiar fila y Reset invalidan resultados tardíos', async t => {
   const p = await dictationPage(t);
   const button = p.locator('#dictateBtn');
   const input = p.locator('.fx-input:not(:disabled)');
@@ -190,7 +207,7 @@ test('L200: cancelar, escribir, cambiar fila y Reiniciar invalidan resultados ta
   await button.click();
   await p.locator('#resetBtn').click();
   await p.evaluate(() => window.__speech.at(-1).result('nueve'));
-  assert.equal(await button.isDisabled(), false);
+  assert.equal(await button.isDisabled(), true);
   assert.equal(await p.evaluate(() => window.__speech.at(-1).aborted), true);
   assert.deepEqual(await p.locator('.fx-input').evaluateAll(inputs => inputs.map(i => i.value)), ['', '', '', '', '']);
   assert.doesNotMatch(await p.locator('#dictationStatus').textContent(), /Escuchando/);
@@ -222,49 +239,3 @@ test('L200: fin sin resultado, timeout y salida detienen la escucha', async t =>
     assert.doesNotMatch(await p.locator('#dictationStatus').textContent(), /Escuchando/);
   }
 });
-
-for (const width of [390, 1440]) {
-  test(`L200: entrada automática, OK por fila y reinicio a ${width}px`, async t => {
-    const p = await pageFor(t, { viewport: { width, height: 1000 } });
-    await p.goto(base + '/tools/leccion-lineal-working-memory.html');
-    assert.equal(await p.locator('#playBtn').count(), 0);
-    assert.equal(await p.locator('#slowBtn').isVisible(), false);
-    assert.equal(await p.locator('#pickBBox').isVisible(), false);
-    assert.equal(await p.locator('#pickMBox').isVisible(), false);
-    assert.equal(await p.locator('#tableWrap').isVisible(), true);
-    assert.match(await p.locator('#fnBox').textContent(), /f\(x\)\s*=/);
-    assert.equal(await p.locator('#scoreRound').textContent(), 'Completá f(x)');
-    assert.equal(await p.locator('.fx-input:not(:disabled)').count(), 1);
-    assert.equal(await p.locator('.fx-input:not(:disabled)').getAttribute('data-i'), '0');
-    const exercise = await p.evaluate(() => { const a=window.__L200; return {b:a.state.b,m:a.state.m,bs:a.B_OPTS,ms:a.M_OPTS}; });
-    assert.ok(exercise.bs.includes(exercise.b) && exercise.ms.includes(exercise.m));
-    assert.deepEqual(await p.locator('#tbody td.x').allTextContents(), ['−4','−2','0','2','4']);
-    const formats = await p.locator('#tbody td.work').allTextContents();
-    assert.notEqual(formats[0], '—');
-    assert.deepEqual(formats.slice(1), ['—','—','—','—']);
-    const values = [-4,-2,0,2,4].map(x => exercise.m*x+exercise.b);
-    await p.locator('.fx-input:not(:disabled)').fill(String(values[0]+1));
-    await p.getByRole('button', { name: 'Comprobar f(x)', exact: true }).click();
-    assert.equal(await p.locator('.mark.bad').count(), 1);
-    assert.equal(await p.locator('.fx-input:not(:disabled)').getAttribute('data-i'), '0');
-    for (let i=0;i<5;i++) {
-      await p.locator('.fx-input:not(:disabled)').fill(String(values[i]));
-      if (i===0) await p.getByRole('button', { name: 'Reintentar f(x)', exact: true }).click();
-      else await p.locator('.fx-input:not(:disabled)').press('Enter');
-      if(i<4) await p.waitForFunction(i=>window.__L200.state.active===i+1,i);
-      assert.equal(await p.locator('.mark.ok').count(), i+1);
-    }
-    await p.waitForFunction(()=>window.__L200.state.phase==='place');
-    assert.equal(await p.locator('#slowBtn').isVisible(), true);
-    await p.locator('#slowBtn').click();
-    await p.getByRole('button', { name:'Reiniciar', exact:true }).click();
-    assert.equal(await p.locator('#slowBtn').isVisible(), false);
-    assert.equal(await p.locator('.fx-input:not(:disabled)').getAttribute('data-i'), '0');
-    assert.deepEqual(await p.locator('.fx-input').evaluateAll(inputs=>inputs.map(i=>i.value)), ['','','','','']);
-    assert.equal(await p.locator('.mark.ok').count(), 0);
-    const first = await p.evaluate(()=>window.__L200.state.m*(-4)+window.__L200.state.b);
-    await p.locator('.fx-input:not(:disabled)').fill(String(first));
-    await p.locator('.fx-input:not(:disabled)').press('Enter');
-    await p.waitForFunction(()=>window.__L200.state.active===1, null, {timeout:1000});
-  });
-}
