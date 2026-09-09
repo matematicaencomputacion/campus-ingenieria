@@ -58,24 +58,39 @@ for (const width of [390, 1440]) {
       const banners = ['easyBanner', 'stepCartel'].map(id => document.getElementById(id).getBoundingClientRect().bottom);
       const compact = rect.height;
       const aspect = [];
+      let easyCanvasW = 0, easyWrapW = 0;
       for (const b of api.B_OPTS) for (const m of api.M_OPTS) {
         api.resetAll(false); api.state.phase = "pick-b"; api.chooseB(b); api.chooseM(m); api.startFormaFacil();
         const o = api.worldToScreen(0, 0);
         const x1 = api.worldToScreen(1, 0);
         const y1 = api.worldToScreen(0, 1);
         aspect.push({ phase: 'easy-b', b, m, sx: x1.x - o.x, sy: o.y - y1.y });
+        if (b === 3 && m === -1.5) {
+          api.lockEasyP1();
+          const om = api.worldToScreen(0, 0);
+          aspect.push({
+            phase: 'easy-m', b, m,
+            sx: api.worldToScreen(1, 0).x - om.x,
+            sy: om.y - api.worldToScreen(0, 1).y
+          });
+        }
+        easyCanvasW = c.width;
+        easyWrapW = document.getElementById('graphWrap').clientWidth;
       }
       api.resetAll(false);
       const origin = api.worldToScreen(0,0), corner = api.worldToScreen(12,12);
       const oN = api.worldToScreen(0, 0);
       const originalUnit = Math.min(api.worldToScreen(1, 0).x - oN.x, oN.y - api.worldToScreen(0, 1).y);
-      return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner, aspect, originalUnit};
+      return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner, aspect, originalUnit, easyCanvasW, easyWrapW};
     });
     assert.deepEqual(result.failures, []);
     if (width === 1440) assert.ok(result.compact <= result.normal + 1, JSON.stringify({compact: result.compact, normal: result.normal}));
     else assert.ok(result.compact >= 239, JSON.stringify(result));
     assert.ok(result.aspect.every(a => Math.abs(a.sx - a.sy) < 0.75), JSON.stringify(result.aspect.filter(a => Math.abs(a.sx - a.sy) >= 0.75)));
-    assert.ok(result.aspect.every(a => a.sx > result.originalUnit + 0.5), JSON.stringify({originalUnit: result.originalUnit, aspect: result.aspect}));
+    const normalPlotH = Math.max(420, Math.min(720, result.easyWrapW * 0.74)) - 70;
+    const easyOriginal = Math.min(result.easyCanvasW - 84, normalPlotH) / 24;
+    const expectedUnit = easyOriginal * 4.5;
+    assert.ok(result.aspect.every(a => a.sx + 0.75 >= expectedUnit * 0.9), JSON.stringify({easyOriginal, expectedUnit, easyCanvasW: result.easyCanvasW, aspect: result.aspect}));
     assert.ok(result.banners.every(bottom => bottom <= result.top), 'Las consignas no tapan el plano');
     assert.equal(result.restored, result.normal);
     assert.ok(result.corner.x > result.origin.x && result.corner.y < result.origin.y);
