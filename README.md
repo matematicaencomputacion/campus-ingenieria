@@ -24,10 +24,11 @@ Abrí http://localhost:3000
 ## Testing
 
 ```bash
-npm test            # smoke estático: archivos, node --check, links (rápido, sin deps)
-npm run test:browser    # smoke de navegador: abre las ~190 páginas en Chromium headless
-                        # y falla ante errores de runtime (pageerror / console.error / 404)
-npm run test:all        # ambos
+npm test              # smoke estático: archivos, node --check, links (rápido, sin deps)
+npm run test:browser      # smoke de navegador: abre las ~190 páginas en Chromium headless
+                          # y falla ante errores de runtime (pageerror / console.error / 404)
+npm run test:interaction  # mueve los sliders de cada lección y falla si alguno lanza errores
+npm run test:all          # los tres
 ```
 
 El smoke de navegador (`scripts/browser-smoke.mjs`) requiere una vez:
