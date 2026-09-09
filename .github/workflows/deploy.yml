@@ -18,6 +18,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.repository == 'matematicaencomputacion/campus-ingenieria'
+    # IMPORTANTE: el env a nivel job SÍ es visible en el `if:` de cada step.
+    # El env a nivel step NO lo es (se aplica recién al ejecutar el step), por eso
+    # el guard anterior `if: env.DEPLOY_SSH_KEY != ''` con el env definido en el
+    # propio step evaluaba siempre a falso y saltaba el deploy en silencio.
+    env:
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'campus' }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || 'ingenieria.wechat.com.ar' }}
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
@@ -31,27 +39,44 @@ jobs:
         run: |
           node scripts/smoke-test.mjs
 
-      - name: Configurar SSH
-        if: env.DEPLOY_SSH_KEY != ''
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      - name: Gate de deploy (honestidad del estado)
+        id: gate
         run: |
+          set -euo pipefail
+          if [ -n "${DEPLOY_SSH_KEY:-}" ]; then
+            echo "can_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Secret DEPLOY_SSH_KEY presente: el deploy real SÍ se ejecutará." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "can_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Deploy NO ejecutado::DEPLOY_SSH_KEY no está configurado. El sitio en producción NO fue modificado por este run." >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "### ⚠️ Deploy omitido — producción SIN cambios"
+              echo ""
+              echo "No existe el secret \`DEPLOY_SSH_KEY\`, así que los pasos de SSH y rsync se saltaron."
+              echo "El estado 'success' de este job **no** significa que se haya desplegado nada."
+              echo ""
+              echo "Esto es lo esperado si el deploy se hace de forma manual (ver \`DEPLOY.md\`)."
+              echo "Para habilitar el CD automático, cargá los secrets \`DEPLOY_SSH_KEY\` (y opcionalmente \`DEPLOY_USER\` / \`DEPLOY_HOST\`)."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Configurar SSH
+        if: steps.gate.outputs.can_deploy == 'true'
+        run: |
+          set -euo pipefail
           mkdir -p ~/.ssh
           echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.DEPLOY_HOST || 'ingenieria.wechat.com.ar' }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
       - name: Deploy rsync a VM producción
-        if: env.DEPLOY_SSH_KEY != ''
+        if: steps.gate.outputs.can_deploy == 'true'
         env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'campus' }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || 'ingenieria.wechat.com.ar' }}
           USE_DELETE: ${{ inputs.use_delete }}
         run: |
           set -euo pipefail
           DELETE_FLAG=""
-          if [ "$USE_DELETE" = "true" ]; then
+          if [ "${USE_DELETE:-false}" = "true" ]; then
             DELETE_FLAG="--delete"
             echo "Aviso: Ejecutando deploy con --delete activo"
           fi
@@ -67,14 +92,17 @@ jobs:
             --exclude 'serve.sh' \
             --exclude 'scripts/' \
             --exclude 'tests/' \
-            ./ ${DEPLOY_USER}@${DEPLOY_HOST}:/var/www/campus/
+            ./ "${DEPLOY_USER}@${DEPLOY_HOST}:/var/www/campus/"
+
+          echo "🚀 Deploy rsync completado hacia ${DEPLOY_HOST}:/var/www/campus/" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Post-check producción (HTTP y headers)
+        if: steps.gate.outputs.can_deploy == 'true'
         run: |
           set -euo pipefail
-          echo "Verificando disponibilidad en https://ingenieria.wechat.com.ar/ ..."
-          status_code=$(curl -s -o /dev/null -w "%{http_code}" https://ingenieria.wechat.com.ar/ || true)
+          echo "Verificando disponibilidad en https://${DEPLOY_HOST}/ ..."
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" "https://${DEPLOY_HOST}/" || true)
           echo "Status code: $status_code"
           if [ "$status_code" != "200" ] && [ "$status_code" != "000" ]; then
-            echo "Aviso: Status code inesperado: $status_code"
+            echo "::warning title=Post-check::Status code inesperado tras el deploy: $status_code"
           fi
