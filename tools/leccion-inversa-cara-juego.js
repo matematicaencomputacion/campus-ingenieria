@@ -597,34 +597,64 @@
     ctx.restore();
   }
 
-  function drawActiveHalo(pt) {
-    var p = worldToScreen(pt.x, pt.y);
-    var pulse = 1 + 0.08 * Math.sin(state.pulse);
+  /* Expand/shrink concentric rings around a solid core (active orange / meta green). */
+  function pulseScale() {
+    return 1 + 0.08 * Math.sin(state.pulse);
+  }
+
+  function drawPulseRings(sx, sy, color, glow) {
+    var pulse = pulseScale();
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, (BIG_R + 11) * pulse, 0, Math.PI * 2);
-    ctx.strokeStyle = HOT;
+    ctx.strokeStyle = color;
     ctx.lineWidth = 4;
-    ctx.shadowColor = HOT_GLOW;
+    ctx.shadowColor = glow;
     ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(sx, sy, (BIG_R + 11) * pulse, 0, Math.PI * 2);
     ctx.stroke();
     ctx.shadowBlur = 0;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, BIG_R + 3, 0, Math.PI * 2);
-    ctx.fillStyle = HOT;
-    ctx.fill();
+    ctx.arc(sx, sy, (BIG_R + 3) * pulse, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawHaloCore(sx, sy, fill, rim) {
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(p.x, p.y, BIG_R - 2, 0, Math.PI * 2);
-    ctx.fillStyle = PURPLE;
+    ctx.arc(sx, sy, BIG_R - 2, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
     ctx.fill();
-    ctx.strokeStyle = "#fff7ed";
+    ctx.strokeStyle = rim;
     ctx.lineWidth = 2.2;
     ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawActiveHalo(pt) {
+    var p = worldToScreen(pt.x, pt.y);
+    drawPulseRings(p.x, p.y, HOT, HOT_GLOW);
+    drawHaloCore(p.x, p.y, PURPLE, "#fff7ed");
+    ctx.save();
     ctx.fillStyle = HOT;
     ctx.font = "800 13px ui-monospace, Menlo, monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     ctx.fillText(fmtPt(pt), p.x + 16, p.y - 12);
+    ctx.restore();
+  }
+
+  function drawMetaHalo(Q) {
+    var p = worldToScreen(Q.x, Q.y);
+    drawPulseRings(p.x, p.y, GREEN, GREEN_GLOW);
+    drawHaloCore(p.x, p.y, GREEN, "#f0fdf4");
+    ctx.save();
+    ctx.fillStyle = GREEN;
+    ctx.font = "800 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("L · " + fmtPt(Q), p.x + 16, p.y - 10);
     ctx.restore();
   }
 
@@ -673,7 +703,6 @@
     var a = worldToScreen(pt.x, pt.y);
     var f = worldToScreen(F.x, F.y);
     var cur = worldToScreen(state.hover.x, state.hover.y);
-    var q = worldToScreen(Q.x, Q.y);
     ctx.save();
     ctx.globalAlpha = near ? 1 : 0.42;
     drawDashed(a, f, AMBER, near ? 2.6 : 1.8, [5, 5]);
@@ -683,20 +712,7 @@
       var hEnd = worldToScreen(Q.x, F.y);
       ctx.globalAlpha = 1;
       drawDashed(f, hEnd, GREEN, 2.6, [5, 5]);
-      ctx.save();
-      ctx.strokeStyle = GREEN;
-      ctx.lineWidth = 2.4;
-      ctx.setLineDash([5, 4]);
-      ctx.beginPath();
-      ctx.arc(q.x, q.y, BIG_R + 6, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = GREEN;
-      ctx.font = "800 13px ui-monospace, Menlo, monospace";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "bottom";
-      ctx.fillText("L · " + fmtPt(Q), q.x + 16, q.y - 10);
-      ctx.restore();
+      drawMetaHalo(Q);
     } else {
       drawDashed(f, cur, "#fb923c", 2.0, [4, 5]);
       ctx.save();
@@ -953,7 +969,11 @@
     pivotOf: pivotOf,
     inSnapZone: inSnapZone,
     SNAP_IN: SNAP_IN,
-    SNAP_OUT: SNAP_OUT
+    SNAP_OUT: SNAP_OUT,
+    pulseScale: pulseScale,
+    drawPulseRings: drawPulseRings,
+    drawMetaHalo: drawMetaHalo,
+    drawActiveHalo: drawActiveHalo
   };
 
   startRound(false);
