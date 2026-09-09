@@ -75,11 +75,15 @@ del iframe. Las rutas de nodos se pueden recargar o compartir.
 
 Ver [ADR 0001](docs/adr/0001-contextual-navigation.md) para decisiones y cobertura.
 
-## Lección 200: forma fácil y dictado
+## Lección 200: tabla automática, forma fácil y dictado
+
+Al abrir la lección se propone una función, se cargan los valores de x y se habilita
+la primera respuesta. OK o Enter confirma; el acierto muestra ✓ y prepara la
+siguiente fila. No hay Play. Lento aparece solamente en las etapas gráficas.
 
 «Forma fácil» concentra el plano en el origen, la ordenada y el segundo punto.
 En escritorio reduce el alto del lienzo a un tercio; en móvil conserva 240 px para
-poder manipular las fichas. Reset recupera el plano completo.
+poder manipular las fichas. Reiniciar recupera el plano completo y prepara una nueva tabla.
 
 Debajo de la tabla, «Dictar» escucha una respuesta en español (por ejemplo,
 «menos uno coma cinco»). El número se escribe en la casilla activa: revisarlo y
