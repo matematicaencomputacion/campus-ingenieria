@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "bash serve.sh 3000",
-    "test": "node scripts/smoke-test.mjs && node --test scripts/navigation-unit.test.mjs",
+    "test": "node scripts/smoke-test.mjs && node --test scripts/*unit.test.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
     "test:interaction": "node scripts/interaction-smoke.mjs",
     "test:all": "npm test && npm run test:browser && npm run test:interaction && npm run test:navigation",

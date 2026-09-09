@@ -6,7 +6,7 @@ nodos/topics y un catálogo de lecciones interactivas.
 - index.html, app.js, data.js y styles.css: interfaz y datos del Campus.
 - tools/index.html: catálogo; tools/*.html: lecciones con JavaScript en navegador.
 - tools/lesson-navigation.js: retorno contextual de todas las lecciones y catálogo.
-- tools/lesson-bar.js y tools/lesson-shell.css: 16 barras en flujo normal; las demás lecciones conservan su enlace propio.
+- tools/lesson-bar.js y tools/lesson-shell.css: 18 barras en flujo normal; las demás lecciones conservan su enlace propio.
 - resources/: recursos estáticos. No hay backend de aplicación ni paso de build.
 - scripts/: validadores Node y Playwright; no son código del sitio.
 - .github/workflows/ci.yml: static-check y browser-check; este último ejecuta carga, interacción y navegación.

@@ -160,7 +160,7 @@ test('barras: no tapan títulos en móvil/escritorio y permiten retorno con tecl
   const files = (await readdir(path.join(root, 'tools'))).filter(f => f.endsWith('.html'));
   const shared = [];
   for (const name of files) {
-    if ((await readFile(path.join(root, 'tools', name), 'utf8')).includes('src="lesson-bar.js"')) shared.push(name);
+    if ((await readFile(path.join(root, 'tools', name), 'utf8')).match(/src="lesson-bar\.js(?:\?[^"]*)?"/)) shared.push(name);
   }
   assert.ok(shared.length > 0);
   for (const width of [390, 1440]) {
@@ -181,4 +181,34 @@ test('barras: no tapan títulos en móvil/escritorio y permiten retorno con tecl
   await p.keyboard.press('Enter');
   await p.waitForURL('**/tools/index.html');
   console.log(`Layout: ${shared.length} barras a 390 y 1440px.`);
+});
+
+
+test('bandeja: dos tareas, cambio de K y vuelta desde lección sin storage', async t => {
+  const p = await pageFor(t);
+  await p.addInitScript(() => { Storage.prototype.getItem = Storage.prototype.setItem = Storage.prototype.removeItem = () => { throw new Error('denied'); }; });
+  await p.goto(base + '/tools/index.html?q=seno&cat=trig');
+  const first = await p.locator('.bandeja-done').first().getAttribute('data-id');
+  await p.locator('.bandeja-done').first().click();
+  const second = await p.locator('.bandeja-done').first().getAttribute('data-id');
+  await p.locator('.bandeja-done').first().click();
+  await p.locator('.bandeja-teacher summary').click();
+  await p.locator('[data-bandeja-action="k"][data-k="15"]').click();
+  assert.equal(await p.locator(`.bandeja-done[data-id="${first}"]`).count(), 0);
+  assert.equal(await p.locator(`.bandeja-done[data-id="${second}"]`).count(), 0);
+  await p.locator('.bandeja-link').first().click();
+  await p.locator(returnControl).click();
+  assert.equal(await p.locator('#search-input').inputValue(), 'seno');
+  assert.equal(await p.locator('.chip.active').getAttribute('data-cat'), 'trig');
+});
+
+test('L200 → L201 conserva origen y tiene una sola salida por lección', async t => {
+  const p = await pageFor(t);
+  await p.goto(base + '/tools/index.html?q=Working&cat=todas');
+  await p.locator('.bandeja-link').first().click();
+  assert.equal(await p.locator(returnControl).count(), 1);
+  await p.locator('a.lesson-nav.next').click();
+  assert.equal(await p.locator(returnControl).count(), 1);
+  await p.locator(returnControl).click();
+  assert.equal(await p.locator('#search-input').inputValue(), 'Working');
 });

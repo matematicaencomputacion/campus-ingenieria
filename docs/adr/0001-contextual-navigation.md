@@ -19,20 +19,19 @@ la ruta de retorno. Las rutas de materia admiten un nodo opcional al final:
 ese nodo; cerrar el visor elimina el iframe y enfoca su botón (abriendo el tema
 si estaba plegado). Solo mensajes del iframe actual y mismo origen lo cierran.
 
-Las 16 barras ocupan flujo normal antes del título, muestran texto en móvil y
+Las 18 barras ocupan flujo normal antes del título, muestran texto en móvil y
 controles de al menos 44px. Su stylesheet se carga desde head para evitar una barra sin estilo al iniciar. Se conserva fullscreen y reinicio. Las 171 lecciones
 con enlace propio no reciben una barra adicional.
 
 ## Alternativas
 Una barra universal implicaría reemplazar 171 controles y validar muchos layouts
 sin mejorar el retorno. history.back() depende de historia ajena a la lección.
-Persistir en localStorage mezclaría contextos entre pestañas. Siguiente/anterior
-necesita una secuencia pedagógica y queda fuera de este cambio.
+Persistir en localStorage mezclaría contextos entre pestañas. Se conserva la secuencia siguiente/anterior existente y se propaga su retorno; no se crea una secuencia nueva.
 
 ## Verificación y límites
 npm test incluye unidades de destinos. npm run test:navigation cubre catálogo,
 retornos seguros, subdirectorio, pestañas, recarga, cierre/foco, mensajes ajenos,
-187 salidas y geometría de las 16 barras a 390/1440px; corre en browser-check.
+189 salidas y geometría de las 18 barras a 390/1440px; corre en browser-check.
 Las pruebas de navegación usan Chromium. No prueban corrección matemática ni
 interacciones de todos los juegos. Los otros iframes de herramientas no son el
 visor de materia y mantienen su comportamiento existente.
@@ -48,3 +47,9 @@ ni datos persistidos. Merge y despliegue requieren autorización aparte.
 - El juego inversa-cara produce hashes variables sin editar código: en cinco cargas,
   cambian los anchos de SPAN.chip.coral y SPAN#modeTag. Su modo se elige con Math.random.
   No se usa su hash como prueba de equivalencia CSS; navegación y carga sí están cubiertas.
+
+## Reconciliación con main (2026-09-09)
+L200 y L201 usan la barra compartida sin duplicar el regreso: 189 lecciones,
+171 enlaces propios y 18 barras. Bandeja y secuencia conservan returnTo.
+La bandeja conserva cambios en memoria si falla localStorage durante la sesión.
+Validación: npm run test:all, incluyendo nueve escenarios de navegación y cuatro unidades de bandeja.

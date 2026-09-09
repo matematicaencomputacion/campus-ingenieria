@@ -50,8 +50,24 @@
     }
   }
 
-  global.CampusLessonNavigation = { configureLink: configureLink };
+  function refreshLessonLinks(root) {
+    var current = new URL(global.location.href);
+    var origin = current.pathname === catalogURL.pathname ? current : destination();
+    var returnTo = origin.pathname + origin.search + origin.hash;
+    root.querySelectorAll('.tool-item a, .bandeja-link, a.lesson-nav').forEach(function (link) {
+      var target = new URL(link.href, current);
+      var folder = new URL('.', catalogURL).pathname;
+      var filename = target.pathname.slice(folder.length);
+      if (target.origin !== catalogURL.origin || target.pathname.indexOf(folder) !== 0 ||
+          !/^[a-zA-Z0-9_-]+\.html$/.test(filename) || target.pathname === catalogURL.pathname) return;
+      target.searchParams.set('returnTo', returnTo);
+      link.href = target.href;
+    });
+  }
+
+  global.CampusLessonNavigation = { configureLink: configureLink, refreshLessonLinks: refreshLessonLinks };
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('a[data-campus-return]').forEach(configureLink);
+    refreshLessonLinks(document);
   });
 })(window);

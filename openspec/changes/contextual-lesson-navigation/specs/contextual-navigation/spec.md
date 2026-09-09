@@ -53,3 +53,33 @@ The shared navigation bar SHALL occupy normal document flow, expose its return l
 #### Scenario: Mobile and desktop lesson header
 - **WHEN** a shared-bar lesson is opened at mobile or desktop width
 - **THEN** the bar precedes the heading without overlap and its return action is operable by keyboard.
+
+### Requirement: New lesson entry points preserve the navigation contract
+All lessons SHALL load navigation dependencies and expose exactly one return action,
+including lessons whose shared script has a version query.
+
+#### Scenario: L200 and L201 open
+- **WHEN** either lesson is loaded directly or from the catalog
+- **THEN** navigation initializes without exceptions and there is only one return action.
+
+### Requirement: Task queue and existing lesson sequence preserve origin
+Queue links and existing previous/next lesson links SHALL preserve the validated originating catalog or materia URL.
+
+#### Scenario: Queue round trip after a task update
+- **WHEN** a filtered catalog queue is rerendered and a remaining task is opened
+- **THEN** returning restores the same search and category.
+
+#### Scenario: Existing lesson sequence
+- **WHEN** the student follows the existing L200 to L201 link
+- **THEN** L201 retains the original return destination.
+
+### Requirement: Queue mutations survive storage failures in the session
+The queue SHALL retain consecutive task mutations in memory when browser storage is unavailable or a storage operation fails; reset SHALL clear that in-memory state.
+
+#### Scenario: Two consecutive task completions
+- **WHEN** storage operations throw and two tasks are completed
+- **THEN** both remain completed for the page session and neither reappears after changing K.
+
+#### Scenario: Write failure with stale persisted data
+- **WHEN** an existing saved state is loaded and a later write fails
+- **THEN** subsequent actions use the updated memory state, not the stale persisted state.
