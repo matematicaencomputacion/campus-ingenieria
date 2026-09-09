@@ -9,7 +9,7 @@
     var link = document.createElement('link');
     link.id = 'campus-lesson-shell-css';
     link.rel = 'stylesheet';
-    link.href = 'lesson-shell.css';
+    link.href = 'lesson-shell.css?v=20260909d';
     document.head.appendChild(link);
   }
 
