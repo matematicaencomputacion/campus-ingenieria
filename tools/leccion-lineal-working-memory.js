@@ -431,7 +431,22 @@
   function sizeCanvas() {
     var wrapW = graphWrap.clientWidth || 900;
     var cssH = Math.max(420, Math.min(720, wrapW * 0.74));
-    canvas.width = Math.max(640, Math.round(wrapW));
+    var easy = isEasyPhase();
+    graphWrap.classList.toggle("easy-focused", easy);
+    XMIN = YMIN = -VIEW;
+    XMAX = YMAX = VIEW;
+    if (easy) {
+      // Keep one stable camera for the origin, both points and the h/v corner.
+      var p1 = easyP1();
+      var p2 = easyP2();
+      XMIN = Math.min(0, p2.x) - 1.5;
+      XMAX = Math.max(0, p2.x) + 1.5;
+      YMIN = Math.min(0, p1.y, p2.y) - 2;
+      YMAX = Math.max(0, p1.y, p2.y) + 2;
+      cssH = Math.max(wrapW < 600 ? 240 : 140, cssH / 3);
+    }
+    // Use CSS pixels in easy mode so the mobile tokens retain their hit area.
+    canvas.width = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
     canvas.height = Math.round(cssH);
     sizeConfetti();
   }
@@ -1760,6 +1775,7 @@
     state.phase = "easy-intro";
     setWinChrome(false);
     setEasyBanner(true);
+    sizeCanvas();
     setStepCartel("forma fácil", true);
     setPrompt("<strong>Seguí participando</strong> · forma fácil", "attention");
     renderChips();
@@ -1810,6 +1826,7 @@
     renderTable();
     updateHud();
     setPrompt("Tocá <strong class=\"hl-b\">b</strong>", "attention");
+    sizeCanvas();
     draw();
   }
 
@@ -1875,6 +1892,11 @@
 
   sizeCanvas();
   resetAll(false);
+  window.CampusNumberDictation.attach(
+    tbody,
+    document.getElementById("dictateBtn"),
+    document.getElementById("dictationStatus")
+  );
   tick();
 
   window.__L200 = {
