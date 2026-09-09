@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 200 · Working memory · recta · juego</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --accent: #c084fc; --border: #243044;
+  --ok: #5ad4a8; --bad: #ff7b7b; --amber: #FFBF00; --teal: #34d399;
+  --dot: #a78bfa; --line: #ff6b6b; --xred: #ff5c5c; --hot: #f97316;
+  --row: #121a27; --row-border: #2a3548;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1320px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.12rem; font-weight: 700; letter-spacing: -0.02em; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { color: var(--muted); font-size: 0.86rem; margin-left: 0.45rem; font-weight: 400; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn, a.btn {
+  border: 0; border-radius: 8px; padding: 8px 12px; font: inherit; font-weight: 650;
+  cursor: pointer; background: #2a3c58; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+button.btn.primary { background: var(--mast); color: #0b1018; }
+button.btn.amber { background: var(--amber); color: #0b1018; }
+button.btn.on { background: var(--amber); color: #0b1018; box-shadow: 0 0 10px rgba(255,191,0,.35); }
+button.btn:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.score {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 11px; font-size: 0.82rem; font-weight: 700;
+  background: #121a27; border: 1px solid #2a3548;
+}
+.score.ok { color: var(--ok); border-color: rgba(90,212,168,0.45); }
+.score.bad { color: var(--bad); border-color: rgba(255,123,123,0.45); }
+.score.round { color: var(--mast); border-color: rgba(110,168,254,0.45); }
+.score strong { font-family: ui-monospace, Menlo, monospace; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 8px; }
+.expr {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 4px 4px 2px;
+}
+.expr .box {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 12px; font-family: ui-monospace, Menlo, monospace; font-size: 1rem;
+  min-width: 168px; font-weight: 700;
+}
+.expr .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex-shrink: 0; }
+.prompt {
+  margin: 0; flex: 1 1 220px; min-width: 180px;
+  font-size: 0.88rem; color: var(--muted); line-height: 1.4;
+}
+.prompt strong { color: var(--ink); }
+.prompt .hl { color: var(--amber); }
+.prompt .hl-x { color: var(--xred); }
+.prompt .hl-b { color: var(--dot); }
+.prompt .ok { color: var(--ok); }
+.prompt.attention {
+  background: rgba(210, 180, 100, 0.18);
+  border: 1px solid rgba(255, 191, 0, 0.4);
+  border-radius: 10px; padding: 8px 12px;
+}
+.prompt.ok { color: var(--ok); }
+.prompt.bad { color: #f5e6a8; }
+.main-stage {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 360px);
+  gap: 10px;
+  align-items: stretch;
+}
+@media (max-width: 860px) { .main-stage { grid-template-columns: 1fr; } }
+.graph-wrap { position: relative; min-width: 0; }
+canvas#c {
+  width: 100%; height: auto; display: block; border-radius: 10px;
+  background: var(--canvas-bg); touch-action: none; cursor: crosshair;
+}
+#confetti {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 5; border-radius: 10px; background: transparent;
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 7; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+  border: 0; background: transparent; cursor: pointer; padding: 10px;
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 8px; }
+.lesson-nav.next { right: 8px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.paused-banner, .victory-banner {
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  background: rgba(12,17,24,0.62); border-radius: 10px; z-index: 6;
+  font-size: 1.45rem; font-weight: 800; color: var(--amber); letter-spacing: 0.04em;
+  text-align: center; padding: 16px;
+}
+.paused-banner.on, .victory-banner.on { display: flex; }
+.paused-banner[hidden], .victory-banner[hidden], .badge-cartel[hidden] { display: none !important; }
+.victory-banner { color: var(--ok); pointer-events: auto; }
+.victory-banner .sub-v { font-size: 0.95rem; font-weight: 650; color: var(--muted); letter-spacing: 0; }
+.victory-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.badge-cartel {
+  position: absolute; left: 50%; top: 14%; transform: translateX(-50%);
+  z-index: 8; pointer-events: none;
+  background: rgba(18, 26, 39, 0.94); border: 1px solid rgba(90,212,168,0.55);
+  color: var(--ok); font-weight: 800; font-size: 1.02rem;
+  padding: 10px 18px; border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  opacity: 0; transition: opacity .25s;
+  white-space: nowrap;
+}
+.badge-cartel.on { opacity: 1; }
+.side {
+  display: flex; flex-direction: column; gap: 8px;
+  background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; min-height: 0;
+}
+.side h2 {
+  margin: 0 0 6px; font-size: 0.78rem; color: var(--muted); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.pick-box {
+  background: var(--row); border: 1px solid var(--row-border);
+  border-radius: 10px; padding: 12px 10px 10px;
+}
+.pick-box.off { display: none; }
+.pick-box.compact .chip:not(.on) { display: none; }
+.pick-box .kicker {
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--amber); margin: 0 0 10px;
+}
+.pick-box.done .kicker { color: var(--ok); }
+@keyframes goPulse {
+  0%, 100% { border-color: var(--row-border); box-shadow: none; }
+  10%, 40%, 70% {
+    border-color: #FFBF00;
+    box-shadow: 0 0 18px rgba(255, 191, 0, 0.5);
+  }
+}
+.pick-box.go {
+  animation: goPulse 1.15s ease-in-out 2;
+  border-color: rgba(255, 191, 0, 0.55);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-family: ui-monospace, Menlo, monospace; font-size: 1.02rem; font-weight: 800;
+  padding: 10px 14px; min-width: 2.8em; border-radius: 999px;
+  border: 1px solid #2a3548; background: #121a27;
+  color: var(--ink); cursor: pointer;
+}
+.chip:hover { border-color: var(--mast); color: var(--mast); }
+.chip.on { background: rgba(96,165,250,0.16); border-color: var(--mast); color: var(--mast); }
+.chip.b-on { background: rgba(167,139,250,0.18); border-color: var(--dot); color: var(--dot); }
+.chip.m-on { background: rgba(244,114,182,0.16); border-color: #f472b6; color: #f9a8d4; }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.pick-box.compact .chip.on:disabled { opacity: 1; cursor: default; }
+.hint:empty { display: none; }
+.wm-table {
+  width: 100%; border-collapse: collapse;
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.82rem;
+}
+.wm-table th, .wm-table td {
+  border-bottom: 1px solid var(--row-border); padding: 7px 6px; text-align: center;
+  vertical-align: middle;
+}
+.wm-table th {
+  color: var(--muted); font-weight: 700; font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.04em; background: #0b1220;
+}
+.wm-table td.x { color: var(--xred); font-weight: 800; }
+.wm-table tr.lit td.x {
+  color: #fecaca;
+  text-shadow: 0 0 10px rgba(255,92,92,0.65);
+}
+.wm-table tr.lit td { background: rgba(255, 92, 92, 0.08); }
+.wm-table tr.ready-place td { background: rgba(249, 115, 22, 0.10); }
+.wm-table .work { font-size: 0.78rem; font-weight: 700; color: #cbd5e1; white-space: nowrap; }
+.wm-table .work .x-red { color: var(--xred); font-weight: 800; }
+.wm-table .work .muted { color: #94a3b8; }
+.table-wrap.off { display: none; }
+.fx-input {
+  width: 5em; padding: 8px 8px; border-radius: 10px; text-align: center;
+  font: inherit; font-weight: 800; font-size: 1.05rem; color: var(--ink);
+  background: #0b1220; border: 1px solid #3b4a63;
+}
+.fx-input:focus { outline: none; border-color: var(--mast); box-shadow: 0 0 0 3px rgba(96,165,250,0.25); }
+.fx-input:disabled { opacity: 0.85; }
+.fx-input.ok { border-color: var(--ok); color: var(--ok); }
+.fx-input.bad { border-color: var(--bad); color: var(--bad); }
+@keyframes pipFlash {
+  0%, 100% { box-shadow: none; border-color: #3b4a63; background: #0b1220; }
+  8%, 38%, 68% {
+    background: rgba(255, 191, 0, 0.28);
+    border-color: #FFBF00;
+    box-shadow: 0 0 16px rgba(255, 191, 0, 0.55);
+  }
+  23%, 53%, 83% {
+    background: rgba(210, 180, 100, 0.16);
+    border-color: rgba(255, 191, 0, 0.5);
+  }
+}
+.fx-input.pip { animation: pipFlash 1.15s ease-in-out 1; }
+.mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.4em; height: 1.4em; border-radius: 50%; font-weight: 900; font-size: 0.85rem;
+}
+.mark.ok { color: #052e1c; background: var(--ok); }
+.mark.bad { color: #3f0d0d; background: var(--bad); }
+.mark.empty { color: #4b5d7a; background: transparent; }
+.dock-hint {
+  margin: 10px 0 0; font-size: 0.86rem; color: var(--muted); line-height: 1.35; font-weight: 650;
+}
+.dock-hint .dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--dot); margin-right: 4px; vertical-align: middle;
+  box-shadow: 0 0 0 3px rgba(167,139,250,0.28);
+}
+.win-banner {
+  display: none; margin-top: 8px; padding: 12px 16px; border-radius: 10px;
+  background: rgba(90,212,168,0.14); border: 1px solid rgba(90,212,168,0.5);
+  color: var(--ok); font-weight: 800; font-size: 1.05rem;
+  align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.win-banner.on { display: flex; }
+.bottom-bar {
+  margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px 12px;
+  align-items: center; justify-content: space-between;
+}
+.hint { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
+.sound-meter {
+  margin: 0; display: flex; align-items: flex-end; justify-content: flex-end;
+  gap: 5px; min-height: 28px; padding: 6px 10px;
+  color: var(--muted); font-size: 0.8rem; font-weight: 700;
+  user-select: none;
+  background: #121a27; border: 1px solid #2a3548; border-radius: 999px;
+  width: fit-content; margin-left: auto;
+}
+.sound-meter-label { margin-right: 6px; line-height: 20px; opacity: 0.9; }
+.sound-meter .sound-bar {
+  display: inline-block; width: 5px; height: 8px; border-radius: 2px;
+  background: #3b4a63; transition: height .08s ease, background .08s ease;
+}
+.sound-meter.live .sound-bar { background: #FFBF00; box-shadow: 0 0 6px rgba(255,191,0,.45); }
+.sound-meter.live.ok .sound-bar { background: #5ad4a8; box-shadow: 0 0 6px rgba(90,212,168,.4); }
+.sound-meter.live.bad .sound-bar { background: #ff7b7b; box-shadow: 0 0 6px rgba(255,123,123,.4); }
+.sound-meter-level { margin-left: 6px; min-width: 4.5em; text-align: left; line-height: 18px; }
+.sound-meter.live .sound-meter-level { color: var(--ink); }
+a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
+@keyframes flashOk { 0%,100% { box-shadow: none; } 30%,70% { box-shadow: inset 0 0 0 3px rgba(90,212,168,.7); } }
+@keyframes flashBad { 0%,100% { box-shadow: none; } 30%,70% { box-shadow: inset 0 0 0 3px rgba(255,123,123,.7); } }
+.graph-wrap.flash-ok { animation: flashOk .45s ease; }
+.graph-wrap.flash-bad { animation: flashBad .45s ease; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 200</span> · Working memory
+        <span class="sub">recta · juego</span>
+      </h1>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="playBtn" disabled>▶ Play</button>
+      <button type="button" class="btn" id="resetBtn">Reset</button>
+      <button type="button" class="btn" id="slowBtn" aria-pressed="false" title="Pausas más largas y pip más lento">Lento</button>
+      <span class="score ok" id="scoreOk">Aciertos <strong>0</strong></span>
+      <span class="score bad" id="scoreBad">Errores <strong>0</strong></span>
+      <span class="score round" id="scoreRound">Fase <strong>—</strong></span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="expr">
+      <span class="dot" aria-hidden="true"></span>
+      <div class="box" id="fnBox"><span style="color:var(--muted)">f(x) = ?</span></div>
+      <p class="prompt attention" id="prompt">Tocá <strong class="hl-b">b</strong></p>
+    </div>
+
+    <div class="main-stage">
+      <div class="graph-wrap" id="graphWrap">
+        <a class="lesson-nav prev" href="leccion-inversa-cara-juego.html" title="Lección 183: Inversa · sonrisa / cara triste · juego" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-economia-enfoque-play.html" title="Lección 160: Economía · mapa UDL · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <div class="paused-banner" id="pausedBanner" hidden>PAUSA</div>
+        <div class="victory-banner" id="victoryBanner" hidden>
+          <div>¡Ganador!</div>
+          <div class="sub-v">Lograste graficar la función</div>
+          <div class="victory-actions">
+            <button type="button" class="btn primary" id="victoryContinue">Seguir jugando</button>
+            <button type="button" class="btn amber" id="victoryRestart">Reiniciar</button>
+          </div>
+        </div>
+        <div class="badge-cartel" id="badgeCartel" hidden>Lograste graficar la función</div>
+        <canvas id="c" width="900" height="680" aria-label="Plano · lineal · working memory"></canvas>
+        <canvas id="confetti" width="900" height="680" aria-hidden="true"></canvas>
+      </div>
+
+      <aside class="side" aria-label="Memoria de trabajo">
+        <div class="pick-box go" id="pickBBox">
+          <p class="kicker" id="pickBKicker">b</p>
+          <div class="chips" id="bChips" role="group" aria-label="Elegir b"></div>
+        </div>
+        <div class="pick-box off" id="pickMBox">
+          <p class="kicker" id="pickMKicker">m</p>
+          <div class="chips" id="mChips" role="group" aria-label="Elegir m"></div>
+        </div>
+        <div class="table-wrap off" id="tableWrap">
+          <h2>Tabla</h2>
+          <table class="wm-table">
+            <thead>
+              <tr>
+                <th>x</th>
+                <th>formato</th>
+                <th>f(x)</th>
+                <th>✓</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+          <p class="dock-hint" id="dockHint">Escribí f(x)</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="win-banner" id="winBanner">
+      <span>Lograste graficar la función.</span>
+      <button type="button" class="btn amber" id="winRestartBtn">Reiniciar</button>
+    </div>
+    <div class="bottom-bar">
+      <p class="hint" id="liveHint"></p>
+      <div class="sound-meter campus-gk-meter" id="soundMeter" aria-live="polite" title="Indicador de sonido del juego">
+        <span class="sound-meter-label" aria-hidden="true">♪</span>
+        <span class="sound-bar" data-i="0"></span>
+        <span class="sound-bar" data-i="1"></span>
+        <span class="sound-bar" data-i="2"></span>
+        <span class="sound-bar" data-i="3"></span>
+        <span class="sound-bar" data-i="4"></span>
+        <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="game-kit.js?v=20260909"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909d"></script>
+<script src="lesson-bar.js" defer></script>
+</body>
+</html>
