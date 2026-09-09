@@ -5,7 +5,7 @@ Compactar solo las fases easy. Conservar matemáticas y gestos existentes.
 ## Decisions
 - Límites derivados de origen, P1 y P2 con margen para anillos, etiquetas y guías. Mantener el mismo encuadre durante todas las fases easy evita saltos al arrastrar.
 - Alto normal / 3 en escritorio; mínimo de 240 px en móvil. Usar ancho real en easy para no reducir los blancos táctiles por escalado.
-- Tras #249 la unidad compacta era 1,5× la del plano −12..12. El usuario pidió el triple de esa unidad: `EASY_ZOOM = 4.5`, `sx = sy`. Si el lienzo no entra, recortar márgenes (no estirar ejes).
+- Tras #249 la unidad compacta era 1,5× la del plano −12..12. El usuario pidió el triple de esa unidad: `EASY_ZOOM = 4.5`, `sx = sy`. Luego pidió el doble del encuadre 3× en pantalla: `EASY_ZOOM = 9` (6× vs la unidad 1,5× original). Si el lienzo no entra, recortar márgenes (no estirar ejes).
 - Consignas en flujo sobre el lienzo y navegación en esa cabecera. Volver al tamaño y límites originales en Reset.
 - Actualizar versión del JS para invalidar caché. Pruebas de todas las combinaciones b/m, reset, resize y arrastre real en Chromium.
 ## Risks / Trade-offs
