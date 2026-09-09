@@ -13,6 +13,7 @@
   var RUN = "#60a5fa";
   var RISE = "#34d399";
   var PAD = { l: 48, r: 36, t: 28, b: 42 };
+  var viewPad = { l: PAD.l, r: PAD.r, t: PAD.t, b: PAD.b };
   var VIEW = 12;
   var XMIN = -VIEW;
   var XMAX = VIEW;
@@ -362,18 +363,18 @@
   }
 
   function worldToScreen(x, y) {
-    var w = canvas.width - PAD.l - PAD.r;
-    var h = canvas.height - PAD.t - PAD.b;
-    var sx = PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w;
-    var sy = PAD.t + ((YMAX - y) / (YMAX - YMIN)) * h;
+    var w = canvas.width - viewPad.l - viewPad.r;
+    var h = canvas.height - viewPad.t - viewPad.b;
+    var sx = viewPad.l + ((x - XMIN) / (XMAX - XMIN)) * w;
+    var sy = viewPad.t + ((YMAX - y) / (YMAX - YMIN)) * h;
     return { x: sx, y: sy };
   }
 
   function screenToWorld(px, py) {
-    var w = canvas.width - PAD.l - PAD.r;
-    var h = canvas.height - PAD.t - PAD.b;
-    var x = XMIN + ((px - PAD.l) / w) * (XMAX - XMIN);
-    var y = YMAX - ((py - PAD.t) / h) * (YMAX - YMIN);
+    var w = canvas.width - viewPad.l - viewPad.r;
+    var h = canvas.height - viewPad.t - viewPad.b;
+    var x = XMIN + ((px - viewPad.l) / w) * (XMAX - XMIN);
+    var y = YMAX - ((py - viewPad.t) / h) * (YMAX - YMIN);
     return { x: x, y: y };
   }
 
@@ -446,16 +447,22 @@
   function applyIsotropicView(bounds, plotW, plotH) {
     var needW = Math.max(bounds.xmax - bounds.xmin, 1);
     var needH = Math.max(bounds.ymax - bounds.ymin, 1);
-    var s = Math.min(plotW / needW, plotH / needH);
+    var span = Math.max(needW, needH);
+    var s = Math.min(plotW, plotH) / span;
     if (!(s > 0) || !isFinite(s)) s = 1;
-    var worldW = plotW / s;
-    var worldH = plotH / s;
+    var used = span * s;
+    var extraX = Math.max(0, plotW - used);
+    var extraY = Math.max(0, plotH - used);
+    viewPad.l = PAD.l + extraX / 2;
+    viewPad.r = PAD.r + extraX / 2;
+    viewPad.t = PAD.t + extraY / 2;
+    viewPad.b = PAD.b + extraY / 2;
     var cx = (bounds.xmin + bounds.xmax) / 2;
     var cy = (bounds.ymin + bounds.ymax) / 2;
-    XMIN = cx - worldW / 2;
-    XMAX = cx + worldW / 2;
-    YMIN = cy - worldH / 2;
-    YMAX = cy + worldH / 2;
+    XMIN = cx - span / 2;
+    XMAX = cx + span / 2;
+    YMIN = cy - span / 2;
+    YMAX = cy + span / 2;
   }
 
   function sizeCanvas() {
@@ -466,6 +473,10 @@
     graphWrap.classList.toggle("easy-focused", easy);
     XMIN = YMIN = -VIEW;
     XMAX = YMAX = VIEW;
+    viewPad.l = PAD.l;
+    viewPad.r = PAD.r;
+    viewPad.t = PAD.t;
+    viewPad.b = PAD.b;
     // Use CSS pixels in easy mode so the mobile tokens retain their hit area.
     var canvasW = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
     if (easy) {
@@ -474,10 +485,12 @@
       var plotW = Math.max(1, canvasW - PAD.l - PAD.r);
       var normalPlotH = Math.max(1, normalH - PAD.t - PAD.b);
       var originalUnit = Math.min(plotW, normalPlotH) / (2 * VIEW);
+      var needW = Math.max(bounds.xmax - bounds.xmin, 1);
       var needH = Math.max(bounds.ymax - bounds.ymin, 1);
+      var span = Math.max(needW, needH);
       var targetUnit = originalUnit * EASY_ZOOM;
       var floorH = Math.max(wrapW < 600 ? 240 : 140, normalH / 3);
-      cssH = Math.max(floorH, Math.round(needH * targetUnit + PAD.t + PAD.b));
+      cssH = Math.max(floorH, Math.round(span * targetUnit + PAD.t + PAD.b));
       cssH = Math.min(cssH, normalH);
       applyIsotropicView(bounds, plotW, Math.max(1, cssH - PAD.t - PAD.b));
     }
@@ -791,10 +804,10 @@
     ctx.strokeStyle = "#64748b";
     ctx.lineWidth = 1.6;
     ctx.beginPath();
-    ctx.moveTo(PAD.l, ox.y);
-    ctx.lineTo(canvas.width - PAD.r, ox.y);
-    ctx.moveTo(ox.x, PAD.t);
-    ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.moveTo(viewPad.l, ox.y);
+    ctx.lineTo(canvas.width - viewPad.r, ox.y);
+    ctx.moveTo(ox.x, viewPad.t);
+    ctx.lineTo(ox.x, canvas.height - viewPad.b);
     ctx.stroke();
     ctx.fillStyle = MUTED;
     ctx.font = "600 12px ui-monospace, Menlo, monospace";
@@ -831,10 +844,10 @@
     ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
-    ctx.fillText("x", canvas.width - PAD.r - 12, ox.y - 8);
+    ctx.fillText("x", canvas.width - viewPad.r - 12, ox.y - 8);
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("y", ox.x + 10, PAD.t + 4);
+    ctx.fillText("y", ox.x + 10, viewPad.t + 4);
   }
 
   function drawLine() {
@@ -1015,8 +1028,8 @@
     ctx.strokeStyle = "rgba(167,139,250,0.55)";
     ctx.lineWidth = 3.2;
     ctx.beginPath();
-    ctx.moveTo(ox.x, PAD.t);
-    ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.moveTo(ox.x, viewPad.t);
+    ctx.lineTo(ox.x, canvas.height - viewPad.b);
     ctx.stroke();
     ctx.restore();
   }

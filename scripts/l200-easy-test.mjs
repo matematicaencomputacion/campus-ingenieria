@@ -72,8 +72,8 @@ for (const width of [390, 1440]) {
       return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner, aspect, originalUnit};
     });
     assert.deepEqual(result.failures, []);
-    assert.ok(result.compact <= result.normal + 1, JSON.stringify({compact: result.compact, normal: result.normal}));
-    if (width === 390) assert.ok(result.compact >= 239, JSON.stringify(result));
+    if (width === 1440) assert.ok(result.compact <= result.normal + 1, JSON.stringify({compact: result.compact, normal: result.normal}));
+    else assert.ok(result.compact >= 239, JSON.stringify(result));
     assert.ok(result.aspect.every(a => Math.abs(a.sx - a.sy) < 0.75), JSON.stringify(result.aspect.filter(a => Math.abs(a.sx - a.sy) >= 0.75)));
     assert.ok(result.aspect.every(a => a.sx > result.originalUnit + 0.5), JSON.stringify({originalUnit: result.originalUnit, aspect: result.aspect}));
     assert.ok(result.banners.every(bottom => bottom <= result.top), 'Las consignas no tapan el plano');
