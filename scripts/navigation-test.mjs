@@ -206,9 +206,14 @@ test('L200 → L201 conserva origen y tiene una sola salida por lección', async
   const p = await pageFor(t);
   await p.goto(base + '/tools/index.html?q=Working&cat=todas');
   await p.locator('.bandeja-link').first().click();
+  await p.waitForURL(/leccion-lineal-working-memory\.html/);
+  await p.locator(returnControl).waitFor({ state: 'visible' });
   assert.equal(await p.locator(returnControl).count(), 1);
   await p.locator('a.lesson-nav.next').click();
+  await p.waitForURL(/leccion-enfoque-formas-recta\.html/);
+  await p.locator(returnControl).waitFor({ state: 'visible' });
   assert.equal(await p.locator(returnControl).count(), 1);
   await p.locator(returnControl).click();
+  await p.waitForURL(/tools\/index\.html/);
   assert.equal(await p.locator('#search-input').inputValue(), 'Working');
 });
