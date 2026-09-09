@@ -110,6 +110,7 @@ canvas#c {
   text-align: center; padding: 16px;
 }
 .paused-banner.on, .victory-banner.on { display: flex; }
+.paused-banner[hidden], .victory-banner[hidden], .badge-cartel[hidden] { display: none !important; }
 .victory-banner { color: var(--ok); pointer-events: auto; }
 .victory-banner .sub-v { font-size: 0.95rem; font-weight: 650; color: var(--muted); letter-spacing: 0; }
 .victory-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
@@ -279,8 +280,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <div class="graph-wrap" id="graphWrap">
         <a class="lesson-nav prev" href="leccion-inversa-cara-juego.html" title="Lección 183: Inversa · sonrisa / cara triste · juego" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
         <a class="lesson-nav next" href="leccion-economia-enfoque-play.html" title="Lección 160: Economía · mapa UDL · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
-        <div class="paused-banner" id="pausedBanner">PAUSA</div>
-        <div class="victory-banner" id="victoryBanner">
+        <div class="paused-banner" id="pausedBanner" hidden>PAUSA</div>
+        <div class="victory-banner" id="victoryBanner" hidden>
           <div>¡Ganador!</div>
           <div class="sub-v">Lograste graficar la función</div>
           <div class="victory-actions">
@@ -288,7 +289,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
             <button type="button" class="btn amber" id="victoryRestart">Reiniciar</button>
           </div>
         </div>
-        <div class="badge-cartel" id="badgeCartel">Lograste graficar la función</div>
+        <div class="badge-cartel" id="badgeCartel" hidden>Lograste graficar la función</div>
         <canvas id="c" width="900" height="680" aria-label="Plano · lineal · working memory"></canvas>
         <canvas id="confetti" width="900" height="680" aria-hidden="true"></canvas>
       </div>
@@ -339,7 +340,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
   </div>
 </div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="leccion-lineal-working-memory.js?v=20260909"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909b"></script>
 <script src="lesson-bar.js" defer></script>
 </body>
 </html>

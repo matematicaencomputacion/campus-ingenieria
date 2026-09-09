@@ -421,6 +421,15 @@
         markBad.className = "mark bad";
         markBad.textContent = "✗";
         tdM.appendChild(markBad);
+        if (isFill) {
+          var retry = document.createElement("button");
+          retry.type = "button";
+          retry.className = "chip";
+          retry.textContent = "OK";
+          retry.setAttribute("aria-label", "Reintentar f(x)");
+          retry.addEventListener("click", function () { submitFill(i, input.value); });
+          tdM.appendChild(retry);
+        }
       } else if (isFill) {
         var go = document.createElement("button");
         go.type = "button";
@@ -466,6 +475,8 @@
       dockHint.textContent = "Recta completa. Reset o Seguir jugando para otra f.";
     } else if (state.phase === "ready") {
       dockHint.textContent = "Play enciende la tabla de memoria de trabajo.";
+    } else if (state.phase === "pick-m") {
+      dockHint.textContent = "Ahora la pendiente m.";
     } else {
       dockHint.textContent = "Primero b, después m. Play enciende la tabla.";
     }
@@ -718,6 +729,16 @@
     draw();
   }
 
+  function setWinChrome(on) {
+    victoryBanner.classList.toggle("on", !!on);
+    victoryBanner.hidden = !on;
+    winBanner.classList.toggle("on", !!on);
+    badgeCartel.classList.toggle("on", !!on);
+    badgeCartel.hidden = !on;
+    pausedBanner.hidden = !state.paused;
+    pausedBanner.classList.toggle("on", !!state.paused);
+  }
+
   function startFill() {
     if (state.phase !== "ready") return;
     armAudio();
@@ -726,9 +747,7 @@
     state.pipedFor = -1;
     state.phase = "fill";
     state.won = false;
-    victoryBanner.classList.remove("on");
-    winBanner.classList.remove("on");
-    badgeCartel.classList.remove("on");
+    setWinChrome(false);
     renderChips();
     renderTable();
     updateHud();
@@ -943,9 +962,7 @@
     state.locked = true;
     state.hover = null;
     state.drag = null;
-    victoryBanner.classList.add("on");
-    winBanner.classList.add("on");
-    badgeCartel.classList.add("on");
+    setWinChrome(true);
     burstConfetti();
     if (GK.playExplosion) GK.playExplosion();
     else if (GK.playOkChime) GK.playOkChime();
@@ -975,9 +992,7 @@
       state.round = 1;
     }
     pausedBanner.classList.remove("on");
-    victoryBanner.classList.remove("on");
-    winBanner.classList.remove("on");
-    badgeCartel.classList.remove("on");
+    setWinChrome(false);
     renderChips();
     renderTable();
     updateHud();
