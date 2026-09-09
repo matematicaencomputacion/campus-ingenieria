@@ -470,9 +470,15 @@
     el.classList.add("go");
   }
 
-  function vhHTML(vh) {
-    if (!vh) return "v/h";
-    return '<span class="hl-v">' + fmtNum(vh.v) + '</span>/<span class="hl-h">' + fmtNum(vh.h) + "</span>";
+  function fracHTML(num, den) {
+    return '<span class="frac" title="v/h"><span class="num">' + num +
+      '</span><span class="den">' + den + "</span></span>";
+  }
+
+  function mEqHTML(vh) {
+    var num = vh ? fmtNum(vh.v) : "v";
+    var den = vh ? fmtNum(vh.h) : "h";
+    return '<span class="m-eq">m = ' + fracHTML(num, den) + "</span>";
   }
 
   function dirCopy(vh) {
@@ -501,7 +507,7 @@
       html += "P1 = (0, " + fmtNum(p1.y) + ")";
     }
     if (vh) {
-      html += (html ? "<br>" : "") + "pendiente <strong>" + vhHTML(vh) + "</strong>";
+      html += (html ? "<br>" : "") + mEqHTML(vh);
     }
     if (p2) {
       html += "<br>P2 = (" + fmtNum(p2.x) + ", " + fmtNum(p2.y) + ")";
@@ -515,9 +521,9 @@
     easyBanner.hidden = !on;
   }
 
-  function setStepCartel(text, on) {
+  function setStepCartel(html, on) {
     if (!stepCartel) return;
-    if (text) stepCartel.textContent = text;
+    if (html) stepCartel.innerHTML = html;
     stepCartel.classList.toggle("on", !!on);
     stepCartel.hidden = !on;
   }
@@ -560,7 +566,11 @@
     if (tableWrap) tableWrap.classList.toggle("off", !boardOn);
     if (easyBox) easyBox.classList.toggle("off", !easyOn);
     pickBKicker.textContent = (pickingM || easyOn) && state.b != null ? "b = " + fmtNum(state.b) : "b";
-    pickMKicker.textContent = easyOn && state.m != null ? "m = " + fmtNum(state.m) : "m";
+    if (easyOn && state.m != null) {
+      pickMKicker.innerHTML = mEqHTML(state.vh || slopeToVH(state.m));
+    } else {
+      pickMKicker.textContent = "m";
+    }
     renderEasyPanel();
   }
 
@@ -689,7 +699,7 @@
     } else if (state.phase === "easy-b") {
       dockHint.innerHTML = '<span class="dot"></span>Ordenada · eje Y';
     } else if (state.phase === "easy-m") {
-      dockHint.innerHTML = '<span class="dot"></span>Pendiente v/h';
+      dockHint.innerHTML = '<span class="dot"></span>' + mEqHTML(state.vh);
     } else if (state.phase === "easy-line") {
       dockHint.textContent = "Mové la recta";
     } else if (state.phase === "win") {
@@ -1552,10 +1562,9 @@
 
   function promptEasySlope() {
     var vh = state.vh || slopeToVH(state.m);
-    setStepCartel("Pendiente v/h = " + fmtNum(vh.v) + "/" + fmtNum(vh.h), true);
+    setStepCartel(mEqHTML(vh), true);
     setPrompt(
-      "Mové <strong>" + dirCopy(vh) + "</strong> · pendiente <strong class=\"hl\">" +
-      fmtNum(vh.v) + "/" + fmtNum(vh.h) + "</strong>",
+      "Mové <strong>" + dirCopy(vh) + "</strong> · " + mEqHTML(vh),
       "attention"
     );
   }
@@ -1652,10 +1661,10 @@
 
   function setVictoryCopy(title, sub, continueLabel, badge, winText) {
     if (victoryTitle) victoryTitle.textContent = title;
-    if (victorySub) victorySub.textContent = sub;
+    if (victorySub) victorySub.innerHTML = sub;
     if (victoryContinue) victoryContinue.textContent = continueLabel;
     if (badgeCartel && badge) badgeCartel.textContent = badge;
-    if (winBannerText && winText) winBannerText.textContent = winText;
+    if (winBannerText && winText) winBannerText.innerHTML = winText;
   }
 
   function showVictory() {
@@ -1692,17 +1701,17 @@
     endDragVisual();
     setVictoryCopy(
       "¡Ganador!",
-      "Lograste la forma fácil · pendiente v/h",
+      "Lograste la forma fácil · " + mEqHTML(state.vh),
       "Seguir jugando",
       "Lograste la forma fácil",
-      "Lograste graficar con pendiente v/h."
+      "Lograste graficar con " + mEqHTML(state.vh) + "."
     );
     setStepCartel("", false);
     setWinChrome(true);
     burstConfetti();
     if (GK.playExplosion) GK.playExplosion();
     else if (GK.playOkChime) GK.playOkChime();
-    setPrompt("<strong class=\"ok\">Lograste la forma fácil · pendiente v/h</strong>", "ok");
+    setPrompt("<strong class=\"ok\">Lograste la forma fácil · " + mEqHTML(state.vh) + "</strong>", "ok");
     updateHud();
     renderChips();
     draw();

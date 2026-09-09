@@ -154,6 +154,18 @@ canvas#c {
 .easy-copy strong { color: var(--ink); }
 .easy-copy .hl-v { color: #34d399; }
 .easy-copy .hl-h { color: #60a5fa; }
+.frac {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  vertical-align: middle; line-height: 1.05; margin: 0 0.18em; font-family: ui-monospace, Menlo, monospace;
+  font-weight: 800;
+}
+.frac .num, .frac .den {
+  display: block; padding: 0 0.22em; font-size: 0.92em;
+}
+.frac .num { color: #34d399; border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.frac .den { color: #60a5fa; padding-top: 1px; }
+.prompt .frac, .easy-copy .frac, .step-cartel .frac, .dock-hint .frac, .pick-box .kicker .frac { font-size: 1em; }
+.m-eq { white-space: nowrap; }
 .side {
   display: flex; flex-direction: column; gap: 8px;
   background: #0f1623; border: 1px solid var(--border); border-radius: 10px;
@@ -170,8 +182,9 @@ canvas#c {
 .pick-box.off { display: none; }
 .pick-box.compact .chip:not(.on) { display: none; }
 .pick-box .kicker {
-  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 0.82rem; font-weight: 800; letter-spacing: 0.02em;
   color: var(--amber); margin: 0 0 10px;
+  font-family: ui-monospace, Menlo, monospace;
 }
 .pick-box.done .kicker { color: var(--ok); }
 @keyframes goPulse {
@@ -413,7 +426,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 </div>
 <div id="l200DragGhost" class="l200-drag-ghost" hidden aria-hidden="true"></div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="leccion-lineal-working-memory.js?v=20260909h"></script>
+<script src="leccion-lineal-working-memory.js?v=20260909i"></script>
 <script src="lesson-bar.js?v=20260909" defer></script>
 </body>
 </html>
