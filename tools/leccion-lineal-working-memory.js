@@ -1,4 +1,4 @@
-/*! Campus Ingeniería · L200 · lineal working memory (b → m → tabla → graficar). */
+/*! Campus Ingeniería · L200 · lineal working memory (b → m → tabla → graficar → forma fácil). */
 (function () {
   "use strict";
 
@@ -10,6 +10,8 @@
   var XRED = "#ff5c5c";
   var MUTED = "#8b9bb4";
   var OK = "#5ad4a8";
+  var RUN = "#60a5fa";
+  var RISE = "#34d399";
   var PAD = { l: 48, r: 36, t: 28, b: 42 };
   var VIEW = 12;
   var XMIN = -VIEW;
@@ -51,7 +53,15 @@
   var pausedBanner = document.getElementById("pausedBanner");
   var victoryContinue = document.getElementById("victoryContinue");
   var victoryRestart = document.getElementById("victoryRestart");
+  var victoryTitle = document.getElementById("victoryTitle");
+  var victorySub = document.getElementById("victorySub");
   var winRestartBtn = document.getElementById("winRestartBtn");
+  var winBannerText = document.getElementById("winBannerText");
+  var easyBanner = document.getElementById("easyBanner");
+  var stepCartel = document.getElementById("stepCartel");
+  var easyBox = document.getElementById("easyBox");
+  var easyKicker = document.getElementById("easyKicker");
+  var easyCopy = document.getElementById("easyCopy");
   var ghostEl = document.getElementById("l200DragGhost");
   var dragListen = false;
 
@@ -78,7 +88,20 @@
     speedFactor: 1,
     paused: false,
     won: false,
-    locked: false
+    locked: false,
+    easyStarted: false,
+    easyP1: false,
+    easyP2: false,
+    vh: null,
+    lineAngle: 0,
+    linePt: null,
+    linePivot: null,
+    hLearned: false,
+    vLearned: false,
+    hFlash: null,
+    vFlash: null,
+    bothFlash: null,
+    bothNear: false
   };
 
   function later(ms, fn) {
@@ -129,6 +152,88 @@
     return Math.abs(a - b) < 1e-6;
   }
 
+  function gcdInt(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b) {
+      var t = a % b;
+      a = b;
+      b = t;
+    }
+    return a || 1;
+  }
+
+  function slopeToVH(m) {
+    if (m == null || !isFinite(m) || Math.abs(m) < 1e-9) return { v: 0, h: 2 };
+    var h;
+    var v;
+    for (h = 1; h <= 8; h++) {
+      v = m * h;
+      var vr = Math.round(v);
+      if (Math.abs(v - vr) < 1e-6) {
+        var g = gcdInt(vr, h);
+        return { v: vr / g, h: h / g };
+      }
+    }
+    var best = { v: 1, h: 1, err: Infinity };
+    for (h = 1; h <= 6; h++) {
+      v = Math.round(m * h);
+      if (v === 0) continue;
+      var err = Math.abs(m - v / h);
+      if (err < best.err) best = { v: v, h: h, err: err };
+    }
+    var g2 = gcdInt(best.v, best.h);
+    return { v: best.v / g2, h: best.h / g2 };
+  }
+
+  function easyP1() {
+    return { x: 0, y: state.b };
+  }
+
+  function easyP2() {
+    var vh = state.vh || slopeToVH(state.m);
+    return { x: vh.h, y: state.b + vh.v };
+  }
+
+  function isEasyPhase() {
+    switch (state.phase) {
+      case "easy-intro":
+      case "easy-b":
+      case "easy-m":
+      case "easy-line":
+      case "easy-win":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  function isTokenPhase() {
+    return state.phase === "place" || state.phase === "easy-b" || state.phase === "easy-m";
+  }
+
+  function nowMs() {
+    return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+  }
+
+  function startFlash(times) {
+    return { start: nowMs(), times: times, period: 280 };
+  }
+
+  function flashAlpha(flash, idle) {
+    if (!flash || flash.start == null) return idle;
+    var elapsed = nowMs() - flash.start;
+    var total = flash.period * flash.times;
+    if (elapsed >= total) return idle;
+    var t = (elapsed % flash.period) / flash.period;
+    return t < 0.45 ? 1 : 0.12;
+  }
+
+  function flashActive(flash) {
+    if (!flash || flash.start == null) return false;
+    return (nowMs() - flash.start) < (flash.period * flash.times);
+  }
+
   function f(x) {
     return state.m * x + state.b;
   }
@@ -165,6 +270,11 @@
       case "fill": return "tabla";
       case "place": return "gráfica";
       case "win": return "listo";
+      case "easy-intro": return "forma fácil";
+      case "easy-b": return "eje Y";
+      case "easy-m": return "v/h";
+      case "easy-line": return "recta";
+      case "easy-win": return "listo";
       default: {
         var _ex = state.phase;
         void _ex;
@@ -220,7 +330,8 @@
     var gen = state.chimeGen;
     function ping() {
       if (gen !== state.chimeGen) return;
-      if (!state.near || state.won || state.paused || state.locked) return;
+      if (!state.near || state.paused || state.locked) return;
+      if (state.won && state.phase !== "easy-line") return;
       if (GK.playOkChime) GK.playOkChime();
       if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
     }
@@ -286,7 +397,7 @@
 
   function syncGhostOverlay() {
     if (!ghostEl) return;
-    if (!state.drag || !state.dragClient) {
+    if (!state.drag || !state.dragClient || state.phase === "easy-line") {
       ghostEl.hidden = true;
       return;
     }
@@ -359,9 +470,68 @@
     el.classList.add("go");
   }
 
+  function fracHTML(num, den) {
+    return '<span class="frac" title="v/h"><span class="num">' + num +
+      '</span><span class="den">' + den + "</span></span>";
+  }
+
+  function mEqHTML(vh) {
+    var num = vh ? fmtNum(vh.v) : "v";
+    var den = vh ? fmtNum(vh.h) : "h";
+    return '<span class="m-eq">m = ' + fracHTML(num, den) + "</span>";
+  }
+
+  function dirCopy(vh) {
+    if (!vh) return "hacia la derecha";
+    var bits = [];
+    if (vh.h > 0) bits.push("hacia la derecha");
+    else if (vh.h < 0) bits.push("hacia la izquierda");
+    if (vh.v > 0) bits.push("hacia arriba");
+    else if (vh.v < 0) bits.push("hacia abajo");
+    if (!bits.length) return "sobre el eje";
+    if (bits.length === 1) return bits[0];
+    return bits[0] + " y " + bits[1];
+  }
+
+  function renderEasyPanel() {
+    if (!easyBox || !easyCopy) return;
+    if (!isEasyPhase()) {
+      easyCopy.innerHTML = "";
+      return;
+    }
+    var vh = state.vh || (state.m != null ? slopeToVH(state.m) : null);
+    var p1 = state.b != null ? easyP1() : null;
+    var p2 = vh && state.b != null ? easyP2() : null;
+    var html = "";
+    if (p1) {
+      html += "P1 = (0, " + fmtNum(p1.y) + ")";
+    }
+    if (vh) {
+      html += (html ? "<br>" : "") + mEqHTML(vh);
+    }
+    if (p2) {
+      html += "<br>P2 = (" + fmtNum(p2.x) + ", " + fmtNum(p2.y) + ")";
+    }
+    easyCopy.innerHTML = html;
+    if (easyKicker) easyKicker.textContent = "forma fácil";
+  }
+
+  function setEasyBanner(on) {
+    if (!easyBanner) return;
+    easyBanner.hidden = !on;
+  }
+
+  function setStepCartel(html, on) {
+    if (!stepCartel) return;
+    if (html) stepCartel.innerHTML = html;
+    stepCartel.classList.toggle("on", !!on);
+    stepCartel.hidden = !on;
+  }
+
   function renderChips() {
     var pickingB = state.phase === "pick-b";
     var pickingM = state.phase === "pick-m";
+    var easyOn = isEasyPhase();
     var boardOn = state.phase === "fill" || state.phase === "place" || state.phase === "win";
     bChips.innerHTML = "";
     B_OPTS.forEach(function (v) {
@@ -385,16 +555,23 @@
       btn.addEventListener("click", function () { chooseM(v); });
       mChips.appendChild(btn);
     });
-    pickBBox.classList.toggle("off", !pickingB && !pickingM);
-    pickBBox.classList.toggle("compact", pickingM);
+    pickBBox.classList.toggle("off", !pickingB && !pickingM && !easyOn);
+    pickBBox.classList.toggle("compact", pickingM || easyOn);
     pickBBox.classList.toggle("done", state.b != null);
-    pickMBox.classList.toggle("off", !pickingM);
+    pickMBox.classList.toggle("off", !pickingM && !easyOn);
+    pickMBox.classList.toggle("compact", easyOn);
     pickMBox.classList.toggle("done", state.m != null);
     bumpGo(pickBBox, pickingB);
     bumpGo(pickMBox, pickingM);
     if (tableWrap) tableWrap.classList.toggle("off", !boardOn);
-    pickBKicker.textContent = pickingM && state.b != null ? "b = " + fmtNum(state.b) : "b";
-    pickMKicker.textContent = "m";
+    if (easyBox) easyBox.classList.toggle("off", !easyOn);
+    pickBKicker.textContent = (pickingM || easyOn) && state.b != null ? "b = " + fmtNum(state.b) : "b";
+    if (easyOn && state.m != null) {
+      pickMKicker.innerHTML = mEqHTML(state.vh || slopeToVH(state.m));
+    } else {
+      pickMKicker.textContent = "m";
+    }
+    renderEasyPanel();
   }
 
   function renderTable() {
@@ -505,19 +682,29 @@
   }
 
   function syncDragCursor() {
-    var canDrag = state.phase === "place" && !state.won && !state.paused && !state.locked;
+    var canDrag = isTokenPhase() && !state.won && !state.paused && !state.locked;
+    if (state.phase === "easy-line" && !state.won && !state.paused && !state.locked) canDrag = true;
     if (promptEl) promptEl.classList.toggle("can-drag", canDrag);
     if (dockHint) dockHint.classList.toggle("can-drag", canDrag);
+    if (canvas) canvas.style.cursor = state.phase === "easy-line" && canDrag ? "grab" : "";
   }
 
   function updateHud() {
     fnBox.innerHTML = latexFx();
-    playBtn.disabled = state.b == null || state.m == null || state.paused;
+    playBtn.disabled = state.b == null || state.m == null || state.paused || state.phase === "win" || isEasyPhase();
     if (state.phase === "fill") {
       dockHint.textContent = "Escribí f(x) · Enter";
     } else if (state.phase === "place") {
       dockHint.innerHTML = '<span class="dot"></span>Arrastrá';
+    } else if (state.phase === "easy-b") {
+      dockHint.innerHTML = '<span class="dot"></span>Ordenada · eje Y';
+    } else if (state.phase === "easy-m") {
+      dockHint.innerHTML = '<span class="dot"></span>' + mEqHTML(state.vh);
+    } else if (state.phase === "easy-line") {
+      dockHint.textContent = "Mové la recta";
     } else if (state.phase === "win") {
+      dockHint.textContent = "Seguí · forma fácil";
+    } else if (state.phase === "easy-win") {
       dockHint.textContent = "Otra · Reset o Seguir";
     } else {
       dockHint.textContent = "";
@@ -698,17 +885,7 @@
     ctx.restore();
   }
 
-  function drawTokenWell() {
-    if (state.phase !== "place" || state.won) return;
-    var row = currentRow();
-    if (!row || row.placed) return;
-    var origin = worldToScreen(0, 0);
-    var dock = { x: PAD.l + 28, y: canvas.height - PAD.b - 18 };
-    if (state.active === 0) {
-      var onAxis = worldToScreen(row.x, 0);
-      dock = { x: onAxis.x, y: origin.y };
-    }
-    if (state.drag) return;
+  function paintDock(dock) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(dock.x, dock.y, BIG_R + 5, 0, Math.PI * 2);
@@ -725,8 +902,202 @@
     state._dock = dock;
   }
 
-  function draw() {
-    drawGrid();
+  function drawTokenWell() {
+    if (state.won || state.drag) return;
+    var origin = worldToScreen(0, 0);
+    if (state.phase === "place") {
+      var row = currentRow();
+      if (!row || row.placed) return;
+      var dock = { x: PAD.l + 28, y: canvas.height - PAD.b - 18 };
+      if (state.active === 0) {
+        var onAxis = worldToScreen(row.x, 0);
+        dock = { x: onAxis.x, y: origin.y };
+      }
+      paintDock(dock);
+      return;
+    }
+    if (state.phase === "easy-b" && !state.easyP1) {
+      paintDock(origin);
+      return;
+    }
+    if (state.phase === "easy-m" && state.easyP1 && !state.easyP2) {
+      paintDock(worldToScreen(easyP1().x, easyP1().y));
+    }
+  }
+
+  function drawGhostLive() {
+    if (!state.drag) return;
+    if (!ghostEl || ghostEl.hidden) {
+      drawGhostAtPx(state.dragPx);
+    }
+  }
+
+  function drawDashSeg(x0, y0, x1, y1, color, width, alpha, solid) {
+    var a = worldToScreen(x0, y0);
+    var b = worldToScreen(x1, y1);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    if (!solid) ctx.setLineDash([7, 6]);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGuideLabel(x, y, text, color, align) {
+    var p = worldToScreen(x, y);
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.font = "800 13px ui-monospace, Menlo, monospace";
+    ctx.textAlign = align || "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, p.x, p.y);
+    ctx.restore();
+  }
+
+  function highlightYAxis() {
+    var ox = worldToScreen(0, 0);
+    ctx.save();
+    ctx.strokeStyle = "rgba(167,139,250,0.55)";
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    ctx.moveTo(ox.x, PAD.t);
+    ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawVHGuides(probe) {
+    var p1 = easyP1();
+    var vh = state.vh || slopeToVH(state.m);
+    var dx = probe ? probe.x - p1.x : 0;
+    var dy = probe ? probe.y - p1.y : 0;
+    var x = p1.x + dx;
+    var y = p1.y + dy;
+    var hAlpha = flashAlpha(state.hFlash, state.hLearned ? 0.42 : 0.7);
+    var vAlpha = flashAlpha(state.vFlash, state.vLearned ? 0.42 : 0.7);
+    if (state.bothFlash && flashActive(state.bothFlash)) {
+      hAlpha = flashAlpha(state.bothFlash, 0.85);
+      vAlpha = hAlpha;
+    }
+    var hSolid = flashActive(state.hFlash) || flashActive(state.bothFlash);
+    var vSolid = flashActive(state.vFlash) || flashActive(state.bothFlash);
+    drawDashSeg(p1.x, p1.y, x, p1.y, RUN, hSolid ? 4.2 : 2.6, hAlpha, hSolid);
+    drawDashSeg(x, p1.y, x, y, RISE, vSolid ? 4.2 : 2.6, vAlpha, vSolid);
+    if (Math.abs(dx) > 0.25) {
+      drawGuideLabel((p1.x + x) / 2, p1.y + (vh.h >= 0 ? -0.55 : 0.55), "h", RUN, "center");
+    }
+    if (Math.abs(dy) > 0.25) {
+      drawGuideLabel(x + (vh.h >= 0 ? 0.55 : -0.55), (p1.y + y) / 2, "v", RISE, vh.h >= 0 ? "left" : "right");
+    }
+  }
+
+  function lineEnds(pt, angle) {
+    var c = Math.cos(angle);
+    var s = Math.sin(angle);
+    if (Math.abs(c) < 1e-8) {
+      return { a: worldToScreen(pt.x, YMIN), b: worldToScreen(pt.x, YMAX) };
+    }
+    var m = s / c;
+    return {
+      a: worldToScreen(XMIN, pt.y + m * (XMIN - pt.x)),
+      b: worldToScreen(XMAX, pt.y + m * (XMAX - pt.x))
+    };
+  }
+
+  function distPointToLine(q, pt, angle) {
+    if (!q || !pt) return Infinity;
+    var dx = Math.cos(angle);
+    var dy = Math.sin(angle);
+    return Math.abs((q.x - pt.x) * (-dy) + (q.y - pt.y) * dx);
+  }
+
+  function lineTouches(q, pt, angle) {
+    return distPointToLine(q, pt, angle) <= SNAP_IN;
+  }
+
+  function currentLineModel() {
+    var p1 = easyP1();
+    var p2 = easyP2();
+    var probe = state.drag || state.hover;
+    var pivot = state.linePivot;
+    var pt = state.linePt;
+    var angle = state.lineAngle;
+    if (pivot === "p1") {
+      pt = p1;
+      if (probe) angle = Math.atan2(probe.y - p1.y, probe.x - p1.x);
+    } else if (pivot === "p2") {
+      pt = p2;
+      if (probe) angle = Math.atan2(probe.y - p2.y, probe.x - p2.x);
+    } else if (probe) {
+      pt = probe;
+    }
+    if (!pt) pt = { x: 0, y: 0 };
+    return { pt: pt, angle: angle, p1: p1, p2: p2 };
+  }
+
+  function drawMovableLine() {
+    var model = currentLineModel();
+    var ends = lineEnds(model.pt, model.angle);
+    var both = lineTouches(model.p1, model.pt, model.angle) && lineTouches(model.p2, model.pt, model.angle);
+    ctx.save();
+    ctx.strokeStyle = both ? OK : LINE;
+    ctx.globalAlpha = both ? 0.95 : 0.78;
+    ctx.lineWidth = both ? 4.2 : 3.2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(ends.a.x, ends.a.y);
+    ctx.lineTo(ends.b.x, ends.b.y);
+    ctx.stroke();
+    ctx.restore();
+    if (lineTouches(model.p1, model.pt, model.angle)) {
+      drawPulseRings(model.p1.x, model.p1.y, "P1", { fillDot: false });
+    }
+    if (lineTouches(model.p2, model.pt, model.angle)) {
+      drawPulseRings(model.p2.x, model.p2.y, "P2", { fillDot: false });
+    }
+  }
+
+  function drawEasyScene() {
+    if (state.phase === "easy-b") highlightYAxis();
+    if (state.phase === "easy-win" || (state.phase === "easy-line" && state.won)) drawLine();
+    if (state.easyP1) {
+      var a = easyP1();
+      drawDot(a.x, a.y, PURPLE, PURPLE_GLOW, BIG_R);
+    }
+    if (state.easyP2) {
+      var bpt = easyP2();
+      drawDot(bpt.x, bpt.y, RISE, "rgba(52,211,153,0.35)", BIG_R);
+    }
+    syncGhostOverlay();
+    if (state.paused) return;
+    if (state.phase === "easy-b" && !state.easyP1) {
+      var t1 = easyP1();
+      var probe = state.drag || state.hover;
+      if (state.drag) drawGhostLive();
+      else drawTokenWell();
+      if (probe && inSnapZone(probe, t1)) {
+        drawPulseRings(t1.x, t1.y, "(0, " + fmtNum(t1.y) + ")", { fillDot: false });
+      }
+    } else if (state.phase === "easy-m" && !state.easyP2) {
+      var t2 = easyP2();
+      var probe2 = state.drag || state.hover;
+      if (probe2) drawVHGuides(probe2);
+      if (state.drag) drawGhostLive();
+      else drawTokenWell();
+      if (probe2 && inSnapZone(probe2, t2)) {
+        drawPulseRings(t2.x, t2.y, "(" + fmtNum(t2.x) + ", " + fmtNum(t2.y) + ")", { fillDot: false });
+      }
+    } else if (state.phase === "easy-line" && !state.won) {
+      drawMovableLine();
+    }
+  }
+
+  function drawPlaceScene() {
     if (state.phase === "place" && state.active === 0) {
       var first = currentRow();
       if (first && !first.placed) drawVertical(first.x);
@@ -742,18 +1113,19 @@
         var target = { x: row.x, y: row.y };
         var probe = state.drag || state.hover;
         var near = !!(probe && inSnapZone(probe, target));
-        if (state.drag) {
-          if (!ghostEl || ghostEl.hidden) {
-            drawGhostAtPx(state.dragPx);
-          }
-        } else {
-          drawTokenWell();
-        }
+        if (state.drag) drawGhostLive();
+        else drawTokenWell();
         if (near) {
           drawPulseRings(row.x, row.y, "(" + fmtNum(row.x) + ", " + fmtNum(row.y) + ")", { fillDot: false });
         }
       }
     }
+  }
+
+  function draw() {
+    drawGrid();
+    if (isEasyPhase()) drawEasyScene();
+    else drawPlaceScene();
   }
 
   function chooseB(v) {
@@ -866,9 +1238,18 @@
   }
 
   function canPlaceDrag() {
-    if (state.phase !== "place" || state.paused || state.locked || state.won) return false;
-    var row = currentRow();
-    return !!(row && !row.placed);
+    if (state.paused || state.locked || state.won) return false;
+    if (state.phase === "place") {
+      var row = currentRow();
+      return !!(row && !row.placed);
+    }
+    if (state.phase === "easy-b") return !state.easyP1;
+    if (state.phase === "easy-m") return !!(state.easyP1 && !state.easyP2);
+    return false;
+  }
+
+  function canLineDrag() {
+    return state.phase === "easy-line" && !state.paused && !state.locked && !state.won;
   }
 
   function bindDragListen() {
@@ -908,6 +1289,10 @@
   }
 
   function beginDrag(ev, fromOutside) {
+    if (canLineDrag()) {
+      beginLineDrag(ev);
+      return;
+    }
     if (!canPlaceDrag()) return;
     armAudio();
     if (!fromOutside) {
@@ -924,25 +1309,29 @@
     onPointerMove(ev);
   }
 
+  function beginLineDrag(ev) {
+    armAudio();
+    if (ev.preventDefault) ev.preventDefault();
+    if (canvas.setPointerCapture && ev.pointerId != null) {
+      try { canvas.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+    }
+    var w = applyPointer(ev);
+    var p1 = easyP1();
+    var p2 = easyP2();
+    if (dist(w, p1) <= SNAP_OUT) state.linePivot = "p1";
+    else if (dist(w, p2) <= SNAP_OUT) state.linePivot = "p2";
+    else state.linePivot = null;
+    state.linePt = w;
+    state.drag = w;
+    bindDragListen();
+    onPointerMove(ev);
+  }
+
   function onPointerDown(ev) {
     beginDrag(ev, false);
   }
 
-  function onPointerMove(ev) {
-    if (state.paused || state.locked || state.won) return;
-    var w = applyPointer(ev);
-    if (state.phase !== "place") {
-      draw();
-      return;
-    }
-    var row = currentRow();
-    if (!row || row.placed) {
-      draw();
-      return;
-    }
-    var Q = { x: row.x, y: row.y };
-    var probe = state.drag || w;
-    var near = inSnapZone(probe, Q);
+  function noteNear(near) {
     if (near) {
       state.near = true;
       if (!state.chimed) {
@@ -952,25 +1341,140 @@
     } else if (state.near || state.chimed) {
       rearmChime();
     }
+  }
+
+  function updateVHGuides(probe) {
+    if (!probe || !state.vh) return;
+    var p1 = easyP1();
+    var p2 = easyP2();
+    var vh = state.vh;
+    var dx = probe.x - p1.x;
+    var dy = probe.y - p1.y;
+    var hOk = Math.abs(dx - vh.h) <= SNAP_IN;
+    var vOk = Math.abs(dy - vh.v) <= SNAP_IN;
+    var both = inSnapZone(probe, p2);
+    if (both) {
+      if (!state.bothNear) {
+        state.bothFlash = startFlash(3);
+        state.bothNear = true;
+        if (!state.hLearned) state.hLearned = true;
+        if (!state.vLearned) state.vLearned = true;
+      }
+    } else {
+      state.bothNear = false;
+      if (hOk && !state.hLearned) {
+        state.hLearned = true;
+        state.hFlash = startFlash(1);
+        if (GK.playOkChime) GK.playOkChime();
+        if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+      }
+      if (vOk && !state.vLearned) {
+        state.vLearned = true;
+        state.vFlash = startFlash(1);
+        if (GK.playOkChime) GK.playOkChime();
+        if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+      }
+    }
+  }
+
+  function updateLineFollow(w) {
+    var p1 = easyP1();
+    var p2 = easyP2();
+    var model;
+    if (state.linePivot === "p1") {
+      state.linePt = p1;
+      state.lineAngle = Math.atan2(w.y - p1.y, w.x - p1.x);
+    } else if (state.linePivot === "p2") {
+      state.linePt = p2;
+      state.lineAngle = Math.atan2(w.y - p2.y, w.x - p2.x);
+    } else {
+      state.linePt = w;
+      if (lineTouches(p1, w, state.lineAngle)) state.linePivot = "p1";
+      else if (lineTouches(p2, w, state.lineAngle)) state.linePivot = "p2";
+    }
+    model = currentLineModel();
+    var both = lineTouches(model.p1, model.pt, model.angle) && lineTouches(model.p2, model.pt, model.angle);
+    noteNear(both);
+    if (both) completeEasyLine();
+  }
+
+  function onPointerMove(ev) {
+    if (state.paused || state.locked) return;
+    if (state.won && state.phase !== "easy-line") return;
+    var w = applyPointer(ev);
+    if (state.phase === "place") {
+      var row = currentRow();
+      if (!row || row.placed) {
+        draw();
+        return;
+      }
+      noteNear(inSnapZone(state.drag || w, { x: row.x, y: row.y }));
+      draw();
+      return;
+    }
+    if (state.phase === "easy-b" && !state.easyP1) {
+      noteNear(inSnapZone(state.drag || w, easyP1()));
+      draw();
+      return;
+    }
+    if (state.phase === "easy-m" && !state.easyP2) {
+      var probe = state.drag || w;
+      updateVHGuides(probe);
+      noteNear(inSnapZone(probe, easyP2()));
+      draw();
+      return;
+    }
+    if (state.phase === "easy-line" && !state.won) {
+      if (!state.drag) {
+        state.linePt = w;
+      }
+      updateLineFollow(w);
+      draw();
+      return;
+    }
     draw();
   }
 
   function onPointerUp(ev) {
-    if (state.phase !== "place" || !state.drag || state.paused || state.locked || state.won) {
+    if (state.paused || state.locked) {
+      endDragVisual();
+      return;
+    }
+    if (state.phase === "easy-line") {
+      if (ev && ev.preventDefault) ev.preventDefault();
+      applyPointer(ev);
+      var model = currentLineModel();
+      var both = lineTouches(model.p1, model.pt, model.angle) && lineTouches(model.p2, model.pt, model.angle);
+      endDragVisual();
+      if (both) completeEasyLine();
+      else state.linePivot = state.linePivot;
+      draw();
+      return;
+    }
+    if (!state.drag) {
       endDragVisual();
       return;
     }
     if (ev && ev.preventDefault) ev.preventDefault();
     applyPointer(ev);
-    var row = currentRow();
     var drop = state.drag;
     endDragVisual();
-    if (!row || row.placed) return;
-    var Q = { x: row.x, y: row.y };
-    if (inSnapZone(drop, Q) || dist(drop, Q) <= SNAP_IN) {
-      placeCorrect();
-    } else {
-      placeWrong();
+    if (state.phase === "place") {
+      var row = currentRow();
+      if (!row || row.placed) return;
+      var Q = { x: row.x, y: row.y };
+      if (inSnapZone(drop, Q) || dist(drop, Q) <= SNAP_IN) placeCorrect();
+      else placeWrong();
+      return;
+    }
+    if (state.phase === "easy-b" && !state.easyP1) {
+      if (inSnapZone(drop, easyP1()) || dist(drop, easyP1()) <= SNAP_IN) lockEasyP1();
+      else placeWrongEasy("en el eje Y");
+      return;
+    }
+    if (state.phase === "easy-m" && !state.easyP2) {
+      if (inSnapZone(drop, easyP2()) || dist(drop, easyP2()) <= SNAP_IN) lockEasyP2();
+      else placeWrongEasy("v/h");
     }
   }
 
@@ -1034,9 +1538,133 @@
     setPrompt("Ahí no", "bad");
     later(280, function () {
       var row = currentRow();
-      if (row) setPrompt("Arrastrá", "attention");
+      if (row && state.phase === "place") setPrompt("Arrastrá", "attention");
     });
     draw();
+  }
+
+  function placeWrongEasy(kind) {
+    state.bad++;
+    syncScores();
+    pulseBad();
+    rearmChime();
+    setPrompt(kind === "v/h" ? "Ahí no · v/h" : "Ahí no · eje Y", "bad");
+    later(320, function () {
+      if (state.phase === "easy-b") {
+        setPrompt("Colocá <strong>P1</strong> en el eje Y · <strong>(0, b)</strong>", "attention");
+        setStepCartel("Desplazamiento sobre el eje Y", true);
+      } else if (state.phase === "easy-m") {
+        promptEasySlope();
+      }
+    });
+    draw();
+  }
+
+  function promptEasySlope() {
+    var vh = state.vh || slopeToVH(state.m);
+    setStepCartel(mEqHTML(vh), true);
+    setPrompt(
+      "Mové <strong>" + dirCopy(vh) + "</strong> · " + mEqHTML(vh),
+      "attention"
+    );
+  }
+
+  function lockEasyP1() {
+    var heard = state.chimed;
+    state.easyP1 = true;
+    state.ok++;
+    state.hover = null;
+    endDragVisual();
+    rearmChime();
+    if (heard) {
+      flashOk();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    } else pulseOk();
+    smallConfetti();
+    var p1 = easyP1();
+    setPrompt("✓ <strong class=\"ok\">P1 = (0, " + fmtNum(p1.y) + ")</strong>", "ok");
+    updateHud();
+    renderEasyPanel();
+    draw();
+    state.locked = true;
+    later(state.speedFactor > 1 ? 800 : 420, function () {
+      state.locked = false;
+      startEasySlope();
+    });
+  }
+
+  function lockEasyP2() {
+    var heard = state.chimed;
+    state.easyP2 = true;
+    state.ok++;
+    state.hover = null;
+    endDragVisual();
+    rearmChime();
+    if (heard) {
+      flashOk();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    } else pulseOk();
+    smallConfetti();
+    var p2 = easyP2();
+    setPrompt("✓ <strong class=\"ok\">P2 = (" + fmtNum(p2.x) + ", " + fmtNum(p2.y) + ")</strong>", "ok");
+    updateHud();
+    renderEasyPanel();
+    draw();
+    state.locked = true;
+    later(state.speedFactor > 1 ? 800 : 420, function () {
+      state.locked = false;
+      startEasyLine();
+    });
+  }
+
+  function startEasySlope() {
+    state.phase = "easy-m";
+    state.hLearned = false;
+    state.vLearned = false;
+    state.hFlash = null;
+    state.vFlash = null;
+    state.bothFlash = null;
+    state.bothNear = false;
+    rearmChime();
+    promptEasySlope();
+    updateHud();
+    renderChips();
+    draw();
+  }
+
+  function startEasyLine() {
+    state.phase = "easy-line";
+    state.lineAngle = 0;
+    state.linePt = { x: 0, y: state.b || 0 };
+    state.linePivot = null;
+    rearmChime();
+    setStepCartel("Recta que toca los dos puntos", true);
+    setPrompt("Mové la <strong>recta</strong> hasta que toque <strong>P1</strong> y <strong>P2</strong>", "attention");
+    updateHud();
+    renderChips();
+    draw();
+  }
+
+  function completeEasyLine() {
+    if (state.phase !== "easy-line" || state.won) return;
+    var heard = state.chimed;
+    state.won = true;
+    state.ok++;
+    endDragVisual();
+    rearmChime();
+    if (heard) {
+      flashOk();
+      if (GK.pulseSoundMeter) GK.pulseSoundMeter(soundMeter, "ok");
+    } else pulseOk();
+    later(180, showEasyVictory);
+  }
+
+  function setVictoryCopy(title, sub, continueLabel, badge, winText) {
+    if (victoryTitle) victoryTitle.textContent = title;
+    if (victorySub) victorySub.innerHTML = sub;
+    if (victoryContinue) victoryContinue.textContent = continueLabel;
+    if (badgeCartel && badge) badgeCartel.textContent = badge;
+    if (winBannerText && winText) winBannerText.innerHTML = winText;
   }
 
   function showVictory() {
@@ -1045,6 +1673,13 @@
     state.locked = true;
     state.hover = null;
     endDragVisual();
+    setVictoryCopy(
+      "¡Ganador!",
+      "Lograste graficar la función",
+      "Seguí participando",
+      "Lograste graficar la función",
+      "Lograste graficar la función."
+    );
     setWinChrome(true);
     burstConfetti();
     if (GK.playExplosion) GK.playExplosion();
@@ -1053,6 +1688,93 @@
     renderTable();
     updateHud();
     draw();
+    later(state.speedFactor > 1 ? 2200 : 1400, function () {
+      if (state.phase === "win" && !state.easyStarted) startFormaFacil();
+    });
+  }
+
+  function showEasyVictory() {
+    state.won = true;
+    state.phase = "easy-win";
+    state.locked = true;
+    state.hover = null;
+    endDragVisual();
+    setVictoryCopy(
+      "¡Ganador!",
+      "Lograste la forma fácil · " + mEqHTML(state.vh),
+      "Seguir jugando",
+      "Lograste la forma fácil",
+      "Lograste graficar con " + mEqHTML(state.vh) + "."
+    );
+    setStepCartel("", false);
+    setWinChrome(true);
+    burstConfetti();
+    if (GK.playExplosion) GK.playExplosion();
+    else if (GK.playOkChime) GK.playOkChime();
+    setPrompt("<strong class=\"ok\">Lograste la forma fácil · " + mEqHTML(state.vh) + "</strong>", "ok");
+    updateHud();
+    renderChips();
+    draw();
+  }
+
+  function resetEasyFlags() {
+    state.easyStarted = false;
+    state.easyP1 = false;
+    state.easyP2 = false;
+    state.vh = null;
+    state.lineAngle = 0;
+    state.linePt = null;
+    state.linePivot = null;
+    state.hLearned = false;
+    state.vLearned = false;
+    state.hFlash = null;
+    state.vFlash = null;
+    state.bothFlash = null;
+    state.bothNear = false;
+    setEasyBanner(false);
+    setStepCartel("", false);
+  }
+
+  function startFormaFacil() {
+    if (state.m == null || state.b == null) return;
+    if (state.easyStarted && isEasyPhase()) return;
+    armAudio();
+    state.easyStarted = true;
+    state.won = false;
+    state.locked = true;
+    state.hover = null;
+    endDragVisual();
+    rearmChime();
+    state.vh = slopeToVH(state.m);
+    state.easyP1 = false;
+    state.easyP2 = false;
+    state.hLearned = false;
+    state.vLearned = false;
+    state.hFlash = null;
+    state.vFlash = null;
+    state.bothFlash = null;
+    state.bothNear = false;
+    state.lineAngle = 0;
+    state.linePt = { x: 0, y: state.b };
+    state.linePivot = null;
+    state.phase = "easy-intro";
+    setWinChrome(false);
+    setEasyBanner(true);
+    setStepCartel("forma fácil", true);
+    setPrompt("<strong>Seguí participando</strong> · forma fácil", "attention");
+    renderChips();
+    updateHud();
+    draw();
+    later(state.speedFactor > 1 ? 1100 : 700, function () {
+      if (state.phase !== "easy-intro") return;
+      state.locked = false;
+      state.phase = "easy-b";
+      setStepCartel("Desplazamiento sobre el eje Y", true);
+      setPrompt("Colocá <strong>P1</strong> en el eje Y · ordenada <strong>(0, b)</strong>", "attention");
+      updateHud();
+      renderChips();
+      draw();
+    });
   }
 
   function resetAll(keepScores) {
@@ -1068,6 +1790,7 @@
     state.won = false;
     state.locked = false;
     state.paused = false;
+    resetEasyFlags();
     rearmChime();
     if (!keepScores) {
       state.ok = 0;
@@ -1075,6 +1798,13 @@
       state.round = 1;
     }
     pausedBanner.classList.remove("on");
+    setVictoryCopy(
+      "¡Ganador!",
+      "Lograste graficar la función",
+      "Seguí participando",
+      "Lograste graficar la función",
+      "Lograste graficar la función."
+    );
     setWinChrome(false);
     renderChips();
     renderTable();
@@ -1086,6 +1816,14 @@
   function keepPlaying() {
     state.round++;
     resetAll(true);
+  }
+
+  function onVictoryContinue() {
+    if (state.phase === "win" || state.phase === "easy-intro") {
+      startFormaFacil();
+      return;
+    }
+    keepPlaying();
   }
 
   function toggleSlow() {
@@ -1114,7 +1852,7 @@
   slowBtn.addEventListener("click", toggleSlow);
   slowBtn.setAttribute("aria-pressed", "false");
   if (victoryRestart) victoryRestart.addEventListener("click", function () { resetAll(false); });
-  if (victoryContinue) victoryContinue.addEventListener("click", keepPlaying);
+  if (victoryContinue) victoryContinue.addEventListener("click", onVictoryContinue);
   if (winRestartBtn) winRestartBtn.addEventListener("click", function () { resetAll(false); });
 
   canvas.addEventListener("pointerdown", onPointerDown);
@@ -1152,6 +1890,13 @@
     submitFill: submitFill,
     startPlace: startPlace,
     placeCorrect: placeCorrect,
+    startFormaFacil: startFormaFacil,
+    slopeToVH: slopeToVH,
+    easyP1: easyP1,
+    easyP2: easyP2,
+    lockEasyP1: lockEasyP1,
+    lockEasyP2: lockEasyP2,
+    completeEasyLine: completeEasyLine,
     resetAll: resetAll,
     draw: draw,
     eventToCanvas: eventToCanvas,
