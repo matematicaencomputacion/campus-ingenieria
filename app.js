@@ -246,6 +246,8 @@
   }
 
   function parseHash() {
+    const previousNode = state.selectedNodo;
+    state.selectedNodo = null;
     const raw = location.hash.replace(/^#\/?/, "");
     if (!raw || raw === "login") {
       state.view = "login";
@@ -275,6 +277,13 @@
       state.careerId = parts[1];
       state.materiaId = parts[2];
       state.tab = parts[3] || "bienvenida";
+      if (state.tab === "temario" && parts[4]) {
+        const selectedTema = materia()?.temas.find(t => t.nodos.some(n => n.id === parts[4]));
+        if (selectedTema) {
+          state.selectedNodo = parts[4];
+          if (previousNode !== parts[4]) state.openTemas[selectedTema.id] = true;
+        }
+      }
       return;
     }
     state.view = "login";
@@ -1401,6 +1410,29 @@
     }
   }
 
+  function lessonURL(url) {
+    const lesson = new URL(url, location.href);
+    lesson.searchParams.set("returnTo", location.pathname + location.search + location.hash);
+    return escapeHTML(lesson.pathname + lesson.search + lesson.hash);
+  }
+
+  function closeLesson() {
+    const nodeId = state.selectedNodo;
+    if (!nodeId) return;
+    const tema = materia()?.temas.find(t => t.nodos.some(n => n.id === nodeId));
+    if (tema) state.openTemas[tema.id] = true;
+    history.replaceState(null, "", `#/materia/${state.careerId}/${state.materiaId}/temario`);
+    render();
+    const node = Array.from(document.querySelectorAll("[data-nodo]")).find(btn => btn.dataset.nodo === nodeId);
+    node?.focus();
+  }
+
+  window.addEventListener("message", event => {
+    const frame = document.getElementById("interactive-embed-frame");
+    if (frame && event.origin === location.origin && event.source === frame.contentWindow &&
+        event.data?.type === "campus:close-lesson") closeLesson();
+  });
+
   function renderMateria() {
     const c = career();
     const m = materia();
@@ -1504,16 +1536,17 @@
                     <p class="sub">${escapeHTML(found.desc || `Laboratorio interactivo de ${temaTitle}`)}</p>
                   </div>
                   <div class="interactive-card-actions">
-                    <a href="${found.toolUrl}" target="_blank" class="btn-ghost-action" title="Abrir en ventana independiente">
+                    <a href="${lessonURL(found.toolUrl)}" target="_blank" class="btn-ghost-action" title="Abrir en ventana independiente">
                       ↗ Pestaña
                     </a>
+                    <button type="button" class="btn-ghost-action" id="btn-close-embed">Cerrar lección</button>
                     <button type="button" class="btn-ghost-action" id="btn-reload-embed" title="Reiniciar ejercicio">
                       ↻ Reiniciar
                     </button>
                   </div>
                 </div>
                 <div class="interactive-frame-wrap">
-                  <iframe id="interactive-embed-frame" src="${found.toolUrl}" title="${escapeHTML(found.title)}" allow="clipboard-write; fullscreen" loading="lazy"></iframe>
+                  <iframe id="interactive-embed-frame" src="${lessonURL(found.toolUrl)}" title="${escapeHTML(found.title)}" allow="clipboard-write; fullscreen" loading="lazy"></iframe>
                 </div>
               </div>`;
             }
@@ -1551,7 +1584,7 @@
           <p>${escapeHTML(tool.desc || "Práctica interactiva en tiempo real.")}</p>
           <div class="lab-card-actions">
             <button type="button" class="btn-primary btn-sm" data-launch-nodo="${tool.id}">Abrir en Campus</button>
-            <a href="${tool.toolUrl}" target="_blank" class="btn-ghost-action">Pestaña ↗</a>
+            <a href="${lessonURL(tool.toolUrl)}" target="_blank" class="btn-ghost-action">Pestaña ↗</a>
           </div>
         </div>
       `).join("");
@@ -1562,12 +1595,12 @@
             <h2 class="section-title" style="margin:0">Laboratorio Interactivo · ${escapeHTML(m.name)}</h2>
             <p class="sub" style="margin-top:4px">Interactivos, simulaciones y juegos matemáticos para experimentar directamente.</p>
           </div>
-          <a href="tools/index.html" class="btn-catalog-link" target="_blank">
-            Explorar catálogo completo (186 lecciones) ↗
+          <a href="${lessonURL('tools/index.html')}" class="btn-catalog-link" target="_blank">
+            Explorar catálogo completo ↗
           </a>
         </div>
         <div class="lab-grid">
-          ${cards || `<div class="empty-state">No hay interactivos configurados para esta materia aún. <a href="tools/index.html" target="_blank">Ver catálogo general</a>.</div>`}
+          ${cards || `<div class="empty-state">No hay interactivos configurados para esta materia aún. <a href="${lessonURL('tools/index.html')}" target="_blank">Ver catálogo general</a>.</div>`}
         </div>
       `;
     }
@@ -1652,8 +1685,7 @@
     });
     $$("[data-nodo]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        state.selectedNodo = btn.getAttribute("data-nodo");
-        render();
+        go(`#/materia/${state.careerId}/${state.materiaId}/temario/${btn.getAttribute("data-nodo")}`);
       });
     });
     $$("[data-video]").forEach((btn) => {
@@ -1662,6 +1694,7 @@
         render();
       });
     });
+    $("#btn-close-embed")?.addEventListener("click", closeLesson);
     const reloadEmbed = $("#btn-reload-embed");
     if (reloadEmbed) {
       reloadEmbed.addEventListener("click", () => {
@@ -1676,9 +1709,7 @@
     $$("[data-launch-nodo]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const nid = btn.getAttribute("data-launch-nodo");
-        state.tab = "temario";
-        state.selectedNodo = nid;
-        go(`#/materia/${state.careerId}/${state.materiaId}/temario`);
+        go(`#/materia/${state.careerId}/${state.materiaId}/temario/${nid}`);
       });
     });
   }

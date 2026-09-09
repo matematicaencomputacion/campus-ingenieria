@@ -24,11 +24,12 @@ Abrí http://localhost:3000
 ## Testing
 
 ```bash
-npm test              # smoke estático: archivos, node --check, links (rápido, sin deps)
+npm test              # smoke estático + unidades de destinos de navegación (sin deps)
 npm run test:browser      # smoke de navegador: abre las ~190 páginas en Chromium headless
                           # y falla ante errores de runtime (pageerror / console.error / 404)
 npm run test:interaction  # mueve los sliders de cada lección y falla si alguno lanza errores
-npm run test:all          # los tres
+npm run test:navigation   # retorno contextual, visor, foco y geometría de barras
+npm run test:all          # suite completa
 ```
 
 El smoke de navegador (`scripts/browser-smoke.mjs`) requiere una vez:
@@ -38,7 +39,7 @@ npm install
 npx playwright install chromium
 ```
 
-En CI las pruebas estáticas, de carga e interacción corren automáticamente (jobs `static-check` y `browser-check` en
+En CI las pruebas estáticas, unitarias, de carga, interacción y navegación corren automáticamente (jobs `static-check` y `browser-check` en
 `.github/workflows/ci.yml`).
 
 ## Deploy
@@ -63,3 +64,12 @@ npm run css:snapshot -- --compare /tmp/campus-css-before.json tools/leccion-line
 Este verificador se ejecuta localmente; no forma parte de `test:all` ni del CI.
 La comparación cubre las propiedades y el estado capturados a 1440×900;
 no sustituye pruebas de interacción o revisión visual responsive.
+
+## Navegación de lecciones
+
+El catálogo conserva búsqueda y filtros al volver. Las lecciones abiertas desde
+una materia regresan a esa materia; las abiertas directamente llevan al catálogo.
+En el visor, «Cerrar lección» devuelve el foco al nodo sin cargar otra página dentro
+del iframe. Las rutas de nodos se pueden recargar o compartir.
+
+Ver [ADR 0001](docs/adr/0001-contextual-navigation.md) para decisiones y cobertura.

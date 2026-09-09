@@ -1,9 +1,8 @@
-/* Campus Ingeniería · Lesson Shell & Floating Bar Styles */
+/* Campus Ingeniería · Lesson navigation, scoped to the shared bar */
 .campus-lesson-bar-wrap {
-  position: fixed;
-  top: 10px;
-  right: 12px;
-  z-index: 99999;
+  position: relative;
+  justify-content: flex-end;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -40,7 +39,10 @@
   background: transparent;
   border: none;
   color: #94a3b8;
-  padding: 4px 8px;
+  padding: 8px 10px;
+  min-height: 44px;
+  min-width: 44px;
+  box-sizing: border-box;
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -75,12 +77,7 @@
   line-height: 1;
 }
 
-@media (max-width: 640px) {
-  .campus-lesson-bar-wrap {
-    top: 6px;
-    right: 8px;
-  }
-  .campus-lb-label {
-    display: none;
-  }
+.campus-lb-btn:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
 }
