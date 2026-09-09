@@ -169,7 +169,7 @@ test('L200: errores de reconocimiento y frases ambiguas conservan la entrada man
   assert.equal(await p.locator('#dictateBtn').getAttribute('aria-pressed'), 'false');
 });
 
-test('L200: cancelar, escribir, cambiar fila y Reset invalidan resultados tardíos', async t => {
+test('L200: cancelar, escribir, cambiar fila y Reiniciar invalidan resultados tardíos', async t => {
   const p = await dictationPage(t);
   const button = p.locator('#dictateBtn');
   const input = p.locator('.fx-input:not(:disabled)');
@@ -229,6 +229,10 @@ for (const width of [390, 1440]) {
     await p.goto(base + '/tools/leccion-lineal-working-memory.html');
     assert.equal(await p.locator('#playBtn').count(), 0);
     assert.equal(await p.locator('#slowBtn').isVisible(), false);
+    assert.equal(await p.locator('#pickBBox').isVisible(), false);
+    assert.equal(await p.locator('#pickMBox').isVisible(), false);
+    assert.equal(await p.locator('#tableWrap').isVisible(), true);
+    assert.match(await p.locator('#fnBox').textContent(), /f\(x\)\s*=/);
     assert.equal(await p.locator('#scoreRound').textContent(), 'Completá f(x)');
     assert.equal(await p.locator('.fx-input:not(:disabled)').count(), 1);
     assert.equal(await p.locator('.fx-input:not(:disabled)').getAttribute('data-i'), '0');

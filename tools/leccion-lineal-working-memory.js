@@ -1,4 +1,4 @@
-/*! Campus Ingeniería · L200 · lineal working memory (b → m → tabla → graficar → forma fácil). */
+/*! Campus Ingeniería · L200 · lineal working memory (tabla automática → graficar → forma fácil). */
 (function () {
   "use strict";
 
@@ -721,7 +721,7 @@
     } else if (state.phase === "win") {
       dockHint.textContent = "Seguí · forma fácil";
     } else if (state.phase === "easy-win") {
-      dockHint.textContent = "Otra · Reset o Seguir";
+      dockHint.textContent = "Otra · Reiniciar o Seguir";
     } else {
       dockHint.textContent = "";
     }
