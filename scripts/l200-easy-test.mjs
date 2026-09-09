@@ -95,6 +95,60 @@ for (const width of [390, 1440]) {
   });
 }
 
+async function worldClient(page, q) {
+  await page.locator('#c').scrollIntoViewIfNeeded();
+  return page.evaluate(point => {
+    const a = window.__L200, c = document.getElementById('c'), r = c.getBoundingClientRect();
+    const s = a.worldToScreen(point.x, point.y);
+    return { x: r.left + s.x * r.width / c.width, y: r.top + s.y * r.height / c.height };
+  }, q);
+}
+
+for (const spec of [
+  { label: 'pendiente +', b: 2, m: 1, via: 'click' },
+  { label: 'pendiente +', b: 2, m: 1, via: 'release' },
+  { label: 'pendiente −', b: 3, m: -1.5, via: 'click' },
+  { label: 'pendiente −', b: 3, m: -1.5, via: 'release' }
+]) {
+  test(`L200: ${spec.via} cerca de P2 fija el punto (${spec.label})`, async t => {
+    const p = await pageFor(t);
+    await p.goto(base + '/tools/leccion-lineal-working-memory.html');
+    await p.evaluate(({ b, m }) => {
+      const a = window.__L200;
+      a.chooseB(b);
+      a.chooseM(m);
+      a.startFormaFacil();
+    }, spec);
+    await p.waitForFunction(() => window.__L200.state.phase === 'easy-b');
+    const origin = await worldClient(p, { x: 0, y: 0 });
+    const p1 = await worldClient(p, { x: 0, y: spec.b });
+    await p.mouse.move(origin.x, origin.y);
+    await p.mouse.down();
+    await p.mouse.move(p1.x, p1.y, { steps: 12 });
+    await p.mouse.up();
+    await p.waitForFunction(() => window.__L200.state.phase === 'easy-m');
+    const p2 = await p.evaluate(() => window.__L200.easyP2());
+    const away = await worldClient(p, { x: p2.x >= 0 ? -1 : 1, y: -1 });
+    await p.mouse.click(away.x, away.y);
+    assert.equal(await p.evaluate(() => window.__L200.state.phase), 'easy-m');
+    assert.equal(await p.evaluate(() => window.__L200.state.easyP2), false);
+    assert.equal(await p.evaluate(() => window.__L200.state.bad), 0);
+    const target = await worldClient(p, p2);
+    if (spec.via === 'click') {
+      await p.mouse.move(target.x, target.y);
+      await p.mouse.click(target.x, target.y);
+    } else {
+      await p.mouse.move(away.x, away.y);
+      await p.mouse.down();
+      await p.mouse.move(target.x, target.y, { steps: 8 });
+      await p.mouse.up();
+    }
+    await p.waitForFunction(() => window.__L200.state.phase === 'easy-line');
+    assert.equal(await p.evaluate(() => window.__L200.state.easyP2), true);
+    assert.equal(await p.evaluate(() => window.__L200.state.bad), 0);
+  });
+}
+
 // Simulate browser speech events; these tests do not access a microphone or service.
 async function dictationPage(t, { support = true, width = 1440, prefixed = false } = {}) {
   const p = await pageFor(t, { viewport: { width, height: 1000 } });
