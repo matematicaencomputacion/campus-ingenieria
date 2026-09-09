@@ -14,6 +14,7 @@
   var RISE = "#34d399";
   var PAD = { l: 48, r: 36, t: 28, b: 42 };
   var viewPad = { l: PAD.l, r: PAD.r, t: PAD.t, b: PAD.b };
+  var EASY_PAD = 1.5;
   var VIEW = 12;
   var EASY_ZOOM = 1.5;
   var XMIN = -VIEW;
