@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 201 · Enfoque · formas de la recta</title>
+<link id="enfoque-tabs-css" rel="stylesheet" href="enfoque-tabs.css?v=20260909c" />
+</head>
+<body>
+<div class="wrap">
+  <div><a class="back" href="index.html">← Tools Campus</a></div>
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 201</span> · Enfoque
+        <span class="sub">formas de la recta</span>
+      </h1>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="enfoque-nav-host">
+      <a class="lesson-nav prev" href="leccion-lineal-working-memory.html" title="Lección 200: Working memory · recta · juego" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+      <a class="lesson-nav next" href="leccion-economia-enfoque-play.html" title="Lección 160: Economía · mapa UDL · play" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+      <div id="enfoqueRoot"></div>
+    </div>
+    <p class="hint">Enfoque · riel de color · Etiquetas / Minimizar (Ctrl+Shift+\) · el marco se queda quieto</p>
+  </div>
+</div>
+
+<script>
+window.__ENFOQUE_CFG__ = {
+  exportName: "__L201",
+  mount: "#enfoqueRoot",
+  storageKey: "campus_enfoque_recta_elige",
+  tablistLabel: "Formas de la recta",
+  tabs: [
+    {
+      id: "teoria",
+      tab: "Teoría",
+      color: "#ef4444",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Marco</p>' +
+        '<h2 class="enfoque-title">Función lineal vs ecuación de la recta</h2>' +
+        '<p class="enfoque-lead">No es lo mismo <span class="enfoque-mono">y = f(x)</span> que “el conjunto de puntos que cumplen una ecuación”. Las verticales viven solo en el segundo club.</p>' +
+        '<ul class="enfoque-notes">' +
+          '<li><span class="hl">Función lineal estricta</span> — <span class="enfoque-mono">y = f(x) = mx + b</span>. A cada x le corresponde <em>una</em> y. El gráfico es una recta <span class="bad">no vertical</span>. Las verticales no son funciones de x.</li>' +
+          '<li><span class="ok">Ecuación de la recta</span> — describe puntos (x, y) sin exigir que y sea función de x. Acá sí entran las verticales <span class="enfoque-mono">x = k</span>.</li>' +
+        '</ul>' +
+        '<p class="enfoque-kicker">Dos escrituras, la misma familia</p>' +
+        '<div class="enfoque-formula">Ax + By + C = 0</div>' +
+        '<div class="enfoque-formula alt">Ax + By = D <span style="color:var(--muted);font-weight:700"> con </span> D = −C</div>' +
+        '<p class="enfoque-lead">Son equivalentes: pasás el término independiente de un lado al otro. Pedimos <span class="enfoque-mono">(A, B) ≠ (0, 0)</span>.</p>' +
+        '<div class="enfoque-conv">' +
+          '<h2>Conversiones rápidas</h2>' +
+          '<ul>' +
+            '<li><span class="enfoque-mono">y = mx + b</span> → general: <span class="enfoque-mono">mx − y + b = 0</span></li>' +
+            '<li>General con B ≠ 0 → explícita: <span class="enfoque-mono">y = (−A/B)x − C/B</span></li>' +
+            '<li>Vectorial ↔ paramétrica: es la misma idea, una en vector y otra coordenada a coordenada.</li>' +
+            '<li>Paramétrica (v<sub>x</sub>, v<sub>y</sub> ≠ 0) → continua: se elimina λ.</li>' +
+          '</ul>' +
+        '</div>'
+    },
+    {
+      id: "general",
+      tab: "General",
+      color: "#eab308",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 1 · implícita</p>' +
+        '<h2 class="enfoque-title">General</h2>' +
+        '<div class="enfoque-formula">Ax + By + C = 0</div>' +
+        '<div class="enfoque-formula alt">Ax + By = D <span style="color:var(--muted);font-weight:700"> · </span> D = −C</div>' +
+        '<div class="enfoque-grid">' +
+          '<div class="enfoque-card"><span class="k">Parámetros</span><p>A, B, C · (A, B) ≠ (0, 0)</p></div>' +
+          '<div class="enfoque-card"><span class="k">Normal</span><p>n = (A, B)</p></div>' +
+          '<div class="enfoque-card"><span class="k">Director</span><p>d = (−B, A)</p></div>' +
+          '<div class="enfoque-card"><span class="k">Pendiente</span><p>m = −A/B si B ≠ 0</p></div>' +
+        '</div>' +
+        '<div class="enfoque-limits ok"><span class="k">Cubre</span>Verticales (B = 0, A ≠ 0 → x = −C/A) y horizontales (A = 0, B ≠ 0 → y = −C/B).</div>'
+    },
+    {
+      id: "explicita",
+      tab: "Explícita",
+      color: "#22c55e",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 2 · función</p>' +
+        '<h2 class="enfoque-title">Explícita</h2>' +
+        '<div class="enfoque-formula">y = mx + b</div>' +
+        '<div class="enfoque-grid">' +
+          '<div class="enfoque-card"><span class="k">Pendiente</span><p>m = Δy / Δx</p></div>' +
+          '<div class="enfoque-card"><span class="k">Ordenada</span><p>b = y(0) · corta al eje y</p></div>' +
+        '</div>' +
+        '<ul class="enfoque-notes">' +
+          '<li>Es <span class="hl">función lineal estricta</span>: y = f(x). Un x, una y.</li>' +
+          '<li>Horizontal: m = 0 → y = b.</li>' +
+        '</ul>' +
+        '<div class="enfoque-limits"><span class="k">No cubre</span>Verticales. No existe m finita para x = k.</div>'
+    },
+    {
+      id: "punto-pendiente",
+      tab: "Punto-m",
+      color: "#a855f7",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 3</p>' +
+        '<h2 class="enfoque-title">Punto-pendiente</h2>' +
+        '<div class="enfoque-formula">y − y<sub>0</sub> = m(x − x<sub>0</sub>)</div>' +
+        '<div class="enfoque-grid">' +
+          '<div class="enfoque-card"><span class="k">Punto</span><p>(x<sub>0</sub>, y<sub>0</sub>) sobre la recta</p></div>' +
+          '<div class="enfoque-card"><span class="k">Pendiente</span><p>m conocida</p></div>' +
+        '</div>' +
+        '<ul class="enfoque-notes">' +
+          '<li>Expandís y queda explícita: <span class="enfoque-mono">y = mx + (y<sub>0</sub> − m x<sub>0</sub>)</span>.</li>' +
+        '</ul>' +
+        '<div class="enfoque-limits"><span class="k">No cubre</span>Verticales (m no existe).</div>'
+    },
+    {
+      id: "dos-puntos",
+      tab: "2 puntos",
+      color: "#3b82f6",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 4</p>' +
+        '<h2 class="enfoque-title">Dos puntos</h2>' +
+        '<div class="enfoque-formula">' +
+          '<span class="frac"><span class="num">y − y<sub>1</sub></span><span class="den">y<sub>2</sub> − y<sub>1</sub></span></span>' +
+          ' = ' +
+          '<span class="frac"><span class="num">x − x<sub>1</sub></span><span class="den">x<sub>2</sub> − x<sub>1</sub></span></span>' +
+        '</div>' +
+        '<div class="enfoque-grid">' +
+          '<div class="enfoque-card"><span class="k">Puntos</span><p>(x<sub>1</sub>, y<sub>1</sub>) y (x<sub>2</sub>, y<sub>2</sub>)</p></div>' +
+          '<div class="enfoque-card"><span class="k">Condición</span><p>x<sub>1</sub> ≠ x<sub>2</sub></p></div>' +
+        '</div>' +
+        '<ul class="enfoque-notes">' +
+          '<li>Si y<sub>1</sub> = y<sub>2</sub> (y x<sub>1</sub> ≠ x<sub>2</sub>) es horizontal: y = y<sub>1</sub>.</li>' +
+        '</ul>' +
+        '<div class="enfoque-limits"><span class="k">No cubre</span>Verticales: si x<sub>1</sub> = x<sub>2</sub> el denominador de la derecha se anula. Ahí se escribe x = x<sub>1</sub>.</div>'
+    },
+    {
+      id: "segmentaria",
+      tab: "Segm.",
+      color: "#ec4899",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 5 · interceptos</p>' +
+        '<h2 class="enfoque-title">Segmentaria</h2>' +
+        '<div class="enfoque-formula">' +
+          '<span class="frac"><span class="num">x</span><span class="den">a</span></span>' +
+          ' + ' +
+          '<span class="frac"><span class="num">y</span><span class="den">b</span></span>' +
+          ' = 1' +
+        '</div>' +
+        '<div class="enfoque-grid">' +
+          '<div class="enfoque-card"><span class="k">Corta x</span><p>(a, 0) · a ≠ 0</p></div>' +
+          '<div class="enfoque-card"><span class="k">Corta y</span><p>(0, b) · b ≠ 0</p></div>' +
+        '</div>' +
+        '<div class="enfoque-limits"><span class="k">No cubre</span>Origen (no hay a, b que den 0/a + 0/b = 1). Tampoco horizontales ni verticales (harían a o b “infinito”).</div>'
+    },
+    {
+      id: "vectorial",
+      tab: "Vector",
+      color: "#14b8a6",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 6</p>' +
+        '<h2 class="enfoque-title">Vectorial</h2>' +
+        '<div class="enfoque-formula">(x, y) = (x<sub>0</sub>, y<sub>0</sub>) + λ(v<sub>x</sub>, v<sub>y</sub>)</div>' +
+        '<div class="enfoque-grid">' +
+          '<div class="enfoque-card"><span class="k">Punto</span><p>(x<sub>0</sub>, y<sub>0</sub>)</p></div>' +
+          '<div class="enfoque-card"><span class="k">Director</span><p>(v<sub>x</sub>, v<sub>y</sub>) ≠ (0, 0)</p></div>' +
+          '<div class="enfoque-card"><span class="k">Parámetro</span><p>λ ∈ ℝ recorre la recta</p></div>' +
+        '</div>' +
+        '<div class="enfoque-limits ok"><span class="k">Cubre</span>Todas las direcciones, verticales incluidas (v<sub>x</sub> = 0, v<sub>y</sub> ≠ 0).</div>'
+    },
+    {
+      id: "parametrica",
+      tab: "Paráms.",
+      color: "#f97316",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 7</p>' +
+        '<h2 class="enfoque-title">Paramétrica</h2>' +
+        '<div class="enfoque-formula">x = x<sub>0</sub> + λ v<sub>x</sub><br>y = y<sub>0</sub> + λ v<sub>y</sub></div>' +
+        '<p class="enfoque-lead">Es la vectorial escrita coordenada a coordenada. Mismo punto, mismo director, mismo λ.</p>' +
+        '<div class="enfoque-limits ok"><span class="k">Cubre</span>Todas las orientaciones si (v<sub>x</sub>, v<sub>y</sub>) ≠ (0, 0).</div>'
+    },
+    {
+      id: "continua",
+      tab: "Continua",
+      color: "#8b5cf6",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 8 · simétrica</p>' +
+        '<h2 class="enfoque-title">Continua</h2>' +
+        '<div class="enfoque-formula">' +
+          '<span class="frac"><span class="num">x − x<sub>0</sub></span><span class="den">v<sub>x</sub></span></span>' +
+          ' = ' +
+          '<span class="frac"><span class="num">y − y<sub>0</sub></span><span class="den">v<sub>y</sub></span></span>' +
+        '</div>' +
+        '<p class="enfoque-lead">Se obtiene al eliminar λ en la paramétrica. Los dos miembros valen el mismo λ.</p>' +
+        '<div class="enfoque-limits"><span class="k">Pide</span>v<sub>x</sub> ≠ 0 y v<sub>y</sub> ≠ 0. No escribe rectas horizontales ni verticales (ahí un denominador se anula).</div>'
+    },
+    {
+      id: "hesse",
+      tab: "Hesse",
+      color: "#06b6d4",
+      kind: "html",
+      html:
+        '<p class="enfoque-kicker">Forma 9 · normal</p>' +
+        '<h2 class="enfoque-title">Normal de Hesse</h2>' +
+        '<div class="enfoque-formula">x cos α + y sen α − p = 0</div>' +
+        '<div class="enfoque-grid">' +
+          '<div class="enfoque-card"><span class="k">p</span><p>distancia del origen a la recta · p ≥ 0</p></div>' +
+          '<div class="enfoque-card"><span class="k">α</span><p>ángulo del <em>normal</em> con el semieje x</p></div>' +
+        '</div>' +
+        '<ul class="enfoque-notes">' +
+          '<li>Es un caso de la general con <span class="enfoque-mono">A = cos α</span>, <span class="enfoque-mono">B = sen α</span>, <span class="enfoque-mono">C = −p</span> y <span class="ok">A² + B² = 1</span>.</li>' +
+        '</ul>' +
+        '<div class="enfoque-limits ok"><span class="k">Cubre</span>Todas las rectas del plano (el origen se escribe p = 0).</div>'
+    },
+    {
+      id: "elige",
+      tab: "Elegí",
+      color: "#fbbf24",
+      kind: "elige",
+      kicker: "Cierre",
+      title: "Quiero trabajar con…",
+      lead: "Marcá una o más formas. Los cuadrados se prenden y se apagan. Hace falta al menos una para seguir.",
+      storageKey: "campus_enfoque_recta_elige",
+      min: 1,
+      confirmLabel: "Seguir",
+      options: [
+        { id: "general", label: "General" },
+        { id: "explicita", label: "Explícita" },
+        { id: "segmentaria", label: "Segmentaria" },
+        { id: "vectorial", label: "Vectorial" }
+      ]
+    }
+  ]
+};
+</script>
+<script src="enfoque-elige.js?v=20260909c"></script>
+<script src="enfoque-tabs.js?v=20260909c"></script>
+<script src="lesson-bar.js?v=20260909" defer></script>
+</body>
+</html>
