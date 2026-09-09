@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "enfoque-tabs.css?v=20260909";
+  var CSS_HREF = "enfoque-tabs.css?v=20260909b";
   var PALETTE = [
     "#ef4444", "#eab308", "#22c55e", "#a855f7", "#3b82f6",
     "#ec4899", "#14b8a6", "#f97316", "#8b5cf6", "#06b6d4",
@@ -20,6 +20,16 @@
 
   function tabColor(tab, index) {
     return tab.color || PALETTE[index % PALETTE.length];
+  }
+
+  function inkFor(hex) {
+    var c = String(hex || "").replace("#", "");
+    if (c.length !== 6) return "#0b1018";
+    var r = parseInt(c.slice(0, 2), 16) / 255;
+    var g = parseInt(c.slice(2, 4), 16) / 255;
+    var b = parseInt(c.slice(4, 6), 16) / 255;
+    var L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    return L > 0.55 ? "#0b1018" : "#f8fafc";
   }
 
   function tabId(tab, index) {
@@ -155,6 +165,8 @@
       btn.setAttribute("aria-selected", "false");
       btn.tabIndex = -1;
       btn.style.setProperty("--tab-color", color);
+      btn.style.color = inkFor(color);
+      btn.title = tab.title || tab.tab || "";
       btn.textContent = tab.tab || tab.title || String(index + 1);
       btn.addEventListener("click", function () { activate(index, true); });
       btn.addEventListener("keydown", function (ev) {
