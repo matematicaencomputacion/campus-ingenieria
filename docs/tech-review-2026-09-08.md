@@ -64,6 +64,21 @@ same-origin ≥400. Corre en el job `browser-check`. Fue el que detectó el bug 
 Dato que lo hace viable: **las 188 lecciones son self-contained** (0 recursos
 externos), así que el headless corre sin red y es rápido.
 
+## De-duplicación CSS: Fase 1 hecha, Fase 2 descartada por ROI
+
+- **Fase 1 (PR #222):** extracción de los 29 bloques `<style>` **byte-idénticos** (132
+  lecciones) a archivos compartidos. HTML de `tools/`: 6.5 MB → 4.8 MB. Riesgo cero.
+- **Fase 2 (no shippeada):** convergir los ~55 bloques únicos restantes en un base +
+  deltas por lección. Se intentó sobre la familia core (6 lecciones, ~37 KB de base
+  compartible) con split a nivel regla (postcss). El **verificador de estilos
+  computados** (`scripts/computed-style-check.mjs`) detectó que el split cambiaba el
+  render: al mover reglas comunes a un `<link>` y dejar los deltas inline, el **orden de
+  cascada** se invierte cuando un delta originalmente precedía a una regla base con la
+  que colisiona. Resolverlo bien (análisis de orden regla por regla) es esfuerzo
+  desproporcionado para el ahorro (~37 KB / 6 lecciones). **Decisión: no hacer Fase 2.**
+  Queda el verificador como herramienta reutilizable para cualquier refactor CSS futuro
+  (capturar baseline con `--save`, comparar después con `--compare`).
+
 ## Backlog pendiente (no ejecutado)
 
 1. **Unificar navegación:** las 171 lecciones con back bespoke podrían migrar a
