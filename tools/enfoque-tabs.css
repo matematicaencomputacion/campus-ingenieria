@@ -140,6 +140,18 @@ a.back {
   color: var(--enfoque-active, var(--amber));
 }
 
+.enfoque-chrome-slide {
+  margin: 0 10px 0 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.enfoque-chrome-slide[hidden] { display: none !important; }
+
 .enfoque-chrome-actions {
   display: flex;
   gap: 6px;
@@ -179,8 +191,10 @@ a.back {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: 18px 52px 20px 44px;
+  padding: 18px 52px 52px 44px;
 }
+
+.enfoque-slide[hidden] { display: none !important; }
 
 .enfoque-main::before {
   content: "";
@@ -569,6 +583,40 @@ a.back {
 
 .frac .den { padding-top: 1px; }
 
+.enfoque-sketch {
+  display: block;
+  width: min(100%, 440px);
+  height: auto;
+  margin: 0 0 14px;
+  border-radius: 10px;
+  background: #0b1220;
+  border: 1px solid var(--row-border);
+}
+
+.enfoque-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.enfoque-legend li {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #c9d4e6;
+}
+
+.enfoque-legend .sw {
+  display: inline-block;
+  width: 1.1em;
+  height: 0.28em;
+  border-radius: 99px;
+  margin-right: 0.4em;
+  vertical-align: middle;
+}
+
 /* —— Elige squares —— */
 .enfoque-elige {
   display: grid;
@@ -690,13 +738,13 @@ button.btn:disabled {
   filter: none;
 }
 
-/* —— Lesson nav (soft chevrons) —— */
+/* —— Lesson nav (soft chevrons, upper campus position) —— */
 .enfoque-nav-host { position: relative; }
 
 .lesson-nav {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 44px;
+  transform: none;
   z-index: 7;
   text-decoration: none;
   opacity: 0.55;
@@ -710,7 +758,7 @@ button.btn:disabled {
 
 .lesson-nav:hover { opacity: 1; }
 .lesson-nav.prev { left: 4px; }
-.lesson-nav.next { right: calc(var(--enfoque-rail, 48px) + 4px); }
+.lesson-nav.next { right: 4px; }
 .lesson-nav .chev {
   display: block;
   width: 0;
@@ -720,11 +768,35 @@ button.btn:disabled {
 }
 .lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
 .lesson-nav.next .chev { border-left: 18px solid var(--mast); }
-.lesson-nav[aria-disabled="true"] {
+.lesson-nav[aria-disabled="true"],
+.lesson-nav:disabled {
   opacity: 0.2;
   pointer-events: none;
   cursor: not-allowed;
 }
+
+/* Dual pagers live inside the colored content panel, not over the rail. */
+.enfoque-pager--eleccion {
+  top: 6px;
+  transform: none;
+}
+
+.enfoque-pager--lamina {
+  top: auto;
+  bottom: 6px;
+  transform: none;
+  opacity: 0.48;
+}
+
+.enfoque-pager--lamina .chev {
+  border-top-width: 11px;
+  border-bottom-width: 11px;
+}
+
+.enfoque-pager--lamina.prev .chev { border-right-width: 14px; }
+.enfoque-pager--lamina.next .chev { border-left-width: 14px; }
+
+.enfoque-pager--lamina:hover { opacity: 1; }
 
 @media (max-width: 720px) {
   .enfoque-shell,
@@ -740,7 +812,7 @@ button.btn:disabled {
     border-bottom: 1px solid var(--border);
   }
   .enfoque-chrome { padding: 8px 40px 8px 40px; }
-  .enfoque-body { padding: 14px 40px 16px; }
+  .enfoque-body { padding: 14px 40px 48px; }
   .enfoque-rail {
     flex-direction: row;
     flex-wrap: nowrap;

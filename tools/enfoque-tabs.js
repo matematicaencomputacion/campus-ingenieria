@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "enfoque-tabs.css?v=20260909c";
+  var CSS_HREF = "enfoque-tabs.css?v=20260909d";
   var UI_KEY = "campus_enfoque_ui";
   var RAIL_SLIM = 48;
   var RAIL_LABELED = 88;
@@ -62,50 +62,83 @@
     }
   }
 
-  function fillPanel(panel, tab, cfg) {
+  function normalizeSlides(tab) {
+    if (Array.isArray(tab.slides) && tab.slides.length) return tab.slides;
     var kind = tab.kind || "html";
+    if (kind === "elige") {
+      return [{
+        kind: "elige",
+        kicker: tab.kicker,
+        title: tab.title,
+        lead: tab.lead,
+        html: tab.html,
+        options: tab.options,
+        storageKey: tab.storageKey,
+        min: tab.min,
+        confirmLabel: tab.confirmLabel,
+        onConfirm: tab.onConfirm
+      }];
+    }
+    return [{ kind: "html", html: tab.html || "" }];
+  }
+
+  function fillSlide(slideEl, slide, cfg) {
+    var kind = slide.kind || "html";
     switch (kind) {
       case "html":
-        panel.innerHTML = tab.html || "";
+        slideEl.innerHTML = slide.html || "";
         break;
       case "elige":
-        panel.innerHTML = "";
-        if (tab.title) {
+        slideEl.innerHTML = "";
+        if (slide.title) {
           var kicker = document.createElement("p");
           kicker.className = "enfoque-kicker";
-          kicker.textContent = tab.kicker || "Cierre";
+          kicker.textContent = slide.kicker || "Cierre";
           var title = document.createElement("h2");
           title.className = "enfoque-title";
-          title.textContent = tab.title;
+          title.textContent = slide.title;
           var lead = document.createElement("p");
           lead.className = "enfoque-lead";
-          lead.textContent = tab.lead || "Marcá una o más formas. Hace falta al menos una para seguir.";
-          panel.appendChild(kicker);
-          panel.appendChild(title);
-          panel.appendChild(lead);
+          lead.textContent = slide.lead || "Marcá una o más formas. Hace falta al menos una para seguir.";
+          slideEl.appendChild(kicker);
+          slideEl.appendChild(title);
+          slideEl.appendChild(lead);
         }
-        if (tab.html) {
+        if (slide.html) {
           var extra = document.createElement("div");
-          extra.innerHTML = tab.html;
-          panel.appendChild(extra);
+          extra.innerHTML = slide.html;
+          slideEl.appendChild(extra);
         }
         var host = document.createElement("div");
-        panel.appendChild(host);
+        slideEl.appendChild(host);
         if (!global.CampusEnfoqueElige) {
           throw new Error("Enfoque: falta enfoque-elige.js");
         }
         global.CampusEnfoqueElige.mount(host, {
-          options: tab.options || [],
-          storageKey: tab.storageKey || cfg.storageKey || "",
-          min: tab.min == null ? 1 : tab.min,
-          confirmLabel: tab.confirmLabel || "Seguir",
-          ariaLabel: tab.title || "Elegí formas",
-          onConfirm: tab.onConfirm
+          options: slide.options || [],
+          storageKey: slide.storageKey || cfg.storageKey || "",
+          min: slide.min == null ? 1 : slide.min,
+          confirmLabel: slide.confirmLabel || "Seguir",
+          ariaLabel: slide.title || "Elegí formas",
+          onConfirm: slide.onConfirm
         });
         break;
       default:
         unknownKind(kind);
     }
+  }
+
+  function makePager(kind, dir) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "lesson-nav enfoque-pager enfoque-pager--" + kind + " " + dir;
+    btn.setAttribute("data-enfoque-nav", kind);
+    btn.setAttribute("data-enfoque-dir", dir);
+    var chev = document.createElement("span");
+    chev.className = "chev";
+    chev.setAttribute("aria-hidden", "true");
+    btn.appendChild(chev);
+    return btn;
   }
 
   function mount(cfg) {
@@ -148,6 +181,11 @@
     var chromeTitle = document.createElement("p");
     chromeTitle.className = "enfoque-chrome-title";
 
+    var chromeSlide = document.createElement("span");
+    chromeSlide.className = "enfoque-chrome-slide";
+    chromeSlide.setAttribute("aria-live", "polite");
+    chromeSlide.hidden = true;
+
     var chromeActions = document.createElement("div");
     chromeActions.className = "enfoque-chrome-actions";
 
@@ -163,6 +201,7 @@
     chromeActions.appendChild(labelsBtn);
     chromeActions.appendChild(minBtn);
     chrome.appendChild(chromeTitle);
+    chrome.appendChild(chromeSlide);
     chrome.appendChild(chromeActions);
 
     var body = document.createElement("div");
@@ -202,8 +241,23 @@
 
     var tabBtns = [];
     var panels = [];
+    var slideSets = [];
+    var slideIndex = [];
     var active = start;
     var varHost = root.closest(".enfoque-nav-host") || root;
+
+    var tabPrev = makePager("eleccion", "prev");
+    var tabNext = makePager("eleccion", "next");
+    var slidePrev = makePager("lamina", "prev");
+    var slideNext = makePager("lamina", "next");
+    tabPrev.title = "Elección · etiqueta anterior";
+    tabNext.title = "Elección · etiqueta siguiente";
+    slidePrev.title = "Lámina anterior";
+    slideNext.title = "Lámina siguiente";
+    tabPrev.setAttribute("aria-label", "Etiqueta anterior");
+    tabNext.setAttribute("aria-label", "Etiqueta siguiente");
+    slidePrev.setAttribute("aria-label", "Lámina anterior");
+    slideNext.setAttribute("aria-label", "Lámina siguiente");
 
     function persist() {
       writeUi(uiKey, { labels: labelsOn, min: minimized, rail: railPx });
@@ -256,14 +310,54 @@
       persist();
     }
 
-    function activate(index, fromUser) {
+    function setPagerDisabled(btn, disabled) {
+      btn.setAttribute("aria-disabled", disabled ? "true" : "false");
+      btn.disabled = !!disabled;
+    }
+
+    function syncSlides() {
+      var slides = slideSets[active] || [];
+      var cur = slideIndex[active] || 0;
+      if (cur < 0) cur = 0;
+      if (slides.length && cur >= slides.length) cur = slides.length - 1;
+      slideIndex[active] = cur;
+      slides.forEach(function (el, i) {
+        el.hidden = i !== cur;
+      });
+      var n = slides.length;
+      chromeSlide.textContent = n > 1 ? (cur + 1) + " / " + n : "";
+      chromeSlide.hidden = n <= 1;
+      setPagerDisabled(slidePrev, cur <= 0);
+      setPagerDisabled(slideNext, n <= 1 || cur >= n - 1);
+      body.scrollTop = 0;
+    }
+
+    function showSlide(next) {
+      var n = (slideSets[active] || []).length;
+      if (!n) return;
+      if (next < 0) next = 0;
+      if (next >= n) next = n - 1;
+      slideIndex[active] = next;
+      syncSlides();
+    }
+
+    function stepTab(delta) {
+      if (!tabs.length) return;
+      var next = (active + delta + tabs.length) % tabs.length;
+      activate(next, true, false);
+    }
+
+    function stepSlide(delta) {
+      showSlide((slideIndex[active] || 0) + delta);
+    }
+
+    function activate(index, fromUser, focusTab) {
       if (index < 0) index = 0;
       if (index >= tabs.length) index = tabs.length - 1;
       active = index;
       var color = tabColor(tabs[index], index);
       main.style.setProperty("--enfoque-active", color);
       shell.style.setProperty("--enfoque-active", color);
-      body.scrollTop = 0;
       var label = tabs[index].title || tabs[index].tab || "";
       chromeTitle.textContent = label;
       tabBtns.forEach(function (btn, i) {
@@ -272,6 +366,7 @@
         btn.tabIndex = on ? 0 : -1;
         panels[i].hidden = !on;
       });
+      syncSlides();
       if (fromUser && minimized) setMinimized(false);
       if (fromUser && cfg.hash !== false) {
         var id = tabId(tabs[index], index);
@@ -281,7 +376,7 @@
           global.location.hash = id;
         }
       }
-      if (fromUser) tabBtns[index].focus();
+      if (fromUser && focusTab !== false) tabBtns[index].focus();
     }
 
     tabs.forEach(function (tab, index) {
@@ -340,9 +435,21 @@
       panel.setAttribute("role", "tabpanel");
       panel.setAttribute("aria-labelledby", btn.id);
       panel.hidden = true;
-      fillPanel(panel, tab, cfg);
+      var slides = normalizeSlides(tab);
+      var slideEls = [];
+      slides.forEach(function (slide, sIdx) {
+        var slideEl = document.createElement("div");
+        slideEl.className = "enfoque-slide";
+        slideEl.setAttribute("data-slide", String(sIdx));
+        slideEl.hidden = sIdx !== 0;
+        fillSlide(slideEl, slide, cfg);
+        panel.appendChild(slideEl);
+        slideEls.push(slideEl);
+      });
       body.appendChild(panel);
       panels.push(panel);
+      slideSets.push(slideEls);
+      slideIndex.push(0);
     });
 
     function onLabelsClick() { setLabels(!labelsOn); }
@@ -415,8 +522,17 @@
       persist();
     });
 
+    tabPrev.addEventListener("click", function () { stepTab(-1); });
+    tabNext.addEventListener("click", function () { stepTab(1); });
+    slidePrev.addEventListener("click", function () { stepSlide(-1); });
+    slideNext.addEventListener("click", function () { stepSlide(1); });
+
     main.appendChild(chrome);
     main.appendChild(body);
+    main.appendChild(tabPrev);
+    main.appendChild(tabNext);
+    main.appendChild(slidePrev);
+    main.appendChild(slideNext);
     rail.appendChild(split);
     rail.appendChild(tabStrip);
     rail.appendChild(railTools);
@@ -428,8 +544,14 @@
 
     var api = {
       CFG: cfg,
-      activate: function (index) { activate(index, true); },
+      activate: function (index) { activate(index, true, false); },
       index: function () { return active; },
+      slide: function () { return slideIndex[active] || 0; },
+      slideCount: function () { return (slideSets[active] || []).length; },
+      nextTab: function () { stepTab(1); },
+      prevTab: function () { stepTab(-1); },
+      nextSlide: function () { stepSlide(1); },
+      prevSlide: function () { stepSlide(-1); },
       setMinimized: setMinimized,
       setLabels: setLabels,
       destroy: function () {
