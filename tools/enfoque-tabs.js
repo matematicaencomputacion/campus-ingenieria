@@ -360,6 +360,7 @@
       shell.style.setProperty("--enfoque-active", color);
       var label = tabs[index].title || tabs[index].tab || "";
       chromeTitle.textContent = label;
+      slideIndex[index] = 0;
       tabBtns.forEach(function (btn, i) {
         var on = i === index;
         btn.setAttribute("aria-selected", on ? "true" : "false");

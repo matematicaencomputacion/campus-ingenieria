@@ -775,17 +775,30 @@ button.btn:disabled {
   cursor: not-allowed;
 }
 
-/* Dual pagers live inside the colored content panel, not over the rail. */
-.enfoque-pager--eleccion {
+/* Dual pagers live inside the colored content panel, not over the rail.
+   Specificity beats later .lesson-nav { top: 44px } from lesson-shell.css. */
+.enfoque-main > .enfoque-pager.lesson-nav {
+  height: auto;
+  right: 4px;
+}
+.enfoque-main > .enfoque-pager.prev { left: 4px; right: auto; }
+
+.enfoque-main > .enfoque-pager--eleccion.lesson-nav {
   top: 6px;
+  bottom: auto;
   transform: none;
 }
 
-.enfoque-pager--lamina {
+.enfoque-main > .enfoque-pager--lamina.lesson-nav {
   top: auto;
   bottom: 6px;
   transform: none;
   opacity: 0.48;
+}
+
+.enfoque-main > .enfoque-pager--lamina.lesson-nav:hover,
+.enfoque-main > .enfoque-pager--lamina.lesson-nav:focus-visible {
+  opacity: 1;
 }
 
 .enfoque-pager--lamina .chev {
