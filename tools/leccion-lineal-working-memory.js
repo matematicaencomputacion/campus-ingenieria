@@ -13,6 +13,7 @@
   var RUN = "#60a5fa";
   var RISE = "#34d399";
   var PAD = { l: 48, r: 36, t: 28, b: 42 };
+  var viewPad = { l: PAD.l, r: PAD.r, t: PAD.t, b: PAD.b };
   var VIEW = 12;
   var EASY_ZOOM = 1.5;
   var XMIN = -VIEW;
@@ -769,10 +770,10 @@
     ctx.strokeStyle = "#64748b";
     ctx.lineWidth = 1.6;
     ctx.beginPath();
-    ctx.moveTo(PAD.l, ox.y);
-    ctx.lineTo(canvas.width - PAD.r, ox.y);
-    ctx.moveTo(ox.x, PAD.t);
-    ctx.lineTo(ox.x, canvas.height - PAD.b);
+    ctx.moveTo(viewPad.l, ox.y);
+    ctx.lineTo(canvas.width - viewPad.r, ox.y);
+    ctx.moveTo(ox.x, viewPad.t);
+    ctx.lineTo(ox.x, canvas.height - viewPad.b);
     ctx.stroke();
     ctx.fillStyle = MUTED;
     ctx.font = "600 12px ui-monospace, Menlo, monospace";
@@ -809,10 +810,10 @@
     ctx.font = "700 14px Segoe UI, system-ui, sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
-    ctx.fillText("x", canvas.width - PAD.r - 12, ox.y - 8);
+    ctx.fillText("x", canvas.width - viewPad.r - 12, ox.y - 8);
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("y", ox.x + 10, PAD.t + 4);
+    ctx.fillText("y", ox.x + 10, viewPad.t + 4);
   }
 
   function drawLine() {
