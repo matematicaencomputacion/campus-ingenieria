@@ -363,18 +363,18 @@
   }
 
   function worldToScreen(x, y) {
-    var w = canvas.width - PAD.l - PAD.r;
-    var h = canvas.height - PAD.t - PAD.b;
-    var sx = PAD.l + ((x - XMIN) / (XMAX - XMIN)) * w;
-    var sy = PAD.t + ((YMAX - y) / (YMAX - YMIN)) * h;
+    var w = canvas.width - viewPad.l - viewPad.r;
+    var h = canvas.height - viewPad.t - viewPad.b;
+    var sx = viewPad.l + ((x - XMIN) / (XMAX - XMIN)) * w;
+    var sy = viewPad.t + ((YMAX - y) / (YMAX - YMIN)) * h;
     return { x: sx, y: sy };
   }
 
   function screenToWorld(px, py) {
-    var w = canvas.width - PAD.l - PAD.r;
-    var h = canvas.height - PAD.t - PAD.b;
-    var x = XMIN + ((px - PAD.l) / w) * (XMAX - XMIN);
-    var y = YMAX - ((py - PAD.t) / h) * (YMAX - YMIN);
+    var w = canvas.width - viewPad.l - viewPad.r;
+    var h = canvas.height - viewPad.t - viewPad.b;
+    var x = XMIN + ((px - viewPad.l) / w) * (XMAX - XMIN);
+    var y = YMAX - ((py - viewPad.t) / h) * (YMAX - YMIN);
     return { x: x, y: y };
   }
 
@@ -1151,6 +1151,20 @@
     }
   }
 
+
+
+  function easyFocusBounds() {
+    var p1 = easyP1();
+    var p2 = easyP2();
+    var xs = [0, p1.x, p2.x];
+    var ys = [0, p1.y, p2.y];
+    return {
+      xmin: Math.min.apply(null, xs) - EASY_PAD,
+      xmax: Math.max.apply(null, xs) + EASY_PAD,
+      ymin: Math.min.apply(null, ys) - EASY_PAD,
+      ymax: Math.max.apply(null, ys) + EASY_PAD
+    };
+  }
 
   function applyIsotropicView(bounds, plotW, plotH) {
     var needW = Math.max(bounds.xmax - bounds.xmin, 1);
