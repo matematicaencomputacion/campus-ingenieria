@@ -70,7 +70,7 @@ assert(bakFiles.length === 0, `No hay archivos temporales *.bak (encontrados: ${
 
 // 3. Sintaxis JavaScript
 console.log('\n⚙️ 3. Validando sintaxis JavaScript (node --check):');
-const jsFiles = ['app.js', 'data.js', 'tools/game-kit.js'];
+const jsFiles = ['app.js', 'data.js', 'tools/game-kit.js', 'tools/leccion-lineal-working-memory.js'];
 for (const rel of jsFiles) {
   const full = path.join(ROOT, rel);
   if (fs.existsSync(full)) {
