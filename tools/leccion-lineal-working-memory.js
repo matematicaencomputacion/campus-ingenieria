@@ -24,6 +24,8 @@
   var SNAP_IN = 0.55;
   var SNAP_OUT = 0.95;
   var BIG_R = 14;
+  var EASY_PAD = 1.5;
+  var EASY_ZOOM = 1.5;
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -428,25 +430,58 @@
     confettiCanvas.height = graphWrap.clientHeight || canvas.height;
   }
 
+  function easyFocusBounds() {
+    var p1 = easyP1();
+    var p2 = easyP2();
+    var xs = [0, p1.x, p2.x];
+    var ys = [0, p1.y, p2.y];
+    return {
+      xmin: Math.min.apply(null, xs) - EASY_PAD,
+      xmax: Math.max.apply(null, xs) + EASY_PAD,
+      ymin: Math.min.apply(null, ys) - EASY_PAD,
+      ymax: Math.max.apply(null, ys) + EASY_PAD
+    };
+  }
+
+  function applyIsotropicView(bounds, plotW, plotH) {
+    var needW = Math.max(bounds.xmax - bounds.xmin, 1);
+    var needH = Math.max(bounds.ymax - bounds.ymin, 1);
+    var s = Math.min(plotW / needW, plotH / needH);
+    if (!(s > 0) || !isFinite(s)) s = 1;
+    var worldW = plotW / s;
+    var worldH = plotH / s;
+    var cx = (bounds.xmin + bounds.xmax) / 2;
+    var cy = (bounds.ymin + bounds.ymax) / 2;
+    XMIN = cx - worldW / 2;
+    XMAX = cx + worldW / 2;
+    YMIN = cy - worldH / 2;
+    YMAX = cy + worldH / 2;
+  }
+
   function sizeCanvas() {
     var wrapW = graphWrap.clientWidth || 900;
-    var cssH = Math.max(420, Math.min(720, wrapW * 0.74));
+    var normalH = Math.max(420, Math.min(720, wrapW * 0.74));
+    var cssH = normalH;
     var easy = isEasyPhase();
     graphWrap.classList.toggle("easy-focused", easy);
     XMIN = YMIN = -VIEW;
     XMAX = YMAX = VIEW;
-    if (easy) {
-      // Keep one stable camera for the origin, both points and the h/v corner.
-      var p1 = easyP1();
-      var p2 = easyP2();
-      XMIN = Math.min(0, p2.x) - 1.5;
-      XMAX = Math.max(0, p2.x) + 1.5;
-      YMIN = Math.min(0, p1.y, p2.y) - 2;
-      YMAX = Math.max(0, p1.y, p2.y) + 2;
-      cssH = Math.max(wrapW < 600 ? 240 : 140, cssH / 3);
-    }
     // Use CSS pixels in easy mode so the mobile tokens retain their hit area.
-    canvas.width = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
+    var canvasW = easy ? Math.round(wrapW) : Math.max(640, Math.round(wrapW));
+    if (easy) {
+      // Stable isotropic camera: origin, P1, P2 and the h/v travel, square units.
+      var bounds = easyFocusBounds();
+      var plotW = Math.max(1, canvasW - PAD.l - PAD.r);
+      var normalPlotH = Math.max(1, normalH - PAD.t - PAD.b);
+      var originalUnit = Math.min(plotW, normalPlotH) / (2 * VIEW);
+      var needH = Math.max(bounds.ymax - bounds.ymin, 1);
+      var targetUnit = originalUnit * EASY_ZOOM;
+      var floorH = Math.max(wrapW < 600 ? 240 : 140, normalH / 3);
+      cssH = Math.max(floorH, Math.round(needH * targetUnit + PAD.t + PAD.b));
+      cssH = Math.min(cssH, normalH);
+      applyIsotropicView(bounds, plotW, Math.max(1, cssH - PAD.t - PAD.b));
+    }
+    canvas.width = canvasW;
     canvas.height = Math.round(cssH);
     sizeConfetti();
   }

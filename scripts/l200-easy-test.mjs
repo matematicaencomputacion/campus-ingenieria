@@ -57,13 +57,25 @@ for (const width of [390, 1440]) {
       const rect = c.getBoundingClientRect();
       const banners = ['easyBanner', 'stepCartel'].map(id => document.getElementById(id).getBoundingClientRect().bottom);
       const compact = rect.height;
+      const aspect = [];
+      for (const b of api.B_OPTS) for (const m of api.M_OPTS) {
+        api.resetAll(false); api.chooseB(b); api.chooseM(m); api.startFormaFacil();
+        const o = api.worldToScreen(0, 0);
+        const x1 = api.worldToScreen(1, 0);
+        const y1 = api.worldToScreen(0, 1);
+        aspect.push({ phase: 'easy-b', b, m, sx: x1.x - o.x, sy: o.y - y1.y });
+      }
       api.resetAll(false);
       const origin = api.worldToScreen(0,0), corner = api.worldToScreen(12,12);
-      return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner};
+      const oN = api.worldToScreen(0, 0);
+      const originalUnit = Math.min(api.worldToScreen(1, 0).x - oN.x, oN.y - api.worldToScreen(0, 1).y);
+      return {normal, compact, failures, banners, top: rect.top, restored: c.getBoundingClientRect().height, origin, corner, aspect, originalUnit};
     });
     assert.deepEqual(result.failures, []);
-    if (width === 1440) assert.ok(Math.abs(result.compact / result.normal - 1/3) < .01, JSON.stringify(result));
-    else assert.ok(result.compact >= 239, JSON.stringify(result));
+    assert.ok(result.compact <= result.normal + 1, JSON.stringify({compact: result.compact, normal: result.normal}));
+    if (width === 390) assert.ok(result.compact >= 239, JSON.stringify(result));
+    assert.ok(result.aspect.every(a => Math.abs(a.sx - a.sy) < 0.75), JSON.stringify(result.aspect.filter(a => Math.abs(a.sx - a.sy) >= 0.75)));
+    assert.ok(result.aspect.every(a => a.sx > result.originalUnit + 0.5), JSON.stringify({originalUnit: result.originalUnit, aspect: result.aspect}));
     assert.ok(result.banners.every(bottom => bottom <= result.top), 'Las consignas no tapan el plano');
     assert.equal(result.restored, result.normal);
     assert.ok(result.corner.x > result.origin.x && result.corner.y < result.origin.y);
@@ -85,6 +97,11 @@ for (const width of [390, 1440]) {
     }
     await drag({x:0,y:0},{x:0,y:3});
     await p.waitForFunction(() => window.__L200.state.phase === 'easy-m');
+    const unit = await p.evaluate(() => {
+      const a = window.__L200, o = a.worldToScreen(0, 0);
+      return { sx: a.worldToScreen(1, 0).x - o.x, sy: o.y - a.worldToScreen(0, 1).y };
+    });
+    assert.ok(Math.abs(unit.sx - unit.sy) < 0.75, JSON.stringify(unit));
     await drag({x:0,y:3},{x:2,y:0});
     await p.waitForFunction(() => window.__L200.state.phase === 'easy-line');
     assert.equal(await p.evaluate(() => window.__L200.state.bad), 0);
