@@ -9,12 +9,13 @@
     "test": "node scripts/smoke-test.mjs && node --test scripts/*unit.test.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
     "test:interaction": "node scripts/interaction-smoke.mjs",
-    "test:all": "npm test && npm run test:browser && npm run test:interaction && npm run test:navigation && npm run test:l200",
+    "test:all": "npm test && npm run test:browser && npm run test:interaction && npm run test:navigation && npm run test:l200 && npm run test:l201",
     "css:snapshot": "node scripts/computed-style-check.mjs",
     "check": "node scripts/smoke-test.mjs",
     "reconcile": "bash scripts/reconcile-live.sh --dry-run",
     "test:navigation": "node --test scripts/navigation-test.mjs",
-    "test:l200": "node --test scripts/l200-easy-test.mjs"
+    "test:l200": "node --test scripts/l200-easy-test.mjs",
+    "test:l201": "node --test scripts/l201-media-test.mjs"
   },
   "keywords": [
     "campus",

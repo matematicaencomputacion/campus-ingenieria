@@ -94,3 +94,6 @@ jobs:
 
       - name: Run L200 focused graph and dictation tests
         run: npm run test:l200
+
+      - name: Run L201 Enfoque media bar tests
+        run: npm run test:l201

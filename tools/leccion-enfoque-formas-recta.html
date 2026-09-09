@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Lección 201 · Enfoque · formas de la recta</title>
-<link id="enfoque-tabs-css" rel="stylesheet" href="enfoque-tabs.css?v=20260909d" />
+<link id="enfoque-tabs-css" rel="stylesheet" href="enfoque-tabs.css?v=20260909e" />
 <link id="campus-lesson-shell-css" rel="stylesheet" href="lesson-shell.css?v=20260909-nav2">
 <script src="lesson-navigation.js?v=20260909-nav2" defer></script>
 </head>
@@ -22,7 +22,7 @@
     <div class="enfoque-nav-host">
       <div id="enfoqueRoot"></div>
     </div>
-    <p class="hint">Enfoque · riel de color · arriba: elección de etiqueta · abajo: láminas · Etiquetas / Minimizar (Ctrl+Shift+\)</p>
+    <p class="hint">Enfoque · riel de color · arriba: elección de etiqueta · abajo: láminas y audio · Etiquetas / Minimizar (Ctrl+Shift+\)</p>
   </div>
 </div>
 
@@ -32,6 +32,8 @@ window.__ENFOQUE_CFG__ = {
   mount: "#enfoqueRoot",
   storageKey: "campus_enfoque_recta_elige",
   tablistLabel: "Formas de la recta",
+  /* Un archivo por lámina: audio/l201/{tabId}-{índice}.mp3 (u .ogg). Sin archivo, Play dice «Sin audio aún». */
+  audioBase: "audio/l201",
   tabs: [
     {
       id: "teoria",
@@ -44,6 +46,7 @@ window.__ENFOQUE_CFG__ = {
             '<p class="enfoque-kicker">Marco</p>' +
             '<h2 class="enfoque-title">Horizontal, vertical u oblicua</h2>' +
             '<p class="enfoque-lead">En el plano una recta se presenta de tres maneras. Las tres se grafican. Las tres se escriben con <span class="ok">ecuaciones</span>. No todas son <span class="hl">funciones</span> <span class="enfoque-mono">y = f(x)</span>.</p>' +
+            '<div class="enfoque-sketch-row">' +
             '<svg class="enfoque-sketch" viewBox="0 0 440 236" role="img" aria-label="Tres rectas: horizontal, vertical y oblicua sobre ejes cartesianos">' +
               '<rect x="0" y="0" width="440" height="236" fill="#0b1220"/>' +
               '<g stroke="#334155" stroke-width="1.2" fill="none">' +
@@ -61,6 +64,8 @@ window.__ENFOQUE_CFG__ = {
               '<text x="224" y="52" fill="#fda4af" font-size="13" font-family="Segoe UI, system-ui, sans-serif" font-weight="800">vertical</text>' +
               '<text x="286" y="64" fill="#fcd34d" font-size="13" font-family="Segoe UI, system-ui, sans-serif" font-weight="800">oblicua</text>' +
             '</svg>' +
+            '<aside class="enfoque-companion">Las rectas horizontales y oblicuas son funciones, y las rectas verticales no son funciones.</aside>' +
+            '</div>' +
             '<ul class="enfoque-legend" aria-hidden="true">' +
               '<li><span class="sw" style="background:#2dd4bf"></span>y = k</li>' +
               '<li><span class="sw" style="background:#fb7185"></span>x = k</li>' +
@@ -380,7 +385,7 @@ window.__ENFOQUE_CFG__ = {
 };
 </script>
 <script src="enfoque-elige.js?v=20260909d"></script>
-<script src="enfoque-tabs.js?v=20260909d"></script>
+<script src="enfoque-tabs.js?v=20260909e"></script>
 <script src="lesson-bar.js?v=20260909-nav2" defer></script>
 </body>
 </html>
