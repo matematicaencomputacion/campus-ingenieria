@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Construcción de la función coseno</title>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #1a2332; --ink: #e8eef7; --muted: #8b9bb4;
+      --accent: #6ea8fe; --point: #c084fc; --cos: #f472b6; --amber: #FFBF00;
+      --ok: #5ad4a8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: system-ui, ui-sans-serif, sans-serif;
+      background: var(--bg); color: var(--ink); padding: 14px;
+    }
+    .wrap { max-width: 1280px; width: 100%; margin: 0 auto; display: grid; gap: 10px; }
+    h1 { font-size: 1.25rem; margin: 0; font-weight: 700; }
+    .sub { color: var(--muted); font-size: 0.86rem; margin: 4px 0 0; line-height: 1.4; }
+    a.back { color: var(--accent); font-size: 0.82rem; text-decoration: none; }
+    .card {
+      background: var(--panel); border: 1px solid #2a3548; border-radius: 12px; padding: 12px;
+    }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button.btn {
+      border: 0; border-radius: 8px; padding: 9px 14px; font: inherit; font-weight: 650;
+      cursor: pointer; background: #2a3c58; color: var(--ink);
+    }
+    button.btn.primary { background: var(--accent); color: #0b1018; }
+    button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .narration { font-size: 0.9rem; color: var(--muted); line-height: 1.45; margin: 0; min-height: 1.4em; }
+    .narration strong { color: var(--ink); }
+    .hint { font-size: 0.82rem; color: var(--muted); line-height: 1.4; margin: 6px 0 0; }
+    .graph-wrap { position: relative; }
+    canvas {
+      width: 100%; height: auto; display: block; border-radius: 10px;
+      background: #0b1018; touch-action: none;
+    }
+    .screen-tag { font-size: 0.78rem; color: var(--muted); }
+
+    .locus-strip {
+      margin-top: 10px;
+      display: flex; flex-wrap: wrap; gap: 6px;
+      justify-content: flex-end; align-items: center;
+    }
+    .locus-strip .locus {
+      border: 1px solid #2a3548; background: #121a27; color: #4a5a72;
+      font: inherit; font-weight: 700; font-size: 0.82rem;
+      padding: 7px 11px; border-radius: 999px;
+      cursor: default; transition: color .15s, background .15s, border-color .15s, box-shadow .15s;
+      min-width: 2.2em; text-align: center;
+    }
+    .locus-strip .locus.on {
+      color: #0b1018; background: #FFBF00; border-color: #FFBF00;
+      box-shadow: 0 0 12px rgba(255,191,0,.45);
+    }
+    .lesson-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      border: 0; background: transparent; cursor: pointer; padding: 10px; opacity: 0.85; z-index: 4;
+    }
+    .lesson-nav:hover { opacity: 1; }
+    .lesson-nav.prev { left: 6px; }
+    .lesson-nav.next { right: 6px; }
+    .lesson-nav .chev {
+      display: block; width: 0; height: 0;
+      border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+    }
+    .lesson-nav.prev .chev { border-right: 18px solid #60a5fa; }
+    .lesson-nav.next .chev { border-left: 18px solid #60a5fa; }
+    .lesson-nav:disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <a class="back" href="index.html">← Tools Campus</a>
+      <h1>Construcción de la función coseno</h1>
+      <p class="sub">Segmento horizontal → cae al eje X → rota a Y (mismo signo) → se traslada a la gráfica cos θ.</p>
+    </div>
+
+    <div class="card">
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button class="btn primary" id="playBtn">▶ Play</button>
+        <button class="btn" id="nextBtn">Siguiente</button>
+        <button class="btn" id="stopBtn" disabled>Detener</button>
+        <button class="btn" id="resetBtn">Reset</button>
+        <span class="screen-tag">Espejo del seno · proyección horizontal</span>
+      </div>
+      <p class="narration" id="narration">Tocá un grado bajo el eje o usá <strong>▶ Play</strong> / <strong>Siguiente</strong>.</p>
+      <p class="hint">cos θ es el segmento horizontal; lo llevamos al eje Y (rotando en (0,0)) y luego a la gráfica. ◀ seno · ▶ transformaciones / Lección 10.</p>
+    </div>
+
+    <div class="card" style="padding:8px;">
+      <div class="graph-wrap">
+        <canvas id="c" width="1320" height="560" aria-label="Construcción de cos θ"></canvas>
+        <button type="button" id="screenPrev" class="lesson-nav prev" title="Construcción de la función seno" aria-label="Anterior"><span class="chev" aria-hidden="true"></span></button>
+        <button type="button" id="screenNext" class="lesson-nav next" title="Lección 10 · Transformaciones" aria-label="Siguiente"><span class="chev" aria-hidden="true"></span></button>
+      </div>
+
+        <div class="locus-strip" id="locusStrip" aria-label="Cuadrante o eje activo">
+          <span class="locus" data-locus="q1">I</span>
+          <span class="locus" data-locus="q2">II</span>
+          <span class="locus" data-locus="q3">III</span>
+          <span class="locus" data-locus="q4">IV</span>
+          <span class="locus" data-locus="x">eje X</span>
+          <span class="locus" data-locus="y">eje Y</span>
+        </div>
+    </div>
+  </div>
+
+  <script>
+  const DEGS30 = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360];
+  const COS_LAB = {
+    0: "1", 30: "√3/2", 45: "√2/2", 60: "1/2", 90: "0", 120: "−1/2", 135: "−√2/2", 150: "−√3/2", 180: "−1",
+    210: "−√3/2", 225: "−√2/2", 240: "−1/2", 270: "0", 300: "1/2", 315: "√2/2", 330: "√3/2", 360: "1"
+  };
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const narration = document.getElementById("narration");
+  const playBtn = document.getElementById("playBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  let revealed = [];
+  let playing = false;
+  let playAbort = false;
+  let anim = null; // current animation state
+  let trails = []; // parked vertical bars on the cos graph
+  let yAxisMarks = [];
+  let tickHits = [];
+
+  function setNarration(html) {
+    narration.innerHTML = html;
+  }
+  function waitMs(ms) {
+    return new Promise((r) => {
+      const t = setTimeout(r, ms);
+      if (anim) anim._wait = t;
+    });
+  }
+  function degToRad(d) { return d * Math.PI / 180; }
+  function cosLabel(deg) { return COS_LAB[deg] != null ? COS_LAB[deg] : "?"; }
+
+  function layout() {
+    const w = canvas.width, h = canvas.height;
+    const cy = h * 0.48;
+    const mid = w * 0.38;
+    const R = Math.min(h * 0.36, mid * 0.42);
+    const cx = mid * 0.48;
+    const sepX = mid - 22;
+    const sx0 = mid + 56;
+    const sx1 = w - 36;
+    return { w, h, mid, sepX, cx, cy, R, sx0, sx1 };
+  }
+
+  function circleToCanvas(x, y, L) { return [L.cx + x * L.R, L.cy - y * L.R]; }
+  function cosGraphX(deg, L) { return L.sx0 + (deg / 360) * (L.sx1 - L.sx0); }
+  function cosGraphY(val, L) { return L.cy - val * L.R; }
+
+  function easeOutCubic(u) { return 1 - Math.pow(1 - u, 3); }
+
+  function drawAxesCircle(L) {
+    const { cx, cy, R } = L;
+    ctx.save();
+    ctx.strokeStyle = "#4b5d7a"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(cx - R - 18, cy); ctx.lineTo(cx + R + 18, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + R + 18); ctx.lineTo(cx, cy - R - 18); ctx.stroke();
+    ctx.fillStyle = "#4b5d7a";
+    ctx.beginPath(); ctx.moveTo(cx + R + 18, cy); ctx.lineTo(cx + R + 8, cy - 5); ctx.lineTo(cx + R + 8, cy + 5); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, cy - R - 18); ctx.lineTo(cx - 5, cy - R - 8); ctx.lineTo(cx + 5, cy - R - 8); ctx.fill();
+    ctx.strokeStyle = "#e8eef7"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "#8b9bb4";
+    ctx.font = "600 12px system-ui,sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("x", cx + R + 10, cy + 14);
+    ctx.fillText("y", cx + 8, cy - R - 10);
+    ctx.fillText("radio = 1", cx + R * 0.35, cy - R * 0.55);
+    ctx.restore();
+  }
+
+  function drawAxesCos(L) {
+    const { sx0, sx1, cy, R, sepX } = L;
+    ctx.save();
+    ctx.strokeStyle = "#f472b6"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(sepX, cy - R - 20); ctx.lineTo(sepX, cy + R + 20); ctx.stroke();
+    ctx.strokeStyle = "#4b5d7a"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(sx0 - 8, cy); ctx.lineTo(sx1 + 8, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx0, cy + R + 12); ctx.lineTo(sx0, cy - R - 12); ctx.stroke();
+    ctx.fillStyle = "#4b5d7a";
+    ctx.beginPath(); ctx.moveTo(sx1 + 8, cy); ctx.lineTo(sx1 - 2, cy - 5); ctx.lineTo(sx1 - 2, cy + 5); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx0, cy - R - 12); ctx.lineTo(sx0 - 5, cy - R - 2); ctx.lineTo(sx0 + 5, cy - R - 2); ctx.fill();
+    ctx.fillStyle = "#8b9bb4";
+    ctx.font = "600 12px system-ui,sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText("θ (°)", (sx0 + sx1) / 2, cy + R + 28);
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    ctx.fillText("cos θ", sx0 - 10, cy - R - 8);
+    ctx.fillText("1", sx0 - 8, cosGraphY(1, L));
+    ctx.fillText("0", sx0 - 8, cy);
+    ctx.fillText("−1", sx0 - 8, cosGraphY(-1, L));
+
+    tickHits = [];
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "700 10px ui-monospace, Menlo, sans-serif";
+    for (const d of DEGS30) {
+      const x = cosGraphX(d, L);
+      const label = String(d) + "°";
+      const tw = ctx.measureText(label).width;
+      const bw = Math.max(tw + 10, 28), bh = 20;
+      const bx = x - bw / 2, by = cy + 14;
+      const active = revealed.includes(d);
+      ctx.fillStyle = active ? "rgba(244,114,182,0.28)" : "#121a27";
+      ctx.strokeStyle = active ? "#f472b6" : "#2a3548";
+      ctx.lineWidth = 1;
+      const r = 8;
+      ctx.beginPath();
+      ctx.moveTo(bx + r, by);
+      ctx.arcTo(bx + bw, by, bx + bw, by + bh, r);
+      ctx.arcTo(bx + bw, by + bh, bx, by + bh, r);
+      ctx.arcTo(bx, by + bh, bx, by, r);
+      ctx.arcTo(bx, by, bx + bw, by, r);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = active ? "#e8eef7" : "#8b9bb4";
+      ctx.fillText(label, x, by + bh / 2);
+      tickHits.push({ deg: d, x0: bx, y0: by, x1: bx + bw, y1: by + bh });
+    }
+    ctx.restore();
+  }
+
+  function drawCosCurve(L, upToDeg) {
+    if (upToDeg == null || upToDeg < 0) return;
+    ctx.save();
+    ctx.strokeStyle = "#f472b6"; ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    const steps = Math.max(2, Math.round(upToDeg));
+    for (let i = 0; i <= steps; i++) {
+      const d = (upToDeg * i) / steps;
+      const x = cosGraphX(d, L), y = cosGraphY(Math.cos(degToRad(d)), L);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawCirclePoint(deg, L, emph) {
+    const a = degToRad(deg);
+    const [px, py] = circleToCanvas(Math.cos(a), Math.sin(a), L);
+    ctx.save();
+    ctx.fillStyle = emph ? "#fbcfe8" : "#c084fc";
+    ctx.beginPath(); ctx.arc(px, py, emph ? 8 : 6.5, 0, Math.PI * 2); ctx.fill();
+    if (emph) {
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.strokeStyle = "rgba(192,132,252,0.85)"; ctx.lineWidth = 1.7;
+      ctx.beginPath(); ctx.moveTo(L.cx, L.cy); ctx.lineTo(px, py); ctx.stroke();
+    }
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "700 11px system-ui,sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    const [lx, ly] = circleToCanvas(Math.cos(a) * 1.14, Math.sin(a) * 1.14, L);
+    ctx.fillText(deg + "°", lx, ly);
+    ctx.restore();
+  }
+
+  function drawSeg(x0, y0, x1, y1, color, width) {
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = width || 4; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawHorizontalOnCircle(deg, L, color, width) {
+    const a = degToRad(deg);
+    const cos = Math.cos(a), sin = Math.sin(a);
+    const [x0, y0] = circleToCanvas(0, sin, L);
+    const [x1, y1] = circleToCanvas(cos, sin, L);
+    drawSeg(x0, y0, x1, y1, color, width);
+  }
+
+  function ensureYMark(deg) {
+    if (yAxisMarks.some((m) => m.deg === deg)) return;
+    yAxisMarks.push({ deg, lab: cosLabel(deg) });
+  }
+
+  function drawYAxisMarks(L) {
+    ctx.save();
+    ctx.font = "700 12px ui-monospace, Menlo, Consolas, monospace";
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (const m of yAxisMarks) {
+      const y = cosGraphY(Math.cos(degToRad(m.deg)), L);
+      ctx.strokeStyle = "#f472b6"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(L.sx0 - 6, y); ctx.lineTo(L.sx0 + 6, y); ctx.stroke();
+      ctx.fillStyle = "#f472b6";
+      ctx.fillText(m.lab, L.sx0 - 14, y);
+    }
+    ctx.restore();
+  }
+
+  function drawTrails(L) {
+    for (const t of trails) {
+      drawSeg(t.x, t.y0, t.x, t.y1, "rgba(244,114,182,0.75)", 3.5);
+      ctx.save();
+      ctx.fillStyle = "#f9a8d4";
+      ctx.beginPath(); ctx.arc(t.x, t.yTip, 5.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /** Draw animated segment during drop/rotate/slide */
+  function drawAnimOverlay(L) {
+    if (!anim) return false;
+    const now = performance.now();
+    const u = Math.min(1, (now - anim.t0) / anim.dur);
+    const e = easeOutCubic(u);
+    const a = degToRad(anim.deg);
+    const c = Math.cos(a), s = Math.sin(a);
+    const col = "#FFBF00";
+
+    if (anim.phase === "show") {
+      drawHorizontalOnCircle(anim.deg, L, col, 4.2);
+      drawCirclePoint(anim.deg, L, true);
+    } else if (anim.phase === "drop") {
+      // horizontal segment drops from y=sin to y=0 (still from x=0 to x=cos)
+      const y = s * (1 - e);
+      const [x0, y0] = circleToCanvas(0, y, L);
+      const [x1, y1] = circleToCanvas(c, y, L);
+      drawSeg(x0, y0, x1, y1, col, 4.2);
+      // ghost at original
+      drawHorizontalOnCircle(anim.deg, L, "rgba(255,191,0,0.25)", 2.5);
+      drawCirclePoint(anim.deg, L, true);
+    } else if (anim.phase === "rotate") {
+      // on X-axis from (0,0) to (c,0); rotate CCW by e*(π/2)
+      const Llen = Math.abs(c);
+      if (Llen < 1e-9) {
+        // zero — skip visual
+      } else {
+        const startAng = c >= 0 ? 0 : Math.PI;
+        const ang = startAng + e * (Math.PI / 2);
+        const tipX = Math.cos(ang) * Llen;
+        const tipY = Math.sin(ang) * Llen;
+        const [ox, oy] = circleToCanvas(0, 0, L);
+        const [tx, ty] = circleToCanvas(tipX, tipY, L);
+        drawSeg(ox, oy, tx, ty, col, 4.2);
+        // faint axes guides
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,191,0,0.2)";
+        ctx.setLineDash([4, 4]);
+        const [xAxis, y0] = circleToCanvas(c, 0, L);
+        const [x0b, yAxis] = circleToCanvas(0, c, L);
+        drawSeg(ox, oy, xAxis, y0, "rgba(255,191,0,0.25)", 2);
+        drawSeg(ox, oy, x0b, yAxis, "rgba(244,114,182,0.35)", 2);
+        ctx.restore();
+      }
+      drawCirclePoint(anim.deg, L, false);
+    } else if (anim.phase === "slide") {
+      // vertical segment on Y-axis of circle slides to graph
+      const [fromX, yBotC] = circleToCanvas(0, 0, L);
+      const [, yTipC] = circleToCanvas(0, c, L);
+      const toX = cosGraphX(anim.deg, L);
+      const x = fromX + (toX - fromX) * e;
+      const y0 = Math.max(yBotC, yTipC);
+      const y1 = Math.min(yBotC, yTipC);
+      // Actually yBot is origin cy, yTip is cosGraph equivalent on circle
+      const yOrigin = L.cy;
+      const yTip = cosGraphY(c, L); // same as circle Y for value c since same R/cy mapping on right... 
+      // On circle, tip is at canvas y = L.cy - c*L.R = cosGraphY(c,L). Yes same.
+      drawSeg(x, yOrigin, x, L.cy - c * L.R, e < 1 ? col : "#f472b6", 4.2);
+      // dotted trail from circle Y-axis
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,191,0,0.7)";
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(fromX, L.cy - c * L.R);
+      ctx.lineTo(x, L.cy - c * L.R);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+      if (x >= L.sx0 - 0.5) {
+        ensureYMark(anim.deg);
+        ctx.save();
+        ctx.fillStyle = "#FFBF00";
+        ctx.font = "700 13px ui-monospace, Menlo, Consolas, monospace";
+        ctx.textAlign = "right"; ctx.textBaseline = "middle";
+        ctx.fillText("= " + cosLabel(anim.deg), L.sx0 - 16, L.cy - c * L.R);
+        ctx.restore();
+      }
+      drawCirclePoint(anim.deg, L, false);
+    }
+    return u >= 1;
+  }
+
+  function draw() {
+    const L = layout();
+    ctx.clearRect(0, 0, L.w, L.h);
+    drawAxesCircle(L);
+    drawAxesCos(L);
+    drawTrails(L);
+    drawYAxisMarks(L);
+    const last = revealed.length ? Math.max(...revealed) : -1;
+    if (last >= 0) drawCosCurve(L, last);
+
+    for (const d of DEGS30) {
+      if (revealed.includes(d)) continue;
+      const a = degToRad(d);
+      const [px, py] = circleToCanvas(Math.cos(a), Math.sin(a), L);
+      ctx.save();
+      ctx.fillStyle = "rgba(192,132,252,0.18)";
+      ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    const focus = revealed.length ? revealed[revealed.length - 1] : -1;
+    for (const d of revealed) {
+      if (anim && anim.deg === d) continue;
+      const emph = d === focus && !anim;
+      drawCirclePoint(d, L, emph);
+      // parked horizontal ghost on circle
+      drawHorizontalOnCircle(d, L, "rgba(244,114,182,0.28)", 2.2);
+    }
+    if (anim) drawAnimOverlay(L);
+  }
+
+  function stopAnim() {
+    if (anim && anim.raf) cancelAnimationFrame(anim.raf);
+    if (anim && anim._wait) clearTimeout(anim._wait);
+    if (anim && anim._resolve) {
+      const r = anim._resolve;
+      anim = null;
+      r(false);
+      return;
+    }
+    anim = null;
+  }
+
+  function runPhase(deg, phase, dur) {
+    stopAnim();
+    return new Promise((resolve) => {
+      anim = { deg, phase, t0: performance.now(), dur, raf: null, _resolve: resolve };
+      syncButtons();
+      const tick = (now) => {
+        if (!anim || anim.deg !== deg || anim.phase !== phase) { resolve(false); return; }
+        const u = Math.min(1, (now - anim.t0) / anim.dur);
+        draw();
+        if (u >= 1) {
+          const done = anim._resolve;
+          anim = null;
+          syncButtons();
+          draw();
+          if (done) done(true);
+          return;
+        }
+        anim.raf = requestAnimationFrame(tick);
+      };
+      anim.raf = requestAnimationFrame(tick);
+    });
+  }
+
+
+  function quadrantOfDeg(deg) {
+    const d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 90 || d === 180 || d === 270 || d === 360) return 0;
+    if (d > 0 && d < 90) return 1;
+    if (d > 90 && d < 180) return 2;
+    if (d > 180 && d < 270) return 3;
+    return 4;
+  }
+  function locusKeyForDeg(deg) {
+    if (deg == null || !Number.isFinite(deg)) return null;
+    const d = ((deg % 360) + 360) % 360;
+    if (d === 0 || d === 180 || d === 360) return "x";
+    if (d === 90 || d === 270) return "y";
+    const q = quadrantOfDeg(d);
+    return q ? ("q" + q) : null;
+  }
+  let locusActive = null;
+  let locusPulse = null;
+  function syncLocusStrip(key, on) {
+    const root = document.getElementById("locusStrip");
+    if (!root) return;
+    root.querySelectorAll(".locus").forEach((el) => {
+      const match = on && key != null && el.dataset.locus === key;
+      el.classList.toggle("on", !!match);
+    });
+  }
+  function stopLocusPulse() {
+    if (locusPulse && locusPulse.timer) clearInterval(locusPulse.timer);
+    locusPulse = null;
+  }
+  function highlightLocusForDeg(deg) {
+    const key = locusKeyForDeg(deg);
+    locusActive = key;
+    stopLocusPulse();
+    if (!key) { syncLocusStrip(null, false); return; }
+    let n = 0;
+    syncLocusStrip(key, true);
+    locusPulse = { key, timer: setInterval(() => {
+      n++;
+      syncLocusStrip(key, n % 2 === 1);
+      if (n >= 6) { // 3 blinks
+        stopLocusPulse();
+        syncLocusStrip(key, true);
+      }
+    }, 220) };
+  }
+
+  function syncButtons() {
+    const done = revealed.length >= DEGS30.length;
+    playBtn.disabled = playing || done;
+    nextBtn.disabled = playing || done || !!anim;
+    stopBtn.disabled = !(playing || !!anim);
+    playBtn.textContent = done ? "✓ Completo" : (playing ? "Desplegando…" : "▶ Play");
+  }
+
+  async function revealOne(deg) {
+    if (!revealed.includes(deg)) {
+      revealed.push(deg);
+      revealed.sort((a, b) => a - b);
+    }
+    const a = degToRad(deg);
+    const c = Math.cos(a);
+
+    if (Math.abs(c) < 1e-9) {
+      setNarration("θ = <strong>" + deg + "°</strong> · cos = <strong>0</strong> (segmento nulo).");
+      ensureYMark(deg);
+      const L = layout();
+      const x = cosGraphX(deg, L);
+      if (!trails.some((t) => t.deg === deg)) {
+        trails.push({ deg, x, y0: L.cy, y1: L.cy, yTip: L.cy });
+      }
+      draw();
+      await waitMs(350);
+      return !playAbort;
+    }
+
+    setNarration("θ = <strong>" + deg + "°</strong> · segmento horizontal (cos θ)…");
+    if (!(await runPhase(deg, "show", 450)) || playAbort) return false;
+
+    setNarration("Cae sobre el eje <strong>X</strong>…");
+    if (!(await runPhase(deg, "drop", 700)) || playAbort) return false;
+
+    setNarration("Rota en (0,0) hacia el eje <strong>Y</strong> (mismo signo)…");
+    if (!(await runPhase(deg, "rotate", 900)) || playAbort) return false;
+
+    setNarration("Se traslada a la gráfica · cos = <strong>" + cosLabel(deg) + "</strong>.");
+    if (!(await runPhase(deg, "slide", 1000)) || playAbort) return false;
+
+    const L = layout();
+    const x = cosGraphX(deg, L);
+    const yTip = cosGraphY(c, L);
+    if (!trails.some((t) => t.deg === deg)) {
+      trails.push({
+        deg, x,
+        y0: L.cy,
+        y1: yTip,
+        yTip
+      });
+    }
+    ensureYMark(deg);
+    draw();
+    return true;
+  }
+
+  async function revealNext() {
+    if (revealed.length >= DEGS30.length) return false;
+    // next in sequence order among DEGS30 not yet revealed - use sequence index
+    const deg = DEGS30[revealed.length];
+    // careful: if user clicked out of order, revealed.length may not match
+    // Prefer first missing in DEGS30 order:
+    const missing = DEGS30.find((d) => !revealed.includes(d));
+    if (missing == null) return false;
+    return revealOne(missing);
+  }
+
+  async function playAll() {
+    if (playing) return;
+    playing = true; playAbort = false; syncButtons();
+    while (!playAbort) {
+      const missing = DEGS30.find((d) => !revealed.includes(d));
+      if (missing == null) break;
+      const ok = await revealOne(missing);
+      if (!ok || playAbort) break;
+      await waitMs(280);
+    }
+    playing = false; syncButtons();
+    setNarration(playAbort ? "Detenido." : "Construcción completa de cos θ.");
+    draw();
+  }
+
+  playBtn.addEventListener("click", () => playAll());
+  nextBtn.addEventListener("click", async () => {
+    if (playing || anim) return;
+    playAbort = false;
+    await revealNext();
+    syncButtons();
+  });
+  stopBtn.addEventListener("click", () => {
+    playAbort = true;
+    stopAnim();
+    playing = false;
+    syncButtons();
+    setNarration("Detenido.");
+    draw();
+  });
+  resetBtn.addEventListener("click", () => {
+    playAbort = true;
+    playing = false;
+    stopAnim();
+    revealed = [];
+    trails = [];
+    yAxisMarks = [];
+    setNarration("Reset. Tocá grados o ▶ Play.");
+    syncButtons();
+    draw();
+  });
+
+  canvas.addEventListener("pointermove", (ev) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (ev.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (ev.clientY - rect.top) * (canvas.height / rect.height);
+    const hit = tickHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    canvas.style.cursor = hit ? "pointer" : "default";
+  });
+  canvas.addEventListener("pointerdown", async (ev) => {
+    if (playing || anim) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = (ev.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (ev.clientY - rect.top) * (canvas.height / rect.height);
+    const hit = tickHits.find((h) => mx >= h.x0 && mx <= h.x1 && my >= h.y0 && my <= h.y1);
+    if (!hit) return;
+    playAbort = false;
+    await revealOne(hit.deg);
+    syncButtons();
+  });
+
+  document.getElementById("screenPrev").addEventListener("click", () => {
+    window.location.href = "construccion-seno.html";
+  });
+  document.getElementById("screenNext").addEventListener("click", () => {
+    window.location.href = "leccion-transformaciones.html";
+  });
+
+  syncButtons();
+  draw();
+  </script>
+</body>
+</html>

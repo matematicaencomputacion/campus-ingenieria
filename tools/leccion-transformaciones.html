@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lección 10 · Desplazamiento y composición</title>
+<style>
+:root {
+  --bg: #0c1118; --panel: #151d2a; --ink: #e9eef7; --muted: #8b9bb4;
+  --mast: #60a5fa; --btn: #3b82f6; --border: #243044; --accent: #14b8a6;
+  --canvas-bg: #0f172a; --grid: #1e293b; --axes: #64748b;
+  --parent: #475569; --neg: #334155; --zero: #f97316;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--bg) 55%);
+  color: var(--ink); padding: 12px 14px 18px;
+}
+.wrap { max-width: min(1400px, 100%); margin: 0 auto; display: grid; gap: 10px; }
+header { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; }
+h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; display: inline; }
+h1 .lesson-num { color: var(--accent); font-weight: 800; }
+.sub { display: inline; margin: 0 0 0 0.55rem; color: var(--muted); font-size: 0.88rem; font-weight: 400; }
+.sub::before { content: "·"; margin-right: 0.55rem; opacity: 0.7; }
+.stage { display: grid; grid-template-columns: 1.55fr 0.85fr; gap: 12px; align-items: stretch; }
+@media (max-width: 860px) { .stage { grid-template-columns: 1fr; } }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px; min-height: 0;
+}
+.stage > .card:first-child { display: flex; flex-direction: column; }
+.graph-wrap { position: relative; flex: 1; display: flex; flex-direction: column; }
+.graph-wrap canvas {
+  flex: 1; min-height: 480px; max-height: min(78vh, 720px); width: 100%;
+  display: block; border-radius: 10px; background: var(--canvas-bg);
+}
+.lesson-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 6; text-decoration: none; opacity: 0.55; transition: opacity .15s;
+  filter: drop-shadow(0 0 4px rgba(96,165,250,.45));
+}
+.lesson-nav:hover { opacity: 1; }
+.lesson-nav.prev { left: 10px; }
+.lesson-nav.next { right: 10px; }
+.lesson-nav .chev {
+  display: block; width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+}
+.lesson-nav.prev .chev { border-right: 18px solid var(--mast); }
+.lesson-nav.next .chev { border-left: 18px solid var(--mast); }
+.right-col { display: grid; gap: 12px; align-content: start; }
+.eq-box {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; font-family: ui-monospace, Menlo, monospace; font-size: 0.95rem;
+  line-height: 1.45; min-height: 2.8em;
+}
+.eq-box .fold-note { display: block; margin-top: 4px; color: var(--muted); font-size: 0.78rem; font-family: "Segoe UI", system-ui, sans-serif; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chip {
+  background: #0b1220; color: var(--ink); border: 1px solid var(--border);
+  border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 0.82rem;
+  cursor: pointer; transition: border-color .12s, background .12s;
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: rgba(20,184,166,.18); border-color: var(--accent); color: #5eead4; font-weight: 650; }
+.param {
+  background: #0b1220; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 10px; margin-bottom: 8px;
+}
+.param label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+.param .row { display: flex; align-items: center; gap: 10px; }
+.param input[type=range] { flex: 1; accent-color: var(--accent); }
+.param .val {
+  font-family: ui-monospace, Menlo, monospace; min-width: 2.8rem; text-align: right; color: #5eead4;
+}
+h2.panel-h {
+  margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+button.ghost {
+  background: transparent; color: var(--ink); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; font: inherit; cursor: pointer;
+}
+button.ghost:hover { border-color: var(--accent); }
+.info {
+  font-size: 0.8rem; color: var(--muted); line-height: 1.4; margin: 8px 0 0;
+}
+.info strong { color: var(--ink); }
+.badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem;
+  padding: 3px 9px; border-radius: 999px; background: #1e293b; color: #cbd5e1;
+  font-family: ui-monospace, Menlo, monospace;
+}
+.badge .k { color: var(--muted); font-family: "Segoe UI", system-ui, sans-serif; font-weight: 600; }
+.badge .v { color: #fcd34d; font-weight: 650; }
+.badge.asym .v { color: #94a3b8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span class="lesson-num">Lección 10</span> Desplazamiento y composición de funciones</h1>
+      <span class="sub">modelo OpenStax / americano · y = a·f(x−h)+k</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="card">
+      <div class="graph-wrap">
+        <a class="lesson-nav prev" href="construccion-coseno.html" title="Construcción coseno" aria-label="Lección anterior"><span class="chev" aria-hidden="true"></span></a>
+        <a class="lesson-nav next" href="leccion-seno-desplazado.html" title="Lección 11: Seno · corrimientos" aria-label="Lección siguiente"><span class="chev" aria-hidden="true"></span></a>
+        <canvas id="c" width="1000" height="680" aria-label="Gráfica de transformaciones"></canvas>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="card">
+        <h2 class="panel-h" id="toolkitLabel">Función toolkit</h2>
+        <div class="chips" role="group" aria-labelledby="toolkitLabel">
+          <button type="button" class="chip active" data-tk="linear" title="Toolkit Function: Linear">Lineal f(x)=x</button>
+          <button type="button" class="chip" data-tk="reciprocal" title="Toolkit Function: Reciprocal">Recíproca f(x)=1/x</button>
+          <button type="button" class="chip" data-tk="sqrt" title="Toolkit Function: Square root">Raíz √x</button>
+        </div>
+        <div class="eq-box" id="eqBox" aria-live="polite"></div>
+        <div class="badge-row" id="badges"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="panel-h">Parámetros</h2>
+        <div class="param">
+          <label for="hSlider" title="Horizontal Shift (h)">Desplazamiento horizontal (h)</label>
+          <div class="row">
+            <input id="hSlider" type="range" min="-6" max="6" step="1" value="0" aria-label="Desplazamiento horizontal (h)" title="Horizontal Shift (h)" />
+            <span class="val" id="hVal">0</span>
+          </div>
+        </div>
+        <div class="param">
+          <label for="aSlider" title="Vertical Stretch (a)">Estiramiento vertical (a)</label>
+          <div class="row">
+            <input id="aSlider" type="range" min="-3" max="3" step="0.5" value="1" aria-label="Estiramiento vertical (a)" title="Vertical Stretch (a)" />
+            <span class="val" id="aVal">1</span>
+          </div>
+        </div>
+        <div class="param">
+          <label for="kSlider" title="Vertical Shift (k)">Desplazamiento vertical (k)</label>
+          <div class="row">
+            <input id="kSlider" type="range" min="-6" max="6" step="1" value="0" aria-label="Desplazamiento vertical (k)" title="Vertical Shift (k)" />
+            <span class="val" id="kVal">0</span>
+          </div>
+        </div>
+        <div class="param">
+          <label for="tSlider" title="Absolute Value Reflection">Reflexión por valor absoluto (t)</label>
+          <div class="row">
+            <input id="tSlider" type="range" min="0" max="1" step="0.05" value="0" aria-label="Reflexión por valor absoluto (t)" title="Absolute Value Reflection" />
+            <span class="val" id="tVal">0</span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="ghost" id="resetBtn" type="button">Reset</button>
+        </div>
+        <p class="info">Ancla <strong>(h, k)</strong> · parent punteado · curva teal. t=0 sin pliegue; t=1 valor absoluto.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const i18n = {
+    en: {
+      toolkitFunction: "Toolkit Function",
+      horizontalShift: "Horizontal Shift (h)",
+      verticalStretch: "Vertical Stretch (a)",
+      verticalShift: "Vertical Shift (k)",
+      horizontalIntercepts: "Horizontal Intercepts (Zeros)",
+      asymptotes: "Asymptotes",
+      absoluteValueReflection: "Absolute Value Reflection"
+    },
+    es: {
+      toolkitFunction: "Función toolkit",
+      horizontalShift: "Desplazamiento horizontal (h)",
+      verticalStretch: "Estiramiento vertical (a)",
+      verticalShift: "Desplazamiento vertical (k)",
+      horizontalIntercepts: "Intersecciones con el eje X",
+      asymptotes: "Asíntotas",
+      absoluteValueReflection: "Reflexión por valor absoluto"
+    }
+  };
+
+  const XMIN = -8, XMAX = 8, YMIN = -8, YMAX = 8;
+  const NS = 400;
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const eqBox = document.getElementById("eqBox");
+  const badges = document.getElementById("badges");
+  const hEl = document.getElementById("hSlider");
+  const aEl = document.getElementById("aSlider");
+  const kEl = document.getElementById("kSlider");
+  const tEl = document.getElementById("tSlider");
+  const hVal = document.getElementById("hVal");
+  const aVal = document.getElementById("aVal");
+  const kVal = document.getElementById("kVal");
+  const tVal = document.getElementById("tVal");
+
+  let toolkit = "linear";
+  let lastASign = 1;
+
+  function fmt(n) {
+    if (!Number.isFinite(n)) return "—";
+    const r = Math.round(n * 1000) / 1000;
+    if (Object.is(r, -0) || r === 0) return "0";
+    const s = String(r);
+    return s.replace("-", "−");
+  }
+
+  function prettyNum(n) {
+    if (n === 1) return "";
+    if (n === -1) return "−";
+    return fmt(n);
+  }
+
+  function parentF(u) {
+    if (toolkit === "linear") return u;
+    if (toolkit === "reciprocal") {
+      if (Math.abs(u) < 1e-9) return NaN;
+      return 1 / u;
+    }
+    // sqrt
+    if (u < 0) return NaN;
+    return Math.sqrt(u);
+  }
+
+  function rawY(x, h, a, k) {
+    const u = x - h;
+    const f = parentF(u);
+    if (!Number.isFinite(f)) return NaN;
+    return a * f + k;
+  }
+
+  function foldY(y, t) {
+    if (!Number.isFinite(y)) return NaN;
+    if (t <= 0) return y;
+    if (t >= 1) return Math.abs(y);
+    return y < 0 ? y * (1 - 2 * t) : y;
+  }
+
+  function g(x, h, a, k, t) {
+    return foldY(rawY(x, h, a, k), t);
+  }
+
+  function enforceA() {
+    let a = Number(aEl.value);
+    if (a === 0 || Object.is(a, -0)) {
+      a = lastASign >= 0 ? 0.5 : -0.5;
+      aEl.value = String(a);
+    } else {
+      lastASign = a > 0 ? 1 : -1;
+    }
+    return a;
+  }
+
+  function params() {
+    const h = Number(hEl.value);
+    const a = enforceA();
+    const k = Number(kEl.value);
+    const t = Number(tEl.value);
+    return { h, a, k, t };
+  }
+
+  function parentExpr() {
+    if (toolkit === "linear") return "x";
+    if (toolkit === "reciprocal") return "1/x";
+    return "√x";
+  }
+
+  function shiftedArg(h) {
+    if (h === 0) return "x";
+    if (h > 0) return `x−${fmt(h)}`;
+    return `x+${fmt(-h)}`;
+  }
+
+  function buildInner(h, a, k) {
+    const arg = shiftedArg(h);
+    let core;
+    if (toolkit === "linear") {
+      core = arg === "x" ? "x" : `(${arg})`;
+    } else if (toolkit === "reciprocal") {
+      core = `1/(${arg})`;
+    } else {
+      core = `√(${arg})`;
+    }
+    let body;
+    if (a === 1) body = core;
+    else if (a === -1) body = `−${core}`;
+    else body = `${fmt(a)}${core.startsWith("(") || core.startsWith("√") || core.startsWith("1/") ? core : `(${core})`}`;
+    // nicer: always wrap non-simple
+    if (a !== 1 && a !== -1 && toolkit === "linear" && arg === "x") body = `${fmt(a)}x`;
+    if (a === -1 && toolkit === "linear" && arg === "x") body = "−x";
+    if (a === 1 && toolkit === "linear" && arg === "x") body = "x";
+    if (a !== 1 && a !== -1 && toolkit === "linear" && arg !== "x") body = `${fmt(a)}(${arg})`;
+    if (a === -1 && toolkit === "linear" && arg !== "x") body = `−(${arg})`;
+    if (a === 1 && toolkit === "linear" && arg !== "x") body = `(${arg})`;
+
+    if (toolkit === "reciprocal") {
+      if (a === 1) body = `1/(${arg})`;
+      else if (a === -1) body = `−1/(${arg})`;
+      else body = `${fmt(a)}/(${arg})`;
+    }
+    if (toolkit === "sqrt") {
+      if (a === 1) body = `√(${arg})`;
+      else if (a === -1) body = `−√(${arg})`;
+      else body = `${fmt(a)}√(${arg})`;
+    }
+
+    if (k === 0) return body;
+    if (k > 0) return `${body}+${fmt(k)}`;
+    return `${body}−${fmt(-k)}`;
+  }
+
+  function updateEq() {
+    const { h, a, k, t } = params();
+    const inner = buildInner(h, a, k);
+    let html;
+    if (t >= 1) {
+      html = `|g(x)| = |${inner}|`;
+    } else if (t > 0) {
+      html = `g(x) = ${inner}<span class="fold-note">pliegue t=${fmt(t)} · región negativa atenuada</span>`;
+    } else {
+      html = `g(x) = ${inner}`;
+    }
+    eqBox.innerHTML = html;
+    hVal.textContent = fmt(h);
+    aVal.textContent = fmt(a);
+    kVal.textContent = fmt(k);
+    tVal.textContent = fmt(t);
+  }
+
+  function findZeros(h, a, k, t) {
+    if (toolkit === "linear" && t === 0) {
+      // a(x-h)+k = 0 => x = h - k/a
+      if (a === 0) return [];
+      return [h - k / a];
+    }
+    if (toolkit === "linear" && t >= 1) {
+      // |a(x-h)+k|=0 same zero
+      if (a === 0) return [];
+      return [h - k / a];
+    }
+    const xs = [];
+    const lo = toolkit === "sqrt" ? h : XMIN;
+    const hi = XMAX;
+    const n = 800;
+    let prevX = lo, prevY = g(lo, h, a, k, t);
+    for (let i = 1; i <= n; i++) {
+      const x = lo + (hi - lo) * (i / n);
+      if (toolkit === "reciprocal" && Math.abs(x - h) < 0.02) {
+        prevY = NaN;
+        prevX = x;
+        continue;
+      }
+      const y = g(x, h, a, k, t);
+      if (Number.isFinite(prevY) && Number.isFinite(y)) {
+        if (prevY === 0) xs.push(prevX);
+        else if (y === 0) xs.push(x);
+        else if (prevY * y < 0) {
+          // linear interpolate
+          const z = prevX - prevY * (x - prevX) / (y - prevY);
+          xs.push(z);
+        }
+      }
+      prevX = x;
+      prevY = y;
+    }
+    // dedupe
+    const out = [];
+    xs.sort((p, q) => p - q);
+    for (const z of xs) {
+      if (!out.length || Math.abs(z - out[out.length - 1]) > 0.05) out.push(z);
+    }
+    return out.filter(z => z >= XMIN && z <= XMAX);
+  }
+
+  function updateBadges() {
+    const { h, a, k, t } = params();
+    const zeros = findZeros(h, a, k, t);
+    const zStr = zeros.length
+      ? zeros.map(z => fmt(Math.round(z * 100) / 100)).join(", ")
+      : "—";
+    let html = `<span class="badge" title="${i18n.en.horizontalIntercepts}"><span class="k">${i18n.es.horizontalIntercepts}</span> <span class="v">${zStr}</span></span>`;
+    if (toolkit === "reciprocal") {
+      html += `<span class="badge asym" title="${i18n.en.asymptotes}"><span class="k">${i18n.es.asymptotes}</span> <span class="v">x=${fmt(h)}, y=${fmt(k)}</span></span>`;
+    }
+    badges.innerHTML = html;
+  }
+
+  function toCanvas(x, y) {
+    const w = canvas.width, hgt = canvas.height;
+    const px = ((x - XMIN) / (XMAX - XMIN)) * w;
+    const py = ((YMAX - y) / (YMAX - YMIN)) * hgt;
+    return [px, py];
+  }
+
+  function drawGrid() {
+    const w = canvas.width, hgt = canvas.height;
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, w, hgt);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    for (let x = Math.ceil(XMIN); x <= Math.floor(XMAX); x++) {
+      const [px] = toCanvas(x, 0);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, hgt); ctx.stroke();
+    }
+    for (let y = Math.ceil(YMIN); y <= Math.floor(YMAX); y++) {
+      const [, py] = toCanvas(0, y);
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+    }
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 1.5;
+    const [ox, oy] = toCanvas(0, 0);
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, hgt); ctx.stroke();
+  }
+
+  function sampleParent() {
+    const pts = [];
+    for (let i = 0; i <= NS; i++) {
+      const x = XMIN + (XMAX - XMIN) * (i / NS);
+      if (toolkit === "reciprocal" && Math.abs(x) < 0.08) { pts.push(null); continue; }
+      if (toolkit === "sqrt" && x < 0) { pts.push(null); continue; }
+      const y = parentF(x);
+      if (!Number.isFinite(y) || y < YMIN - 2 || y > YMAX + 2) { pts.push(null); continue; }
+      pts.push({ x, y });
+    }
+    return pts;
+  }
+
+  function sampleActive(h, a, k, t, mode) {
+    const pts = [];
+    const lo = toolkit === "sqrt" ? Math.max(XMIN, h) : XMIN;
+    for (let i = 0; i <= NS; i++) {
+      const x = lo + (XMAX - lo) * (i / NS);
+      if (toolkit === "reciprocal" && Math.abs(x - h) < 0.06) { pts.push(null); continue; }
+      if (toolkit === "sqrt" && x < h) { pts.push(null); continue; }
+      const raw = rawY(x, h, a, k);
+      if (!Number.isFinite(raw)) { pts.push(null); continue; }
+      if (mode === "negRaw") {
+        if (raw >= 0) { pts.push(null); continue; }
+        if (raw < YMIN - 2 || raw > YMAX + 2) { pts.push(null); continue; }
+        pts.push({ x, y: raw });
+      } else {
+        const y = foldY(raw, t);
+        if (!Number.isFinite(y) || y < YMIN - 2 || y > YMAX + 2) { pts.push(null); continue; }
+        pts.push({ x, y });
+      }
+    }
+    return pts;
+  }
+
+  function strokePolyline(pts, style) {
+    ctx.save();
+    if (style.strokeStyle) ctx.strokeStyle = style.strokeStyle;
+    if (style.lineWidth) ctx.lineWidth = style.lineWidth;
+    if (style.lineJoin) ctx.lineJoin = style.lineJoin;
+    if (style.lineCap) ctx.lineCap = style.lineCap;
+    if (style.dash) ctx.setLineDash(style.dash);
+    let drawing = false;
+    for (const p of pts) {
+      if (!p) { if (drawing) { ctx.stroke(); drawing = false; } continue; }
+      const [px, py] = toCanvas(p.x, p.y);
+      if (!drawing) { ctx.beginPath(); ctx.moveTo(px, py); drawing = true; }
+      else ctx.lineTo(px, py);
+    }
+    if (drawing) ctx.stroke();
+    ctx.restore();
+  }
+
+  function draw() {
+    const { h, a, k, t } = params();
+    drawGrid();
+
+    // parent toolkit f(x) dotted muted
+    strokePolyline(sampleParent(), {
+      strokeStyle: "#475569",
+      lineWidth: 1.5,
+      dash: [4, 5]
+    });
+
+    // asymptotes for reciprocal: x=h and y=k
+    if (toolkit === "reciprocal") {
+      ctx.save();
+      ctx.strokeStyle = "#64748b";
+      ctx.lineWidth = 1.25;
+      ctx.setLineDash([6, 5]);
+      const [ax] = toCanvas(h, 0);
+      ctx.beginPath(); ctx.moveTo(ax, 0); ctx.lineTo(ax, canvas.height); ctx.stroke();
+      const [, ay] = toCanvas(0, k);
+      ctx.beginPath(); ctx.moveTo(0, ay); ctx.lineTo(canvas.width, ay); ctx.stroke();
+      ctx.restore();
+    }
+
+    // faint dashed negative region of original when t>0
+    if (t > 0) {
+      strokePolyline(sampleActive(h, a, k, t, "negRaw"), {
+        strokeStyle: "#334155",
+        lineWidth: 1.5,
+        dash: [3, 4]
+      });
+    }
+
+    // active curve teal
+    strokePolyline(sampleActive(h, a, k, t, "full"), {
+      strokeStyle: "#14b8a6",
+      lineWidth: 3,
+      lineJoin: "round",
+      lineCap: "round"
+    });
+
+    // anchor (h,k)
+    {
+      const [px, py] = toCanvas(h, k);
+      ctx.beginPath();
+      ctx.arc(px, py, 6, 0, Math.PI * 2);
+      ctx.fillStyle = "#60a5fa";
+      ctx.fill();
+      ctx.strokeStyle = "#1e3a5f";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // x-intercepts orange
+    for (const z of findZeros(h, a, k, t)) {
+      const [px, py] = toCanvas(z, 0);
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#f97316";
+      ctx.fill();
+      ctx.strokeStyle = "#7c2d12";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    updateEq();
+    updateBadges();
+  }
+
+  document.querySelectorAll(".chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      toolkit = btn.dataset.tk;
+      draw();
+    });
+  });
+
+  function onAInput() {
+    const v = Number(aEl.value);
+    if (v === 0) {
+      const snap = lastASign >= 0 ? 0.5 : -0.5;
+      aEl.value = String(snap);
+    } else {
+      lastASign = v > 0 ? 1 : -1;
+    }
+    draw();
+  }
+
+  hEl.addEventListener("input", draw);
+  aEl.addEventListener("input", onAInput);
+  kEl.addEventListener("input", draw);
+  tEl.addEventListener("input", draw);
+
+  // Skip 0 when stepping with keyboard on a
+  aEl.addEventListener("keydown", (ev) => {
+    if (ev.key !== "ArrowRight" && ev.key !== "ArrowUp" && ev.key !== "ArrowLeft" && ev.key !== "ArrowDown") return;
+    const cur = Number(aEl.value);
+    const step = Number(aEl.step) || 0.5;
+    let next = cur;
+    if (ev.key === "ArrowRight" || ev.key === "ArrowUp") next = cur + step;
+    else next = cur - step;
+    if (Math.abs(next) < 1e-9) {
+      ev.preventDefault();
+      next = (ev.key === "ArrowRight" || ev.key === "ArrowUp") ? 0.5 : -0.5;
+      aEl.value = String(next);
+      lastASign = next > 0 ? 1 : -1;
+      draw();
+    }
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    hEl.value = "0";
+    aEl.value = "1";
+    kEl.value = "0";
+    tEl.value = "0";
+    lastASign = 1;
+    toolkit = "linear";
+    document.querySelectorAll(".chip").forEach(b => {
+      b.classList.toggle("active", b.dataset.tk === "linear");
+    });
+    draw();
+  });
+
+  draw();
+})();
+</script>
+</body>
+</html>
