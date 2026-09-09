@@ -15,57 +15,77 @@ Solo el árbol público del repo (raíz + `tools/*.html` + `resources/`).
 - `**/*.bak`
 - `.git/`
 - `.github/`
+- `scripts/`
+- `tests/`
+- `package.json`
 
-## Prerrequisitos
-- Acceso SSH a la VM (llave en `~/.ssh` o metadata del proveedor).
-- Usuario con permiso de escritura en `/var/www/campus/` (o `sudo`).
-- No tocar certbot/LE ni el redirect HTTP→HTTPS en este paso.
+---
 
+## 🚀 Despliegue Automatizado (Recomendado vía GitHub Actions)
 
-## Regla anti-borrado (2026-09-07)
+El repositorio cuenta con un pipeline de CI/CD automatizado en `.github/workflows/deploy.yml`.
 
-**No usar `rsync --delete`** hasta que el repo tenga *todo* lo que está en live en `/var/www/campus/`.
+### Flujo estándar:
+1. Abrir PR contra `main`.
+2. El CI ejecuta automáticamente:
+   - Chequeos de estructura obligatoria.
+   - Smoke tests (`node scripts/smoke-test.mjs`).
+   - Sanidad de HTML y sintaxis JS (`node --check`).
+3. Al hacer merge en `main`, el workflow de deploy se dispara automáticamente.
+4. También puede dispararse manualmente desde GitHub Actions (`workflow_dispatch`), permitiendo activar el flag `--delete` cuando corresponda.
 
-Motivo: slides solo-live (p. ej. construcciones / desplazados) se borran del docroot si el mirror de Git aún no los incluye.
+### Secrets requeridos en GitHub:
+- `DEPLOY_SSH_KEY`: Clave privada SSH con permisos en la VM.
+- `DEPLOY_USER`: Usuario en el servidor (ej: `campus` o `root`).
+- `DEPLOY_HOST`: Host de destino (`ingenieria.wechat.com.ar`).
 
-### Deploy recomendado (paths del PR)
+---
+
+## 🔄 Reconciliación Live → Repo (Eliminar Drift)
+
+Para garantizar que el repositorio sea la única fuente de verdad (Single Source of Truth) y poder usar `rsync --delete` sin temor a borrar slides creados directamente en live:
 
 ```bash
-# Solo los archivos del slide/PR — sin --delete
-rsync -avz   tools/leccion-SENO-O-COSENO.html   USER@ingenieria.wechat.com.ar:/var/www/campus/tools/
+# 1. Simular descarga de archivos solo-live
+npm run reconcile
+
+# 2. Descargar archivos efectivamente al repo
+bash scripts/reconcile-live.sh USER@ingenieria.wechat.com.ar
+
+# 3. Comprobar diferencias y commitear a Git
+git status
+git add tools/
+git commit -m "chore: reconciliar slides solo-live desde producción"
+git push origin main
 ```
 
-Si hace falta `sudo` en destino: `--rsync-path='sudo rsync'`.
+Una vez que el repo incluya todos los archivos que están en producción, el deploy con `--delete` queda 100% habilitado.
 
-### Sync masivo
+---
 
-Solo cuando repo ⊇ live (o con lista explícita de includes). Si hay slides nuevos solo en live, @Prototipador avisa **antes** del sync masivo.
-
-## Procedimiento (rsync desde un checkout limpio)
+## 🛠️ Procedimiento Manual (Fallback desde checkout limpio)
 
 ```bash
-# Desde un clone del repo (branch main, CI verde)
-git clone https://github.com/matematicaencomputacion/campus-ingenieria.git
-cd campus-ingenieria
+# Smoke test previo
+npm test
 
+# Sincronización a la VM
 rsync -avz \
-  # OJO: no agregar --delete hasta alinear repo↔live
-  # --delete \
   --exclude '.git/' \
   --exclude '.github/' \
   --exclude 'shots/' \
   --exclude 'tools/_gen/' \
   --exclude '*.bak' \
+  --exclude 'scripts/' \
   --exclude 'DEPLOY.md' \
   --exclude 'README.md' \
   --exclude 'serve.sh' \
+  --exclude 'package.json' \
   ./ USER@ingenieria.wechat.com.ar:/var/www/campus/
 ```
 
-Ajustá `USER` al usuario SSH real. Si hace falta `sudo` en el destino, usá un path temporal + `sudo rsync` en la VM.
-
 ## Post-check (obligatorio)
-Tras el sync, verificar que **no** se rompió lo ya tuneado:
+Tras el sync, verificar que los servicios y headers respondan correctamente:
 
 ```bash
 curl -sI https://ingenieria.wechat.com.ar/ | tr -d '\r' | egrep -i 'HTTP/|strict-transport|cache-control|content-encoding|location'
@@ -75,18 +95,6 @@ curl -sI http://ingenieria.wechat.com.ar/ | tr -d '\r' | egrep -i 'HTTP/|locatio
 
 Esperado:
 - HTTPS `200`, HTTP/2
-- HTML: `Cache-Control: no-cache` (o equivalente)
-- CSS/JS: `public, max-age=…, immutable` + gzip/`content-encoding: gzip`
+- HTML: `Cache-Control: no-cache`
+- CSS/JS: `public, max-age=…, immutable` + gzip
 - HTTP → HTTPS redirect `301`
-
-Si algo de caché/gzip/HTTPS falló, **no** seguir desplegando: restaurar config nginx y avisar a @Performance / @Prototipador.
-
-## Flujo de trabajo (GitHub)
-1. Branch + PR (main protegida; check `static-check` requerido).
-2. CI verde.
-3. Merge a `main`.
-4. Deploy con el rsync de arriba (manual hasta automatizar).
-
-## Notas
-- No minificar ni empaquetar en el deploy: el artefacto debe quedar tan chico como el tree del repo.
-- Secretos/SSH: nunca en el repo; pedir por canal seguro o metadata de la VM.

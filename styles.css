@@ -660,8 +660,169 @@ button { font: inherit; cursor: pointer; }
   background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412;
   border-radius: 999px; padding: 6px 10px; font-size: 0.82rem;
 }
-.custom-chip button {
-  border: none; background: transparent; color: #9a3412;
-  font-size: 1rem; line-height: 1; padding: 0 2px; cursor: pointer;
-}
 .custom-empty { font-size: 0.8rem; color: var(--muted); }
+
+/* ===== INTERACTIVE LESSON EMBED & LAB ===== */
+.nodo-tool-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #1e40af;
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 2px 7px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.nodo-interactive-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 14px;
+  box-shadow: 0 2px 8px rgba(22, 40, 80, 0.06);
+}
+.interactive-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fafcff;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.interactive-card-info h3 {
+  margin: 4px 0 2px;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+.badge-interactive {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #047857;
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+.interactive-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn-ghost-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.btn-ghost-action:hover {
+  background: var(--bg);
+  color: var(--blue);
+  border-color: var(--blue-mid);
+}
+.interactive-frame-wrap {
+  width: 100%;
+  height: 680px;
+  position: relative;
+  background: #0c1118;
+}
+.interactive-frame-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.btn-catalog-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--blue);
+  background: var(--blue-soft);
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--blue-mid);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.btn-catalog-link:hover {
+  background: #dbeafe;
+  color: var(--blue-dark);
+}
+.lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.lab-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.lab-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(22, 40, 80, 0.08);
+  border-color: var(--blue-mid);
+}
+.lab-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.lab-card-tema {
+  font-size: 0.75rem;
+  color: var(--muted);
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lab-card h4 {
+  margin: 0 0 6px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.lab-card p {
+  margin: 0 0 14px;
+  font-size: 0.84rem;
+  color: var(--muted);
+  flex: 1;
+}
+.lab-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn-sm {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+

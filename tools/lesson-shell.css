@@ -1,0 +1,86 @@
+/* Campus Ingeniería · Lesson Shell & Floating Bar Styles */
+.campus-lesson-bar-wrap {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.campus-lesson-bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  transition: all 0.2s ease;
+}
+
+.campus-lesson-bar:hover {
+  border-color: rgba(96, 165, 250, 0.55);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(96, 165, 250, 0.2);
+}
+
+.campus-lb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.campus-lb-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.campus-lb-btn.primary {
+  color: #60a5fa;
+}
+
+.campus-lb-btn.primary:hover {
+  background: rgba(96, 165, 250, 0.18);
+  color: #93c5fd;
+}
+
+.campus-lb-sep {
+  width: 1px;
+  height: 14px;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.campus-lb-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .campus-lesson-bar-wrap {
+    top: 6px;
+    right: 8px;
+  }
+  .campus-lb-label {
+    display: none;
+  }
+}

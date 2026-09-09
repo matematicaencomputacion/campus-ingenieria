@@ -11,6 +11,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Required public files
         run: |
           set -euo pipefail
@@ -46,6 +51,10 @@ jobs:
           # JS files parseable by node
           node --check app.js
           node --check data.js
+
+      - name: Run automated smoke test suite
+        run: |
+          node scripts/smoke-test.mjs
 
       - name: Size budget (warn > 2MB tree)
         run: |
