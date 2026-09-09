@@ -237,6 +237,20 @@ canvas#c {
   background: var(--dot); margin-right: 4px; vertical-align: middle;
   box-shadow: 0 0 0 3px rgba(167,139,250,0.28);
 }
+.prompt.can-drag, .dock-hint.can-drag {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.prompt.can-drag:active, .dock-hint.can-drag:active { cursor: grabbing; }
+.l200-drag-ghost {
+  position: fixed; left: 0; top: 0;
+  box-sizing: content-box; border-radius: 50%;
+  background: rgba(167,139,250,0.92); border: 2px solid #efe7ff;
+  box-shadow: 0 0 0 6px rgba(167,139,250,0.38);
+  pointer-events: none; z-index: 40;
+  transform: translate(-50%, -50%);
+}
 .win-banner {
   display: none; margin-top: 8px; padding: 12px 16px; border-radius: 10px;
   background: rgba(90,212,168,0.14); border: 1px solid rgba(90,212,168,0.5);
@@ -282,7 +296,6 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
       <h1><span class="lesson-num">Lección 200</span> · Working memory
         <span class="sub">recta · juego</span>
       </h1>
-      <h2 class="event-title">Dibujar una recta</h2>
     </div>
     <div class="toolbar">
       <button type="button" class="btn primary" id="playBtn" disabled>▶ Play</button>
@@ -364,6 +377,7 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
     </div>
   </div>
 </div>
+<div id="l200DragGhost" class="l200-drag-ghost" hidden aria-hidden="true"></div>
 <script src="game-kit.js?v=20260909"></script>
 <script src="leccion-lineal-working-memory.js?v=20260909f"></script>
 <script src="lesson-bar.js?v=20260909" defer></script>
