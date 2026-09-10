@@ -16,7 +16,14 @@ before(async () => {
     if (!file.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
     try {
       const data = await readFile(file);
-      const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png' };
+      const types = {
+        '.html': 'text/html',
+        '.js': 'text/javascript',
+        '.css': 'text/css',
+        '.png': 'image/png',
+        '.mp3': 'audio/mpeg',
+        '.ogg': 'audio/ogg'
+      };
       res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' }).end(data);
     } catch { res.writeHead(404).end(); }
   });
@@ -147,132 +154,61 @@ for (const width of [390, 1440]) {
   });
 }
 
-// Simulate browser speech events; these tests do not access a microphone or service.
-async function dictationPage(t, { support = true, width = 1440, prefixed = false } = {}) {
-  const p = await pageFor(t, { viewport: { width, height: 1000 } });
-  await p.addInitScript(({ support, prefixed }) => {
-    window.__speech = [];
-    const originalTimeout = window.setTimeout;
-    window.setTimeout = function (callback, delay, ...args) {
-      if (delay === 15000) window.__speechTimeout = callback;
-      return originalTimeout(callback, delay, ...args);
-    };
-    window.SpeechRecognition = window.webkitSpeechRecognition = undefined;
-    if (!support) return;
-    class FakeRecognition {
-      constructor() { this.started = false; this.aborted = false; window.__speech.push(this); }
-      start() { this.started = true; if (window.__speechStartError) throw new Error('start failed'); }
-      abort() { this.aborted = true; this.onend?.(); }
-      result(transcript) { this.onresult?.({ resultIndex: 0, results: [Object.assign([{ transcript }], { isFinal: true })] }); }
-      error(error) { this.onerror?.({ error }); }
-    }
-    window[prefixed ? 'webkitSpeechRecognition' : 'SpeechRecognition'] = FakeRecognition;
-  }, { support, prefixed });
-  await p.goto(base + '/tools/leccion-lineal-working-memory.html');
-  assert.equal(await p.evaluate(() => window.__L200.state.phase), 'fill');
-  await p.evaluate(() => { const a = window.__L200; a.state.phase = 'pick-b'; a.chooseB(-3); a.chooseM(-2); });
-  return p;
-}
-
 for (const width of [390, 1440]) {
-  test(`L200: Dictar debajo de f(x), revisar y confirmar a ${width}px`, async t => {
-    const p = await dictationPage(t, { width, prefixed: width === 390 });
-    const button = p.locator('#dictateBtn');
-    const input = p.locator('.fx-input:not(:disabled)');
-    assert.equal(await p.evaluate(() => window.__speech.length), 0, 'No escucha al cargar');
-    const tableRect = await p.locator('.wm-table').boundingBox();
-    const buttonRect = await button.boundingBox();
-    assert.ok(buttonRect.y >= tableRect.y + tableRect.height && buttonRect.height >= 44);
-    await button.click();
-    assert.equal(await button.getAttribute('aria-pressed'), 'true');
-    assert.deepEqual(await p.evaluate(() => { const r=window.__speech.at(-1); return [r.started,r.lang,r.continuous,r.interimResults]; }), [true,'es-AR',false,false]);
-    await p.evaluate(() => window.__speech.at(-1).result('menos uno coma cinco'));
-    assert.equal(await input.inputValue(), '-1.5');
-    assert.deepEqual(await p.evaluate(() => [window.__L200.state.ok,window.__L200.state.bad]), [0,0]);
-    assert.match(await p.locator('#dictationStatus').textContent(), /Revisá/);
-    await button.click();
-    await p.evaluate(() => window.__speech.at(-1).result('cinco'));
-    await input.press('Enter');
+  test(`L200: sin Dictar, Enter confirma f(x) y hay dos barras de audio a ${width}px`, async t => {
+    const p = await pageFor(t, { viewport: { width, height: 1000 } });
+    await p.goto(base + '/tools/leccion-lineal-working-memory.html');
+    assert.equal(await p.locator('#dictateBtn').count(), 0);
+    assert.equal(await p.locator('#dictationStatus').count(), 0);
+    assert.equal(await p.evaluate(() => !!document.querySelector('script[src*="number-dictation"]')), false);
+    assert.match(await p.locator('#dockHint').textContent(), /Escribí f\(x\)/);
+    const bars = p.locator('[data-l200-audio-bar]');
+    assert.equal(await bars.count(), 2);
+    assert.equal(await p.locator('[data-l200-audio="1"] .l200-audio-label').textContent(), 'Explicación 1');
+    assert.equal(await p.locator('[data-l200-audio="2"] .l200-audio-label').textContent(), 'Explicación 2');
+    assert.deepEqual(await p.evaluate(() => window.__L200.audioCandidates('1')), [
+      'audio/l200/explicacion-1.mp3',
+      'audio/l200/explicacion-1.ogg'
+    ]);
+    assert.deepEqual(await p.evaluate(() => window.__L200.audioCandidates('2')), [
+      'audio/l200/explicacion-2.mp3',
+      'audio/l200/explicacion-2.ogg'
+    ]);
+    const layout = await p.evaluate(() => {
+      const meter = document.getElementById('soundMeter').getBoundingClientRect();
+      const slots = document.getElementById('l200AudioSlots').getBoundingClientRect();
+      return { meterBottom: meter.bottom, slotsTop: slots.top, slotsBottom: slots.bottom };
+    });
+    assert.ok(layout.meterBottom <= layout.slotsTop + 1, JSON.stringify(layout));
+    const exercise = await p.evaluate(() => {
+      const a = window.__L200;
+      return { b: a.state.b, m: a.state.m };
+    });
+    const first = exercise.m * (-4) + exercise.b;
+    await p.locator('.fx-input:not(:disabled)').fill(String(first));
+    await p.locator('.fx-input:not(:disabled)').press('Enter');
     await p.waitForFunction(() => window.__L200.state.active === 1);
     assert.equal(await p.evaluate(() => window.__L200.state.ok), 1);
-    assert.equal(await p.locator('.fx-input').first().inputValue(), '5');
-    assert.equal(await p.locator('.fx-input:not(:disabled)').inputValue(), '');
   });
 }
 
-test('L200: errores de reconocimiento y frases ambiguas conservan la entrada manual', async t => {
-  const p = await dictationPage(t);
-  const input = p.locator('.fx-input:not(:disabled)');
-  await input.fill('7');
-  for (const [error, expected] of [['not-allowed', /Permití/], ['audio-capture', /micrófono/], ['no-speech', /No escuché/], ['network', /conectar/]]) {
-    await p.locator('#dictateBtn').click();
-    await p.evaluate(error => window.__speech.at(-1).error(error), error);
-    assert.match(await p.locator('#dictationStatus').textContent(), expected);
-    assert.equal(await input.inputValue(), '7');
-    assert.equal(await p.locator('#dictateBtn').getAttribute('aria-pressed'), 'false');
-  }
-  await p.locator('#dictateBtn').click();
-  await p.evaluate(() => window.__speech.at(-1).result('cinco o seis'));
-  assert.equal(await input.inputValue(), '7');
-  assert.match(await p.locator('#dictationStatus').textContent(), /único número/);
-  await p.evaluate(() => { window.__speechStartError = true; });
-  await p.locator('#dictateBtn').click();
-  assert.match(await p.locator('#dictationStatus').textContent(), /iniciar el micrófono/);
-  assert.equal(await p.locator('#dictateBtn').getAttribute('aria-pressed'), 'false');
-});
-
-test('L200: cancelar, escribir, cambiar fila y Reiniciar invalidan resultados tardíos', async t => {
-  const p = await dictationPage(t);
-  const button = p.locator('#dictateBtn');
-  const input = p.locator('.fx-input:not(:disabled)');
-  await button.click();
-  await button.click();
-  await p.evaluate(() => window.__speech.at(-1).result('nueve'));
-  assert.equal(await input.inputValue(), '');
-  await button.click();
-  await input.fill('5');
-  await p.evaluate(() => window.__speech.at(-1).result('nueve'));
-  assert.equal(await input.inputValue(), '5');
-  assert.equal(await p.evaluate(() => window.__speech.at(-1).aborted), true);
-  await button.click();
-  await input.press('Enter');
-  await p.waitForFunction(() => window.__L200.state.active === 1);
-  await p.evaluate(() => window.__speech.at(-1).result('nueve'));
-  assert.equal(await input.inputValue(), '');
-  await button.click();
-  await p.locator('#resetBtn').click();
-  await p.evaluate(() => window.__speech.at(-1).result('nueve'));
-  assert.equal(await button.isDisabled(), false);
-  assert.equal(await p.evaluate(() => window.__speech.at(-1).aborted), true);
-  assert.deepEqual(await p.locator('.fx-input').evaluateAll(inputs => inputs.map(i => i.value)), ['', '', '', '', '']);
-  assert.doesNotMatch(await p.locator('#dictationStatus').textContent(), /Escuchando/);
-});
-
-test('L200: sin API de voz se explica y se puede responder por teclado', async t => {
-  const p = await dictationPage(t, { support: false });
-  assert.equal(await p.locator('#dictateBtn').isDisabled(), true);
-  assert.match(await p.locator('#dictationStatus').textContent(), /no admite dictado/);
-  await p.locator('.fx-input:not(:disabled)').fill('5');
-  await p.locator('.fx-input:not(:disabled)').press('Enter');
-  assert.equal(await p.evaluate(() => window.__L200.state.ok), 1);
-});
-
-
-test('L200: fin sin resultado, timeout y salida detienen la escucha', async t => {
-  const p = await dictationPage(t);
-  for (const action of ['end', 'timeout', 'pagehide']) {
-    await p.locator('#dictateBtn').click();
-    await p.evaluate(action => {
-      if (action === 'end') window.__speech.at(-1).onend();
-      if (action === 'timeout') window.__speechTimeout();
-      if (action === 'pagehide') window.dispatchEvent(new Event('pagehide'));
-      window.__speech.at(-1).result('nueve');
-    }, action);
-    assert.equal(await p.locator('#dictateBtn').getAttribute('aria-pressed'), 'false');
-    assert.equal(await p.evaluate(() => window.__speech.at(-1).aborted), true);
-    assert.equal(await p.locator('.fx-input:not(:disabled)').inputValue(), '');
-    assert.doesNotMatch(await p.locator('#dictationStatus').textContent(), /Escuchando/);
-  }
+test('L200: Play sin archivo muestra Sin audio aún; mute cambia estado', async t => {
+  const p = await pageFor(t);
+  await p.goto(base + '/tools/leccion-lineal-working-memory.html');
+  await p.click('[data-l200-audio-play="explicacion-1"]');
+  await p.waitForFunction(() => {
+    const hint = document.querySelector('[data-l200-audio="1"] .l200-audio-hint');
+    return hint && hint.textContent.indexOf('Sin audio aún') !== -1;
+  });
+  const mutedBefore = await p.evaluate(() => window.__L200.audioMuted('1'));
+  await p.click('[data-l200-audio-mute="explicacion-1"]');
+  const mutedAfter = await p.evaluate(() => window.__L200.audioMuted('1'));
+  assert.notEqual(mutedAfter, mutedBefore);
+  await p.click('[data-l200-audio-play="explicacion-2"]');
+  await p.waitForFunction(() => {
+    const hint = document.querySelector('[data-l200-audio="2"] .l200-audio-hint');
+    return hint && hint.textContent.indexOf('Sin audio aún') !== -1;
+  });
 });
 
 for (const width of [390, 1440]) {

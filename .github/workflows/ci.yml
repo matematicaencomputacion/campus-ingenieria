@@ -92,7 +92,7 @@ jobs:
       - name: Run contextual navigation tests
         run: npm run test:navigation
 
-      - name: Run L200 focused graph and dictation tests
+      - name: Run L200 focused graph and audio tests
         run: npm run test:l200
 
       - name: Run L201 Enfoque media bar tests
