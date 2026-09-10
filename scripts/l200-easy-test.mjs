@@ -371,6 +371,7 @@ test('L200: Play del slot 1 pide 200_1.json y deja cues listos', async t => {
 
 test('L200: Play sin archivo muestra Sin audio aún; mute cambia estado', async t => {
   const p = await pageFor(t);
+  await p.route(/\/audio\/l200\/(200_2|explicacion-2)\.mp3$/, route => route.fulfill({ status: 404, body: '' }));
   await p.goto(base + '/tools/leccion-lineal-working-memory.html');
   const mutedBefore = await p.evaluate(() => window.__L200.audioMuted('1'));
   await p.click('[data-l200-audio-mute="explicacion-1"]');
