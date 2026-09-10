@@ -242,8 +242,62 @@ test('L200: overlay karaoke sincroniza cues al seek y se limpia en huecos', asyn
   assert.equal(snap.pauseKeeps, 'Hola, esta es la recta');
 });
 
+const SPA_HTML = '<!doctype html><html><body>index</body></html>';
+
+test('L200: HEAD HTML en wav no se elige; Play usa mp3 y mantiene cues', async t => {
+  const p = await pageFor(t);
+  p.setDefaultTimeout(10000);
+  const wavHeads = [];
+  await p.route('**/audio/l200/200_1.wav', async route => {
+    wavHeads.push(route.request().method());
+    await route.fulfill({ status: 200, contentType: 'text/html', body: SPA_HTML });
+  });
+  await p.goto(base + '/tools/leccion-lineal-working-memory.html');
+  await p.click('[data-l200-audio-play="explicacion-1"]');
+  await p.waitForFunction(() => {
+    const el = document.querySelector('[data-l200-audio-player="explicacion-1"]');
+    return el && el.getAttribute('data-rel') === 'audio/l200/200_1.mp3' && !el.paused;
+  });
+  await p.waitForFunction(() => {
+    const el = document.querySelector('[data-l200-audio-player="explicacion-1"]');
+    const host = document.getElementById('l200Subtitles');
+    const hint = document.querySelector('[data-l200-audio="1"] .l200-audio-hint');
+    return el && el.currentTime > 1 && !el.paused && host && host.hidden === false
+      && !(hint && hint.textContent.indexOf('Sin audio aún') !== -1);
+  });
+  const snap = await p.evaluate(() => {
+    const el = document.querySelector('[data-l200-audio-player="explicacion-1"]');
+    return {
+      rel: el.getAttribute('data-rel'),
+      paused: el.paused,
+      hidden: document.getElementById('l200Subtitles').hidden,
+      text: window.__L200.subtitleText()
+    };
+  });
+  assert.equal(snap.rel, 'audio/l200/200_1.mp3');
+  assert.equal(snap.paused, false);
+  assert.equal(snap.hidden, false);
+  assert.ok(snap.text, JSON.stringify(snap));
+  assert.ok(wavHeads.includes('HEAD'), JSON.stringify(wavHeads));
+});
+
+test('L200: wav con Content-Type audio pero cuerpo HTML cae al mp3', async t => {
+  const p = await pageFor(t);
+  p.setDefaultTimeout(10000);
+  await p.route('**/audio/l200/200_1.wav', async route => {
+    await route.fulfill({ status: 200, contentType: 'audio/wav', body: SPA_HTML });
+  });
+  await p.goto(base + '/tools/leccion-lineal-working-memory.html');
+  await p.click('[data-l200-audio-play="explicacion-1"]');
+  await p.waitForFunction(() => {
+    const el = document.querySelector('[data-l200-audio-player="explicacion-1"]');
+    return el && el.getAttribute('data-rel') === 'audio/l200/200_1.mp3' && !el.paused;
+  });
+});
+
 test('L200: Play del slot 1 pide 200_1.json y deja cues listos', async t => {
   const p = await pageFor(t);
+  p.setDefaultTimeout(10000);
   const fixture = JSON.stringify([
     { start: 0, end: 1.8, text: 'Esta es la recta.' },
     { start: 1.8, end: 4.2, text: 'f(x) = mx + b' }
@@ -263,6 +317,10 @@ test('L200: Play del slot 1 pide 200_1.json y deja cues listos', async t => {
   });
   await p.click('[data-l200-audio-play="explicacion-1"]');
   await jsonReq;
+  await p.waitForFunction(() => {
+    const el = document.querySelector('[data-l200-audio-player="explicacion-1"]');
+    return el && el.getAttribute('data-rel') === 'audio/l200/200_1.mp3' && !el.paused;
+  });
   await p.waitForFunction(() => window.__L200.syncSubtitles('1', 0.5) === 'Esta es la recta.');
   assert.equal(await p.evaluate(() => window.__L200.syncSubtitles('1', 2.5)), 'f(x) = mx + b');
   const chrome = await p.evaluate(() => {

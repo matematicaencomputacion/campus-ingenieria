@@ -224,6 +224,23 @@
     return String(base || DEFAULT_BASE).replace(/\/$/, "");
   }
 
+  function isAudioContentType(header) {
+    var type = String(header == null ? "" : header).split(";")[0].replace(/^\s+|\s+$/g, "").toLowerCase();
+    if (!type || type.indexOf("text/html") === 0) return false;
+    return type.indexOf("audio/") === 0;
+  }
+
+  function responseIsPlayableAudio(res) {
+    if (!res || !res.ok) return false;
+    var header = "";
+    try {
+      header = res.headers && res.headers.get ? (res.headers.get("content-type") || "") : "";
+    } catch (err) {
+      header = "";
+    }
+    return isAudioContentType(header);
+  }
+
   function audioCandidatesFor(base, slotId, fallbackStem) {
     var root = cleanBase(base);
     var numbered = slotStem(slotId);
@@ -463,6 +480,8 @@
     var hintTimer = null;
     var ignoreAudioError = false;
     var playSeq = 0;
+    var probeAt = 0;
+    var playingOk = false;
     var cues = [];
     var cuesLoaded = false;
     var owner = false;
@@ -557,10 +576,21 @@
       releaseOverlay();
     }
 
-    function playSrc(src, seq) {
+    function skipToNext(seq, index) {
       if (seq !== playSeq) return;
+      if (index !== probeAt) return;
+      playingOk = false;
+      probeAndPlay(cands, index + 1, seq);
+    }
+
+    function playSrc(src, seq, index) {
+      if (seq !== playSeq) return;
+      probeAt = index;
+      playingOk = false;
+      ignoreAudioError = true;
       audioEl.setAttribute("data-rel", src);
       audioEl.src = src;
+      ignoreAudioError = false;
       audioEl.muted = muted;
       audioEl.volume = volume;
       owner = true;
@@ -568,21 +598,22 @@
       var p = audioEl.play();
       if (p && p.then) {
         p.then(function () {
-          if (seq !== playSeq) return;
+          if (seq !== playSeq || index !== probeAt) return;
+          playingOk = true;
           setPlayIcon(true);
           showHint("");
           syncOverlay(audioEl.currentTime || 0);
         }).catch(function () {
           if (seq !== playSeq) return;
-          showHint(HINT_NO_AUDIO);
-          setPlayIcon(false);
-          releaseOverlay();
+          skipToNext(seq, index);
         });
       }
     }
 
     function probeAndPlay(list, index, seq) {
       if (seq !== playSeq) return;
+      probeAt = index;
+      playingOk = false;
       if (index >= list.length) {
         clearAudioSrc();
         setPlayIcon(false);
@@ -594,19 +625,21 @@
       var src = list[index];
       var done = function (ok) {
         if (seq !== playSeq) return;
-        if (ok) playSrc(src, seq);
+        if (ok) playSrc(src, seq, index);
         else probeAndPlay(list, index + 1, seq);
       };
       if (typeof global.fetch !== "function") {
-        playSrc(src, seq);
+        playSrc(src, seq, index);
         return;
       }
       global.fetch(src, { method: "HEAD" }).then(function (res) {
-        if (res.ok) done(true);
-        else if (res.status === 405 || res.status === 501) playSrc(src, seq);
+        if (seq !== playSeq || index !== probeAt) return;
+        if (res.status === 405 || res.status === 501) playSrc(src, seq, index);
+        else if (responseIsPlayableAudio(res)) done(true);
         else done(false);
       }).catch(function () {
-        playSrc(src, seq);
+        if (seq !== playSeq || index !== probeAt) return;
+        playSrc(src, seq, index);
       });
     }
 
@@ -641,6 +674,8 @@
         if (other.host !== host) other.stop();
       });
       playSeq += 1;
+      probeAt = 0;
+      playingOk = false;
       owner = true;
       loadCues(playSeq);
       probeAndPlay(cands, 0, playSeq);
@@ -669,6 +704,12 @@
     });
     audioEl.addEventListener("error", function () {
       if (ignoreAudioError) return;
+      var rel = audioEl.getAttribute("data-rel") || "";
+      var idx = cands.indexOf(rel);
+      if (idx === probeAt) {
+        skipToNext(playSeq, idx);
+        return;
+      }
       showHint(HINT_NO_AUDIO);
       setPlayIcon(false);
       releaseOverlay();
@@ -799,6 +840,7 @@
     HINT_NO_AUDIO: HINT_NO_AUDIO,
     normalizeCues: normalizeCues,
     cueAt: cueAt,
+    isAudioContentType: isAudioContentType,
     audioCandidatesFor: audioCandidatesFor,
     cueCandidatesFor: cueCandidatesFor,
     mount: mount
