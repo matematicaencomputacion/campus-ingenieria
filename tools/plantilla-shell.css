@@ -1,5 +1,103 @@
 /*! Campus Ingeniería · L199 · plantilla shell (dos ejes + rieles).
-   Tokens alineados a enfoque-tabs.css; no duplica el chrome L201. */
+   Page chrome local: no carga enfoque-tabs.css. */
+:root {
+  --plantilla-page-bg: #0c1118;
+  --plantilla-page-panel: #151d2a;
+  --plantilla-page-ink: #e9eef7;
+  --plantilla-page-muted: #8b9bb4;
+  --plantilla-page-accent: #c084fc;
+  --plantilla-page-mast: #60a5fa;
+  --plantilla-page-border: #243044;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 20% -10%, #1a2740 0%, var(--plantilla-page-bg) 55%);
+  color: var(--plantilla-page-ink);
+  padding: 12px 14px 18px;
+}
+
+.wrap {
+  max-width: min(1280px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 10px;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.16rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h1 .lesson-num {
+  color: var(--plantilla-page-accent);
+  font-weight: 800;
+}
+
+.sub {
+  color: var(--plantilla-page-muted);
+  font-size: 0.84rem;
+  margin-left: 0.45rem;
+  font-weight: 400;
+}
+
+.card {
+  background: var(--plantilla-page-panel);
+  border: 1px solid var(--plantilla-page-border);
+  border-radius: 14px;
+  padding: 6px;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--plantilla-page-muted);
+  margin: 8px 6px 4px;
+  line-height: 1.4;
+}
+
+.plantilla-tool {
+  border: 1px solid var(--plantilla-page-border);
+  border-radius: 8px;
+  background: #121a27;
+  color: var(--plantilla-page-ink);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 9px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.plantilla-tool:hover {
+  border-color: var(--plantilla-page-mast);
+  color: var(--plantilla-page-mast);
+}
+
+.plantilla-tool[aria-pressed="true"] {
+  background: rgba(96, 165, 250, 0.16);
+  border-color: var(--plantilla-page-mast);
+  color: #93c5fd;
+}
+
+.plantilla-tool:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 .plantilla-shell {
   --plantilla-bg: #12171f;
   --plantilla-panel: #1f242e;
