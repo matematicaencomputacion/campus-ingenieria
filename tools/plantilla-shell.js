@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "plantilla-shell.css?v=20260910-l199e";
+  var CSS_HREF = "plantilla-shell.css?v=20260910-l199f";
   var UI_KEY = "campus_l199_ui";
 
   function unknownAxis(axis) {
@@ -327,8 +327,16 @@
     playBtn.setAttribute("data-plantilla-media", "play");
 
     var progress = el("div", "plantilla-media-progress");
+    var clock = el("span", "plantilla-media-clock");
     var timeEl = el("span", "plantilla-media-time");
     timeEl.textContent = "0:00";
+    var clockSep = el("span", "plantilla-media-clock-sep");
+    clockSep.textContent = " / ";
+    var durEl = el("span", "plantilla-media-dur");
+    durEl.textContent = "0:00";
+    clock.appendChild(timeEl);
+    clock.appendChild(clockSep);
+    clock.appendChild(durEl);
     var seek = el("input", "plantilla-media-seek");
     seek.type = "range";
     seek.min = "0";
@@ -337,11 +345,8 @@
     seek.value = "0";
     seek.setAttribute("aria-label", "Posición");
     seek.disabled = true;
-    var durEl = el("span", "plantilla-media-dur");
-    durEl.textContent = "0:00";
-    progress.appendChild(timeEl);
+    progress.appendChild(clock);
     progress.appendChild(seek);
-    progress.appendChild(durEl);
 
     var pdfBtn = el("a", "plantilla-media-btn plantilla-media-pdf");
     pdfBtn.href = cfg.pdf || "#";
@@ -381,12 +386,15 @@
     var audioEl = document.createElement("audio");
     audioEl.preload = "none";
 
+    var mediaActions = el("div", "plantilla-media-actions");
+    mediaActions.appendChild(pdfBtn);
+    mediaActions.appendChild(muteBtn);
+    mediaActions.appendChild(vol);
+    mediaActions.appendChild(helpBtn);
+
     media.appendChild(playBtn);
     media.appendChild(progress);
-    media.appendChild(pdfBtn);
-    media.appendChild(muteBtn);
-    media.appendChild(vol);
-    media.appendChild(helpBtn);
+    media.appendChild(mediaActions);
     media.appendChild(hintEl);
     media.appendChild(audioEl);
 

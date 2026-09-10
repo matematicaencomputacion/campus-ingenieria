@@ -634,12 +634,21 @@ h1 .lesson-num {
   min-width: 160px;
 }
 
+.plantilla-media-clock,
 .plantilla-media-time,
-.plantilla-media-dur {
+.plantilla-media-dur,
+.plantilla-media-clock-sep {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: var(--plantilla-muted);
   white-space: nowrap;
+}
+
+.plantilla-media-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .plantilla-media-seek,
