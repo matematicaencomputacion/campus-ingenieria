@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "plantilla-shell.css?v=20260910-l199b";
+  var CSS_HREF = "plantilla-shell.css?v=20260910-l199c";
   var UI_KEY = "campus_l199_ui";
 
   function unknownAxis(axis) {
@@ -416,7 +416,7 @@
         case "leccion":
           lessonLabel.textContent = "FOCO: Lección ±";
           captionText = hasSelection()
-            ? "eje: Slide ◀▶"
+            ? "eje: Slide ◀▶ (activo)"
             : "eje: Slide ◀▶ (inactivo hasta elegir tab)";
           break;
         case "slide":
@@ -426,7 +426,7 @@
         case "idle":
           lessonLabel.textContent = "eje: Lección ±";
           captionText = hasSelection()
-            ? "eje: Slide ◀▶"
+            ? "eje: Slide ◀▶ (activo)"
             : "eje: Slide ◀▶ (inactivo hasta elegir tab)";
           break;
         default:

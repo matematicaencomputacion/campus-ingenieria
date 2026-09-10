@@ -104,6 +104,7 @@ test('L199: tab números habilita slides; eje ámbar al avanzar', async t => {
       title: document.querySelector('.plantilla-slide-title')?.textContent,
       nums: [...document.querySelectorAll('.plantilla-num')].map((b) => b.textContent),
       dots: document.querySelector('.plantilla-dots')?.textContent,
+      caption: document.querySelector('.plantilla-stage-caption')?.textContent,
       nextDisabled: document.querySelector('.plantilla-pager.next')?.disabled
     };
   });
@@ -118,6 +119,7 @@ test('L199: tab números habilita slides; eje ámbar al avanzar', async t => {
   assert.match(afterTab.title, /eje números/);
   assert.deepEqual(afterTab.nums, ['1', '2', '3']);
   assert.match(afterTab.dots, /●/);
+  assert.match(afterTab.caption, /activo/);
   assert.equal(afterTab.nextDisabled, false);
 
   await p.click('[data-plantilla-nav="slide"][data-plantilla-dir="next"]');
