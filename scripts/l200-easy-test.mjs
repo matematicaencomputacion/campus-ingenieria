@@ -254,11 +254,15 @@ test('L200: Play del slot 1 pide 200_1.json y deja cues listos', async t => {
     body: fixture
   }));
   await p.goto(base + '/tools/leccion-lineal-working-memory.html');
-  await p.click('[data-l200-audio-play="explicacion-1"]');
-  await p.waitForFunction(() => {
-    const hint = document.querySelector('[data-l200-audio="1"] .l200-audio-hint');
-    return hint && hint.textContent.indexOf('Sin audio aún') !== -1;
+  const jsonReq = p.waitForRequest(req => {
+    try {
+      return new URL(req.url()).pathname.endsWith('/audio/l200/200_1.json');
+    } catch {
+      return false;
+    }
   });
+  await p.click('[data-l200-audio-play="explicacion-1"]');
+  await jsonReq;
   await p.waitForFunction(() => window.__L200.syncSubtitles('1', 0.5) === 'Esta es la recta.');
   assert.equal(await p.evaluate(() => window.__L200.syncSubtitles('1', 2.5)), 'f(x) = mx + b');
   const chrome = await p.evaluate(() => {
@@ -277,11 +281,6 @@ test('L200: Play del slot 1 pide 200_1.json y deja cues listos', async t => {
 test('L200: Play sin archivo muestra Sin audio aún; mute cambia estado', async t => {
   const p = await pageFor(t);
   await p.goto(base + '/tools/leccion-lineal-working-memory.html');
-  await p.click('[data-l200-audio-play="explicacion-1"]');
-  await p.waitForFunction(() => {
-    const hint = document.querySelector('[data-l200-audio="1"] .l200-audio-hint');
-    return hint && hint.textContent.indexOf('Sin audio aún') !== -1;
-  });
   const mutedBefore = await p.evaluate(() => window.__L200.audioMuted('1'));
   await p.click('[data-l200-audio-mute="explicacion-1"]');
   const mutedAfter = await p.evaluate(() => window.__L200.audioMuted('1'));
