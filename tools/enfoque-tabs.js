@@ -2,12 +2,21 @@
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "enfoque-tabs.css?v=20260909d";
+  var CSS_HREF = "enfoque-tabs.css?v=20260909e";
   var UI_KEY = "campus_enfoque_ui";
   var RAIL_SLIM = 48;
   var RAIL_LABELED = 88;
   var RAIL_MIN = 44;
   var RAIL_MAX = 120;
+  var HINT_NO_AUDIO = "Sin audio aún";
+  var ICON = {
+    prev: "M6 6h2v12H6zm3.5 6l8.5 6V6z",
+    next: "M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z",
+    play: "M8 5v14l11-7z",
+    pause: "M6 19h4V5H6v14zm8-14v14h4V5h-4z",
+    vol: "M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z",
+    mute: "M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"
+  };
   var PALETTE = [
     "#ef4444", "#eab308", "#22c55e", "#a855f7", "#3b82f6",
     "#ec4899", "#14b8a6", "#f97316", "#8b5cf6", "#06b6d4",
@@ -29,6 +38,46 @@
 
   function tabId(tab, index) {
     return tab.id || ("tab-" + index);
+  }
+
+  function slideAudioCandidates(cfg, tab, slide, slideIdx) {
+    if (slide && typeof slide.audio === "string" && slide.audio) {
+      return [slide.audio];
+    }
+    var base = ((cfg && cfg.audioBase) || "audio/l201").replace(/\/$/, "");
+    var stem = base + "/" + tabId(tab, 0) + "-" + slideIdx;
+    return [stem + ".mp3", stem + ".ogg"];
+  }
+
+  function formatMediaTime(sec) {
+    if (!isFinite(sec) || sec < 0) sec = 0;
+    var s = Math.floor(sec);
+    var m = Math.floor(s / 60);
+    s = s % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function svgIcon(d) {
+    var ns = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("class", "enfoque-media-icon");
+    var path = document.createElementNS(ns, "path");
+    path.setAttribute("d", d);
+    path.setAttribute("fill", "currentColor");
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function mediaBtn(name, label, icon) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "enfoque-media-btn enfoque-media-" + name;
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+    btn.appendChild(svgIcon(icon));
+    return btn;
   }
 
   function findTabIndex(tabs, id) {
@@ -242,25 +291,225 @@
     var tabBtns = [];
     var panels = [];
     var slideSets = [];
+    var slideMeta = [];
     var slideIndex = [];
     var active = start;
     var varHost = root.closest(".enfoque-nav-host") || root;
 
     var tabPrev = makePager("eleccion", "prev");
     var tabNext = makePager("eleccion", "next");
-    var slidePrev = makePager("lamina", "prev");
-    var slideNext = makePager("lamina", "next");
     tabPrev.title = "Elección · etiqueta anterior";
     tabNext.title = "Elección · etiqueta siguiente";
-    slidePrev.title = "Lámina anterior";
-    slideNext.title = "Lámina siguiente";
     tabPrev.setAttribute("aria-label", "Etiqueta anterior");
     tabNext.setAttribute("aria-label", "Etiqueta siguiente");
-    slidePrev.setAttribute("aria-label", "Lámina anterior");
-    slideNext.setAttribute("aria-label", "Lámina siguiente");
+
+    var media = document.createElement("div");
+    media.className = "enfoque-media";
+    media.setAttribute("role", "group");
+    media.setAttribute("aria-label", "Láminas y audio");
+    media.setAttribute("data-enfoque-media", "bar");
+
+    var slidePrev = mediaBtn("prev", "Lámina anterior", ICON.prev);
+    var playBtn = mediaBtn("play", "Reproducir audio", ICON.play);
+    var slideNext = mediaBtn("next", "Lámina siguiente", ICON.next);
+    slidePrev.setAttribute("data-enfoque-nav", "lamina");
+    slidePrev.setAttribute("data-enfoque-dir", "prev");
+    slideNext.setAttribute("data-enfoque-nav", "lamina");
+    slideNext.setAttribute("data-enfoque-dir", "next");
+    playBtn.setAttribute("data-enfoque-media", "play");
+    playBtn.setAttribute("aria-pressed", "false");
+
+    var progress = document.createElement("div");
+    progress.className = "enfoque-media-progress";
+    var timeEl = document.createElement("span");
+    timeEl.className = "enfoque-media-time";
+    timeEl.textContent = "0:00";
+    var seek = document.createElement("input");
+    seek.type = "range";
+    seek.className = "enfoque-media-seek";
+    seek.min = "0";
+    seek.max = "0";
+    seek.step = "0.1";
+    seek.value = "0";
+    seek.setAttribute("aria-label", "Progreso del audio");
+    var durEl = document.createElement("span");
+    durEl.className = "enfoque-media-dur";
+    durEl.textContent = "0:00";
+    progress.appendChild(timeEl);
+    progress.appendChild(seek);
+    progress.appendChild(durEl);
+
+    var muteBtn = mediaBtn("mute", "Silenciar", ICON.vol);
+    muteBtn.setAttribute("data-enfoque-media", "mute");
+    var vol = document.createElement("input");
+    vol.type = "range";
+    vol.className = "enfoque-media-vol";
+    vol.min = "0";
+    vol.max = "1";
+    vol.step = "0.05";
+    vol.value = "1";
+    vol.setAttribute("aria-label", "Volumen");
+
+    var hintEl = document.createElement("p");
+    hintEl.className = "enfoque-media-hint";
+    hintEl.setAttribute("aria-live", "polite");
+
+    var audioEl = document.createElement("audio");
+    audioEl.preload = "none";
+    audioEl.setAttribute("data-enfoque-audio", "player");
+
+    media.appendChild(slidePrev);
+    media.appendChild(playBtn);
+    media.appendChild(slideNext);
+    media.appendChild(progress);
+    media.appendChild(muteBtn);
+    media.appendChild(vol);
+    media.appendChild(hintEl);
+    media.appendChild(audioEl);
+
+    var muted = !!saved.muted;
+    var volume = typeof saved.vol === "number" ? saved.vol : 1;
+    if (volume < 0) volume = 0;
+    if (volume > 1) volume = 1;
+    var playing = false;
+    var hintTimer = null;
+    var ignoreAudioError = false;
+    var playSeq = 0;
 
     function persist() {
-      writeUi(uiKey, { labels: labelsOn, min: minimized, rail: railPx });
+      writeUi(uiKey, { labels: labelsOn, min: minimized, rail: railPx, muted: muted, vol: volume });
+    }
+
+    function currentSlideMeta() {
+      var list = slideMeta[active] || [];
+      var cur = slideIndex[active] || 0;
+      return { tab: tabs[active], slide: list[cur] || {}, index: cur };
+    }
+
+    function setPlayIcon(isPlaying) {
+      playing = !!isPlaying;
+      playBtn.replaceChildren(svgIcon(playing ? ICON.pause : ICON.play));
+      playBtn.setAttribute("aria-label", playing ? "Pausar audio" : "Reproducir audio");
+      playBtn.title = playing ? "Pausar audio" : "Reproducir audio";
+      playBtn.setAttribute("aria-pressed", playing ? "true" : "false");
+    }
+
+    function setMuteUi() {
+      var silent = muted || volume === 0;
+      muteBtn.replaceChildren(svgIcon(silent ? ICON.mute : ICON.vol));
+      muteBtn.setAttribute("aria-pressed", silent ? "true" : "false");
+      muteBtn.setAttribute("aria-label", muted ? "Activar sonido" : "Silenciar");
+      muteBtn.title = muted ? "Activar sonido" : "Silenciar";
+      audioEl.muted = muted;
+      audioEl.volume = volume;
+      vol.value = String(volume);
+    }
+
+    function showHint(msg) {
+      hintEl.textContent = msg || "";
+      if (hintTimer) global.clearTimeout(hintTimer);
+      hintTimer = null;
+      if (msg) {
+        hintTimer = global.setTimeout(function () { hintEl.textContent = ""; }, 3200);
+      }
+    }
+
+    function resetProgress() {
+      seek.value = "0";
+      seek.max = "0";
+      timeEl.textContent = "0:00";
+      durEl.textContent = "0:00";
+    }
+
+    function clearAudioSrc() {
+      ignoreAudioError = true;
+      audioEl.pause();
+      audioEl.removeAttribute("src");
+      audioEl.removeAttribute("data-rel");
+      try { audioEl.load(); } catch (err) { /* empty src */ }
+      ignoreAudioError = false;
+    }
+
+    function stopAudio() {
+      playSeq += 1;
+      clearAudioSrc();
+      setPlayIcon(false);
+      resetProgress();
+    }
+
+    function playSrc(src, seq) {
+      if (seq !== playSeq) return;
+      audioEl.setAttribute("data-rel", src);
+      audioEl.src = src;
+      audioEl.muted = muted;
+      audioEl.volume = volume;
+      var p = audioEl.play();
+      if (p && p.then) {
+        p.then(function () {
+          if (seq !== playSeq) return;
+          setPlayIcon(true);
+          showHint("");
+        }).catch(function () {
+          if (seq !== playSeq) return;
+          showHint(HINT_NO_AUDIO);
+          setPlayIcon(false);
+        });
+      }
+    }
+
+    function probeAndPlay(cands, index, seq) {
+      if (seq !== playSeq) return;
+      if (index >= cands.length) {
+        clearAudioSrc();
+        setPlayIcon(false);
+        resetProgress();
+        showHint(HINT_NO_AUDIO);
+        return;
+      }
+      var src = cands[index];
+      var done = function (ok) {
+        if (seq !== playSeq) return;
+        if (ok) playSrc(src, seq);
+        else probeAndPlay(cands, index + 1, seq);
+      };
+      if (typeof global.fetch !== "function") {
+        playSrc(src, seq);
+        return;
+      }
+      global.fetch(src, { method: "HEAD" }).then(function (res) {
+        if (res.ok) done(true);
+        else if (res.status === 405 || res.status === 501) playSrc(src, seq);
+        else done(false);
+      }).catch(function () {
+        playSrc(src, seq);
+      });
+    }
+
+    function togglePlay() {
+      if (!audioEl.paused && audioEl.getAttribute("src")) {
+        audioEl.pause();
+        setPlayIcon(false);
+        return;
+      }
+      var meta = currentSlideMeta();
+      var cands = slideAudioCandidates(cfg, meta.tab, meta.slide, meta.index);
+      var rel = audioEl.getAttribute("data-rel") || "";
+      if (rel && cands.indexOf(rel) !== -1 && audioEl.getAttribute("src") && !audioEl.error) {
+        var resume = audioEl.play();
+        if (resume && resume.then) {
+          resume.then(function () { setPlayIcon(true); }).catch(function () {
+            showHint(HINT_NO_AUDIO);
+            setPlayIcon(false);
+          });
+        }
+        return;
+      }
+      if (!cands.length) {
+        showHint(HINT_NO_AUDIO);
+        return;
+      }
+      playSeq += 1;
+      probeAndPlay(cands, 0, playSeq);
     }
 
     function applyRailWidth() {
@@ -330,6 +579,7 @@
       setPagerDisabled(slidePrev, cur <= 0);
       setPagerDisabled(slideNext, n <= 1 || cur >= n - 1);
       body.scrollTop = 0;
+      stopAudio();
     }
 
     function showSlide(next) {
@@ -442,6 +692,7 @@
         var slideEl = document.createElement("div");
         slideEl.className = "enfoque-slide";
         slideEl.setAttribute("data-slide", String(sIdx));
+        slideEl.setAttribute("data-audio", slideAudioCandidates(cfg, tab, slide, sIdx)[0] || "");
         slideEl.hidden = sIdx !== 0;
         fillSlide(slideEl, slide, cfg);
         panel.appendChild(slideEl);
@@ -450,6 +701,7 @@
       body.appendChild(panel);
       panels.push(panel);
       slideSets.push(slideEls);
+      slideMeta.push(slides);
       slideIndex.push(0);
     });
 
@@ -527,13 +779,63 @@
     tabNext.addEventListener("click", function () { stepTab(1); });
     slidePrev.addEventListener("click", function () { stepSlide(-1); });
     slideNext.addEventListener("click", function () { stepSlide(1); });
+    playBtn.addEventListener("click", togglePlay);
+    muteBtn.addEventListener("click", function () {
+      muted = !muted;
+      setMuteUi();
+      persist();
+    });
+    vol.addEventListener("input", function () {
+      volume = parseFloat(vol.value);
+      if (!isFinite(volume)) volume = 1;
+      if (volume < 0) volume = 0;
+      if (volume > 1) volume = 1;
+      if (volume > 0) muted = false;
+      audioEl.volume = volume;
+      setMuteUi();
+      persist();
+    });
+    seek.addEventListener("input", function () {
+      var v = parseFloat(seek.value);
+      if (isFinite(v) && isFinite(audioEl.duration) && audioEl.duration > 0) {
+        audioEl.currentTime = v;
+      }
+    });
+    audioEl.addEventListener("error", function () {
+      if (ignoreAudioError) return;
+      showHint(HINT_NO_AUDIO);
+      setPlayIcon(false);
+    });
+    audioEl.addEventListener("timeupdate", function () {
+      if (!isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+      seek.max = String(audioEl.duration);
+      seek.value = String(audioEl.currentTime || 0);
+      timeEl.textContent = formatMediaTime(audioEl.currentTime);
+      durEl.textContent = formatMediaTime(audioEl.duration);
+    });
+    audioEl.addEventListener("loadedmetadata", function () {
+      if (!isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+      seek.max = String(audioEl.duration);
+      durEl.textContent = formatMediaTime(audioEl.duration);
+    });
+    audioEl.addEventListener("ended", function () {
+      setPlayIcon(false);
+      audioEl.currentTime = 0;
+      seek.value = "0";
+      timeEl.textContent = "0:00";
+    });
+    audioEl.addEventListener("pause", function () {
+      if (!audioEl.ended) setPlayIcon(false);
+    });
+    audioEl.addEventListener("play", function () {
+      setPlayIcon(true);
+    });
 
     main.appendChild(chrome);
     main.appendChild(body);
+    main.appendChild(media);
     main.appendChild(tabPrev);
     main.appendChild(tabNext);
-    main.appendChild(slidePrev);
-    main.appendChild(slideNext);
     rail.appendChild(split);
     rail.appendChild(tabStrip);
     rail.appendChild(railTools);
@@ -541,6 +843,7 @@
     shell.appendChild(rail);
     root.appendChild(shell);
     applyUi();
+    setMuteUi();
     activate(start, false);
 
     var api = {
@@ -553,12 +856,26 @@
       prevTab: function () { stepTab(-1); },
       nextSlide: function () { stepSlide(1); },
       prevSlide: function () { stepSlide(-1); },
+      play: togglePlay,
+      stopAudio: stopAudio,
+      audioCandidates: function () {
+        var meta = currentSlideMeta();
+        return slideAudioCandidates(cfg, meta.tab, meta.slide, meta.index);
+      },
+      muted: function () { return muted; },
+      setMuted: function (next) {
+        muted = !!next;
+        setMuteUi();
+        persist();
+      },
       setMinimized: setMinimized,
       setLabels: setLabels,
       destroy: function () {
         document.removeEventListener("keydown", onShortcut);
         document.removeEventListener("pointermove", onPointerMove);
         document.removeEventListener("pointerup", onPointerUp);
+        if (hintTimer) global.clearTimeout(hintTimer);
+        stopAudio();
       }
     };
     if (cfg.exportName) global[cfg.exportName] = api;
@@ -571,7 +888,10 @@
     mount(global.__ENFOQUE_CFG__);
   }
 
-  global.CampusEnfoqueTabs = { mount: mount };
+  global.CampusEnfoqueTabs = {
+    mount: mount,
+    audioCandidates: slideAudioCandidates
+  };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

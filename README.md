@@ -30,6 +30,7 @@ npm run test:browser      # smoke de navegador: abre las ~190 páginas en Chromi
 npm run test:interaction  # mueve los sliders de cada lección y falla si alguno lanza errores
 npm run test:navigation   # retorno contextual, visor, foco y geometría de barras
 npm run test:l200         # forma fácil compacta, arrastres y dictado de f(x)
+npm run test:l201         # L201 Enfoque: barra de media, láminas y audio
 npm run test:all          # suite completa
 ```
 
