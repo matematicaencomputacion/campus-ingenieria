@@ -1,0 +1,47 @@
+[
+  {
+    "start": 0.0,
+    "end": 6.849,
+    "text": "…El sistema…elige la función, elige la pendiente, elige la ordenada del origen,"
+  },
+  {
+    "start": 6.849,
+    "end": 11.84,
+    "text": "y te da…algunos valores de x que también los elige."
+  },
+  {
+    "start": 11.84,
+    "end": 18.395,
+    "text": "Esos valores de x que están ahí están simplemente para que los reemplaces…dentro del formato."
+  },
+  {
+    "start": 18.395,
+    "end": 23.835,
+    "text": "El formato es para que sepas la cuenta que tenés que hacer, lo puedes hacer con una calculadora."
+  },
+  {
+    "start": 23.835,
+    "end": 27.67,
+    "text": "Luego, el resultado lo vas a poner dentro de fdx."
+  },
+  {
+    "start": 27.67,
+    "end": 31.35,
+    "text": "Hasta ahí no va a pasar nada, tenés que apretar ok."
+  },
+  {
+    "start": 31.35,
+    "end": 37.864,
+    "text": "Cuando apretes ok, recién el sistema va a evaluar…si la cuenta que vos hiciste, reemplazando"
+  },
+  {
+    "start": 37.864,
+    "end": 41.945,
+    "text": "el valor…de x dentro del formato, dentro de la función"
+  },
+  {
+    "start": 41.945,
+    "end": 46.5,
+    "text": "matemática, es correcto, y te va a decir si es correcto o no."
+  }
+]

@@ -1,0 +1,35 @@
+﻿1
+00:00:00,000 --> 00:00:06,849
+…El sistema…elige la función, elige la pendiente, elige la ordenada del origen,
+
+2
+00:00:06,849 --> 00:00:11,840
+y te da…algunos valores de x que también los elige.
+
+3
+00:00:11,840 --> 00:00:18,395
+Esos valores de x que están ahí están simplemente para que los reemplaces…dentro del formato.
+
+4
+00:00:18,395 --> 00:00:23,835
+El formato es para que sepas la cuenta que tenés que hacer, lo puedes hacer con una calculadora.
+
+5
+00:00:23,835 --> 00:00:27,670
+Luego, el resultado lo vas a poner dentro de fdx.
+
+6
+00:00:27,670 --> 00:00:31,350
+Hasta ahí no va a pasar nada, tenés que apretar ok.
+
+7
+00:00:31,350 --> 00:00:37,864
+Cuando apretes ok, recién el sistema va a evaluar…si la cuenta que vos hiciste, reemplazando
+
+8
+00:00:37,864 --> 00:00:41,945
+el valor…de x dentro del formato, dentro de la función
+
+9
+00:00:41,945 --> 00:00:46,500
+matemática, es correcto, y te va a decir si es correcto o no.
