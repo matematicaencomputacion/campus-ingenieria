@@ -97,3 +97,6 @@ jobs:
 
       - name: Run L201 Enfoque media bar tests
         run: npm run test:l201
+
+      - name: Run L199 plantilla shell tests
+        run: npm run test:l199
