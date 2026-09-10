@@ -288,6 +288,29 @@ console.log('\n📐 8. L201 Enfoque (dual nav y primera lámina):');
   assert(shellCss.includes('top: 44px'), 'lesson-shell.css sube los triángulos');
 }
 
+// 9. L200 · sin Dictar + dos barras de audio locales
+console.log('\n🎧 9. L200 (tabla, Sonido y audio local):');
+{
+  const l200Path = path.join(ROOT, 'tools/leccion-lineal-working-memory.html');
+  const l200JsPath = path.join(ROOT, 'tools/leccion-lineal-working-memory.js');
+  const l200 = fs.readFileSync(l200Path, 'utf-8');
+  const l200Js = fs.readFileSync(l200JsPath, 'utf-8');
+  assert(fs.existsSync(l200Path), 'Existe tools/leccion-lineal-working-memory.html');
+  assert(l200.includes('leccion-lineal-working-memory.js?v=20260910-audio'), 'L200 cache-bust JS ?v=20260910-audio');
+  assert(!l200.includes('number-dictation.js'), 'L200 ya no carga number-dictation.js');
+  assert(!l200.includes('dictateBtn'), 'L200 ya no tiene Dictar');
+  assert(!l200.includes('Podés dictar'), 'L200 ya no muestra ayuda de dictado');
+  assert(l200.includes('data-audio-base="audio/l200"'), 'L200 declara audioBase local');
+  assert(l200.includes('data-audio-stem="explicacion-1"'), 'Slot local explicacion-1');
+  assert(l200.includes('data-audio-stem="explicacion-2"'), 'Slot local explicacion-2');
+  assert(l200.includes('Explicación 1') && l200.includes('Explicación 2'), 'Etiquetas en español');
+  assert(l200.includes('margin-bottom: 14px'), 'Sonido no queda pegado al borde');
+  assert(l200Js.includes('Sin audio aún'), 'Play sin archivo avisa en español');
+  assert(l200Js.includes('audio/l200/'), 'JS arma rutas locales l200');
+  assert(!l200Js.includes('CampusNumberDictation'), 'JS ya no cablea dictado');
+  assert(fs.existsSync(path.join(ROOT, 'tools/audio/l200')), 'Andamiaje tools/audio/l200/');
+}
+
 // Resumen final
 console.log('\n----------------------------------------');
 console.log(`Pruebas ejecutadas: ${totalTests}`);
