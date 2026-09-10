@@ -22,7 +22,9 @@ before(async () => {
         '.css': 'text/css',
         '.png': 'image/png',
         '.mp3': 'audio/mpeg',
-        '.ogg': 'audio/ogg'
+        '.ogg': 'audio/ogg',
+        '.wav': 'audio/wav',
+        '.json': 'application/json'
       };
       res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' }).end(data);
     } catch { res.writeHead(404).end(); }
@@ -167,12 +169,26 @@ for (const width of [390, 1440]) {
     assert.equal(await p.locator('[data-l200-audio="1"] .l200-audio-label').textContent(), 'Explicación 1');
     assert.equal(await p.locator('[data-l200-audio="2"] .l200-audio-label').textContent(), 'Explicación 2');
     assert.deepEqual(await p.evaluate(() => window.__L200.audioCandidates('1')), [
+      'audio/l200/200_1.wav',
+      'audio/l200/200_1.mp3',
+      'audio/l200/200_1.ogg',
       'audio/l200/explicacion-1.mp3',
       'audio/l200/explicacion-1.ogg'
     ]);
     assert.deepEqual(await p.evaluate(() => window.__L200.audioCandidates('2')), [
+      'audio/l200/200_2.wav',
+      'audio/l200/200_2.mp3',
+      'audio/l200/200_2.ogg',
       'audio/l200/explicacion-2.mp3',
       'audio/l200/explicacion-2.ogg'
+    ]);
+    assert.deepEqual(await p.evaluate(() => window.__L200.cueCandidates('1')), [
+      'audio/l200/200_1.json',
+      'audio/l200/explicacion-1.json'
+    ]);
+    assert.deepEqual(await p.evaluate(() => window.__L200.cueCandidates('2')), [
+      'audio/l200/200_2.json',
+      'audio/l200/explicacion-2.json'
     ]);
     const layout = await p.evaluate(() => {
       const meter = document.getElementById('soundMeter').getBoundingClientRect();
@@ -191,6 +207,72 @@ for (const width of [390, 1440]) {
     assert.equal(await p.evaluate(() => window.__L200.state.ok), 1);
   });
 }
+
+test('L200: overlay karaoke sincroniza cues al seek y se limpia en huecos', async t => {
+  const p = await pageFor(t);
+  await p.goto(base + '/tools/leccion-lineal-working-memory.html');
+  const snap = await p.evaluate(() => {
+    const a = window.__L200;
+    a.setAudioCues('1', [
+      { start: 0, end: 1.2, text: 'Hola, esta es la recta' },
+      { start: 1.2, end: 3, text: 'f de x igual a mx más b' }
+    ]);
+    const first = a.syncSubtitles('1', 0.4);
+    const host = document.getElementById('l200Subtitles');
+    const panel = document.querySelector('.l200-subs-panel');
+    const badge = document.querySelector('.l200-subs-badge');
+    const mid = a.syncSubtitles('1', 2);
+    const gap = a.syncSubtitles('1', 3.4);
+    return {
+      first,
+      mid,
+      gap,
+      hasPanel: !!(panel && panel.querySelector('.l200-subs-line')),
+      badge: badge && badge.textContent,
+      hiddenAfterGap: host.hidden,
+      pauseKeeps: (a.syncSubtitles('1', 0.5), a.subtitleText())
+    };
+  });
+  assert.equal(snap.first, 'Hola, esta es la recta');
+  assert.equal(snap.mid, 'f de x igual a mx más b');
+  assert.equal(snap.gap, '');
+  assert.equal(snap.hasPanel, true);
+  assert.match(snap.badge || '', /Explicación 1/);
+  assert.equal(snap.hiddenAfterGap, true);
+  assert.equal(snap.pauseKeeps, 'Hola, esta es la recta');
+});
+
+test('L200: Play del slot 1 pide 200_1.json y deja cues listos', async t => {
+  const p = await pageFor(t);
+  const fixture = JSON.stringify([
+    { start: 0, end: 1.8, text: 'Esta es la recta.' },
+    { start: 1.8, end: 4.2, text: 'f(x) = mx + b' }
+  ]);
+  await p.route('**/audio/l200/200_1.json', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: fixture
+  }));
+  await p.goto(base + '/tools/leccion-lineal-working-memory.html');
+  await p.click('[data-l200-audio-play="explicacion-1"]');
+  await p.waitForFunction(() => {
+    const hint = document.querySelector('[data-l200-audio="1"] .l200-audio-hint');
+    return hint && hint.textContent.indexOf('Sin audio aún') !== -1;
+  });
+  await p.waitForFunction(() => window.__L200.syncSubtitles('1', 0.5) === 'Esta es la recta.');
+  assert.equal(await p.evaluate(() => window.__L200.syncSubtitles('1', 2.5)), 'f(x) = mx + b');
+  const chrome = await p.evaluate(() => {
+    const panel = document.querySelector('#l200Subtitles .l200-subs-panel');
+    return {
+      hidden: document.getElementById('l200Subtitles').hidden,
+      hasLine: !!(panel && panel.querySelector('.l200-subs-line')),
+      hasBadge: !!(panel && panel.querySelector('.l200-subs-badge'))
+    };
+  });
+  assert.equal(chrome.hidden, false);
+  assert.equal(chrome.hasLine, true);
+  assert.equal(chrome.hasBadge, true);
+});
 
 test('L200: Play sin archivo muestra Sin audio aún; mute cambia estado', async t => {
   const p = await pageFor(t);
