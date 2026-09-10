@@ -4,7 +4,7 @@
 
 2
 00:00:06,960 --> 00:00:11,200
-ordenado tenés que elegir el valor de x y el valor de I adecuado.
+ordenado tenés que elegir el valor de x y el valor de y adecuado.
 
 3
 00:00:11,200 --> 00:00:17,755
