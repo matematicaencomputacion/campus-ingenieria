@@ -1951,6 +1951,8 @@
         cueCandidates: function () { return []; },
         muted: function () { return false; },
         setMuted: function () {},
+        playbackRate: function () { return 1; },
+        setPlaybackRate: function () { return 1; },
         play: function () {},
         setCues: function () { return []; },
         sync: function () { return ""; },
@@ -2022,6 +2024,12 @@
     },
     setAudioMuted: function (id, next) {
       audioCtl.setMuted(id, next);
+    },
+    audioPlaybackRate: function () {
+      return audioCtl.playbackRate();
+    },
+    setAudioPlaybackRate: function (rate) {
+      return audioCtl.setPlaybackRate(rate);
     },
     playAudio: function (id) {
       audioCtl.play(id);

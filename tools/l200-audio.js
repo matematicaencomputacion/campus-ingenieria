@@ -241,13 +241,33 @@
     return isAudioContentType(header);
   }
 
+  var RATE_OPTS = [
+    { value: 1, label: "1×" },
+    { value: 1.5, label: "1,5×" },
+    { value: 2, label: "2×" }
+  ];
+  var sessionRate = 1;
+  var rateWatchers = [];
+
+  function normalizePlaybackRate(value) {
+    var n = Number(value);
+    if (n === 1.5 || n === 2) return n;
+    return 1;
+  }
+
+  function setSessionRate(next) {
+    sessionRate = normalizePlaybackRate(next);
+    var i;
+    for (i = 0; i < rateWatchers.length; i++) rateWatchers[i]();
+    return sessionRate;
+  }
+
   function audioCandidatesFor(base, slotId, fallbackStem) {
     var root = cleanBase(base);
     var numbered = slotStem(slotId);
-    var list = [root + "/" + numbered + ".wav", root + "/" + numbered + ".mp3", root + "/" + numbered + ".ogg"];
+    var list = [root + "/" + numbered + ".mp3"];
     if (fallbackStem && fallbackStem !== numbered) {
       list.push(root + "/" + fallbackStem + ".mp3");
-      list.push(root + "/" + fallbackStem + ".ogg");
     }
     return list;
   }
@@ -464,6 +484,28 @@
     vol.value = "1";
     vol.setAttribute("aria-label", "Volumen de " + label.toLowerCase());
 
+    var rateGroup = document.createElement("div");
+    rateGroup.className = "l200-audio-rate";
+    rateGroup.setAttribute("role", "radiogroup");
+    rateGroup.setAttribute("aria-label", "Velocidad de " + label.toLowerCase());
+    var rateBtns = [];
+    var ri;
+    for (ri = 0; ri < RATE_OPTS.length; ri++) {
+      (function (opt) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "l200-audio-rate-btn";
+        btn.setAttribute("role", "radio");
+        btn.setAttribute("data-l200-audio-rate", String(opt.value));
+        btn.textContent = opt.label;
+        btn.setAttribute("aria-label", "Velocidad " + opt.label);
+        btn.title = "Velocidad " + opt.label;
+        btn.addEventListener("click", function () { setSessionRate(opt.value); });
+        rateGroup.appendChild(btn);
+        rateBtns.push(btn);
+      })(RATE_OPTS[ri]);
+    }
+
     var hintEl = document.createElement("p");
     hintEl.className = "l200-audio-hint";
     hintEl.setAttribute("aria-live", "polite");
@@ -472,7 +514,7 @@
     audioEl.preload = "none";
     audioEl.setAttribute("data-l200-audio-player", stem);
 
-    host.replaceChildren(title, playBtn, progress, muteBtn, vol, hintEl, audioEl);
+    host.replaceChildren(title, playBtn, progress, muteBtn, vol, rateGroup, hintEl, audioEl);
 
     var muted = false;
     var volume = 1;
@@ -503,6 +545,15 @@
       audioEl.muted = muted;
       audioEl.volume = volume;
       vol.value = String(volume);
+    }
+
+    function applyPlaybackRate() {
+      audioEl.playbackRate = sessionRate;
+      var i;
+      for (i = 0; i < rateBtns.length; i++) {
+        var on = Number(rateBtns[i].getAttribute("data-l200-audio-rate")) === sessionRate;
+        rateBtns[i].setAttribute("aria-checked", on ? "true" : "false");
+      }
     }
 
     function showHint(msg) {
@@ -593,6 +644,7 @@
       ignoreAudioError = false;
       audioEl.muted = muted;
       audioEl.volume = volume;
+      applyPlaybackRate();
       owner = true;
       loadCues(seq);
       var p = audioEl.play();
@@ -600,6 +652,7 @@
         p.then(function () {
           if (seq !== playSeq || index !== probeAt) return;
           playingOk = true;
+          applyPlaybackRate();
           setPlayIcon(true);
           showHint("");
           syncOverlay(audioEl.currentTime || 0);
@@ -653,9 +706,11 @@
       if (rel && cands.indexOf(rel) !== -1 && audioEl.getAttribute("src") && !audioEl.error) {
         owner = true;
         loadCues(playSeq);
+        applyPlaybackRate();
         var resume = audioEl.play();
         if (resume && resume.then) {
           resume.then(function () {
+            applyPlaybackRate();
             setPlayIcon(true);
             syncOverlay(audioEl.currentTime || 0);
           }).catch(function () {
@@ -745,12 +800,15 @@
       syncOverlay(audioEl.currentTime || 0);
     });
     audioEl.addEventListener("play", function () {
+      applyPlaybackRate();
       setPlayIcon(true);
       owner = true;
       syncOverlay(audioEl.currentTime || 0);
     });
 
     setMuteUi();
+    applyPlaybackRate();
+    rateWatchers.push(applyPlaybackRate);
     var api = {
       host: host,
       stem: stem,
@@ -759,6 +817,8 @@
       cueCandidates: function () { return jsonCands.slice(); },
       muted: function () { return muted; },
       setMuted: function (next) { muted = !!next; setMuteUi(); },
+      playbackRate: function () { return sessionRate; },
+      setPlaybackRate: setSessionRate,
       play: togglePlay,
       stop: stopAudio,
       setCues: function (raw) {
@@ -819,6 +879,8 @@
         var slot = audioSlotById(slots, id);
         if (slot) slot.setMuted(next);
       },
+      playbackRate: function () { return sessionRate; },
+      setPlaybackRate: setSessionRate,
       play: function (id) {
         var slot = audioSlotById(slots, id);
         if (slot) slot.play();
@@ -838,11 +900,15 @@
 
   global.CampusL200Audio = {
     HINT_NO_AUDIO: HINT_NO_AUDIO,
+    PLAYBACK_RATES: [1, 1.5, 2],
     normalizeCues: normalizeCues,
     cueAt: cueAt,
     isAudioContentType: isAudioContentType,
+    normalizePlaybackRate: normalizePlaybackRate,
     audioCandidatesFor: audioCandidatesFor,
     cueCandidatesFor: cueCandidatesFor,
+    playbackRate: function () { return sessionRate; },
+    setPlaybackRate: setSessionRate,
     mount: mount
   };
 })(typeof window !== "undefined" ? window : globalThis);

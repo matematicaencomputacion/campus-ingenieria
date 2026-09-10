@@ -25,18 +25,35 @@ test('L200 audio: HEAD solo acepta Content-Type audio/*', () => {
   assert.equal(api.isAudioContentType(''), false);
 });
 
-test('L200 audio: candidatos 200_N con fallback explicacion-N', () => {
+test('L200 audio: candidatos solo mp3 (200_N + fallback)', () => {
   assert.deepEqual(fromVm(api.audioCandidatesFor('audio/l200', '1', 'explicacion-1')), [
-    'audio/l200/200_1.wav',
     'audio/l200/200_1.mp3',
-    'audio/l200/200_1.ogg',
-    'audio/l200/explicacion-1.mp3',
-    'audio/l200/explicacion-1.ogg'
+    'audio/l200/explicacion-1.mp3'
+  ]);
+  assert.deepEqual(fromVm(api.audioCandidatesFor('audio/l200', '2', 'explicacion-2')), [
+    'audio/l200/200_2.mp3',
+    'audio/l200/explicacion-2.mp3'
   ]);
   assert.deepEqual(fromVm(api.cueCandidatesFor('audio/l200', '2', 'explicacion-2')), [
     'audio/l200/200_2.json',
     'audio/l200/explicacion-2.json'
   ]);
+});
+
+test('L200 audio: playbackRate 1, 1.5 y 2', () => {
+  assert.deepEqual(fromVm(api.PLAYBACK_RATES), [1, 1.5, 2]);
+  assert.equal(api.normalizePlaybackRate(1), 1);
+  assert.equal(api.normalizePlaybackRate(1.5), 1.5);
+  assert.equal(api.normalizePlaybackRate(2), 2);
+  assert.equal(api.normalizePlaybackRate(3), 1);
+  assert.equal(api.setPlaybackRate(1), 1);
+  assert.equal(api.playbackRate(), 1);
+  assert.equal(api.setPlaybackRate(1.5), 1.5);
+  assert.equal(api.playbackRate(), 1.5);
+  assert.equal(api.setPlaybackRate(2), 2);
+  assert.equal(api.playbackRate(), 2);
+  assert.equal(api.setPlaybackRate(0.75), 1);
+  assert.equal(api.playbackRate(), 1);
 });
 
 test('L200 audio: fixture { start, end, text } en segundos', () => {

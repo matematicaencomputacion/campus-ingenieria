@@ -86,14 +86,16 @@ siguiente fila. No hay Play de tabla ni Dictar. Lento aparece solamente en las e
 En escritorio reduce el alto del lienzo a un tercio; en móvil conserva 240 px para
 poder manipular las fichas. Reiniciar recupera el plano completo y prepara una nueva tabla.
 
-Abajo hay dos barras de audio locales. Al reproducir, un panel flotante muestra
-el subtítulo activo (tipo karaoke) según el JSON de cues.
+Abajo hay dos barras de audio locales, con velocidad **1× / 1,5× / 2×** (por
+sesión). Al reproducir, un panel flotante muestra el subtítulo activo (tipo
+karaoke) según el JSON de cues; el karaoke sigue `currentTime` y no hay que
+resincronizar al cambiar la velocidad.
 
 Cómo dejar los archivos (solo rutas locales, sin CDN):
 
-1. Explicación 1: `tools/audio/l200/200_1.wav` + `tools/audio/l200/200_1.json`
-2. Explicación 2: `tools/audio/l200/200_2.wav` + `tools/audio/l200/200_2.json`
-3. Respaldo si todavía no está el wav: `explicacion-1.mp3` / `.ogg` (igual el slot 2)
+1. Explicación 1: `tools/audio/l200/200_1.mp3` + `tools/audio/l200/200_1.json`
+2. Explicación 2: `tools/audio/l200/200_2.mp3` + `tools/audio/l200/200_2.json`
+3. Respaldo si todavía no está el mp3 numerado: `explicacion-1.mp3` (igual el slot 2)
 
 El JSON preferido es un array de `{ "start", "end", "text" }` en segundos, por
 ejemplo `[{ "start": 0, "end": 1.8, "text": "Esta es la recta." }]`. También se

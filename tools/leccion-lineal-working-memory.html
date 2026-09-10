@@ -388,6 +388,35 @@ canvas#c {
 }
 .l200-audio-seek { flex: 1 1 auto; min-width: 64px; }
 .l200-audio-vol { width: 72px; flex: 0 0 72px; }
+.l200-audio-rate {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.l200-audio-rate-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 4px 7px;
+  min-width: 2.15em;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.l200-audio-rate-btn[aria-checked="true"] {
+  background: rgba(248, 250, 252, 0.14);
+  color: #f8fafc;
+}
+.l200-audio-rate-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.l200-audio-rate-btn:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
 .l200-audio-seek::-webkit-slider-thumb,
 .l200-audio-vol::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -597,8 +626,8 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 </div>
 <div id="l200DragGhost" class="l200-drag-ghost" hidden aria-hidden="true"></div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="l200-audio.js?v=20260910-probe"></script>
-<script src="leccion-lineal-working-memory.js?v=20260910-subs"></script>
+<script src="l200-audio.js?v=20260910-rate"></script>
+<script src="leccion-lineal-working-memory.js?v=20260910-rate"></script>
 <script src="lesson-bar.js?v=20260909-nav2" defer></script>
 </body>
 </html>
