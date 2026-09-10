@@ -81,7 +81,8 @@ const jsFiles = [
   'tools/enfoque-elige.js',
   'tools/lesson-bar.js',
   'tools/l200-audio.js',
-  'tools/leccion-lineal-working-memory.js'
+  'tools/leccion-lineal-working-memory.js',
+  'tools/plantilla-shell.js'
 ];
 for (const rel of jsFiles) {
   const full = path.join(ROOT, rel);
@@ -288,6 +289,38 @@ console.log('\n📐 8. L201 Enfoque (dual nav y primera lámina):');
   assert(/\.lesson-nav\s*\{[^}]*top:\s*44px/.test(chromeNav), 'Chrome compartido: triángulos a 44px');
   const shellCss = fs.readFileSync(path.join(ROOT, 'tools/lesson-shell.css'), 'utf-8');
   assert(shellCss.includes('top: 44px'), 'lesson-shell.css sube los triángulos');
+}
+
+// 10. L199 Plantilla shell · dos ejes + rieles (sin material didáctico)
+console.log('\n🧩 10. L199 Plantilla shell (ejes, rieles y placeholders):');
+{
+  const l199Path = path.join(ROOT, 'tools/leccion-plantilla-shell.html');
+  const shellJsPath = path.join(ROOT, 'tools/plantilla-shell.js');
+  const shellCssPath = path.join(ROOT, 'tools/plantilla-shell.css');
+  const l199 = fs.readFileSync(l199Path, 'utf-8');
+  const shellJs = fs.readFileSync(shellJsPath, 'utf-8');
+  const shellCss = fs.readFileSync(shellCssPath, 'utf-8');
+  const indexHtml = fs.readFileSync(path.join(ROOT, 'tools/index.html'), 'utf-8');
+  assert(fs.existsSync(l199Path), 'Existe tools/leccion-plantilla-shell.html');
+  assert(l199.includes('plantilla-shell.css?v=20260910-l199'), 'L199 cache-bust CSS ?v=20260910-l199');
+  assert(l199.includes('plantilla-shell.js?v=20260910-l199'), 'L199 cache-bust JS ?v=20260910-l199');
+  assert(l199.includes('enfoque-tabs.css?v=20260909e'), 'L199 reusa enfoque-tabs.css');
+  assert(l199.includes('lesson-shell.css?v=20260909-nav2'), 'L199 reusa lesson-shell.css');
+  assert(l199.includes('lesson-navigation.js?v=20260909-nav2'), 'L199 cablea lesson-navigation.js');
+  assert(l199.includes('lesson-bar.js?v=20260909-nav2'), 'L199 monta lesson-bar (una salida)');
+  assert(l199.includes('lang="es"'), 'L199 declara UI en español');
+  assert(l199.includes('Slot contenido (placeholder)'), 'L199 es shell con slots, no material didáctico');
+  assert(!/y = mx \+ b/.test(l199), 'L199 no copia el contenido didáctico de L201');
+  assert(indexHtml.includes('leccion-plantilla-shell.html'), 'Catálogo enlaza L199');
+  assert(indexHtml.includes('Lección 199'), 'Catálogo muestra Lección 199');
+  assert(shellJs.includes('FOCO: Lección ±'), 'JS distingue eje Lección ±');
+  assert(shellJs.includes('FOCO: Slide'), 'JS distingue eje Slide ◀▶');
+  assert(shellJs.includes('Modo Foco'), 'JS expone Modo Foco');
+  assert(shellJs.includes('unknownAxis'), 'JS cierra el switch de eje');
+  assert(shellJs.includes('unknownRail'), 'JS cierra el switch de riel');
+  assert(shellCss.includes('--plantilla-lesson: #59a6ff'), 'CSS foco lección azul Figma');
+  assert(shellCss.includes('--plantilla-slide: #ffb847'), 'CSS foco slide ámbar Figma');
+  assert(shellCss.includes('data-foco="on"'), 'CSS Modo Foco oculta chrome');
 }
 
 // 9. L200 · sin Dictar + dos barras de audio locales
