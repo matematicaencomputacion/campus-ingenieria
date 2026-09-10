@@ -407,8 +407,81 @@ canvas#c {
 }
 .l200-audio-hint:empty { display: none; }
 .l200-audio audio { display: none; }
+.l200-media-dock { position: relative; }
+.l200-subs {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: calc(100% + 8px);
+  z-index: 4;
+  pointer-events: none;
+}
+.l200-subs[hidden] { display: none !important; }
+.l200-subs-panel {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 10px 16px 14px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(36, 48, 68, 0.55), rgba(12, 18, 30, 0.2)),
+    rgba(10, 15, 24, 0.92);
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+}
+.l200-subs-badge {
+  justify-self: start;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0b1018;
+  background: linear-gradient(90deg, #60a5fa, #c084fc);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.l200-subs-linewrap { min-height: 1.35em; }
+.l200-subs-line {
+  position: relative;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 750;
+  line-height: 1.35;
+  color: #94a3b8;
+  text-wrap: pretty;
+}
+.l200-subs-words { display: inline; }
+.l200-subs-fill {
+  position: absolute;
+  inset: 0;
+  color: #f8fafc;
+  overflow: hidden;
+  clip-path: inset(0 100% 0 0);
+  text-shadow: 0 0 18px rgba(96, 165, 250, 0.35);
+}
+.l200-subs-line.has-words .l200-subs-fill { display: none; }
+.l200-subs-word.is-done { color: #e2e8f0; }
+.l200-subs-word.is-on {
+  color: #f8fafc;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+}
+.l200-subs-caret {
+  position: absolute;
+  left: 28px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  background: #0a0f18;
+  border-right: 1px solid rgba(96, 165, 250, 0.28);
+  border-bottom: 1px solid rgba(96, 165, 250, 0.28);
+  transform: rotate(45deg);
+}
 @media (max-width: 720px) {
   .l200-audio-vol { width: 56px; flex-basis: 56px; }
+  .l200-subs-line { font-size: 0.95rem; }
 }
 a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
 @keyframes flashOk { 0%,100% { box-shadow: none; } 30%,70% { box-shadow: inset 0 0 0 3px rgba(90,212,168,.7); } }
@@ -513,15 +586,19 @@ a.back { color: var(--mast); font-size: 0.82rem; text-decoration: none; }
         <span class="sound-meter-level" id="soundMeterLevel">Sonido: off</span>
       </div>
     </div>
-    <div class="l200-audio-slots" id="l200AudioSlots" data-audio-base="audio/l200">
-      <div class="l200-audio" data-l200-audio="1" data-audio-stem="explicacion-1" role="group" aria-label="Explicación 1"></div>
-      <div class="l200-audio" data-l200-audio="2" data-audio-stem="explicacion-2" role="group" aria-label="Explicación 2"></div>
+    <div class="l200-media-dock">
+      <div id="l200Subtitles" class="l200-subs" hidden></div>
+      <div class="l200-audio-slots" id="l200AudioSlots" data-audio-base="audio/l200">
+        <div class="l200-audio" data-l200-audio="1" data-audio-stem="explicacion-1" role="group" aria-label="Explicación 1"></div>
+        <div class="l200-audio" data-l200-audio="2" data-audio-stem="explicacion-2" role="group" aria-label="Explicación 2"></div>
+      </div>
     </div>
   </div>
 </div>
 <div id="l200DragGhost" class="l200-drag-ghost" hidden aria-hidden="true"></div>
 <script src="game-kit.js?v=20260909"></script>
-<script src="leccion-lineal-working-memory.js?v=20260910-audio"></script>
+<script src="l200-audio.js?v=20260910-subs"></script>
+<script src="leccion-lineal-working-memory.js?v=20260910-subs"></script>
 <script src="lesson-bar.js?v=20260909-nav2" defer></script>
 </body>
 </html>
