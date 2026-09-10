@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "plantilla-shell.css?v=20260910-l199f";
+  var CSS_HREF = "plantilla-shell.css?v=20260910-l199g";
   var UI_KEY = "campus_l199_ui";
 
   function unknownAxis(axis) {

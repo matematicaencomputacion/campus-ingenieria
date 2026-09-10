@@ -79,6 +79,8 @@ test('L199: Home arranca en Lección ± y slides inactivas', async t => {
       prevDisabled: document.querySelector('.plantilla-pager.prev')?.disabled,
       nextDisabled: document.querySelector('.plantilla-pager.next')?.disabled,
       placeholder: document.querySelector('.plantilla-slide-title')?.textContent,
+      headingVisible: !!document.querySelector('.wrap > header h1') &&
+        getComputedStyle(document.querySelector('.wrap > header')).display !== 'none',
       dropdown: document.body.innerText.includes('Colores ▾'),
       leftNums: [...document.querySelectorAll('.plantilla-rail--left .plantilla-item')].length,
       swatches: document.querySelectorAll('.plantilla-swatch').length,
@@ -97,6 +99,7 @@ test('L199: Home arranca en Lección ± y slides inactivas', async t => {
   assert.equal(snap.prevDisabled, true);
   assert.equal(snap.nextDisabled, true);
   assert.match(snap.placeholder, /placeholder/i);
+  assert.equal(snap.headingVisible, true, 'El h1 de página queda visible para la barra Campus');
   assert.equal(snap.dropdown, false, 'Rieles visibles, no lista Colores ▾');
   assert.equal(snap.leftNums, 6, 'Riel izquierdo muestra Nº 1–6');
   assert.equal(snap.swatches, 9, 'Riel derecho muestra swatches de color');

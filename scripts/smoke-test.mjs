@@ -302,8 +302,8 @@ console.log('\n🧩 10. L199 Plantilla shell (ejes, rieles y placeholders):');
   const shellCss = fs.readFileSync(shellCssPath, 'utf-8');
   const indexHtml = fs.readFileSync(path.join(ROOT, 'tools/index.html'), 'utf-8');
   assert(fs.existsSync(l199Path), 'Existe tools/leccion-plantilla-shell.html');
-  assert(l199.includes('plantilla-shell.css?v=20260910-l199f'), 'L199 cache-bust CSS ?v=20260910-l199f');
-  assert(l199.includes('plantilla-shell.js?v=20260910-l199f'), 'L199 cache-bust JS ?v=20260910-l199f');
+  assert(l199.includes('plantilla-shell.css?v=20260910-l199g'), 'L199 cache-bust CSS ?v=20260910-l199g');
+  assert(l199.includes('plantilla-shell.js?v=20260910-l199g'), 'L199 cache-bust JS ?v=20260910-l199g');
   assert(!l199.includes('enfoque-tabs.css'), 'L199 no carga enfoque-tabs.css');
   assert(!shellJs.includes('enfoque-tool'), 'JS no depende de clases enfoque-tabs');
   assert(shellCss.includes('.plantilla-tool'), 'CSS estila Modo Foco en plantilla-shell');
@@ -324,6 +324,7 @@ console.log('\n🧩 10. L199 Plantilla shell (ejes, rieles y placeholders):');
   assert(shellCss.includes('--plantilla-lesson: #59a6ff'), 'CSS foco lección azul Figma');
   assert(shellCss.includes('--plantilla-slide: #ffb847'), 'CSS foco slide ámbar Figma');
   assert(shellCss.includes('data-foco="on"'), 'CSS Modo Foco oculta chrome');
+  assert(!/^\s*header\s*\{[^}]*display:\s*none/m.test(shellCss), 'CSS no oculta el h1 de página (test de barras)');
   assert(shellCss.includes('.plantilla-media-vol'), 'CSS incluye control de volumen');
   assert(shellJs.includes('data-plantilla-media'), 'JS monta barra de media');
 }
