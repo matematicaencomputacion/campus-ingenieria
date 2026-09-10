@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "plantilla-shell.css?v=20260910-l199";
+  var CSS_HREF = "plantilla-shell.css?v=20260910-l199b";
   var UI_KEY = "campus_l199_ui";
 
   function unknownAxis(axis) {
@@ -118,7 +118,7 @@
     var uiKey = cfg.uiKey || UI_KEY;
     var saved = readUi(uiKey) || {};
 
-    var axis = saved.axis === "slide" ? "slide" : "leccion";
+    var axis = saved.axis === "slide" || saved.axis === "idle" ? saved.axis : "leccion";
     var leftOpen = !!saved.left;
     var rightOpen = !leftOpen && !!saved.right;
     var rail = saved.rail === "right" || saved.rail === "left" ? saved.rail : null;
@@ -310,6 +310,7 @@
       switch (next) {
         case "leccion":
         case "slide":
+        case "idle":
           if (next === "slide" && !hasSelection()) next = "leccion";
           axis = next;
           break;
@@ -337,6 +338,7 @@
               itemIndex = 0;
               slideIndex = 0;
             }
+            axis = "idle";
           }
           break;
         case "right":
@@ -348,6 +350,7 @@
               itemIndex = 0;
               slideIndex = 0;
             }
+            axis = "idle";
           }
           break;
         default:
@@ -378,7 +381,7 @@
       }
       itemIndex = index;
       slideIndex = 0;
-      if (fromUser) axis = "leccion";
+      if (fromUser) axis = "idle";
       persist();
       render();
     }
@@ -408,7 +411,27 @@
       shell.setAttribute("data-foco", focoOn ? "on" : "off");
       document.body.setAttribute("data-l199-foco", focoOn ? "on" : "off");
 
-      lessonLabel.textContent = axis === "leccion" ? "FOCO: Lección ±" : "eje: Lección ±";
+      var captionText = "";
+      switch (axis) {
+        case "leccion":
+          lessonLabel.textContent = "FOCO: Lección ±";
+          captionText = hasSelection()
+            ? "eje: Slide ◀▶"
+            : "eje: Slide ◀▶ (inactivo hasta elegir tab)";
+          break;
+        case "slide":
+          lessonLabel.textContent = "eje: Lección ±";
+          captionText = "FOCO: Slide ◀▶ (dentro de la lección)";
+          break;
+        case "idle":
+          lessonLabel.textContent = "eje: Lección ±";
+          captionText = hasSelection()
+            ? "eje: Slide ◀▶"
+            : "eje: Slide ◀▶ (inactivo hasta elegir tab)";
+          break;
+        default:
+          unknownAxis(axis);
+      }
       leftRail.toggle.setAttribute("aria-expanded", leftOpen ? "true" : "false");
       rightRail.toggle.setAttribute("aria-expanded", rightOpen ? "true" : "false");
 
@@ -433,7 +456,7 @@
         indicators.hidden = true;
         nums.replaceChildren();
         dots.textContent = "";
-        caption.textContent = "eje: Slide ◀▶ (inactivo hasta elegir tab)";
+        caption.textContent = captionText;
         slidePrev.disabled = true;
         slideNext.disabled = true;
       } else {
@@ -450,9 +473,7 @@
           nums.appendChild(numBtn);
         });
         dots.textContent = n ? dotsText(slideIndex, n) : "";
-        caption.textContent = axis === "slide"
-          ? "FOCO: Slide ◀▶ (dentro de la lección)"
-          : "eje: Slide ◀▶";
+        caption.textContent = captionText;
         slidePrev.disabled = slideIndex <= 0;
         slideNext.disabled = n <= 1 || slideIndex >= n - 1;
       }

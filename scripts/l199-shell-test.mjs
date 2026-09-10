@@ -100,6 +100,7 @@ test('L199: tab números habilita slides; eje ámbar al avanzar', async t => {
       slide: api.slide(),
       count: api.slideCount(),
       axis: api.axis(),
+      dataAxis: document.querySelector('[data-plantilla="l199"]')?.getAttribute('data-axis'),
       title: document.querySelector('.plantilla-slide-title')?.textContent,
       nums: [...document.querySelectorAll('.plantilla-num')].map((b) => b.textContent),
       dots: document.querySelector('.plantilla-dots')?.textContent,
@@ -112,7 +113,8 @@ test('L199: tab números habilita slides; eje ámbar al avanzar', async t => {
   assert.equal(afterTab.item, 0);
   assert.equal(afterTab.slide, 0);
   assert.equal(afterTab.count, 3);
-  assert.equal(afterTab.axis, 'leccion');
+  assert.equal(afterTab.axis, 'idle');
+  assert.equal(afterTab.dataAxis, 'idle');
   assert.match(afterTab.title, /eje números/);
   assert.deepEqual(afterTab.nums, ['1', '2', '3']);
   assert.match(afterTab.dots, /●/);
