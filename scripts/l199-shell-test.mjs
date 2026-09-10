@@ -54,7 +54,14 @@ async function pageFor(t) {
 
 test('L199: Home arranca en Lección ± y slides inactivas', async t => {
   const p = await pageFor(t);
+  const css = [];
+  p.on('request', (req) => {
+    if (req.url().includes('.css')) css.push(req.url());
+  });
   await p.goto(base + '/tools/leccion-plantilla-shell.html');
+  assert.equal(css.some((url) => url.includes('enfoque-tabs.css')), false, 'L199 no pide enfoque-tabs.css');
+  assert.equal(css.some((url) => url.includes('plantilla-shell.css')), true, 'L199 carga plantilla-shell.css');
+  assert.equal(css.some((url) => url.includes('lesson-shell.css')), true, 'L199 carga lesson-shell.css');
   const snap = await p.evaluate(() => {
     const api = window.__L199;
     const shell = document.querySelector('[data-plantilla="l199"]');

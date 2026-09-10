@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
 
-  var CSS_HREF = "plantilla-shell.css?v=20260910-l199c";
+  var CSS_HREF = "plantilla-shell.css?v=20260910-l199d";
   var UI_KEY = "campus_l199_ui";
 
   function unknownAxis(axis) {
@@ -170,7 +170,7 @@
     lesson.appendChild(lessonLabel);
 
     var actions = el("div", "plantilla-top-actions");
-    var focoBtn = el("button", "enfoque-tool");
+    var focoBtn = el("button", "plantilla-tool");
     focoBtn.type = "button";
     focoBtn.setAttribute("data-plantilla", "foco");
     actions.appendChild(focoBtn);
@@ -259,7 +259,7 @@
 
     var caption = el("p", "plantilla-stage-caption");
 
-    var exitFoco = el("button", "enfoque-tool plantilla-exit-foco");
+    var exitFoco = el("button", "plantilla-tool plantilla-exit-foco");
     exitFoco.type = "button";
     exitFoco.textContent = "Salir de foco";
     exitFoco.setAttribute("data-plantilla", "foco-exit");
