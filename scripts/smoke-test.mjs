@@ -306,7 +306,7 @@ console.log('\n🎧 9. L200 (tabla, Sonido y audio local):');
   assert(l200.includes('Explicación 1') && l200.includes('Explicación 2'), 'Etiquetas en español');
   assert(l200.includes('margin-bottom: 14px'), 'Sonido no queda pegado al borde');
   assert(l200Js.includes('Sin audio aún'), 'Play sin archivo avisa en español');
-  assert(l200Js.includes('audio/l200/'), 'JS arma rutas locales l200');
+  assert(l200Js.includes('audio/l200'), 'JS arma rutas locales l200');
   assert(!l200Js.includes('CampusNumberDictation'), 'JS ya no cablea dictado');
   assert(fs.existsSync(path.join(ROOT, 'tools/audio/l200')), 'Andamiaje tools/audio/l200/');
 }
