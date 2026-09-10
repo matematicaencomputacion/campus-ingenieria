@@ -1,0 +1,31 @@
+1
+00:00:00,000 --> 00:00:06,960
+…Ahora el sistema te pide que puedas desplazar…un punto, que está bien visible, en un par
+
+2
+00:00:06,960 --> 00:00:11,200
+ordenado tenés que elegir el valor de x y el valor de I adecuado.
+
+3
+00:00:11,200 --> 00:00:17,755
+El valor de x lo vas a encontrar en la tabla, y el valor de y correspondiente
+
+4
+00:00:17,755 --> 00:00:23,365
+lo vas a encontrar corriéndote hacia arriba o hacia abajo.
+
+5
+00:00:23,365 --> 00:00:28,965
+Cuando estés exactamente en el punto, te va a dar una señal para que vos puedas encontrar que
+
+6
+00:00:28,965 --> 00:00:32,695
+ese es el punto, lo soltás, cambia de color, y ahí
+
+7
+00:00:32,695 --> 00:00:35,735
+automáticamente sabés que…llegaste
+
+8
+00:00:35,735 --> 00:00:38,800
+a hacer el resultado correcto. Felicitaciones, lo hiciste perfecto
