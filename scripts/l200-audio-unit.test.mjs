@@ -15,6 +15,16 @@ function fromVm(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+test('L200 audio: HEAD solo acepta Content-Type audio/*', () => {
+  assert.equal(api.isAudioContentType('audio/mpeg'), true);
+  assert.equal(api.isAudioContentType('audio/wav; charset=binary'), true);
+  assert.equal(api.isAudioContentType('text/html'), false);
+  assert.equal(api.isAudioContentType('text/html; charset=utf-8'), false);
+  assert.equal(api.isAudioContentType('application/json'), false);
+  assert.equal(api.isAudioContentType('application/octet-stream'), false);
+  assert.equal(api.isAudioContentType(''), false);
+});
+
 test('L200 audio: candidatos 200_N con fallback explicacion-N', () => {
   assert.deepEqual(fromVm(api.audioCandidatesFor('audio/l200', '1', 'explicacion-1')), [
     'audio/l200/200_1.wav',
